@@ -148,7 +148,16 @@ public class JsonGenerator {
 
 		@Override
 		public void write(TextNode node, Writer writer) throws IOException {
-			writer.append('\"').append(node.getTextValue()).append('\"');
+			writer.append('\"');
+			final CharSequence textValue = node.getTextValue();
+			for (int index = 0, count = textValue.length(); index < count; index++) {
+				final char ch = textValue.charAt(index);
+				if (ch == '"')
+					writer.append("\\\"");
+				else
+					writer.append(ch);
+			}
+			writer.append('\"');
 		}
 	}
 
