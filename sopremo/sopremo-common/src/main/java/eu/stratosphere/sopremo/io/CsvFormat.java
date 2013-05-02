@@ -59,7 +59,7 @@ public class CsvFormat extends SopremoFileFormat {
 	private int numLineSamples = DEFAULT_NUM_SAMPLES;
 
 	private enum State {
-		TOP_LEVEL, QUOTED, ESCAPED;
+		TOP_LEVEL, QUOTED, ESCAPED, UNICODE;
 	}
 
 	/**
@@ -433,6 +433,7 @@ public class CsvFormat extends SopremoFileFormat {
 			if (this.keyNames.length == 0) {
 				if (split.getSplitNumber() > 0)
 					this.reader.seek(0);
+				this.pos = 0;
 				this.keyNames = this.extractKeyNames();
 			}
 
@@ -440,18 +441,18 @@ public class CsvFormat extends SopremoFileFormat {
 			if (this.splitStart > 0)
 				if (this.usesQuotation) {
 					// TODO: how to detect if where are inside a quotation?
-					this.reader.seek(this.splitStart - 1);
+					this.reader.seek(this.pos = this.splitStart - 1);
 
 					int ch;
-					while ((ch = this.reader.read()) != -1 && ch != '\n')
+					for (; (ch = this.reader.read()) != -1 && ch != '\n'; this.pos++)
 						;
 					if (ch == -1)
 						this.endReached();
 				} else {
-					this.reader.seek(this.splitStart - 1);
+					this.reader.seek(this.pos = this.splitStart - 1);
 
 					int ch;
-					while ((ch = this.reader.read()) != -1 && ch != '\n')
+					for (; (ch = this.reader.read()) != -1 && ch != '\n'; this.pos++)
 						;
 					if (ch == -1)
 						this.endReached();
@@ -477,27 +478,15 @@ public class CsvFormat extends SopremoFileFormat {
 
 		private final StringBuilder builder = new StringBuilder();
 
+		private char unicodeChar, unicodeCount;
+
+		private long pos = 0;
+
 		private int fillBuilderWithNextField() throws IOException {
 			int character = 0;
-			readLoop: while ((character = this.reader.read()) != -1) {
+			readLoop: for (; (character = this.reader.read()) != -1; this.pos++) {
 				final char ch = (char) character;
 				switch (this.getCurrentState()) {
-				case ESCAPED:
-					this.builder.append(ch);
-					this.revertToPreviousState();
-					break;
-				case QUOTED:
-					switch (ch) {
-					case '"':
-						this.revertToPreviousState();
-						break;
-					case '\\':
-						this.setState(State.ESCAPED);
-						break;
-					default:
-						this.builder.append(ch);
-					}
-					break;
 				case TOP_LEVEL:
 					if (ch == this.fieldDelimiter) {
 						this.builder.toString();
@@ -511,6 +500,41 @@ public class CsvFormat extends SopremoFileFormat {
 						this.setState(State.QUOTED);
 					else
 						this.builder.append(ch);
+					break;
+				case ESCAPED:
+					if (ch == 'u')
+						this.setState(State.UNICODE);
+					else {
+						this.builder.append(ch);
+						this.revertToPreviousState();
+					}
+					break;
+				case QUOTED:
+					switch (ch) {
+					case '"':
+						this.revertToPreviousState();
+						break;
+					case '\\':
+						this.setState(State.ESCAPED);
+						break;
+					default:
+						this.builder.append(ch);
+					}
+					break;
+				case UNICODE:
+					int digit = Character.digit(ch, 16);
+					if (digit != -1)
+						this.unicodeChar = (char) ((this.unicodeChar << 4) | digit);
+					else
+						throw new IOException("Cannot parse unicode character at position: " + this.pos + " split start: " + this.splitStart);
+					if (++this.unicodeCount >= 4) {
+						this.builder.append(this.unicodeChar);
+						this.unicodeChar = 0;
+						this.unicodeCount = 0;
+						revertToPreviousState();
+						revertToPreviousState();
+					}
+					break;
 				}
 			}
 			return character;
@@ -551,7 +575,8 @@ public class CsvFormat extends SopremoFileFormat {
 		 * @param string
 		 */
 		private void addToObject(int fieldIndex, String string) {
-			this.objectNode.put(this.keyNames[fieldIndex], TextNode.valueOf(string));
+			if (fieldIndex < this.keyNames.length)
+				this.objectNode.put(this.keyNames[fieldIndex], TextNode.valueOf(string));
 		}
 
 		/*
