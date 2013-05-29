@@ -1,0 +1,23 @@
+$c = read from 'file:///home/killer/workspace/private/meteor/meteor-example/resources/tpch.json/customer.json';
+$o = read from 'file:///home/killer/workspace/private/meteor/meteor-example/resources/tpch.json/orders.json';
+$li = read from 'file:///home/killer/workspace/private/meteor/meteor-example/resources/tpch.json/lineitem.json';
+
+$filterC = filter $c where $c.c_mktsegment == "BUILDING";
+$filterO = filter $o where $o.o_orderdate < "1995-03-15";
+$joinCO = join $filterC, $filterO where $filterC.c_custkey == $filterO.o_custkey into {$filterC.*, $filterO.*};
+$filterLi = filter $li;
+ write $joinCO to 'file:///home/killer/workspace/tpch/joinCO.result';
+ write $filterLi to 'file:///home/killer/workspace/tpch/filterLi.result';
+
+$joinLiCO = join $filterLi, $joinCO where $joinCO.o_orderkey == $filterLi.l_orderkey into 
+{$filterLi.l_orderkey, $joinCO.o_orderdate, $joinCO.o_shippriority, $filterLi.l_extendedprice, $filterLi.l_discount};
+
+ write $joinLiCO to 'file:///home/killer/workspace/tpch/joinLiCO.result';
+
+$preresult = group $joinLiCO by [$joinLiCO.l_orderkey, $joinLiCO.o_orderdate, $joinLiCO.o_shippriority]
+into { l_orderkey: $joinLiCO[0].l_orderkey,
+	revenue: sum( $joinLiCO[*].l_extendedprice * (1- $joinLiCO[*].l_discount)),
+	o_orderdate: $joinLiCO[0].o_orderdate,
+	o_shippriority: $joinLiCO[0].o_shippriority
+};
+ write $preresult to 'file:///home/killer/workspace/tpch/q3.result';

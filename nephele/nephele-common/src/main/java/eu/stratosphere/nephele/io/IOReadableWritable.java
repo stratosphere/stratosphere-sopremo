@@ -18,6 +18,7 @@ package eu.stratosphere.nephele.io;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.io.Serializable;
 
 /**
  * This interface must be implemented by every class whose objects have to be serialized to their binary representation
@@ -28,7 +29,7 @@ import java.io.IOException;
  * 
  * @author warneke
  */
-public interface IOReadableWritable {
+public interface IOReadableWritable extends Serializable {
 
 	/**
 	 * Writes the object's internal data to the given data output stream.

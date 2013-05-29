@@ -1,0 +1,16 @@
+$li = read from 'file:///home/killer/workspace/private/meteor/meteor-example/resources/tpch.json/lineitem.json';
+$filterLi = filter $li where $li.l_linenumber >= 1;
+$groups = group $filterLi by [$filterLi.l_linestatus, $filterLi.l_returnflag] into {
+  l_linestatus: $filterLi[0].l_linestatus,
+  l_returnflag: $filterLi[0].l_returnflag,
+  sum_qty: sum($filterLi[*].l_quantity),
+  sum_base_price: sum($filterLi[*].l_extendedprice),
+  sum_disc_price: sum($filterLi[*].l_extendedprice * (1 - $filterLi[*].l_discount)),
+  sum_charge: sum($filterLi[*].l_extendedprice * ((1 - $filterLi[*].l_discount) * (1 + $filterLi[*].l_tax))),
+  ave_qty: mean($filterLi[*].l_quantity),  
+  ave_price: mean($filterLi[*].l_extendedprice),
+  ave_disc: mean($filterLi[*].l_discount),
+  count_order: count($filterLi)
+ };
+write $groups to 'file:///home/killer/workspace/tpch/q1.result';
+ 

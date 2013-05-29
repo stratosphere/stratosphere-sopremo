@@ -1,0 +1,35 @@
+$c = read from 'file:///home/killer/workspace/private/meteor/meteor-example/resources/tpch.json/customer.json';
+$o = read from 'file:///home/killer/workspace/private/meteor/meteor-example/resources/tpch.json/orders.json';
+$li = read from 'file:///home/killer/workspace/private/meteor/meteor-example/resources/tpch.json/lineitem.json';
+$n = read from 'file:///home/killer/workspace/private/meteor/meteor-example/resources/tpch.json/nation.json';
+
+$fo = filter $o where (
+	$o.o_orderdate >= '1993-10-01' and
+	$o.o_orderdate < '1994-01-01'
+);
+$fli = filter $li where (
+	$li.l_returnflag == 'R'
+);
+
+$preresult = join $c, $fo, $fli, $n where (
+	$c.c_custkey == $fo.o_custkey and
+	$fli.l_orderkey == $fo.o_orderkey and
+	$c.c_nationkey == $n.n_nationkey
+) into {
+	$c.*,
+	$n.n_name,
+	$li.*
+};
+
+$result = group $ur in $preresult by [$ur.c_custkey, $ur.c_name, $ur.c_acctbal, $ur.c_phone, $ur.n_name, $ur.c_address, $ur.c_comment] into {
+	c_custkey: $ur[0].c_custkey,
+	c_name: $ur[0].c_name,
+	revenue: sum($ur.l_extendedprice*(1-$ur.l_discount)),
+	c_acctbal: $ur.c_acctbal,
+	n_name: $ur.n_name,
+	c_address: $ur.c_address,
+	c_phone: $ur.c_phone,
+	c_comment: $ur.c_comment
+};
+
+write $result to 'file:///home/killer/workspace/tpch/q10.result';

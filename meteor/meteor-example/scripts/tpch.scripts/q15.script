@@ -1,0 +1,14 @@
+$li = read from 'file:///home/killer/workspace/private/meteor/meteor-example/resources/tpch.json/lineitem.json';
+$s = read from 'file:///home/killer/workspace/private/meteor/meteor-example/resources/tpch.json/supplier.json';
+
+//viewcreation
+$fli = filter $li where ($li.l_shipdate >= '1996-01-01' and $li.l_shipdate < '1996-04-01');
+$revenue0 = group $fli by $fli.l_suppkey into {supplier_no: $fli[0].l_suppkey, total_revenue: sum($fli[*].l_extendedprice*(1-$fli[*].l_discount))};
+
+//query
+$max_revenue = group $revenue0 into max($revenue0[*].total_revenue);
+$fr = join $revenue0, $max_revenue where $revenue0.total_revenue == $max_revenue.total_revenue;
+
+$joinResult = join $s, $fr where $s.s_suppkey == $fr.supplier_no into {$s.s_suppkey, $s.s_name, $s.s_address, $s.s_phone, $fr.total_revenue};
+
+write $joinResult to 'file:///home/killer/workspace/tpch/q15.result';

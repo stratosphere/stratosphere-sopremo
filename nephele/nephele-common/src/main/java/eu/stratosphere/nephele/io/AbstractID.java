@@ -61,6 +61,20 @@ public abstract class AbstractID implements IOReadableWritable {
 		this.lowerPart = byteArrayToLong(bytes, 0);
 		this.upperPart = byteArrayToLong(bytes, SIZE_OF_LONG);
 	}
+	
+	/**
+	 * Constructs a new abstract ID.
+	 * 
+	 * @param lowerPart
+	 *        the lower bytes of the ID
+	 * @param upperPart
+	 *        the higher bytes of the ID
+	 */
+	protected AbstractID(final long lowerPart, final long upperPart) {
+
+		this.lowerPart = lowerPart;
+		this.upperPart = upperPart;
+	}
 
 	/**
 	 * Constructs a new random ID from a uniform distribution.
@@ -69,6 +83,16 @@ public abstract class AbstractID implements IOReadableWritable {
 
 		this.lowerPart = (long) (Math.random() * Long.MAX_VALUE);
 		this.upperPart = (long) (Math.random() * Long.MAX_VALUE);
+	}
+	
+	/**
+	 * Generates a uniformly distributed random positive long.
+	 * 
+	 * @return a uniformly distributed random positive long
+	 */
+	protected static long generateRandomBytes() {
+
+		return (long) (Math.random() * Long.MAX_VALUE);
 	}
 
 	/**

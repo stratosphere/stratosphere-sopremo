@@ -1,0 +1,13 @@
+$li = read from 'file:///home/killer/workspace/private/meteor/meteor-example/resources/tpch.json/lineitem.json';
+$o = read from 'file:///home/killer/workspace/private/meteor/meteor-example/resources/tpch.json/orders.json';
+$c = read from 'file:///home/killer/workspace/private/meteor/meteor-example/resources/tpch.json/customer.json';
+
+$groupedOrders = group $li by $li.l_orderkey into { $li[0].l_orderkey, quantity: sum($li[*].l_quantity) };
+$lo = filter $go in $groupedOrders where $go.quantity > 300;
+
+$correctOrders = join $o, $lo where $o.o_orderkey == $lo.l_orderkey into { $o.* };
+
+$joinResult = join $c, $correctOrders, $li where ($c.c_custkey == $correctOrders.o_custkey and $correctOrders.o_orderkey == $li.l_orderkey) into { $c.c_name, $c.c_custkey, $correctOrders.o_orderkey, $correctOrders.o_orderdate, $correctOrders.o_totalprice, $li.l_quantity };
+$result = group $jr in $joinResult by [$jr.c_name, $jr.c_custkey, $jr.o_orderkey, $jr.o_orderdate, $jr.o_totalprice] into { $jr[0], quantity: sum($jr[*].l_quantity) };
+
+write $result to 'file:///home/killer/workspace/tpch/q18.result';

@@ -1,0 +1,26 @@
+$ps = read from 'file:///home/killer/workspace/private/meteor/meteor-example/resources/tpch.json/partsupp.json';
+$sup = read from 'file:///home/killer/workspace/private/meteor/meteor-example/resources/tpch.json/supplier.json';
+$nat = read from 'file:///home/killer/workspace/private/meteor/meteor-example/resources/tpch.json/nation.json';
+$reg = read from 'file:///home/killer/workspace/private/meteor/meteor-example/resources/tpch.json/region.json';
+$p = read from 'file:///home/killer/workspace/private/meteor/meteor-example/resources/tpch.json/part.json';
+
+$a = join $ps, $sup, $nat, $reg
+	where ( $sup.s_suppkey == $ps.ps_suppkey and
+		$sup.s_nationkey == $nat.n_nationkey and
+		$nat.n_nationkey == $reg.r_nationkey and
+		$reg.r_name == 'EUROPE' )
+	into { $ps.ps_partkey, $ps.ps_supplycost };
+$cheapestSC = group $a by $a.ps_partkey into { partkey: $a[0].ps_partkey, cost: min($a[*].ps_supplycost) };
+
+$result = join $p, $sup, $ps, $nat, $reg
+		where ( $p.p_partkey == $ps.ps_partkey and
+			$sup.s_suppkey == $ps.ps_suppkey and
+			$p.p_size == 15 and
+			$p.p_type == 'BRASS' and
+			$sup.s_nationkey == $nat.n_nationkey and
+			$nat.n_regionkey == $reg.r_regionkey and
+			$reg.r_name == 'EUROPE' and
+			$ps.ps_supplycost == (filter $cheapestSC where $cheapestSC.partkey == $p.p_partkey)[0].cost )
+		into { $sup.s_acctbal, $sup.s_name, $nat.n_name, $p.p_partkey, $p.p_mfgr, $sup.s_address, $sup.s_phone, $sup.s_comment };
+
+write $result to 'file:///home/killer/workspace/tpch/q2.result';

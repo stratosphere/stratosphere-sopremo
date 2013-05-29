@@ -1,0 +1,68 @@
+@CHARSET "ISO-8859-1";
+pre {
+<<<<<<< HEAD:meteor/meteor-client/resources/web-docs/css/jsonHighlightBrushes.css
+	width: 99%;
+	height: 100%;
+	overflow: auto;
+	
+	outline: 1px solid #ccc; 
+	margin: 5px;
+	
+	text-align: left;
+}
+=======
+	position: absolute;
+	overflow: auto;
+	
+	top: 75px;
+	right: 10px;
+	bottom: 30px;
+	left: 10px;
+	
+	outline: 1px solid #ccc;
+	padding: 5px;
+	
+	text-align: left;
+}
+
+pre.outputScript {
+	top: 50px;
+}
+
+pre:hover{
+	outline-color: LightSkyBlue;
+}
+
+>>>>>>> fdca00c897a45a9286d71dddf2ba60bca442146b:meteor/meteor-webfrontend/resources/web-docs/css/jsonHighlightBrushes.css
+.placeHolder{
+	color: Grey;
+}
+.string{ 
+	color: RoyalBlue; 
+}
+.number{ 
+	color: DarkOrange; 
+}
+.boolean{ 
+	color: Green; 
+}
+.null{ 
+	color: Red; 
+<<<<<<< HEAD:meteor/meteor-client/resources/web-docs/css/jsonHighlightBrushes.css
+=======
+	font-style: italic;
+>>>>>>> fdca00c897a45a9286d71dddf2ba60bca442146b:meteor/meteor-webfrontend/resources/web-docs/css/jsonHighlightBrushes.css
+}
+.key{ 
+	color: Maroon; 
+	font-weight: bold; 
+}
+<<<<<<< HEAD:meteor/meteor-client/resources/web-docs/css/jsonHighlightBrushes.css
+=======
+.syntax{
+	color: DarkGreen;
+}
+>>>>>>> fdca00c897a45a9286d71dddf2ba60bca442146b:meteor/meteor-webfrontend/resources/web-docs/css/jsonHighlightBrushes.css
+.error{
+	color: Red;
+}

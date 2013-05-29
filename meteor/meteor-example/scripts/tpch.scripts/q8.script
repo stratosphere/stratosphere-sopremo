@@ -1,0 +1,32 @@
+$p = read from 'file:///home/killer/workspace/private/meteor/meteor-example/resources/tpch.json/part.json';
+$s = read from 'file:///home/killer/workspace/private/meteor/meteor-example/resources/tpch.json/supplier.json';
+$li = read from 'file:///home/killer/workspace/private/meteor/meteor-example/resources/tpch.json/lineitem.json';
+$o = read from 'file:///home/killer/workspace/private/meteor/meteor-example/resources/tpch.json/orders.json';
+$c = read from 'file:///home/killer/workspace/private/meteor/meteor-example/resources/tpch.json/customer.json';
+$n = read from 'file:///home/killer/workspace/private/meteor/meteor-example/resources/tpch.json/nation.json';
+$r = read from 'file:///home/killer/workspace/private/meteor/meteor-example/resources/tpch.json/region.json';
+
+$fr = filter $r where ($r.r_name == 'AMERICA');
+$fo = filter $o where ($o.o_orderdate >= '1995-01-01' and $o.o_orderdate <= '1996-12-31');
+$fp = filter $p where ($p.p_type == 'ECONOMY ANODIZED STEEL');
+
+$all_nations = join $fp, $s, $li, $fo, $c, $n1 in $n, $n2 in $n, $fr where (
+	$fp.p_partkey == $li.l_partkey and
+	$s.s_suppkey == $li.l_suppkey and
+	$li.l_orderkey == $fo.o_orderkey and
+	$fo.o_custkey == $c.c_custkey and
+	$c.c_nationkey == $n1.n_nationkey and
+	$n1.n_regionkey == $fr.r_regionkey and
+	$s.s_nationkey == $n2.n_nationkey
+) into {
+	o_year: $fo.o_orderdate,
+	volume: $li.l_extendedprice*(1-$li.l_discount),
+	nation: $n2.n_name
+};
+
+$result = group $all_nations by $all_nations.o_year into {
+	o_year: $all_nations[0].o_year,
+	mkt_share: sum(map($all_nations, fn(n) n.nation == 'BRAZIL' ? n.volume : 0))/sum($all_nations[*].volume)
+};
+
+write $result to 'file:///home/killer/workspace/tpch/q8.result';

@@ -1,0 +1,11 @@
+$c = read from 'file:///home/killer/workspace/private/meteor/meteor-example/resources/tpch.json/customer.json';
+$o = read from 'file:///home/killer/workspace/private/meteor/meteor-example/resources/tpch.json/orders.json';
+
+$fo = filter $o where $o.o_comment != 'specialrequests';
+
+$c_join_o = join $c, $fo preserve $c where $c.c_custkey == $fo.o_custkey into {$c.c_custkey, $fo.o_orderkey};
+$c_orders = group $in in $c_join_o by $in.c_custkey into {c_custkey: $in[0].c_custkey, c_count: count($in[*].o_orderkey)};
+
+$result = group $c_orders by $c_orders.c_count into {c_count: $c_orders[0].c_count, custdist: count($c_orders)};
+
+write $result to 'file:///home/killer/workspace/tpch/q13.result';

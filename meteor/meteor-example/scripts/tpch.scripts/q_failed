@@ -1,0 +1,6 @@
+$p = read from 'file:///home/killer/workspace/private/meteor/meteor-example/resources/tpch.json/part.json';
+$li = read from 'file:///home/killer/workspace/private/meteor/meteor-example/resources/tpch.json/lineitem.json';
+
+$result = join $p, $li where $p.p_partkey == $li.l_partkey into {$p.*, $li.*};
+
+write $result to 'file:///home/killer/workspace/tpch/q_failed.result';

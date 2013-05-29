@@ -1,0 +1,9 @@
+$orders = read from 'file:///home/killer/workspace/private/meteor/meteor-example/resources/tcph.json/orders.json';
+$li = read from 'file:///home/killer/workspace/private/meteor/meteor-example/resources/tcph.json/lineitem.json';
+
+$filteredLi = filter $li where ($li.l_commitdate < $li.l_receiptdate);
+$filteredOrders = filter $orders where ($orders.o_orderdate >= '1993-07-01' and $orders.o_orderdate < '1993-04-01' and (count(filter $filteredLi where ($filteredLi.l_orderkey == $orders.o_orderkey)) > 0));
+
+$result = group $filteredOrders by $filteredOrders.o_orderpriority into { o_orderpriority: $filteredOrders[0].o_orderpriority, order_count: count($filteredOrders) };
+
+write $result to 'file:///home/killer/workspace/tcph/q4.result';

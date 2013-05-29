@@ -1,0 +1,9 @@
+$twitter = read from 'file:///home/fabian/Desktop/twitter_25k.json';
+
+$output = join $twitter1 in $twitter, $twitter2 in $twitter, $twitter3 in $twitter where
+	($twitter1.fk == $twitter2.k
+	and $twitter2.fk == $twitter3.k
+	and $twitter3.fk == $twitter1.k)
+	into sort([$twitter1.k, $twitter2.k, $twitter3.k]);
+	
+write $output to 'file:///home/fabian/Desktop/twitter_result.json';

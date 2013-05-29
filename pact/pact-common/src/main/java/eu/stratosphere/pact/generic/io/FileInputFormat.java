@@ -509,11 +509,11 @@ public abstract class FileInputFormat<OT> implements InputFormat<OT, FileInputSp
 	 */
 	public static class FileBaseStatistics implements BaseStatistics {
 		
-		protected final long fileModTime; // timestamp of the last modification
+		protected long fileModTime; // timestamp of the last modification
 
-		protected final long fileSize; // size of the file(s) in bytes
+		protected long fileSize; // size of the file(s) in bytes
 
-		protected final float avgBytesPerRecord; // the average number of bytes for a record
+		protected float avgBytesPerRecord; // the average number of bytes for a record
 
 		/**
 		 * Creates a new statistics object.
@@ -539,7 +539,11 @@ public abstract class FileInputFormat<OT> implements InputFormat<OT, FileInputSp
 		public long getLastModificationTime() {
 			return fileModTime;
 		}
-
+		
+		public void setLastModificationTime(long fileModTime) {
+			this.fileModTime = fileModTime;
+		}
+		
 		/**
 		 * Gets the file size.
 		 * 
@@ -549,6 +553,10 @@ public abstract class FileInputFormat<OT> implements InputFormat<OT, FileInputSp
 		@Override
 		public long getTotalInputSize() {
 			return this.fileSize;
+		}
+		
+		public void setTotalInputSize(long fileSize) {
+			this.fileSize = fileSize;
 		}
 
 		/**
@@ -573,6 +581,10 @@ public abstract class FileInputFormat<OT> implements InputFormat<OT, FileInputSp
 		@Override
 		public float getAverageRecordWidth() {
 			return this.avgBytesPerRecord;
+		}
+		
+		public void setAverageRecordWidth(float avgBytesPerRecord) {
+			this.avgBytesPerRecord = avgBytesPerRecord;
 		}
 		
 		/* (non-Javadoc)

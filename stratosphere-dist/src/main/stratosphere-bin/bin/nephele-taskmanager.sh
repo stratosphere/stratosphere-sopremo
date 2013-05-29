@@ -73,6 +73,24 @@ constructTaskManagerClassPath() {
 			add=1
 		elif [[ "$jarfile" =~ 'guava' ]]; then
 			add=1
+		elif [[ "$jarfile" =~ 'sopremo-common' ]]; then
+			add=1
+		elif [[ "$jarfile" =~ 'fastutil' ]]; then
+			add=1
+		elif [[ "$jarfile" =~ 'javolution' ]]; then
+			add=1
+		elif [[ "$jarfile" =~ 'commons' ]]; then			
+			add=1
+		elif [[ "$jarfile" =~ 'kryo' ]]; then
+			add=1
+		elif [[ "$jarfile" =~ 'reflectasm' ]]; then
+			add=1
+		elif [[ "$jarfile" =~ 'minlog' ]]; then
+            add=1
+		elif [[ "$jarfile" =~ 'asm' ]]; then
+			add=1
+		elif [[ "$jarfile" =~ 'objenesis' ]]; then
+            add=1
 		fi
 
 		if [[ "$add" = "1" ]]; then

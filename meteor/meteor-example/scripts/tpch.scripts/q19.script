@@ -1,0 +1,48 @@
+$li = read from 'file:///home/killer/workspace/private/meteor/meteor-example/resources/tpch.json/lineitem.json';
+$p = read from 'file:///home/killer/workspace/private/meteor/meteor-example/resources/tpch.json/part.json';
+
+$fli = filter $li where ($li.l_shipmode == 'AIR' or $li.l_shipmode == 'AIR REG');
+
+$li1 = filter $fli where (
+	$fli.l_quantity >= 1 and
+	$fli.l_quantity <= 11 and
+	$fli.l_shipinstruct == 'DELIVER IN PERSON'
+);
+$fp1 = filter $p where ($p.p_container == 'SM CASE' or $p.p_container == 'SM BOX' or $p.p_container == 'SM PACK' or $p.p_container == 'SM PKG');
+$p1 = filter $fp1 where (
+	$fp1.p_brand == 'Brand#12' and
+	$fp1.p_size >= 1 and
+	$fp1.p_size <= 5
+);
+$r1 = join $li1, $p1 where $li1.l_partkey == $p1.p_partkey into {$li1.l_extendedprice, $li1.l_discount};
+
+$li2 = filter $fli where (
+	$fli.l_quantity >= 10 and
+	$fli.l_quantity <= 20 and
+	$fli.l_shipinstruct == 'DELIVER IN PERSON'
+);
+$fp2 = filter $p where ($p.p_container == 'MED BAG' or $p.p_container == 'MED BOX' or $p.p_container == 'MED PACK' or $p.p_container == 'MED PKG');
+$p2 = filter $fp2 where (
+	$fp2.p_brand == 'Brand#23' and
+	$fp2.p_size >= 1 and
+	$fp2.p_size <= 10
+);
+$r2 = join $li2, $p2 where $li2.l_partkey == $p2.p_partkey into {$li2.l_extendedprice, $li2.l_discount};
+
+$li3 = filter $fli where (
+	$fli.l_quantity >= 20 and
+	$fli.l_quantity <= 30 and
+	$fli.l_shipinstruct == 'DELIVER IN PERSON'
+);
+$fp3 = filter $p where ($p.p_container == 'LG CASE' or $p.p_container == 'LG BOX' or $p.p_container == 'LG PACK' or $p.p_container == 'LG PKG');
+$p3 = filter $fp3 where (
+	$fp3.p_brand == 'Brand#34' and
+	$fp3.p_size >= 1 and
+	$fp3.p_size <= 15
+);
+$r3 = join $li3, $p3 where $li3.l_partkey == $p3.p_partkey into {$li3.l_extendedprice, $li3.l_discount};
+
+$r = union all $r1, $r2, $r3;
+$result = group $r into { revenue: sum($r[*].l_extendedprice * (1 - $r[*].l_discount)) };
+
+write $result to 'file:///home/killer/workspace/tpch/q19.result';

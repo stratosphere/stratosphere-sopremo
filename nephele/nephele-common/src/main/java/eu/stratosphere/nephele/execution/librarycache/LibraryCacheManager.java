@@ -29,6 +29,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.esotericsoftware.kryo.io.Input;
+import com.esotericsoftware.kryo.io.Output;
+
 import eu.stratosphere.nephele.fs.FSDataInputStream;
 import eu.stratosphere.nephele.fs.FSDataOutputStream;
 import eu.stratosphere.nephele.fs.FileStatus;
@@ -508,6 +511,23 @@ public final class LibraryCacheManager {
 
 	}
 
+/**
+	 * Writes data from the library with the given file name to the specified stream.
+	 * 
+	 * @param libraryFileName
+	 *        the name of the library
+	 * @param output
+	 *        the stream to write the data to
+	 * @throws IOException
+	 *         thrown if an error occurs while writing the data
+	 */
+	public static void writeLibraryToStream(final String libraryFileName, final Output output) throws IOException {
+
+		final LibraryCacheManager lib = get();
+		lib.writeLibraryToStreamInternal(libraryFileName, output);
+
+	}
+
 	/**
 	 * Writes data from the library with the given file name to the specified stream.
 	 * 
@@ -549,6 +569,47 @@ public final class LibraryCacheManager {
 		}
 	}
 
+/**
+	 * Writes data from the library with the given file name to the specified stream.
+	 * 
+	 * @param libraryFileName
+	 *        the name of the library
+	 * @param output
+	 *        the stream to write the data to
+	 * @throws IOException
+	 *         thrown if an error occurs while writing the data
+	 */
+	private void writeLibraryToStreamInternal(final String libraryFileName, final Output output) throws IOException {
+
+		if (libraryFileName == null) {
+			throw new IOException("libraryName is null!");
+		}
+
+		final Path storePath = new Path(this.libraryCachePath + "/" + libraryFileName);
+
+		synchronized (this.fs) {
+
+			if (!fs.exists(storePath)) {
+				throw new IOException(storePath + " does not exist!");
+			}
+
+			final FileStatus status = fs.getFileStatus(storePath);
+
+			output.writeString(libraryFileName);
+			output.writeLong(status.getLen());
+
+			final FSDataInputStream inStream = fs.open(storePath);
+			final byte[] buf = new byte[8192]; // 8K Buffer*/
+			int read = inStream.read(buf, 0, buf.length);
+			while (read > 0) {
+				output.writeBytes(buf, 0, read);
+				read = inStream.read(buf, 0, buf.length);
+			}
+
+			inStream.close();
+		}
+	}
+
 	/**
 	 * Reads library data from the given stream.
 	 * 
@@ -561,6 +622,21 @@ public final class LibraryCacheManager {
 
 		final LibraryCacheManager lib = get();
 		lib.readLibraryFromStreamInternal(in);
+
+	}
+
+/**
+	 * Reads library data from the given stream.
+	 * 
+	 * @param in
+	 *        the stream to read the library data from
+	 * @throws IOException
+	 *         throws if an error occurs while reading from the stream
+	 */
+	public static void readLibraryFromStream(final Input input) throws IOException {
+
+		final LibraryCacheManager lib = get();
+		lib.readLibraryFromStreamInternal(input);
 
 	}
 
@@ -588,6 +664,43 @@ public final class LibraryCacheManager {
 
 		final byte[] buf = new byte[(int) length];
 		in.readFully(buf);
+
+		final Path storePath = new Path(this.libraryCachePath + "/" + libraryFileName);
+
+		synchronized (this.fs) {
+
+			// Check if file already exists in our library cache, if not write it to the cache directory
+			if (!fs.exists(storePath)) {
+				final FSDataOutputStream fos = fs.create(storePath, false);
+				fos.write(buf, 0, buf.length);
+				fos.close();
+			}
+		}
+	}
+
+/**
+	 * Reads library data from the given stream.
+	 * 
+	 * @param input
+	 *        the stream to read the library data from
+	 * @throws IOException
+	 */
+	private void readLibraryFromStreamInternal(final Input input) throws IOException {
+
+		final String libraryFileName = input.readString();
+
+		if (libraryFileName == null) {
+			throw new IOException("libraryFileName is null!");
+		}
+
+		final long length = input.readLong();
+
+		if (length > (long) Integer.MAX_VALUE) {
+			throw new IOException("Submitted jar file " + libraryFileName + " is too large");
+		}
+
+		final byte[] buf = new byte[(int) length];
+		input.readBytes(buf);
 
 		final Path storePath = new Path(this.libraryCachePath + "/" + libraryFileName);
 
@@ -650,6 +763,77 @@ public final class LibraryCacheManager {
 		// Map the entire jar file to memory
 		final byte[] buf = new byte[(int) size];
 		in.readFully(buf);
+
+		// Reset and calculate message digest from jar file
+		this.md.reset();
+		this.md.update(buf);
+
+		// Construct internal jar name from digest
+		final String cacheName = StringUtils.byteToHexString(md.digest()) + ".jar";
+		final Path storePath = new Path(this.libraryCachePath + "/" + cacheName);
+
+		synchronized (this.fs) {
+
+			// Check if file already exists in our library cache, if not write it to the cache directory
+			if (!this.fs.exists(storePath)) {
+				final FSDataOutputStream fos = this.fs.create(storePath, false);
+				fos.write(buf, 0, buf.length);
+				fos.close();
+			}
+		}
+
+		// Create mapping for client path and cache name
+		final LibraryTranslationKey key = new LibraryTranslationKey(jobID, name);
+		this.clientPathToCacheName.putIfAbsent(key, cacheName);
+	}
+	
+	/**
+	 * Reads a library from the given input stream and adds it to the local library cache. The cache name of
+	 * the library is determined by the checksum of the received data and cannot be specified manually.
+	 * 
+	 * @param jobID
+	 *        the ID of the job the library data belongs to
+	 * @param name
+	 *        the name of the library at the clients host
+	 * @param size
+	 *        the size of the library to be read from the input stream
+	 * @param in
+	 *        the data input stream
+	 * @throws IOException
+	 *         thrown if the library cache manager could not be instantiated or an error occurred while reading the
+	 *         library data from the input stream
+	 */
+	public static void addLibrary(final JobID jobID, final Path name, final int size, final Input in)
+			throws IOException {
+
+		final LibraryCacheManager lib = get();
+		lib.addLibraryInternal(jobID, name, size, in);
+	}
+
+/**
+	 * Reads a library from the given input stream and adds it to the local library cache. The cache name of
+	 * the library is determined by the checksum of the received data and cannot be specified manually.
+	 * 
+	 * @param jobID
+	 *        the ID of the job the library data belongs to
+	 * @param name
+	 *        the name of the library at the clients host
+	 * @param size
+	 *        the size of the library to be read from the input stream
+	 * @param in
+	 *        the data input stream
+	 * @throws IOException
+	 *         thrown if an error occurred while reading the library data from the input stream
+	 */
+	private void addLibraryInternal(final JobID jobID, final Path name, final int size, final Input in)
+			throws IOException {
+
+		if (size > (long) Integer.MAX_VALUE) {
+			throw new IOException("Submitted jar file " + name + " is too large");
+		}
+
+		// Map the entire jar file to memory
+		final byte[] buf = in.readBytes(size);
 
 		// Reset and calculate message digest from jar file
 		this.md.reset();

@@ -1,0 +1,4 @@
+$students = read from 'hdfs://localhost/students2.json';
+$f = filter $students
+	where $students.birthDate.year < 1990;
+write $f to 'hdfs://localhost/result.json';

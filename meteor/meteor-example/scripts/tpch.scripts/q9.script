@@ -1,0 +1,27 @@
+$p = read from 'file:///home/killer/workspace/private/meteor/meteor-example/resources/tpch.json/part.json';
+$s = read from 'file:///home/killer/workspace/private/meteor/meteor-example/resources/tpch.json/supplier.json';
+$li = read from 'file:///home/killer/workspace/private/meteor/meteor-example/resources/tpch.json/lineitem.json';
+$ps = read from 'file:///home/killer/workspace/private/meteor/meteor-example/resources/tpch.json/partsupp.json';
+$o = read from 'file:///home/killer/workspace/private/meteor/meteor-example/resources/tpch.json/orders.json';
+$n = read from 'file:///home/killer/workspace/private/meteor/meteor-example/resources/tpch.json/nation.json';
+
+$profit = join $p, $s, $li, $ps, $o, $n where (
+	$s.s_suppkey == $li.l_suppkey and
+	$ps.ps_suppkey == $li.l_suppkey and
+	$ps.ps_partkey == $li.l_partkey and
+	$p.p_partkey == $li.l_partkey and
+	$o.o_orderkey == $li.l_orderkey and
+	$s.s_nationkey == $n.n_nationkey
+) into {
+	nation: $n.n_name,
+	o_year: $o.o_orderdate,
+	amount: ($li.l_extendedprice*(1-$li.l_discount)-$ps.ps_supplycost*$li.l_quantity)
+};
+
+$result = group $profit by [$profit.nation, $profit.o_year] into {
+	nation: $profit[0].nation,
+	o_year: $profit[0].o_year,
+	sum_profit: sum($profit[*].amount)
+};
+
+write $result to 'file:///home/killer/workspace/tpch/q9.result';

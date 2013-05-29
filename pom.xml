@@ -350,6 +350,8 @@
 	<modules>
 		<module>nephele</module>
 		<module>pact</module>
+		<module>sopremo</module>
+    	<module>meteor</module>
 		<module>stratosphere-dist</module>
 	</modules>
 </project>

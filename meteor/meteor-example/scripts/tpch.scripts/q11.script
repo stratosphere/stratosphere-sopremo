@@ -1,0 +1,35 @@
+$ps = read from 'file:///home/killer/workspace/private/meteor/meteor-example/resources/tpch.json/partsupp.json';
+$s = read from 'file:///home/killer/workspace/private/meteor/meteor-example/resources/tpch.json/supplier.json';
+$n = read from 'file:///home/killer/workspace/private/meteor/meteor-example/resources/tpch.json/nation.json';
+
+$fn = filter $n where $n.n_name == 'GERMANY';
+
+$subresult = join $ps, $s, $fn where (
+	$ps.ps_suppkey == $s.s_suppkey and
+	$s.s_nationkey == $fn.n_nationkey
+) into {
+	$ps.ps_partkey,
+	cost: sum($ps.ps_supplycost*$ps.ps_availqty)*0.0001
+};
+
+$preresult = join $ps, $s, $fn where (
+	$ps.ps_suppkey == $s.s_suppkey and
+	$s.s_nationkey == $fn.n_nationkey
+) into {
+	$ps.ps_partkey,
+	value: sum($ps.ps_supplycost*$ps.ps_availqty)
+};
+
+$ugResult = join $pr in $preresult, $sr in $subresult where (
+	$pr.ps_partkey == $sr.ps_partkey and
+	$pr.value > $sr.cost
+) into {
+	$pr.*
+};
+
+$result = group $ugResult by $ugResult.ps_partkey into {
+	$ugResult.ps_partkey,
+	value: sum($ugResult[*].value)
+};
+
+write $result to 'file:///home/killer/workspace/tpch/q11.result';

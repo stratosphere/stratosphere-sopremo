@@ -1,0 +1,10 @@
+$o = read from 'file:///home/killer/workspace/private/meteor/meteor-example/resources/tpch.json/orders.json';
+$li = read from 'file:///home/killer/workspace/private/meteor/meteor-example/resources/tpch.json/lineitem.json';
+
+$filteredLi = filter $li where (($li.l_shipmode == 'MAIL' or $li.l_shipmode == 'SHIP') and $li.l_commitdate < $li.l_receiptdate and $li.l_shipdate < $li.l_commitdate and $li.l_receiptdate >= '1994-01-01' and $li.l_receiptdate < '1995-10-01');
+
+$ugResult = join $o, $l in $filteredLi where ($o.o_orderkey == $l.l_orderkey) into {$l.l_shipmode, $o.o_orderpriority};
+
+$result = group $r in $ugResult by $r.l_shipmode into {$r[0].l_shipmode, high_line_count: sum(map($r, fn($n) ($n.o_orderpriority == '1-URGENT' or $n.o_orderpriority == '2-HIGH' ? 1 : 0)), sum(map($r, fn($m) ($m.o_orderpriority <> '1-URGENT' and $m.o_orderpriority <> '2-HIGH' ? 1 : 0))};
+
+write $result to 'file:///home/killer/workspace/tpch/q12.result';

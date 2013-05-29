@@ -1,0 +1,7 @@
+$twitterCSV = read csv from '../resources/twitter_25k.csv' columns ['k', 'fk'] delimiter ',';
+
+$result = transform $twitterCSV into {k: $twitterCSV.k, fk: $twitterCSV.fk};
+
+write $result to '../resources/twitter_result.json';
+
+write $result to '../resources/twitter_result.csv' columns ['k', 'fk'] delimiter ',';

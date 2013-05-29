@@ -1,0 +1,10 @@
+$li = read from 'file:///home/killer/workspace/private/meteor/meteor-example/resources/tpch.json/lineitem.json';
+$p = read from 'file:///home/killer/workspace/private/meteor/meteor-example/resources/tpch.json/part.json';
+
+$fli = filter $li where ($li.l_shipdate >= '1995-09-01' and $li.l_shipdate < '1995-10-01');
+
+$j = join $fli, $p where $fli.l_partkey == $p.p_partkey into {$p.p_type, value: $fli.l_extendedprice*(1-$fli.l_discount)};
+
+$result = group $j into (100*sum(map($j, fn(n) n.p_type == 'PROMO BURNISHED COPPER' ? n.value : 0)) / sum($j[*].value));
+
+write $result to 'file:///home/killer/workspace/tpch/q14.result';

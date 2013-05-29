@@ -1,0 +1,101 @@
+@charset "ISO-8859-1";
+* {
+	padding: 0px;
+	margin: 0px;
+}
+
+html, body, form {
+	height: 100%;
+	width: 100%;
+	position: auto;
+	overflow: hidden;
+}
+
+h1 {
+	display: inline;
+	font-family: verdana;
+	font-size: 36px;
+	font-weight: normal;
+	font-decoration: none;
+	font-style: normal;
+	font-variant: small-caps;
+	margin: 10px 10px 10px 10px;
+}
+
+h2 {
+	font-family: verdana;
+	font-size: 28px;
+	font-weight: normal;
+	font-decoration: none;
+	font-style: italic;
+	font-variant: normal;
+	text-align: center;
+	color: #666666;
+	margin: 10px 10px 20px 10px;
+}
+
+input {
+	font-family: verdana, Sans-Serif;
+	font-size: 13px;
+
+	border: solid 1.5px #333333;
+	background-color: #eeeeee;
+	color: #333333;
+
+	padding: 5px;
+	margin: 5px;
+}
+
+div {
+	margin: 10px;
+}
+
+div.main {
+	position: absolute;
+	
+	top: 2px;
+	left: 2px;
+	bottom: 2px;
+	right: 2px;
+	
+	border: thin solid;
+}
+
+div.inputScript {
+	position: absolute;
+	
+	top: 40px;
+	right: 0px;
+	left: 0px;
+	bottom: 45px;
+}
+
+div.footer {
+	position: absolute;
+	
+	bottom: -4px;
+	left: -2px;
+	right: -2px;
+}
+
+textarea.script { 
+	resize: none; 
+	width: 99%; 
+	height: 100%;
+	
+	white-space: nowrap;
+	overflow: auto;
+}
+
+select.scriptSelection { 
+	position: relative;
+	resize: none;
+	white-space: nowrap;
+	
+	width: 100%;
+	bottom: 8px;
+}
+
+select.scriptSelection:focus {
+	outline-color: LightSkyBlue;
+}

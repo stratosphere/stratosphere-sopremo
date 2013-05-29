@@ -1,0 +1,24 @@
+@CHARSET "ISO-8859-1";
+div.visual {
+	position: absolute;
+	
+	top: 40px;
+	bottom: 15px;
+	right: 5px;
+	left: 5px;
+	
+	vertical-align: middle;
+	border: thin solid #ccc;
+}
+
+div.visual:hover{
+	border-color: LightSkyBlue;
+}
+
+div#graphdiv2 {
+	margin: 0;
+	padding: 0;
+	
+	width: 95%;
+	height: 80%;
+}

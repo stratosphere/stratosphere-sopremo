@@ -1,0 +1,10 @@
+$li = read from 'file:///home/killer/workspace/private/meteor/meteor-example/resources/tpch.json/lineitem.json';
+
+$unprocResult = filter $li where (	$li.l_shipdate >= '1994-01-01' and
+					$li.l_shipdate < '1995-01-01' and
+					$li.l_quantity < 24 and
+					$li.l_discount >= 0.05 and
+					$li.l_discount <= 0.07 );
+$result = group $unprocResult into { revenue: sum($unprocResult[*].l_extendedprice * $unprocResult[*].l_discount) };
+
+write $result to 'file:///home/killer/workspace/tpch/q6.result';

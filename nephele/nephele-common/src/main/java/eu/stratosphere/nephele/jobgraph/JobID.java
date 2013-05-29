@@ -30,6 +30,18 @@ public final class JobID extends AbstractID {
 	public JobID() {
 		super();
 	}
+	
+	/**
+	 * Constructs a new job ID.
+	 * 
+	 * @param lowerPart
+	 *        the lower bytes of the ID
+	 * @param upperPart
+	 *        the higher bytes of the ID
+	 */
+	private JobID(final long lowerPart, final long upperPart) {
+		super(lowerPart, upperPart);
+	}
 
 	/**
 	 * Constructs a new ID with a specific bytes value.
@@ -39,5 +51,30 @@ public final class JobID extends AbstractID {
 	 */
 	public JobID(final byte[] bytes) {
 		super(bytes);
+	}
+	
+	/**
+	 * Generates a new statistically unique job ID.
+	 * 
+	 * @return a new statistically unique job ID
+	 */
+	public static JobID generate() {
+
+		final long lowerPart = AbstractID.generateRandomBytes();
+		final long upperPart = AbstractID.generateRandomBytes();
+
+		return new JobID(lowerPart, upperPart);
+	}
+
+	/**
+	 * Constructs a new job ID and initializes it with the given bytes.
+	 * 
+	 * @param bytes
+	 *        the bytes to initialize the new job ID with
+	 * @return the new job ID
+	 */
+	public static JobID fromByteArray(final byte[] bytes) {
+
+		return new JobID(bytes);
 	}
 }

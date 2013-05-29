@@ -1,0 +1,252 @@
+[
+  {
+    "c_custkey": 1,
+    "c_name": "Customer#000000001",
+    "c_address": "IVhzIApeRb ot,c,E",
+    "c_nationkey": 15,
+    "c_phone": "25-989-741-2988",
+    "c_acctbal": 711.56,
+    "c_mktsegment": "BUILDING",
+    "c_comment": "to the even, regular platelets. regular, ironic epitaphs nag e"
+  },
+  {
+    "c_custkey": 2,
+    "c_name": "Customer#000000002",
+    "c_address": "XSTf4,NCwDVaWNe6tEgvwfmRchLXak",
+    "c_nationkey": 13,
+    "c_phone": "23-768-687-3665",
+    "c_acctbal": 121.65,
+    "c_mktsegment": "AUTOMOBILE",
+    "c_comment": "l accounts. blithely ironic theodolites integrate boldly: caref"
+  },
+  {
+    "c_custkey": 3,
+    "c_name": "Customer#000000003",
+    "c_address": "MG9kdTD2WBHm",
+    "c_nationkey": 1,
+    "c_phone": "11-719-748-3364",
+    "c_acctbal": 7498.12,
+    "c_mktsegment": "AUTOMOBILE",
+    "c_comment": " deposits eat slyly ironic, even instructions. express foxes detect slyly. blithely even accounts abov"
+  },
+  {
+    "c_custkey": 4,
+    "c_name": "Customer#000000004",
+    "c_address": "XxVSJsLAGtn",
+    "c_nationkey": 4,
+    "c_phone": "14-128-190-5944",
+    "c_acctbal": 2866.83,
+    "c_mktsegment": "MACHINERY",
+    "c_comment": " requests. final, regular ideas sleep final accou"
+  },
+  {
+    "c_custkey": 5,
+    "c_name": "Customer#000000005",
+    "c_address": "KvpyuHCplrB84WgAiGV6sYpZq7Tj",
+    "c_nationkey": 3,
+    "c_phone": "13-750-942-6364",
+    "c_acctbal": 794.47,
+    "c_mktsegment": "HOUSEHOLD",
+    "c_comment": "n accounts will have to unwind. foxes cajole accor"
+  },
+  {
+    "c_custkey": 6,
+    "c_name": "Customer#000000006",
+    "c_address": "sKZz0CsnMD7mp4Xd0YrBvx,LREYKUWAh yVn",
+    "c_nationkey": 20,
+    "c_phone": "30-114-968-4951",
+    "c_acctbal": 7638.57,
+    "c_mktsegment": "AUTOMOBILE",
+    "c_comment": "tions. even deposits boost according to the slyly bold packages. final accounts cajole requests. furious"
+  },
+  {
+    "c_custkey": 7,
+    "c_name": "Customer#000000007",
+    "c_address": "TcGe5gaZNgVePxU5kRrvXBfkasDTea",
+    "c_nationkey": 18,
+    "c_phone": "28-190-982-9759",
+    "c_acctbal": 9561.95,
+    "c_mktsegment": "AUTOMOBILE",
+    "c_comment": "ainst the ironic, express theodolites. express, even pinto beans among the exp"
+  },
+  {
+    "c_custkey": 8,
+    "c_name": "Customer#000000008",
+    "c_address": "I0B10bB0AymmC, 0PrRYBCP1yGJ8xcBPmWhl5",
+    "c_nationkey": 17,
+    "c_phone": "27-147-574-9335",
+    "c_acctbal": 6819.74,
+    "c_mktsegment": "BUILDING",
+    "c_comment": "among the slyly regular theodolites kindle blithely courts. carefully even theodolites haggle slyly along the ide"
+  },
+  {
+    "c_custkey": 9,
+    "c_name": "Customer#000000009",
+    "c_address": "xKiAFTjUsCuxfeleNqefumTrjS",
+    "c_nationkey": 8,
+    "c_phone": "18-338-906-3675",
+    "c_acctbal": 8324.07,
+    "c_mktsegment": "FURNITURE",
+    "c_comment": "r theodolites according to the requests wake thinly excuses: pending requests haggle furiousl"
+  },
+  {
+    "c_custkey": 10,
+    "c_name": "Customer#000000010",
+    "c_address": "6LrEaV6KR6PLVcgl2ArL Q3rqzLzcT1 v2",
+    "c_nationkey": 5,
+    "c_phone": "15-741-346-9870",
+    "c_acctbal": 2753.54,
+    "c_mktsegment": "HOUSEHOLD",
+    "c_comment": "es regular deposits haggle. fur"
+  },
+  {
+    "c_custkey": 11,
+    "c_name": "Customer#000000011",
+    "c_address": "PkWS 3HlXqwTuzrKg633BEi",
+    "c_nationkey": 23,
+    "c_phone": "33-464-151-3439",
+    "c_acctbal": -272.60,
+    "c_mktsegment": "BUILDING",
+    "c_comment": "ckages. requests sleep slyly. quickly even pinto beans promise above the slyly regular pinto beans. "
+  },
+  {
+    "c_custkey": 12,
+    "c_name": "Customer#000000012",
+    "c_address": "9PWKuhzT4Zr1Q",
+    "c_nationkey": 13,
+    "c_phone": "23-791-276-1263",
+    "c_acctbal": 3396.49,
+    "c_mktsegment": "HOUSEHOLD",
+    "c_comment": " to the carefully final braids. blithely regular requests nag. ironic theodolites boost quickly along"
+  },
+  {
+    "c_custkey": 13,
+    "c_name": "Customer#000000013",
+    "c_address": "nsXQu0oVjD7PM659uC3SRSp",
+    "c_nationkey": 3,
+    "c_phone": "13-761-547-5974",
+    "c_acctbal": 3857.34,
+    "c_mktsegment": "BUILDING",
+    "c_comment": "ounts sleep carefully after the close frays. carefully bold notornis use ironic requests. blithely"
+  },
+  {
+    "c_custkey": 14,
+    "c_name": "Customer#000000014",
+    "c_address": "KXkletMlL2JQEA ",
+    "c_nationkey": 1,
+    "c_phone": "11-845-129-3851",
+    "c_acctbal": 5266.30,
+    "c_mktsegment": "FURNITURE",
+    "c_comment": ", ironic packages across the unus"
+  },
+  {
+    "c_custkey": 15,
+    "c_name": "Customer#000000015",
+    "c_address": "YtWggXoOLdwdo7b0y,BZaGUQMLJMX1Y,EC,6Dn",
+    "c_nationkey": 23,
+    "c_phone": "33-687-542-7601",
+    "c_acctbal": 2788.52,
+    "c_mktsegment": "HOUSEHOLD",
+    "c_comment": " platelets. regular deposits detect asymptotes. blithely unusual packages nag slyly at the fluf"
+  },
+  {
+    "c_custkey": 16,
+    "c_name": "Customer#000000016",
+    "c_address": "cYiaeMLZSMAOQ2 d0W,",
+    "c_nationkey": 10,
+    "c_phone": "20-781-609-3107",
+    "c_acctbal": 4681.03,
+    "c_mktsegment": "FURNITURE",
+    "c_comment": "kly silent courts. thinly regular theodolites sleep fluffily after "
+  },
+  {
+    "c_custkey": 17,
+    "c_name": "Customer#000000017",
+    "c_address": "izrh 6jdqtp2eqdtbkswDD8SG4SzXruMfIXyR7",
+    "c_nationkey": 2,
+    "c_phone": "12-970-682-3487",
+    "c_acctbal": 6.34,
+    "c_mktsegment": "AUTOMOBILE",
+    "c_comment": "packages wake! blithely even pint"
+  },
+  {
+    "c_custkey": 18,
+    "c_name": "Customer#000000018",
+    "c_address": "3txGO AiuFux3zT0Z9NYaFRnZt",
+    "c_nationkey": 6,
+    "c_phone": "16-155-215-1315",
+    "c_acctbal": 5494.43,
+    "c_mktsegment": "BUILDING",
+    "c_comment": "s sleep. carefully even instructions nag furiously alongside of t"
+  },
+  {
+    "c_custkey": 19,
+    "c_name": "Customer#000000019",
+    "c_address": "uc,3bHIx84H,wdrmLOjVsiqXCq2tr",
+    "c_nationkey": 18,
+    "c_phone": "28-396-526-5053",
+    "c_acctbal": 8914.71,
+    "c_mktsegment": "HOUSEHOLD",
+    "c_comment": " nag. furiously careful packages are slyly at the accounts. furiously regular in"
+  },
+  {
+    "c_custkey": 20,
+    "c_name": "Customer#000000020",
+    "c_address": "JrPk8Pqplj4Ne",
+    "c_nationkey": 22,
+    "c_phone": "32-957-234-8742",
+    "c_acctbal": 7603.40,
+    "c_mktsegment": "FURNITURE",
+    "c_comment": "g alongside of the special excuses-- fluffily enticing packages wake "
+  },
+  {
+    "c_custkey": 21,
+    "c_name": "Customer#000000021",
+    "c_address": "XYmVpr9yAHDEn",
+    "c_nationkey": 8,
+    "c_phone": "18-902-614-8344",
+    "c_acctbal": 1428.25,
+    "c_mktsegment": "MACHINERY",
+    "c_comment": " quickly final accounts integrate blithely furiously u"
+  },
+  {
+    "c_custkey": 22,
+    "c_name": "Customer#000000022",
+    "c_address": "QI6p41,FNs5k7RZoCCVPUTkUdYpB",
+    "c_nationkey": 3,
+    "c_phone": "13-806-545-9701",
+    "c_acctbal": 591.98,
+    "c_mktsegment": "MACHINERY",
+    "c_comment": "s nod furiously above the furiously ironic ideas. "
+  },
+  {
+    "c_custkey": 23,
+    "c_name": "Customer#000000023",
+    "c_address": "OdY W13N7Be3OC5MpgfmcYss0Wn6TKT",
+    "c_nationkey": 3,
+    "c_phone": "13-312-472-8245",
+    "c_acctbal": 3332.02,
+    "c_mktsegment": "HOUSEHOLD",
+    "c_comment": "deposits. special deposits cajole slyly. fluffily special deposits about the furiously "
+  },
+  {
+    "c_custkey": 24,
+    "c_name": "Customer#000000024",
+    "c_address": "HXAFgIAyjxtdqwimt13Y3OZO 4xeLe7U8PqG",
+    "c_nationkey": 13,
+    "c_phone": "23-127-851-8031",
+    "c_acctbal": 9255.67,
+    "c_mktsegment": "MACHINERY",
+    "c_comment": "into beans. fluffily final ideas haggle fluffily"
+  },
+  {
+    "c_custkey": 25,
+    "c_name": "Customer#000000025",
+    "c_address": "Hp8GyFQgGHFYSilH5tBfe",
+    "c_nationkey": 12,
+    "c_phone": "22-603-468-3533",
+    "c_acctbal": 7133.70,
+    "c_mktsegment": "FURNITURE",
+    "c_comment": "y. accounts sleep ruthlessly according to the regular theodolites. unusual instructions sleep. ironic, final"
+  }
+]

@@ -40,7 +40,7 @@ import eu.stratosphere.pact.common.type.NormalizableKey;
  * @see java.lang.String
  * @see java.lang.CharSequence
  */
-public class PactString implements Key, NormalizableKey, CharSequence, CopyableValue<PactString> {
+public class PactString implements Key, NormalizableKey, CharSequence, CopyableValue<PactString>, Appendable {
 	
 	private static final char[] EMPTY_STRING = new char[0];
 	
@@ -74,7 +74,7 @@ public class PactString implements Key, NormalizableKey, CharSequence, CopyableV
 	 * 
 	 * @param value The string containing the value for this PactString.
 	 */
-	public PactString(String value) {
+	public PactString(CharSequence value) {
 		this.value = EMPTY_STRING;
 		setValue(value);
 	}
@@ -139,7 +139,7 @@ public class PactString implements Key, NormalizableKey, CharSequence, CopyableV
 	 * 
 	 * @param value The new string value.
 	 */
-	public void setValue(String value) {
+	public void setValue(CharSequence value) {
 		if (value == null)
 			throw new NullPointerException("Value must not be null");
 		
@@ -185,6 +185,26 @@ public class PactString implements Key, NormalizableKey, CharSequence, CopyableV
 		ensureSize(len);
 		this.len = len;
 		System.arraycopy(value.value, offset, this.value, 0, len);
+		this.hashCode = 0;
+	}
+	
+	/**
+	 * Sets the value of the PactString to the given string.
+	 * 
+	 * @param value The new string value.
+	 * @param offset The position to start the substring.
+	 * @param len The length of the substring.
+	 */
+	public void setValue(final CharSequence value, int offset, int len)
+	{
+		if (value == null)
+			throw new NullPointerException("Value must not be null");
+
+		ensureSize(len);
+		this.len = len;		
+		for (int i = 0; i < len; i++) 
+			this.value[i] = value.charAt(offset + i);
+		this.len = len;
 		this.hashCode = 0;
 	}
 	
@@ -362,6 +382,61 @@ public class PactString implements Key, NormalizableKey, CharSequence, CopyableV
 		}
 		return -1;
 	}
+	
+	// --------------------------------------------------------------------------------------------
+		//                                    Appendable Methods
+		// --------------------------------------------------------------------------------------------
+		
+		/* (non-Javadoc)
+		 * @see java.lang.Appendable#append(char)
+		 */
+		@Override
+		public Appendable append(char c) {
+			grow(this.len + 1);
+			this.value[this.len++] = c;
+			return this;
+		}
+		
+		/* (non-Javadoc)
+		 * @see java.lang.Appendable#append(java.lang.CharSequence)
+		 */
+		@Override
+		public Appendable append(CharSequence csq) {
+			append(csq, 0, csq.length());
+			return this;
+		}
+		
+		/* (non-Javadoc)
+		 * @see java.lang.Appendable#append(java.lang.CharSequence, int, int)
+		 */
+		@Override
+		public Appendable append(CharSequence csq, int start, int end) {
+			final int otherLen = end - start;
+			grow(this.len + otherLen);
+			for (int pos = start; pos < otherLen; pos++) 
+				this.value[this.len + pos] = csq.charAt(pos);
+			this.len += otherLen;
+			return this;
+		}
+		
+		/* (non-Javadoc)
+		 * @see java.lang.Appendable#append(java.lang.CharSequence)
+		 */
+		public Appendable append(PactString csq) {
+			append(csq, 0, csq.length());
+			return this;
+		}
+		
+		/* (non-Javadoc)
+		 * @see java.lang.Appendable#append(java.lang.CharSequence, int, int)
+		 */
+		public Appendable append(PactString csq, int start, int end) {
+			final int otherLen = end - start;
+			grow(this.len + otherLen);
+			System.arraycopy(csq.value, start, this.value, this.len, otherLen);
+			this.len += otherLen;
+			return this;
+		}
 	
 	/**
 	 * Checks whether the substring, starting at the specified index, starts with the given prefix string.
@@ -651,6 +726,17 @@ public class PactString implements Key, NormalizableKey, CharSequence, CopyableV
 	private final void ensureSize(int size) {
 		if (this.value.length < size) {
 			this.value = new char[size];
+		}
+	}
+	
+	/**
+	 * Grow and retain content.
+	 */
+	private final void grow(int size) {
+		if (this.value.length < size) {
+			char[] value = new char[ Math.max(this.value.length * 3 / 2, size)];
+			System.arraycopy(this.value, 0, value, 0, this.len);
+			this.value = value;
 		}
 	}
 }

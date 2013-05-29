@@ -15,6 +15,13 @@
 	<name>nephele-common</name>
 
 	<packaging>jar</packaging>
+	<dependencies>
+	    <dependency>
+      <groupId>com.esotericsoftware.kryo</groupId>
+      <artifactId>kryo</artifactId>
+      <version>2.20</version>
+    </dependency>
+    </dependencies>
 
 	<build>
 		<plugins>

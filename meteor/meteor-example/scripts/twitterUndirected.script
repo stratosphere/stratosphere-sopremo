@@ -1,0 +1,9 @@
+$twitter = read from 'file:///Users/arv/Proggn/Uni/PhD/master/meteor/meteor-example/resources/twitter_25k.csv';
+
+$output = join $twitter1 in $twitter, $twitter2 in $twitter, $twitter3 in $twitter where
+	($twitter1.fk == $twitter2.k
+	and $twitter2.fk == $twitter3.fk
+	and $twitter3.k == $twitter1.k)
+	into sort([$twitter1.k, $twitter2.k, $twitter3.fk]);
+
+write $output to 'file:///Users/arv/Proggn/Uni/PhD/master/meteor/meteor-example/resources/twitter_result.csv';

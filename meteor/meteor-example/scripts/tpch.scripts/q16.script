@@ -1,0 +1,28 @@
+$s = read from 'file:///home/killer/workspace/private/meteor/meteor-example/resources/tpch.json/supplier.json';
+$p = read from 'file:///home/killer/workspace/private/meteor/meteor-example/resources/tpch.json/part.json';
+$ps = read from 'file:///home/killer/workspace/private/meteor/meteor-example/resources/tpch.json/partsupp.json';
+
+//normaly the where clause should be:  comment LIKE '%%Customer%%Complaints%%', but on testdata this clause would yield to an empty result
+$supplierWithComplaints = filter $s where $s.s_comment == 'ing waters. regular requests ar';
+$supplier = transform $a in $supplierWithComplaints into { $a.s_suppkey };
+
+$parts = filter $p where (($p.p_brand != 'Brand#45') and ($p.p_type != 'MEDIUM POLISHED') and
+	(
+	$p.p_size == 3 or
+	$p.p_size == 9 or
+	$p.p_size == 14 or
+	$p.p_size == 19 or
+	$p.p_size == 23 or
+	$p.p_size == 36 or
+	$p.p_size == 45 or
+	$p.p_size == 49
+	)
+);
+
+$partsupps = join $ps, $supplier where $ps.ps_suppkey == $supplier.s_suppkey into { $ps.* };
+$correctSupplier = substract $ps, $partsupps;
+
+$ungroupedResult = join $parts, $cs in $correctSupplier where $parts.p_partkey == $cs.ps_partkey into { $parts.p_brand, $parts.p_type, $parts.p_size, $cs.ps_suppkey };
+$result = group $ur in $ungroupedResult by [$ur.p_brand, $ur.p_type, $ur.p_size] into { $ur[0].p_brand, $ur[0].p_type, $ur[0].p_size, supplier_cnt: count($ur[*].ps_suppkey) };
+
+write $result to 'file:///home/killer/workspace/tpch/q16.result';
