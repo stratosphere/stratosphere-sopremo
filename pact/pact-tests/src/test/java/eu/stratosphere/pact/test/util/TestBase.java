@@ -48,10 +48,7 @@ import eu.stratosphere.pact.test.util.filesystem.FilesystemProvider;
 import eu.stratosphere.pact.test.util.minicluster.ClusterProvider;
 import eu.stratosphere.pact.test.util.minicluster.ClusterProviderPool;
 
-/**
- * @author Erik Nijkamp
- * @author Fabian Hueske
- */
+
 public abstract class TestBase {
 	
 	private static final int MINIMUM_HEAP_SIZE_MB = 192;
