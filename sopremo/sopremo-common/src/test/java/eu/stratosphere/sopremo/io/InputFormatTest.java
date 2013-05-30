@@ -23,8 +23,8 @@ import java.util.List;
 import org.junit.Ignore;
 
 import eu.stratosphere.nephele.configuration.Configuration;
-import eu.stratosphere.pact.common.io.FormatUtil;
 import eu.stratosphere.pact.common.type.PactRecord;
+import eu.stratosphere.pact.generic.io.FormatUtil;
 import eu.stratosphere.sopremo.EvaluationContext;
 import eu.stratosphere.sopremo.io.SopremoFileFormat.SopremoInputFormat;
 import eu.stratosphere.sopremo.pact.SopremoUtil;

@@ -15,14 +15,14 @@
 package eu.stratosphere.sopremo.client;
 
 import java.io.Closeable;
+import java.io.DataInput;
+import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
-
-import com.esotericsoftware.kryo.io.Input;
 
 import eu.stratosphere.nephele.configuration.Configuration;
 import eu.stratosphere.nephele.configuration.GlobalConfiguration;
@@ -215,7 +215,7 @@ public class DefaultClient implements Closeable {
 			progressListener.progressUpdate(ExecutionState.SETUP, "");
 			List<Path> libraryPaths = new ArrayList<Path>();
 			for (String library : requiredLibraries) {
-				final Input dis = new Input(new FileInputStream(library));
+				final DataInputStream dis = new DataInputStream(new FileInputStream(library));
 				final Path libraryPath = new Path(library);
 				LibraryCacheManager.addLibrary(dummyKey, libraryPath, (int) new File(library).length(), dis);
 				dis.close();

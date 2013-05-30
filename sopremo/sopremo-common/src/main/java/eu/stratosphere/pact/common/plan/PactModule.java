@@ -20,10 +20,11 @@ import java.util.Collection;
 import java.util.List;
 
 import eu.stratosphere.pact.generic.contract.Contract;
+import eu.stratosphere.pact.generic.io.FileInputFormat;
+import eu.stratosphere.pact.generic.io.SequentialInputFormat;
+import eu.stratosphere.pact.generic.io.SequentialOutputFormat;
 import eu.stratosphere.pact.common.contract.FileDataSink;
 import eu.stratosphere.pact.common.contract.FileDataSource;
-import eu.stratosphere.pact.common.io.SequentialInputFormat;
-import eu.stratosphere.pact.common.io.SequentialOutputFormat;
 import eu.stratosphere.pact.common.util.Visitable;
 import eu.stratosphere.pact.common.util.Visitor;
 import eu.stratosphere.util.dag.GraphModule;
@@ -51,10 +52,11 @@ public class PactModule extends GraphModule<Contract, FileDataSource, FileDataSi
 	 * @param numberOfOutputs
 	 *        the number of outputs.
 	 */
+	@SuppressWarnings("unchecked")
 	public PactModule(final int numberOfInputs, final int numberOfOutputs) {
 		super(numberOfInputs, numberOfOutputs, ContractNavigator.INSTANCE);
 		for (int index = 0; index < numberOfInputs; index++)
-			this.setInput(index, new FileDataSource(SequentialInputFormat.class, String.format("Source %d", index)));
+			this.setInput(index, new FileDataSource((Class<? extends FileInputFormat<?>>) SequentialInputFormat.class, String.format("Source %d", index)));
 		for (int index = 0; index < numberOfOutputs; index++)
 			this.setOutput(index, new FileDataSink(SequentialOutputFormat.class, String.format("Sink %d", index)));
 	}

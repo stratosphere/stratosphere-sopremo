@@ -6,12 +6,12 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>eu.stratosphere</groupId>
-	<artifactId>ozone</artifactId>
-	<version>0.2</version>
+	<artifactId>hll</artifactId>
+	<version>0.3</version>
 
-	<name>ozone</name>
+	<name>hll</name>
 	<packaging>pom</packaging>
-	<url>http://github.com/dimalabs/ozone</url>
+	<url>http://github.com/dimalabs/ozone-meteor</url>
 	<inceptionYear>2013</inceptionYear>
 
 	<licenses>
@@ -34,6 +34,11 @@
 	</pluginRepositories>
 
 	<dependencies>
+		<dependency>
+			<groupId>eu.stratosphere</groupId>
+			<artifactId>ozone</artifactId>
+			<version>0.2</version>
+		</dependency>
 	
 		<dependency>
 			<groupId>commons-logging</groupId>
@@ -348,8 +353,6 @@
 	</profiles>
 
 	<modules>
-		<module>nephele</module>
-		<module>pact</module>
 		<module>sopremo</module>
     	<module>meteor</module>
 		<module>stratosphere-dist</module>
