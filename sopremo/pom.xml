@@ -10,6 +10,7 @@
   <artifactId>sopremo</artifactId>
   <packaging>pom</packaging>
   <name>sopremo</name>
+  <version>0.3</version>
   <inceptionYear>2011</inceptionYear>
   <licenses>
     <license>
