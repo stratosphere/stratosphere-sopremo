@@ -20,6 +20,7 @@ import java.util.Collections;
 import java.util.List;
 
 import com.esotericsoftware.kryo.DefaultSerializer;
+import com.google.common.base.Function;
 
 import eu.stratosphere.sopremo.AbstractSopremoType;
 import eu.stratosphere.sopremo.ICloneable;
@@ -195,7 +196,7 @@ public abstract class EvaluationExpression extends AbstractSopremoType implement
 	 * @return the expression with the replaces
 	 */
 	public EvaluationExpression replace(final Predicate<? super EvaluationExpression> replacePredicate,
-			final TransformFunction replaceFunction) {
+			final Function<EvaluationExpression, EvaluationExpression> replaceFunction) {
 		return this.transformRecursively(new TransformFunction() {
 			@Override
 			public EvaluationExpression apply(final EvaluationExpression evaluationExpression) {

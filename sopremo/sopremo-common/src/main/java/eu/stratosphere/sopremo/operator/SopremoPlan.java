@@ -15,6 +15,9 @@ import eu.stratosphere.sopremo.CoreFunctions;
 import eu.stratosphere.sopremo.EvaluationContext;
 import eu.stratosphere.sopremo.ICloneable;
 import eu.stratosphere.sopremo.io.Sink;
+import eu.stratosphere.sopremo.packages.EvaluationScope;
+import eu.stratosphere.sopremo.packages.IConstantRegistry;
+import eu.stratosphere.sopremo.packages.IFunctionRegistry;
 import eu.stratosphere.sopremo.serialization.NaiveSchemaFactory;
 import eu.stratosphere.sopremo.serialization.Schema;
 import eu.stratosphere.sopremo.serialization.SchemaFactory;
@@ -24,7 +27,7 @@ import eu.stratosphere.sopremo.serialization.SchemaFactory;
  * 
  * @author Arvid Heise
  */
-public class SopremoPlan extends AbstractSopremoType implements ICloneable, Serializable {
+public class SopremoPlan extends AbstractSopremoType implements ICloneable, Serializable, EvaluationScope {
 	
 	private static final long serialVersionUID = 5702832506916907827L;
 
@@ -177,5 +180,21 @@ public class SopremoPlan extends AbstractSopremoType implements ICloneable, Seri
 
 	public List<Operator<?>> getUnmatchingOperators(final SopremoPlan other) {
 		return this.module.getUnmatchingNodes(other.module);
+	}
+
+	/* (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.packages.EvaluationScope#getConstantRegistry()
+	 */
+	@Override
+	public IConstantRegistry getConstantRegistry() {
+		return this.context.getConstantRegistry();
+	}
+
+	/* (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.packages.EvaluationScope#getFunctionRegistry()
+	 */
+	@Override
+	public IFunctionRegistry getFunctionRegistry() {
+		return this.context.getFunctionRegistry();
 	}
 }

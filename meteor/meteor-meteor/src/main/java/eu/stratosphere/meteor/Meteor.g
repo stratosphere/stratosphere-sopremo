@@ -63,7 +63,7 @@ script
 statement
 	:	(assignment | operator | packageImport | functionDefinition | javaudf
 // configuration function call 
-	| m=methodCall[null] { $m.tree.evaluate(MissingNode.getInstance()); }) ->;
+	| m=functionCall { $m.tree.evaluate(MissingNode.getInstance()); }) ->;
 	
 packageImport
   :  'using' packageName=ID { getPackageManager().importPackage($packageName.text); } 
@@ -171,32 +171,41 @@ contextAwarePathExpression[EvaluationExpression context]
   : pathExpression[context];
   
 pathExpression[EvaluationExpression inExp]
-  : seg=pathSegment { ((PathSegmentExpression) seg.getTree()).setInputExpression(inExp); }
-  ((pathSegment)=> path=pathExpression[$seg.tree] -> $path
-   | -> $seg);
+  : // safe method call 
+    ('?.' ID '(')=> '?.' call=methodCall[inExp]
+      ((pathSegment)=> path=pathExpression[new TernaryExpression(new NotNullOrMissingBooleanExpression().withInputExpression(inExp), $call.tree)]-> $path | 
+       -> ^(EXPRESSION["TernaryExpression"] {new NotNullOrMissingBooleanExpression().withInputExpression(inExp)} $call {inExp}))
+    // normal method call 
+  | ('.' ID '(')=> '.' call=methodCall[inExp]
+      ((pathSegment)=> path=pathExpression[$call.tree]-> $path | -> $call)
+    // normal path expression    
+  | seg=pathSegment { ((PathSegmentExpression) seg.getTree()).setInputExpression(inExp); }
+    ((pathSegment)=> path=pathExpression[$seg.tree] -> $path | -> $seg);
+  catch [NoViableAltException re] { explainUsage("in a path expression only .field, ?.field, [...], and .method(...) are allowed", re); }
 
 pathSegment
 @init {  paraphrase.push("a path expression"); }
 @after { paraphrase.pop(); }
   : // add .field or [index] to path
-    ('?.')=> '?.' field=ID -> ^(EXPRESSION["ObjectAccess"] {$field.text} {true})    
+    ('?.')=> '?.' field=ID -> ^(EXPRESSION["TernaryExpression"] ^(EXPRESSION["NotNullOrMissingBooleanExpression"]) ^(EXPRESSION["ObjectAccess"] {$field.text} {EvaluationExpression.VALUE}))  
   | ('.') => '.' field=ID -> ^(EXPRESSION["ObjectAccess"] {$field.text})    
   | ('[') => arrayAccess;
-//    ( (pathSegment[EvaluationExpression.VALUE])=> pathSegment[$lastStep] | -> { lastStep });
 
 arrayAccess
-  : '[' STAR ']' path=pathExpression[EvaluationExpression.VALUE]
-  -> ^(EXPRESSION["ArrayProjection"] $path)  
+  : '[' STAR ']' (('.' methodCall[null])=> '.' call=methodCall[EvaluationExpression.VALUE]
+	  -> ^(EXPRESSION["ArrayProjection"] $call)
+	  | path=pathSegment
+	  -> ^(EXPRESSION["ArrayProjection"] $path)) 
   | '[' (pos=INTEGER | pos=UINT) ']' 
   -> ^(EXPRESSION["ArrayAccess"] { Integer.valueOf($pos.text) })
   | '[' (start=INTEGER | start=UINT) ':' (end=INTEGER | end=UINT) ']' 
   -> ^(EXPRESSION["ArrayAccess"] { Integer.valueOf($start.text) } { Integer.valueOf($end.text) });
   
 valueExpression
-	:	(ID '(')=> methodCall[null]
+	:	(ID '(')=> functionCall
 	| parenthesesExpression 
 	| literal 
-	| (VAR '[' VAR)=> streamIndexAccess
+  | (VAR '[' VAR)=> streamIndexAccess
 	| VAR -> { getInputSelection($VAR) }
   | ((ID ':')=> packageName=ID ':')? constant=ID { getScope($packageName.text).getConstantRegistry().get($constant.text) != null }? => 
     -> { getScope($packageName.text).getConstantRegistry().get($constant.text) }  
@@ -205,7 +214,7 @@ valueExpression
 	
 operatorExpression
 	:	op=operator -> ^(EXPRESSION["NestedOperatorExpression"] { $op.op });
-		
+
 parenthesesExpression
 	:	('(' expression ')') -> expression;
 
@@ -213,10 +222,13 @@ methodCall [EvaluationExpression targetExpr]
 @init { List<EvaluationExpression> params = new ArrayList();
         paraphrase.push("a method call"); }
 @after { paraphrase.pop(); }
-	:	(packageName=ID ':')? name=ID '('	
-	((param=expression { params.add($param.tree); } | func=lowerOrderFunction { params.add($func.tree); }) 
-	(',' (param=expression { params.add($param.tree); } | func=lowerOrderFunction { params.add($func.tree); }))*)? 
-	')' -> { createCheckedMethodCall($packageName.text, $name, $targetExpr, params.toArray(new EvaluationExpression[params.size()])) };
+  : (packageName=ID ':')? name=ID '(' 
+  ((param=expression { params.add($param.tree); } | func=lowerOrderFunction { params.add($func.tree); }) 
+  (',' (param=expression { params.add($param.tree); } | func=lowerOrderFunction { params.add($func.tree); }))*)? 
+  ')' -> { createCheckedMethodCall($packageName.text, $name, $targetExpr, params.toArray(new EvaluationExpression[params.size()])) };
+  
+functionCall
+	:	methodCall[null];
 	
 lowerOrderFunction
   : '&' (packageName=ID ':')? name=ID 
@@ -433,7 +445,7 @@ fragment APOSTROPHE
 fragment QUOTATION
   : '\"';
     
-WS 	:	(' '|'\t'|'\n'|'\r')+ { skip(); };
+WS 	:	(' '|'\t'|'\n'|'\r'|' ')+ { skip(); };
     
 STRING
 	:	(QUOTATION (options {greedy=false;} : .)* QUOTATION | APOSTROPHE (options {greedy=false;} : .)* APOSTROPHE)

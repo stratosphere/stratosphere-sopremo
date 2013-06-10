@@ -58,7 +58,7 @@ public class TernaryExpression extends EvaluationExpression {
 	 *        the expression that should be evaluated if the iFClause evaluation results in {@link BooleanNode.TRUE}
 	 */
 	public TernaryExpression(final EvaluationExpression ifClause, final EvaluationExpression ifExpression) {
-		this(ifClause, ifExpression, ConstantExpression.MISSING);
+		this(ifClause, ifExpression, ifClause);
 	}
 
 	/**

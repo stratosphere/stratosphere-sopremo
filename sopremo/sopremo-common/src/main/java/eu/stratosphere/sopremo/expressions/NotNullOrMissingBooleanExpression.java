@@ -1,6 +1,6 @@
 /***********************************************************************************************************************
  *
- * Copyright (C) 2010-2013 by the Stratosphere project (http://stratosphere.eu)
+ * Copyright (C) 2010 by the Stratosphere project (http://stratosphere.eu)
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -12,18 +12,24 @@
  * specific language governing permissions and limitations under the License.
  *
  **********************************************************************************************************************/
-package eu.stratosphere.sopremo;
+package eu.stratosphere.sopremo.expressions;
 
-import java.io.IOException;
-import java.io.Serializable;
+import eu.stratosphere.sopremo.type.BooleanNode;
+import eu.stratosphere.sopremo.type.IJsonNode;
+import eu.stratosphere.sopremo.type.MissingNode;
+import eu.stratosphere.sopremo.type.NullNode;
 
 /**
- * Interface for all types.
- * 
- * @author Arvid Heise
+ * @author arv
  */
-public interface ISopremoType extends ICloneable {
-	public void appendAsString(Appendable appendable) throws IOException;
+public class NotNullOrMissingBooleanExpression extends PathSegmentExpression {
+	/* (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.expressions.PathSegmentExpression#evaluateSegment(eu.stratosphere.sopremo.type.IJsonNode)
+	 */
+	@Override
+	protected IJsonNode evaluateSegment(IJsonNode node) {
+		return node != NullNode.getInstance() && node != MissingNode.getInstance() ? BooleanNode.TRUE
+			: BooleanNode.FALSE;
+	}
 
-	public void copyPropertiesFrom(ISopremoType original);
 }

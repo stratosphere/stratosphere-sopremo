@@ -33,8 +33,6 @@ public class ObjectAccess extends PathSegmentExpression {
 
 	private final String field;
 
-	private final boolean safeDereference;
-
 	/**
 	 * Initializes ObjectAccess with the given field name.
 	 * 
@@ -42,28 +40,14 @@ public class ObjectAccess extends PathSegmentExpression {
 	 *        the name of the field
 	 */
 	public ObjectAccess(final String field) {
-		this(field, false);
-	}
-
-	/**
-	 * Initializes ObjectAccess with the given field name and the given safeDereference flag.
-	 * 
-	 * @param field
-	 *        the name of the field
-	 * @param safeDereference
-	 *        determines either 'null' representing nodes should be evaluated or not
-	 */
-	public ObjectAccess(final String field, final boolean safeDereference) {
 		this.field = field;
-		this.safeDereference = safeDereference;
 	}
-
+	
 	/**
 	 * Initializes ObjectAccess.
 	 */
 	ObjectAccess() {
 		this.field = null;
-		this.safeDereference = false;
 	}
 
 	@Override
@@ -97,12 +81,7 @@ public class ObjectAccess extends PathSegmentExpression {
 	@Override
 	protected IJsonNode evaluateSegment(final IJsonNode node) {
 		if (!node.isObject()) {
-			if (node.isNull() && this.safeDereference)
-				return node;
-
 			return MissingNode.getInstance();
-			// throw new EvaluationException(String.format("Cannot access field %s of non-object %s", this.field, node
-			// .getClass().getSimpleName()));
 		}
 		final IJsonNode value = ((IObjectNode) node).get(this.field);
 		return value == null ? NullNode.getInstance() : value;

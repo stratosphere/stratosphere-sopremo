@@ -196,7 +196,7 @@ public class SopremoModule extends GraphModule<Operator<?>, Source, Sink> implem
 	@Override
 	public void appendAsString(Appendable appendable) throws IOException {
 		final GraphPrinter<Operator<?>> graphPrinter = new GraphPrinter<Operator<?>>();
-		graphPrinter.setWidth(40);
+		graphPrinter.setWidth(80);
 		graphPrinter.print(appendable, this.getAllOutputs(), OperatorNavigator.INSTANCE);
 	}
 

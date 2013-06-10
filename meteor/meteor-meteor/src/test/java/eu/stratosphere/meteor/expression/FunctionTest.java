@@ -22,6 +22,7 @@ import eu.stratosphere.meteor.MeteorTest;
 import eu.stratosphere.sopremo.base.Projection;
 import eu.stratosphere.sopremo.expressions.ArithmeticExpression;
 import eu.stratosphere.sopremo.expressions.ArithmeticExpression.ArithmeticOperator;
+import eu.stratosphere.sopremo.expressions.ConstantExpression;
 import eu.stratosphere.sopremo.expressions.FunctionCall;
 import eu.stratosphere.sopremo.expressions.InputSelection;
 import eu.stratosphere.sopremo.expressions.ObjectCreation;
@@ -81,6 +82,27 @@ public class FunctionTest extends MeteorTest {
 		Assert.assertEquals("unexpectedPlan", expectedPlan, actualPlan);
 	}
 
+	@Test
+	public void testFunctionInvocationWithConstants() {
+		final SopremoPlan actualPlan = this.parseScript("mul = fn(x, y) x * y;\n" +
+			"$input = read from 'file://input.json';\n" +
+			"$result = transform $input into { mul: mul($input, 2) };\n" +
+			"write $result to 'file://output.json'; ");
+
+		final SopremoPlan expectedPlan = new SopremoPlan();
+		final Source input = new Source("file://input.json");
+		final Projection projection = new Projection().
+			withInputs(input).
+			withResultProjection(new ObjectCreation(
+				new ObjectCreation.FieldAssignment("mul",
+					new ArithmeticExpression(new InputSelection(0), ArithmeticOperator.MULTIPLICATION,
+						new ConstantExpression(2)))));
+		final Sink sink = new Sink("file://output.json").withInputs(projection);
+		expectedPlan.setSinks(sink);
+
+		Assert.assertEquals("unexpectedPlan", expectedPlan, actualPlan);
+	}
+	
 	public static IJsonNode udfTest(final IJsonNode... nodes) {
 		return nodes[0];
 	}

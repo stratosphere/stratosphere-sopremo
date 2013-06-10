@@ -33,6 +33,8 @@ import eu.stratosphere.sopremo.SopremoRuntime;
 import eu.stratosphere.sopremo.expressions.CoerceExpression;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
 import eu.stratosphere.sopremo.expressions.FunctionCall;
+import eu.stratosphere.sopremo.expressions.InputSelection;
+import eu.stratosphere.sopremo.expressions.TransformFunction;
 import eu.stratosphere.sopremo.function.Callable;
 import eu.stratosphere.sopremo.function.ExpressionFunction;
 import eu.stratosphere.sopremo.function.Inlineable;
@@ -49,6 +51,7 @@ import eu.stratosphere.sopremo.pact.SopremoUtil;
 import eu.stratosphere.sopremo.query.ConfObjectInfo.ConfObjectIndexedPropertyInfo;
 import eu.stratosphere.sopremo.query.ConfObjectInfo.ConfObjectPropertyInfo;
 import eu.stratosphere.sopremo.type.IJsonNode;
+import eu.stratosphere.util.IsInstancePredicate;
 
 public abstract class AbstractQueryParser extends Parser implements ParsingScope {
 	/**
@@ -172,20 +175,26 @@ public abstract class AbstractQueryParser extends Parser implements ParsingScope
 		Callable<?, ?> callable = functionRegistry.get(name.getText());
 		if (callable == null)
 			throw new RecognitionExceptionWithUsageHint(name, String.format(
-				"Unknown operator %s; possible alternatives %s", name,
+				"Unknown function %s; possible alternatives %s", name,
 				this.inputSuggestion.suggest(name.getText(), functionRegistry.keySet())));
 		if (callable instanceof MacroBase)
 			return ((MacroBase) callable).call(params);
-		if (callable instanceof Inlineable)
-			return ((Inlineable) callable).getDefinition();
 		if (!(callable instanceof SopremoFunction))
 			throw new QueryParserException(String.format("Unknown callable %s", callable));
-		if (object != null) {
-			ObjectArrayList<EvaluationExpression> paramList = ObjectArrayList.wrap(params);
+		
+		final ObjectArrayList<EvaluationExpression> paramList = ObjectArrayList.wrap(params);
+		if (object != null) 
 			paramList.add(0, object);
-			params = paramList.elements();
-		}
-		return new FunctionCall(name.getText(), (SopremoFunction) callable, params);
+		
+		if (callable instanceof Inlineable)
+			return ((Inlineable) callable).getDefinition().clone().replace(new IsInstancePredicate(InputSelection.class),
+				new TransformFunction() {
+					@Override
+					public EvaluationExpression apply(EvaluationExpression in) {
+						return paramList.get(((InputSelection) in).getIndex());
+					}
+				});
+		return new FunctionCall(name.getText(), (SopremoFunction) callable, paramList.elements());
 	}
 
 	protected SopremoFunction getSopremoFunction(String packageName, Token name) {
@@ -257,7 +266,8 @@ public abstract class AbstractQueryParser extends Parser implements ParsingScope
 			try {
 				URI uri = new URI(filePath);
 				if (uri.getScheme() == null)
-					return new Path(SopremoRuntime.getInstance().getCurrentEvaluationContext().getWorkingPath(), filePath)
+					return new Path(SopremoRuntime.getInstance().getCurrentEvaluationContext().getWorkingPath(),
+						filePath)
 						.toString();
 				return new Path(uri).toString();
 			} catch (URISyntaxException e) {

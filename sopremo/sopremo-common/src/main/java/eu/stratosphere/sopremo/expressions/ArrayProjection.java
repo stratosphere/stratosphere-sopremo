@@ -102,6 +102,28 @@ public class ArrayProjection extends PathSegmentExpression {
 		});
 	}
 
+	
+	
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result + this.projection.hashCode();
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		ArrayProjection other = (ArrayProjection) obj;
+		return this.projection.equals(other.projection);
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * @see
