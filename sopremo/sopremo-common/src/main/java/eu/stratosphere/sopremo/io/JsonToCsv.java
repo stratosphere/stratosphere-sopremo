@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Map.Entry;
 
 import eu.stratosphere.nephele.configuration.Configuration;
-import eu.stratosphere.pact.generic.contract.Contract;
 import eu.stratosphere.pact.common.contract.FileDataSink;
 import eu.stratosphere.pact.common.contract.MapContract;
 import eu.stratosphere.pact.common.io.DelimitedOutputFormat;
@@ -31,6 +30,7 @@ import eu.stratosphere.pact.common.stubs.Collector;
 import eu.stratosphere.pact.common.stubs.MapStub;
 import eu.stratosphere.pact.common.type.PactRecord;
 import eu.stratosphere.pact.common.type.base.PactString;
+import eu.stratosphere.pact.generic.contract.Contract;
 import eu.stratosphere.sopremo.EvaluationContext;
 import eu.stratosphere.sopremo.expressions.ArrayAccess;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;

@@ -44,7 +44,7 @@ public interface IObjectNode extends IJsonNode, Iterable<Entry<String, IJsonNode
 	 *        the String where the binded {@link IJsonNode} should be returned for
 	 * @return the binded node
 	 */
-	public abstract IJsonNode get(final String fieldName);
+	public abstract <T extends IJsonNode> T get(final String fieldName);
 
 	/**
 	 * Removes the binding for the given String

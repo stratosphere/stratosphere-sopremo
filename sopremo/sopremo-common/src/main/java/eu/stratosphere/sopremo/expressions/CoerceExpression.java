@@ -77,19 +77,23 @@ public class CoerceExpression extends PathSegmentExpression {
 		}
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.expressions.PathSegmentExpression#segmentHashCode()
+	 */
 	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = super.hashCode();
-		result = prime * result + this.targetType.hashCode();
-		return result;
+	protected int segmentHashCode() {
+		return this.targetType.hashCode();
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see
+	 * eu.stratosphere.sopremo.expressions.PathSegmentExpression#equalsSameClass(eu.stratosphere.sopremo.expressions
+	 * .PathSegmentExpression)
+	 */
 	@Override
-	public boolean equals(final Object obj) {
-		if (!super.equals(obj))
-			return false;
-		final CoerceExpression other = (CoerceExpression) obj;
-		return this.targetType == other.targetType;
+	public boolean equalsSameClass(PathSegmentExpression other) {
+		return this.targetType.equals(((CoerceExpression) other).targetType);
 	}
 }

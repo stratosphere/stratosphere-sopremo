@@ -9,8 +9,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import com.esotericsoftware.kryo.Kryo;
-
 import eu.stratosphere.sopremo.EvaluationContext;
 import eu.stratosphere.sopremo.ISopremoType;
 import eu.stratosphere.sopremo.io.Sink;
@@ -170,8 +168,7 @@ public class SopremoModule extends GraphModule<Operator<?>, Source, Sink> implem
 	 * (non-Javadoc)
 	 * @see eu.stratosphere.sopremo.ISopremoType#copyPropertiesFrom(eu.stratosphere.sopremo.ISopremoType)
 	 */
-	@Override
-	public void copyPropertiesFrom(ISopremoType original) {
+	protected void copyPropertiesFrom(ISopremoType original) {
 		SopremoModule module = (SopremoModule) original;
 		// this is currently not a deep clone
 		for (int index = 0; index < module.getNumInputs(); index++)

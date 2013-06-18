@@ -1,6 +1,5 @@
 package eu.stratosphere.util.reflect;
 
-import java.io.Serializable;
 import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Member;
@@ -24,7 +23,7 @@ import com.esotericsoftware.kryo.io.Output;
 import eu.stratosphere.sopremo.EvaluationException;
 
 public abstract class DynamicInvokable<MemberType extends Member, DeclaringType, ReturnType> implements
-		KryoSerializable, KryoCopyable<DynamicInvokable<MemberType, DeclaringType, ReturnType>>, Serializable {
+		KryoSerializable, KryoCopyable<DynamicInvokable<MemberType, DeclaringType, ReturnType>> {
 
 	public static final Log LOG = LogFactory.getLog(DynamicInvokable.class);
 

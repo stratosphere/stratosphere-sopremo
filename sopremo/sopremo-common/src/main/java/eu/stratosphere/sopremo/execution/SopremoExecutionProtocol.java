@@ -43,5 +43,5 @@ public interface SopremoExecutionProtocol extends LibraryTransferProtocol, RPCPr
 	 */
 	ExecutionResponse getState(SopremoID jobId) throws IOException, InterruptedException;
 	
-	String getMetaData (SopremoID jobId, String key) throws IOException, InterruptedException;
+	Object getMetaData (SopremoID jobId, String key) throws IOException, InterruptedException;
 }

@@ -118,6 +118,7 @@ public class ComparativeExpression extends BinaryBooleanExpression {
 	 * 
 	 * @return the first expression
 	 */
+	@Override
 	public EvaluationExpression getExpr1() {
 		return this.expr1;
 	}
@@ -127,6 +128,7 @@ public class ComparativeExpression extends BinaryBooleanExpression {
 	 * 
 	 * @return the second expression
 	 */
+	@Override
 	public EvaluationExpression getExpr2() {
 		return this.expr2;
 	}

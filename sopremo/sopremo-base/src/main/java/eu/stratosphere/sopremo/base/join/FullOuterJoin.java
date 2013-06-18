@@ -1,7 +1,5 @@
 package eu.stratosphere.sopremo.base.join;
 
-import java.util.ArrayList;
-
 import eu.stratosphere.sopremo.pact.JsonCollector;
 import eu.stratosphere.sopremo.pact.SopremoCoGroup;
 import eu.stratosphere.sopremo.type.ArrayNode;
@@ -9,7 +7,7 @@ import eu.stratosphere.sopremo.type.CachingArrayNode;
 import eu.stratosphere.sopremo.type.IArrayNode;
 import eu.stratosphere.sopremo.type.IJsonNode;
 import eu.stratosphere.sopremo.type.IStreamNode;
-import eu.stratosphere.sopremo.type.NullNode;
+import eu.stratosphere.sopremo.type.MissingNode;
 
 public class FullOuterJoin extends TwoSourceJoinBase<FullOuterJoin> {
 	public static class Implementation extends SopremoCoGroup {
@@ -17,7 +15,7 @@ public class FullOuterJoin extends TwoSourceJoinBase<FullOuterJoin> {
 
 
 		protected  void leftOuterJoin(IArrayNode<IJsonNode> result, IStreamNode<IJsonNode> values2, JsonCollector out) {
-			result.set(1, NullNode.getInstance());
+			result.set(1, MissingNode.getInstance());
 			for (final IJsonNode value : values2) {
 				result.set(0, value);
 				out.collect(result);
@@ -25,7 +23,7 @@ public class FullOuterJoin extends TwoSourceJoinBase<FullOuterJoin> {
 		}
 
 		protected  void rightOuterJoin(IArrayNode<IJsonNode> result, IStreamNode<IJsonNode> values2, JsonCollector out) {
-			result.set(0, NullNode.getInstance());
+			result.set(0, MissingNode.getInstance());
 			for (final IJsonNode value : values2) {
 				result.set(1, value);
 				out.collect(result);

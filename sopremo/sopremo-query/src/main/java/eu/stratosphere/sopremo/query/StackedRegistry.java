@@ -8,7 +8,6 @@ import java.util.Set;
 import eu.stratosphere.sopremo.AbstractSopremoType;
 import eu.stratosphere.sopremo.ISopremoType;
 import eu.stratosphere.sopremo.packages.IRegistry;
-import eu.stratosphere.sopremo.pact.SopremoUtil;
 
 public class StackedRegistry<T extends ISopremoType, R extends IRegistry<T>> extends AbstractSopremoType
 		implements IRegistry<T> {
@@ -51,18 +50,6 @@ public class StackedRegistry<T extends ISopremoType, R extends IRegistry<T>> ext
 		for (R registry : this.registryStack)
 			keys.addAll(registry.keySet());
 		return keys;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.AbstractSopremoType#copyPropertiesFrom(eu.stratosphere.sopremo.AbstractSopremoType)
-	 */
-	@SuppressWarnings("unchecked")
-	@Override
-	public void copyPropertiesFrom(ISopremoType original) {
-		super.copyPropertiesFrom(original);
-		final LinkedList<R> stack = ((StackedRegistry<T, R>) original).registryStack;
-		this.registryStack.addAll(SopremoUtil.deepClone(stack.subList(1, stack.size())));
 	}
 
 	@Override

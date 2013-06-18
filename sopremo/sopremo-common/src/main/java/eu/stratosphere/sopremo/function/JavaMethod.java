@@ -18,7 +18,6 @@ import java.lang.reflect.Method;
 import java.util.Collection;
 
 import eu.stratosphere.sopremo.EvaluationException;
-import eu.stratosphere.sopremo.ISopremoType;
 import eu.stratosphere.sopremo.cache.ArrayCache;
 import eu.stratosphere.sopremo.type.IArrayNode;
 import eu.stratosphere.sopremo.type.IJsonNode;
@@ -64,18 +63,6 @@ public class JavaMethod extends SopremoFunction {
 		} catch (Throwable e) {
 			throw new EvaluationException(e);
 		}
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.AbstractSopremoType#copyPropertiesFrom(eu.stratosphere.sopremo.AbstractSopremoType)
-	 */
-	@Override
-	public void copyPropertiesFrom(ISopremoType original) {
-		super.copyPropertiesFrom(original);
-		DynamicMethod<?> method = ((JavaMethod) original).method;
-		for (Signature signature : method.getSignatures())
-			this.addSignature(method.getMethod(signature));
 	}
 
 	@Override

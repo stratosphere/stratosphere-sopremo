@@ -5,7 +5,6 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Iterator;
 
-import eu.stratosphere.sopremo.ISopremoType;
 import eu.stratosphere.sopremo.type.AbstractArrayNode;
 import eu.stratosphere.sopremo.type.IArrayNode;
 import eu.stratosphere.sopremo.type.IJsonNode;
@@ -276,15 +275,6 @@ final class LazyTailArrayNode extends AbstractArrayNode<IJsonNode> {
 	@Override
 	public void copyNormalizedKey(final byte[] target, final int offset, final int len) {
 		throw new UnsupportedOperationException("Use other ArrayNode<IJsonNode>  Implementation instead");
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.type.AbstractJsonNode#copyPropertiesFrom(eu.stratosphere.sopremo.ISopremoType)
-	 */
-	@Override
-	public void copyPropertiesFrom(ISopremoType original) {
-		this.record = (SopremoRecord) ((LazyTailArrayNode) original).record.clone();
 	}
 
 }

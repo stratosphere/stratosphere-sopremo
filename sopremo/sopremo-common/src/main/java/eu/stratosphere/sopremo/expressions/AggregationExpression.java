@@ -64,20 +64,24 @@ public class AggregationExpression extends PathSegmentExpression {
 		return this.aggregation;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see
+	 * eu.stratosphere.sopremo.expressions.PathSegmentExpression#equalsSameClass(eu.stratosphere.sopremo.expressions
+	 * .PathSegmentExpression)
+	 */
 	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = super.hashCode();
-		result = prime * result + this.aggregation.hashCode();
-		return result;
+	public boolean equalsSameClass(PathSegmentExpression other) {
+		return this.aggregation.equals(((AggregationExpression) other).aggregation);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.expressions.PathSegmentExpression#segmentHashCode()
+	 */
 	@Override
-	public boolean equals(final Object obj) {
-		if (!super.equals(obj))
-			return false;
-		final AggregationExpression other = (AggregationExpression) obj;
-		return this.aggregation.equals(other.aggregation);
+	protected int segmentHashCode() {
+		return this.aggregation.hashCode();
 	}
 
 	/*

@@ -17,8 +17,8 @@ package eu.stratosphere.sopremo.server;
 import java.io.Closeable;
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
@@ -52,7 +52,7 @@ import eu.stratosphere.sopremo.execution.SopremoID;
  * @author Arvid Heise
  */
 public class SopremoServer implements SopremoExecutionProtocol, Closeable {
-	
+
 	private RPCService rpcService;
 
 	private Configuration configuration;
@@ -61,8 +61,7 @@ public class SopremoServer implements SopremoExecutionProtocol, Closeable {
 
 	private ScheduledExecutorService executorService = createExecutor();
 
-	private Map<SopremoID, SopremoJobInfo> meteorInfo =
-		new ConcurrentHashMap<SopremoID, SopremoJobInfo>();
+	private Map<SopremoID, SopremoJobInfo> jobInfo = new HashMap<SopremoID, SopremoJobInfo>();
 
 	private boolean stopped = false;
 
@@ -102,7 +101,7 @@ public class SopremoServer implements SopremoExecutionProtocol, Closeable {
 		SopremoID jobId = SopremoID.generate();
 		LOG.info("Receive execution request for job " + jobId);
 		final SopremoJobInfo info = new SopremoJobInfo(jobId, request, this.configuration);
-		this.meteorInfo.put(jobId, info);
+		this.jobInfo.put(jobId, info);
 		if (request.getQuery() == null)
 			info.setStatusAndDetail(ExecutionState.ERROR, "No plan submitted");
 		else if (request.getMode() == null)
@@ -148,13 +147,10 @@ public class SopremoServer implements SopremoExecutionProtocol, Closeable {
 	 */
 	@Override
 	public ExecutionResponse getState(SopremoID jobId) {
-		System.out.println("returning state for job " + jobId.toString());
-		final SopremoJobInfo info = this.meteorInfo.get(jobId);
+		final SopremoJobInfo info = this.jobInfo.get(jobId);
 		if (info == null) {
-			System.out.println("unkown job " + jobId.toString());
 			return new ExecutionResponse(jobId, ExecutionState.ERROR, "Unknown job");
 		}
-		System.out.println("returning response " + jobId.toString());
 		return new ExecutionResponse(jobId, info.getStatus(), info.getDetail());
 	}
 
@@ -267,10 +263,10 @@ public class SopremoServer implements SopremoExecutionProtocol, Closeable {
 
 		sopremoServer.close();
 	}
-	
+
 	@Override
-	public String getMetaData(SopremoID jobId, String key) {
-		return meteorInfo.get(jobId).getMetaData(key);
+	public Object getMetaData(SopremoID jobId, String key) {
+		return this.jobInfo.get(jobId).getMetaData(key);
 	}
 
 }

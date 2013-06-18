@@ -1,7 +1,5 @@
 package eu.stratosphere.sopremo.operator;
 
-import java.beans.IndexedPropertyDescriptor;
-import java.beans.PropertyDescriptor;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.AbstractList;
@@ -15,10 +13,8 @@ import javolution.text.TypeFormat;
 import eu.stratosphere.pact.common.plan.PactModule;
 import eu.stratosphere.sopremo.AbstractSopremoType;
 import eu.stratosphere.sopremo.EvaluationContext;
-import eu.stratosphere.sopremo.ICloneable;
 import eu.stratosphere.sopremo.ISopremoType;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
-import eu.stratosphere.sopremo.pact.SopremoUtil;
 import eu.stratosphere.util.CollectionUtil;
 import eu.stratosphere.util.reflect.ReflectUtil;
 
@@ -35,7 +31,9 @@ import eu.stratosphere.util.reflect.ReflectUtil;
 public abstract class Operator<Self extends Operator<Self>> extends ConfigurableSopremoType implements
 		ISopremoType, JsonStream, Cloneable {
 
-	public final static List<EvaluationExpression> ALL_KEYS = Collections.singletonList(EvaluationExpression.VALUE);
+	public final static List<? extends EvaluationExpression> ALL_KEYS = Collections.singletonList(EvaluationExpression.VALUE);
+	
+	public final static int STANDARD_DEGREE_OF_PARALLELISM = 1;
 
 	private List<JsonStream> inputs = new ArrayList<JsonStream>();
 
@@ -45,7 +43,7 @@ public abstract class Operator<Self extends Operator<Self>> extends Configurable
 
 	private int minInputs, maxInputs, minOutputs, maxOutputs;
 
-	private int degreeOfParallelism = 1;
+	private int degreeOfParallelism = STANDARD_DEGREE_OF_PARALLELISM;
 
 	/**
 	 * Initializes the Operator with the annotations.
@@ -95,44 +93,6 @@ public abstract class Operator<Self extends Operator<Self>> extends Configurable
 	@Override
 	public Operator<Self> clone() {
 		return (Operator<Self>) super.clone();
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.AbstractSopremoType#copyPropertiesFrom(eu.stratosphere.sopremo.AbstractSopremoType)
-	 */
-	@Override
-	public void copyPropertiesFrom(ISopremoType original) {
-		super.copyPropertiesFrom(original);
-		@SuppressWarnings("unchecked")
-		Self op = (Self) original;
-		this.setNumberOfInputs(op.getMinInputs(), op.getMaxInputs());
-		this.setNumberOfOutputs(op.getMinOutputs(), op.getMaxOutputs());
-
-		final Info info = this.getBeanInfo();
-		for (PropertyDescriptor prop : info.getPropertyDescriptors())
-			try {
-				if (prop instanceof IndexedPropertyDescriptor) {
-					IndexedPropertyDescriptor indexedProp = (IndexedPropertyDescriptor) prop;
-					for (int index = 0; index < op.getNumInputs(); index++) {
-						Object originalValue = indexedProp.getIndexedReadMethod().invoke(this, index);
-						if (originalValue instanceof ICloneable)
-							originalValue = ((ICloneable) originalValue).clone();
-						indexedProp.getIndexedWriteMethod().invoke(this, index, originalValue);
-					}
-				} else {
-					Object originalValue = prop.getReadMethod().invoke(original);
-					if (originalValue instanceof ICloneable)
-						originalValue = ((ICloneable) originalValue).clone();
-					prop.getWriteMethod().invoke(this, originalValue);
-				}
-			} catch (Exception e) {
-				SopremoUtil.LOG.warn("Cannot clone property " + prop.getName(), e);
-			}
-		this.copyOperatorPropertiesFrom(op);
-	}
-
-	protected void copyOperatorPropertiesFrom(@SuppressWarnings("unused") Self original) {
 	}
 
 	@Override

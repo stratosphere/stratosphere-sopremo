@@ -26,7 +26,7 @@ public class CsvOutputFormatTest extends OutputFormatTest {
 	public void shouldWriteParsableCsv() throws IOException {
 		// final Sink sink = new Sink(new CsvFormat(), output);
 		//
-		// final SopremoTestPlan testPlan = new SopremoTestPlan(sink); // write
+		// final EqualCloneTestPlan testPlan = new EqualCloneTestPlan(sink); // write
 		//
 		// testPlan.getInput(0).
 		// addObject("id", "1", "name", "arnie morton's of chicago",

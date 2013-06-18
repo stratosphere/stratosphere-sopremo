@@ -19,14 +19,13 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
-import eu.stratosphere.pact.generic.contract.Contract;
-import eu.stratosphere.pact.generic.io.FileInputFormat;
-import eu.stratosphere.pact.generic.io.SequentialInputFormat;
-import eu.stratosphere.pact.generic.io.SequentialOutputFormat;
 import eu.stratosphere.pact.common.contract.FileDataSink;
 import eu.stratosphere.pact.common.contract.FileDataSource;
 import eu.stratosphere.pact.common.util.Visitable;
 import eu.stratosphere.pact.common.util.Visitor;
+import eu.stratosphere.pact.generic.contract.Contract;
+import eu.stratosphere.pact.generic.io.SequentialInputFormat;
+import eu.stratosphere.pact.generic.io.SequentialOutputFormat;
 import eu.stratosphere.util.dag.GraphModule;
 import eu.stratosphere.util.dag.GraphPrinter;
 import eu.stratosphere.util.dag.GraphTraverseListener;

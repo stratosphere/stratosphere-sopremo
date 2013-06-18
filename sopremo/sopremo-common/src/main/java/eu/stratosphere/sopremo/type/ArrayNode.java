@@ -6,6 +6,8 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
+import com.google.common.collect.Iterators;
+
 import eu.stratosphere.util.CollectionUtil;
 
 /**
@@ -220,7 +222,7 @@ public class ArrayNode<T extends IJsonNode> extends AbstractArrayNode<T> {
 
 	@Override
 	public Iterator<T> iterator() {
-		return this.children.iterator();
+		return Iterators.limit(this.children.iterator(), size());
 	}
 
 	/**

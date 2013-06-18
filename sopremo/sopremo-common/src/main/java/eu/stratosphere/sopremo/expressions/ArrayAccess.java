@@ -77,11 +77,12 @@ public class ArrayAccess extends PathSegmentExpression {
 		this.startIndex = startIndex;
 		this.endIndex = endIndex;
 	}
-
+	
+	/* (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.expressions.PathSegmentExpression#equalsSameClass(eu.stratosphere.sopremo.expressions.PathSegmentExpression)
+	 */
 	@Override
-	public boolean equals(final Object obj) {
-		if (!super.equals(obj))
-			return false;
+	public boolean equalsSameClass(PathSegmentExpression obj) {
 		final ArrayAccess other = (ArrayAccess) obj;
 		return this.startIndex == other.startIndex && this.endIndex == other.endIndex;
 	}
@@ -135,9 +136,12 @@ public class ArrayAccess extends PathSegmentExpression {
 		return this.startIndex;
 	}
 
+	/* (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.expressions.PathSegmentExpression#segmentHashCode()
+	 */
 	@Override
-	public int hashCode() {
-		return (47 * super.hashCode() + this.startIndex) * 47 + this.endIndex;
+	protected int segmentHashCode() {
+		return this.startIndex * 47 + this.endIndex;
 	}
 
 	/**
@@ -162,9 +166,12 @@ public class ArrayAccess extends PathSegmentExpression {
 		return this.startIndex >= 0 == this.endIndex >= 0;
 	}
 
+	/* (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.expressions.PathSegmentExpression#setSegment(eu.stratosphere.sopremo.type.IJsonNode, eu.stratosphere.sopremo.type.IJsonNode)
+	 */
 	@SuppressWarnings("unchecked")
 	@Override
-	public IJsonNode set(final IJsonNode node, final IJsonNode value) {
+	protected IJsonNode setSegment(IJsonNode node, IJsonNode value) {
 		if (this.isSelectingAll())
 			return value;
 		final IArrayNode<IJsonNode> arrayNode = (IArrayNode<IJsonNode>) node;

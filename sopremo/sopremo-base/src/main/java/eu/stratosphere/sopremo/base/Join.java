@@ -5,17 +5,18 @@ import it.unimi.dsi.fastutil.ints.IntIterator;
 import it.unimi.dsi.fastutil.ints.IntList;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
+import it.unimi.dsi.fastutil.objects.AbstractObject2IntMap;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import it.unimi.dsi.fastutil.objects.Object2IntMap.Entry;
 
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.SortedMap;
-import java.util.TreeMap;
+
+import com.google.common.base.Predicates;
 
 import eu.stratosphere.sopremo.EvaluationContext;
 import eu.stratosphere.sopremo.expressions.AggregationExpression;
@@ -26,15 +27,13 @@ import eu.stratosphere.sopremo.expressions.BinaryBooleanExpression;
 import eu.stratosphere.sopremo.expressions.BooleanExpression;
 import eu.stratosphere.sopremo.expressions.ComparativeExpression;
 import eu.stratosphere.sopremo.expressions.ComparativeExpression.BinaryOperator;
+import eu.stratosphere.sopremo.expressions.ElementInSetExpression;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
 import eu.stratosphere.sopremo.expressions.ExpressionUtil;
 import eu.stratosphere.sopremo.expressions.InputSelection;
-import eu.stratosphere.sopremo.expressions.ObjectAccess;
-import eu.stratosphere.sopremo.expressions.ObjectCreation;
 import eu.stratosphere.sopremo.expressions.TransformFunction;
 import eu.stratosphere.sopremo.io.Source;
 import eu.stratosphere.sopremo.operator.CompositeOperator;
-import eu.stratosphere.sopremo.operator.ElementaryOperator;
 import eu.stratosphere.sopremo.operator.InputCardinality;
 import eu.stratosphere.sopremo.operator.JsonStream;
 import eu.stratosphere.sopremo.operator.Name;
@@ -42,7 +41,6 @@ import eu.stratosphere.sopremo.operator.OutputCardinality;
 import eu.stratosphere.sopremo.operator.Property;
 import eu.stratosphere.sopremo.operator.SopremoModule;
 import eu.stratosphere.sopremo.rewrite.ReplaceInputSelectionWithArray;
-import eu.stratosphere.util.IsInstancePredicate;
 
 /**
  * Executes a complex N-way join over multiple data sources.<br>
@@ -62,7 +60,7 @@ public class Join extends CompositeOperator<Join> {
 
 	private List<BinaryBooleanExpression> binaryConditions = new ArrayList<BinaryBooleanExpression>();
 
-	private EvaluationExpression resultProjection = ObjectCreation.CONCATENATION;
+	private EvaluationExpression resultProjection = EvaluationExpression.VALUE;
 
 	private final IntSet outerJoinSources = new IntOpenHashSet();
 
@@ -86,47 +84,56 @@ public class Join extends CompositeOperator<Join> {
 			break;
 
 		default:
-			List<TwoSourceJoin> joins;
-			List<BinaryBooleanExpression> minimalSpanningTree = findMinimalSpanningTree(this.binaryConditions); 
-			joins = this.getInitialJoinOrder(module, minimalSpanningTree);
-			
-			//TODO please comment
-			final List<JsonStream> inputs = new ArrayList<JsonStream>();
+			List<BinaryBooleanExpression> minimalSpanningTree = findMinimalSpanningTree(this.binaryConditions);
+
+			List<TwoSourceJoin> joins = this.getInitialJoinOrder(module, minimalSpanningTree);
+
+			// wrap each input in an array that contains the element at the position of the input
+			// input2 -> [null, null, input2, ...]
 			int numInputs = this.getNumInputs();
+			final JsonStream[] inputs = new JsonStream[numInputs];
 			for (int index = 0; index < numInputs; index++)
-				inputs.add(OperatorUtil.positionEncode(module.getInput(index), index, numInputs));
-			
-			//TODO please comment
+				inputs[index] = OperatorUtil.positionEncode(module.getInput(index), index, numInputs);
+
+			// rewire individual joins
+			// the input of each join is either the module input or the result of a previous join
 			for (final TwoSourceJoin twoSourceJoin : joins) {
 				List<JsonStream> operatorInputs = twoSourceJoin.getInputs();
 
-				final List<JsonStream> actualInputs = new ArrayList<JsonStream>(operatorInputs.size());
+				final JsonStream[] actualInputs = new JsonStream[2];
 				List<Source> moduleInput = module.getInputs();
-				for (int index = 0; index < operatorInputs.size(); index++) {
+				for (int index = 0; index < 2; index++) {
 					final int inputIndex = moduleInput.indexOf(operatorInputs.get(index).getSource().getOperator());
-					actualInputs.add(inputs.get(inputIndex).getSource());
-					inputs.set(inputIndex, twoSourceJoin);
+					actualInputs[index] = inputs[inputIndex];
+
+					// we keep inputs up-to-date, so that it points either to the original input or the latest join that
+					// includes the source
+					for (int updateIndex = 0; updateIndex < numInputs; updateIndex++)
+						if (inputs[updateIndex] == actualInputs[index])
+							inputs[updateIndex] = twoSourceJoin;
 				}
 				twoSourceJoin.setInputs(actualInputs);
 				twoSourceJoin.setResultProjection(new AggregationExpression(new ArrayUnion()));
 			}
-			
-			final TwoSourceJoin lastJoin = joins.get(joins.size() - 1);
-			ElementaryOperator<?> lastOperator = lastJoin; 
-			
-			//check if any cycles exist in the predicates, if so create post-selection with left predicates not in the MST
+
+			JsonStream lastOperator = inputs[0];
+
+			// check if any cycles exist in the predicates, if so create post-selection with left predicates not in the
+			// MST
 			if (minimalSpanningTree.size() != this.binaryConditions.size()) {
 				List<BinaryBooleanExpression> leftExpressions = new ArrayList<BinaryBooleanExpression>();
-				for(BinaryBooleanExpression leftExpressionCandidate : this.binaryConditions){
-					if(!minimalSpanningTree.contains(leftExpressionCandidate)){
-						BinaryBooleanExpression adjustedExpression = (BinaryBooleanExpression) leftExpressionCandidate.clone();
-						adjustedExpression.replace(new IsInstancePredicate(InputSelection.class),
+				for (BinaryBooleanExpression leftExpressionCandidate : this.binaryConditions) {
+					if (!minimalSpanningTree.contains(leftExpressionCandidate)) {
+						BinaryBooleanExpression adjustedExpression = (BinaryBooleanExpression) leftExpressionCandidate
+							.clone();
+						adjustedExpression.replace(Predicates.instanceOf(InputSelection.class),
 							new TransformFunction() {
 								@Override
 								public EvaluationExpression apply(EvaluationExpression argument) {
 									InputSelection inputSelection = (InputSelection) argument;
 									final int originalIndex = inputSelection.getIndex();
-									return ExpressionUtil.makePath(new InputSelection(0), new ArrayAccess(originalIndex));
+									return ExpressionUtil.makePath(new InputSelection(0),
+										new ArrayAccess(originalIndex));
 								}
 							});
 						leftExpressions.add(adjustedExpression);
@@ -134,116 +141,88 @@ public class Join extends CompositeOperator<Join> {
 				}
 				final AndExpression selectionCondition = new AndExpression(leftExpressions);
 				lastOperator = new Selection()
-							.withCondition(selectionCondition).withInputs(lastJoin);
+					.withCondition(selectionCondition).withInputs(lastOperator);
 			}
-			
+
 			EvaluationExpression resultProjection = this.getResultProjection();
-			resultProjection.replace(new IsInstancePredicate(InputSelection.class),
+			resultProjection.replace(Predicates.instanceOf(InputSelection.class),
 				new ReplaceInputSelectionWithArray());
 			module.getOutput(0).setInput(0,
 				new Projection().withInputs(lastOperator).withResultProjection(resultProjection));
 		}
 	}
-	
+
 	/**
 	 * Finds the minimal spanning tree over a graph of Join predicates based on the Kruskal's algorithm.
+	 * 
 	 * @param someBinaryConditions
 	 * @return the minimal spanning tree over the input graph of expressions
 	 */
 	private List<BinaryBooleanExpression> findMinimalSpanningTree(List<BinaryBooleanExpression> someBinaryConditions) {
-		
+
 		List<BinaryBooleanExpression> minimalSpanningTree = new ArrayList<BinaryBooleanExpression>();
-		
-		Set<InputSelection> vertices = buildVerticesSet(someBinaryConditions);
-		Map<BinaryBooleanExpression, Integer> edgesWithWeight = buildWeightedEdgesMap(someBinaryConditions);
-		List<BinaryBooleanExpression> sortedEdges = sortEdgesByWeight(edgesWithWeight); 
-		
-		while(!sortedEdges.isEmpty()){
-			BinaryBooleanExpression currentEdge = sortedEdges.remove(0);
-			if(!currentEdgeProducesCycleInMST(currentEdge, vertices)){
+
+		BitSet remainingVertices = new BitSet();
+		remainingVertices.set(0, getNumInputs());
+		LinkedList<Object2IntMap.Entry<BinaryBooleanExpression>> edgesWithWeight = weightEdges(someBinaryConditions);
+		sortEdgesByWeight(edgesWithWeight);
+
+		while (!edgesWithWeight.isEmpty()) {
+			BinaryBooleanExpression currentEdge = edgesWithWeight.removeFirst().getKey();
+			if (!currentEdgeProducesCycleInMST(currentEdge, remainingVertices))
 				minimalSpanningTree.add(currentEdge);
-			}
 		}
 		return minimalSpanningTree;
 	}
-	
-	private List<BinaryBooleanExpression> sortEdgesByWeight(Map<BinaryBooleanExpression, Integer> edges) {
-		SortedMap<BinaryBooleanExpression, Integer> sortedMap = new TreeMap<BinaryBooleanExpression, Integer>(new ValueComparer<BinaryBooleanExpression, Integer>(edges) );
-        sortedMap.putAll(edges);
-        return new ArrayList<BinaryBooleanExpression>(sortedMap.keySet());
-	}
-	
-	//adapted from http://paaloliver.wordpress.com/2011/02/11/take-2-sorting-maps-in-java-based-on-it%E2%80%99s-values/
-	private static class ValueComparer<K, V extends Comparable<V>> implements Comparator<K> {
 
-        private final Map<K, V> map;
-
-        public ValueComparer(Map<K, V> map) {
-            super();
-            this.map = map;
-        }
-
-        public int compare(K key1, K key2) {
-            V value1 = this.map.get(key1);
-            V value2 = this.map.get(key2);
-            int c = value1.compareTo(value2);
-            if (c != 0) {
-                return c;
-            }
-            Integer hashCode1 = key1.hashCode();
-            Integer hashCode2 = key2.hashCode();
-            return hashCode1.compareTo(hashCode2);
-        }
-    }
-
-	private boolean currentEdgeProducesCycleInMST(BinaryBooleanExpression currentEdge, Set<InputSelection> vertices) {
-		currentEdge = (ComparativeExpression) currentEdge;
-		ObjectAccess expr1 = (ObjectAccess) ((ComparativeExpression) currentEdge).getExpr1();
-		ObjectAccess expr2 = (ObjectAccess) ((ComparativeExpression) currentEdge).getExpr2();
-		InputSelection vertex1 = (InputSelection) expr1.getInputExpression();
-		InputSelection vertex2 = (InputSelection) expr2.getInputExpression();
-		
-		//an edge does not produce a cycle if it points to at least one remaining vertex
-		if (vertices.contains(vertex1)) {
-			vertices.remove(vertex1);
-			if (vertices.contains(vertex2)) {
-				vertices.remove(vertex2);
+	private void sortEdgesByWeight(List<Object2IntMap.Entry<BinaryBooleanExpression>> edgesWithWeight) {
+		Collections.sort(edgesWithWeight, new Comparator<Object2IntMap.Entry<BinaryBooleanExpression>>() {
+			/*
+			 * (non-Javadoc)
+			 * @see java.util.Comparator#compare(java.lang.Object, java.lang.Object)
+			 */
+			@Override
+			public int compare(Entry<BinaryBooleanExpression> o1, Entry<BinaryBooleanExpression> o2) {
+				return o1.getIntValue() - o2.getIntValue();
 			}
+		});
+	}
+
+	private boolean currentEdgeProducesCycleInMST(BinaryBooleanExpression currentEdge, BitSet remainingVertices) {
+		int vertex1 = currentEdge.getExpr1().findFirst(InputSelection.class).getIndex();
+		int vertex2 = currentEdge.getExpr2().findFirst(InputSelection.class).getIndex();
+
+		// an edge does not produce a cycle if it points to at least one remaining vertex
+		if (remainingVertices.get(vertex1)) {
+			remainingVertices.clear(vertex1);
+			if (remainingVertices.get(vertex2))
+				remainingVertices.clear(vertex2);
 			return false;
-		} else if (vertices.contains(vertex2)) {
-			vertices.remove(vertex2);
+		} else if (remainingVertices.get(vertex2)) {
+			remainingVertices.clear(vertex2);
 			return false;
 		}
+
+		// both nodes were already used -> cycle
 		return true;
 	}
 
-	private Map<BinaryBooleanExpression, Integer> buildWeightedEdgesMap(List<BinaryBooleanExpression> someBinaryConditions) {
-		Map<BinaryBooleanExpression, Integer> edgesWithWeight = new HashMap<BinaryBooleanExpression, Integer>();
+	private LinkedList<Object2IntMap.Entry<BinaryBooleanExpression>> weightEdges(
+			List<BinaryBooleanExpression> someBinaryConditions) {
+		LinkedList<Object2IntMap.Entry<BinaryBooleanExpression>> edgesWithWeight = new LinkedList<Object2IntMap.Entry<BinaryBooleanExpression>>();
 		for (BinaryBooleanExpression expression : someBinaryConditions) {
-			//TODO better weighting schema required
-			Integer weight;
-			if(((ComparativeExpression) expression).getBinaryOperator().equals(BinaryOperator.EQUAL))
-				weight=1;
+			// TODO better weighting schema required
+			int weight;
+			if (expression instanceof ElementInSetExpression)
+				weight = 5;
+			else if (((ComparativeExpression) expression).getBinaryOperator().equals(BinaryOperator.EQUAL))
+				weight = 1;
 			else
-				weight=2;
-			
-			edgesWithWeight.put(expression, weight);
+				weight = 10;
+
+			edgesWithWeight.add(new AbstractObject2IntMap.BasicEntry<BinaryBooleanExpression>(expression, weight));
 		}
 		return edgesWithWeight;
-	}
-
-	private Set<InputSelection> buildVerticesSet(List<BinaryBooleanExpression> someBinaryConditions) {
-		Set<InputSelection> vertices = new HashSet<InputSelection>();
-		for (BinaryBooleanExpression expression : someBinaryConditions) {
-			if (expression instanceof ComparativeExpression) {
-				expression = (ComparativeExpression) expression;
-				ObjectAccess expr1 = (ObjectAccess) ((ComparativeExpression) expression).getExpr1();
-				ObjectAccess expr2 = (ObjectAccess) ((ComparativeExpression) expression).getExpr2();
-				vertices.add((InputSelection) expr1.getInputExpression());
-				vertices.add((InputSelection) expr2.getInputExpression());
-			}
-		}
-		return vertices;
 	}
 
 	@Override
@@ -255,8 +234,8 @@ public class Join extends CompositeOperator<Join> {
 		if (this.getClass() != obj.getClass())
 			return false;
 		return super.equals(obj) && this.joinCondition.equals(((Join) obj).joinCondition)
-				&& this.outerJoinSources.equals(((Join) obj).outerJoinSources)
-				&& this.binaryConditions.equals(((Join) obj).binaryConditions)
+			&& this.outerJoinSources.equals(((Join) obj).outerJoinSources)
+			&& this.binaryConditions.equals(((Join) obj).binaryConditions)
 			&& this.resultProjection.equals(((Join) obj).resultProjection);
 	}
 
@@ -383,7 +362,8 @@ public class Join extends CompositeOperator<Join> {
 			throw new IllegalArgumentException("Cannot handle expression " + joinCondition);
 	}
 
-	private List<TwoSourceJoin> getInitialJoinOrder(SopremoModule module, List<BinaryBooleanExpression> minimalSpanningTree) {
+	private List<TwoSourceJoin> getInitialJoinOrder(SopremoModule module,
+			List<BinaryBooleanExpression> minimalSpanningTree) {
 		final List<TwoSourceJoin> joins = new ArrayList<TwoSourceJoin>();
 		for (final BinaryBooleanExpression expression : minimalSpanningTree) {
 			joins.add(this.getTwoSourceJoinForExpression(expression, module));
@@ -403,7 +383,7 @@ public class Join extends CompositeOperator<Join> {
 		BinaryBooleanExpression adjustedExpression = (BinaryBooleanExpression) binaryCondition.clone();
 		// change indices and emulate old behavior with array access
 		// in1.fk == in3.key -> in0[1].fk == in1[3].key
-		adjustedExpression.replace(new IsInstancePredicate(InputSelection.class),
+		adjustedExpression.replace(Predicates.instanceOf(InputSelection.class),
 			new TransformFunction() {
 				@Override
 				public EvaluationExpression apply(EvaluationExpression argument) {

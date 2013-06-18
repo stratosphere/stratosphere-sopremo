@@ -22,8 +22,11 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.esotericsoftware.kryo.Kryo;
+import com.esotericsoftware.kryo.KryoCopyable;
+import com.esotericsoftware.kryo.serializers.FieldSerializer;
+
 import eu.stratosphere.sopremo.EvaluationException;
-import eu.stratosphere.sopremo.ISopremoType;
 import eu.stratosphere.sopremo.aggregation.Aggregation;
 import eu.stratosphere.sopremo.expressions.tree.ChildIterator;
 import eu.stratosphere.sopremo.expressions.tree.ConcatenatingChildIterator;
@@ -37,7 +40,8 @@ import eu.stratosphere.sopremo.type.IStreamNode;
  * 
  * @author Arvid Heise
  */
-public class BatchAggregationExpression extends PathSegmentExpression {
+public class BatchAggregationExpression extends PathSegmentExpression implements
+		KryoCopyable<BatchAggregationExpression> {
 	private final List<Partial> partials;
 
 	private final transient IArrayNode<IJsonNode> results = new ArrayNode<IJsonNode>();
@@ -152,15 +156,17 @@ public class BatchAggregationExpression extends PathSegmentExpression {
 
 	/*
 	 * (non-Javadoc)
-	 * @see
-	 * eu.stratosphere.sopremo.expressions.PathSegmentExpression#copyPropertiesFrom(eu.stratosphere.sopremo.ISopremoType
-	 * )
+	 * @see com.esotericsoftware.kryo.KryoCopyable#copy(com.esotericsoftware.kryo.Kryo)
 	 */
+	@SuppressWarnings("unchecked")
 	@Override
-	public void copyPropertiesFrom(ISopremoType original) {
-		super.copyPropertiesFrom(original);
-		for (Partial partial : ((BatchAggregationExpression) original).partials)
-			this.partials.add(partial.partialClone(this));
+	public BatchAggregationExpression copy(Kryo kryo) {
+		final BatchAggregationExpression copy = (BatchAggregationExpression)
+			kryo.getRegistration(PathSegmentExpression.class).getSerializer().copy(kryo, this);
+		copy.partials.clear();
+		for (Partial partial : this.partials)
+			copy.partials.add(partial.partialClone(kryo, copy));
+		return copy;
 	}
 
 	private static class CloneHelper {
@@ -234,10 +240,14 @@ public class BatchAggregationExpression extends PathSegmentExpression {
 			return (Partial) super.withInputExpression(inputExpression);
 		}
 
-		private Partial partialClone(BatchAggregationExpression outer) {
-			final Partial partial = new Partial(outer, this.getAggregation().clone(), this.index);
-			partial.copyPropertiesFrom(this);
-			return partial;
+		@SuppressWarnings("unchecked")
+		private Partial partialClone(Kryo kryo, BatchAggregationExpression outer) {
+			final Partial copy = new Partial(outer, this.getAggregation().clone(), this.index);
+			FieldSerializer<PathSegmentExpression> serializer =
+				(FieldSerializer<PathSegmentExpression>) kryo.getSerializer(PathSegmentExpression.class);
+			for (FieldSerializer<PathSegmentExpression>.CachedField<?> field : serializer.getFields())
+				field.copy(this, copy);
+			return copy;
 		}
 
 		/*
@@ -283,20 +293,24 @@ public class BatchAggregationExpression extends PathSegmentExpression {
 		}
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.expressions.PathSegmentExpression#segmentHashCode()
+	 */
 	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = super.hashCode();
-		result = prime * result + (this.partials == null ? 0 : this.partials.hashCode());
-		return result;
+	protected int segmentHashCode() {
+		return this.partials.hashCode();
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see
+	 * eu.stratosphere.sopremo.expressions.PathSegmentExpression#equalsSameClass(eu.stratosphere.sopremo.expressions
+	 * .PathSegmentExpression)
+	 */
 	@Override
-	public boolean equals(final Object obj) {
-		if (!super.equals(obj))
-			return false;
-		final BatchAggregationExpression other = (BatchAggregationExpression) obj;
-		return this.partials.equals(other.partials);
+	public boolean equalsSameClass(PathSegmentExpression other) {
+		return this.partials.equals(((BatchAggregationExpression) other).partials);
 	}
 
 	@Override

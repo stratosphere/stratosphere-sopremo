@@ -71,29 +71,40 @@ public class PackageManager implements ParsingScope {
 	private StackedConfObjectRegistry<SopremoFileFormat> fileFormatRegistries = new StackedConfObjectRegistry<SopremoFileFormat>();
 
 	/**
-	 * Imports sopremo-&lt;packageName&gt;.jar or returns a cached package structure.
+	 * Imports sopremo-&lt;packageName&gt;.jar or returns a cached package
+	 * structure.
 	 * 
 	 * @param packageName
 	 */
 	public PackageInfo getPackageInfo(String packageName) {
 		PackageInfo packageInfo = this.packages.get(packageName);
 		if (packageInfo == null) {
-			File packagePath = this.findPackageInClassPath(packageName);
-			if(packagePath != null)
+			List<File> packagePath = this.findPackageInClassPath(packageName);
+			if (!packagePath.isEmpty()) {
 				packageInfo = new PackageInfo(packageName, ClassLoader.getSystemClassLoader());
-			else {
-				packagePath = this.findPackageInJarPathLocations(packageName);
-				if(packagePath ==null)
+				File jarFile = null;
+				for (File file : packagePath)
+					if (file.isFile() && file.getName().endsWith(".jar")) {
+						jarFile = file;
+						break;
+					}
+				if (jarFile != null)
+					packagePath = Arrays.asList(jarFile);
+			} else {
+				File jarLocation = this.findPackageInJarPathLocations(packageName);
+				if (jarLocation == null)
 					throw new IllegalArgumentException(String.format("no package %s found", packageName));
 				try {
-					packageInfo = new PackageInfo(packageName, new URLClassLoader(new URL[] { packagePath.toURI().toURL() }));
+					packageInfo = new PackageInfo(packageName, new URLClassLoader(new URL[] { jarLocation.toURI().toURL() }));
 				} catch (MalformedURLException e) {
 					throw new IllegalStateException(e);
 				}
+				packagePath = Arrays.asList(jarLocation);
 			}
 			QueryUtil.LOG.debug("adding package " + packagePath);
 			try {
-				packageInfo.importFrom(packagePath);
+				for (File path : packagePath)
+					packageInfo.importFrom(path);
 			} catch (IOException e) {
 				throw new IllegalArgumentException(String.format("could not load package %s", packagePath));
 			}
@@ -141,10 +152,11 @@ public class PackageManager implements ParsingScope {
 		return this.functionRegistries;
 	}
 
-	protected File findPackageInClassPath(String packageName) {
+	protected List<File> findPackageInClassPath(String packageName) {
 		String classpath = System.getProperty("java.class.path");
 		String sopremoPackage = "sopremo-" + packageName;
 		// check in class paths
+		List<File> paths = new ArrayList<File>();
 		for (String path : classpath.split(File.pathSeparator)) {
 			final int pathIndex = path.indexOf(sopremoPackage);
 			if (pathIndex == -1)
@@ -154,13 +166,12 @@ public class PackageManager implements ParsingScope {
 				continue;
 			int nextIndex = pathIndex + sopremoPackage.length();
 			// next character must be '.', '-', or file separator
-			if (nextIndex < path.length() && path.charAt(nextIndex) != File.separatorChar
-				&& path.charAt(nextIndex) != '.' && path.charAt(nextIndex) != '-')
+			if (nextIndex < path.length() && path.charAt(nextIndex) != File.separatorChar && path.charAt(nextIndex) != '.' && path.charAt(nextIndex) != '-')
 				continue;
-			return new File(path);
+			paths.add(new File(path));
 		}
-		
-		return null;
+
+		return paths;
 	}
 
 	protected File findPackageInJarPathLocations(String packageName) {
@@ -185,7 +196,7 @@ public class PackageManager implements ParsingScope {
 	 * Sets the defaultJarPath to the specified value.
 	 * 
 	 * @param defaultJarPath
-	 *        the defaultJarPath to set
+	 *            the defaultJarPath to set
 	 */
 	public void addJarPathLocation(File jarPathLocation) {
 		if (jarPathLocation == null)
@@ -216,6 +227,7 @@ public class PackageManager implements ParsingScope {
 
 	/*
 	 * (non-Javadoc)
+	 * 
 	 * @see java.lang.Object#toString()
 	 */
 	@Override

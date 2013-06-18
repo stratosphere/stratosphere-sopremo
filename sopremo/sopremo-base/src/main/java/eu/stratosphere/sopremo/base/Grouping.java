@@ -3,9 +3,9 @@ package eu.stratosphere.sopremo.base;
 import java.util.ArrayList;
 import java.util.List;
 
-import eu.stratosphere.pact.generic.contract.Contract;
 import eu.stratosphere.pact.common.contract.ReduceContract;
 import eu.stratosphere.pact.common.contract.ReduceContract.Combinable;
+import eu.stratosphere.pact.generic.contract.Contract;
 import eu.stratosphere.sopremo.EvaluationContext;
 import eu.stratosphere.sopremo.expressions.ConstantExpression;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;

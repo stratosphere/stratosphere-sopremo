@@ -114,7 +114,7 @@ public class GraphLevelPartitioner {
 	private static <Node> boolean isIndependent(final Node node, final Collection<Node> usedNodes,
 			final ConnectionNavigator<Node> navigator) {
 		for (final Object input : navigator.getConnectedNodes(node))
-			if (!usedNodes.contains(input))
+			if (input != null && !usedNodes.contains(input))
 				return false;
 		return true;
 	}

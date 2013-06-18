@@ -21,17 +21,17 @@ import java.util.List;
 
 import com.esotericsoftware.kryo.DefaultSerializer;
 import com.google.common.base.Function;
+import com.google.common.base.Predicate;
+import com.google.common.base.Predicates;
 
 import eu.stratosphere.sopremo.AbstractSopremoType;
 import eu.stratosphere.sopremo.ICloneable;
 import eu.stratosphere.sopremo.ISopremoType;
+import eu.stratosphere.sopremo.Singleton;
 import eu.stratosphere.sopremo.SingletonSerializer;
 import eu.stratosphere.sopremo.expressions.tree.ChildIterator;
 import eu.stratosphere.sopremo.expressions.tree.ListChildIterator;
 import eu.stratosphere.sopremo.type.IJsonNode;
-import eu.stratosphere.util.IsEqualPredicate;
-import eu.stratosphere.util.IsInstancePredicate;
-import eu.stratosphere.util.Predicate;
 
 /**
  * Base class for all evaluable expressions that can form an expression tree.<br>
@@ -40,18 +40,15 @@ import eu.stratosphere.util.Predicate;
 public abstract class EvaluationExpression extends AbstractSopremoType implements ISopremoType,
 		Iterable<EvaluationExpression>, ICloneable {
 
-	
-	
 	@DefaultSerializer(ValueSerializer.class)
-	public
-	static final class ValueExpression extends SingletonExpression {
+	@Singleton
+	public static final class ValueExpression extends PathSegmentExpression  {
 		/**
 		 * Initializes ValueExpression.
 		 * 
 		 * @param textualRepresentation
 		 */
-		public ValueExpression(String textualRepresentation) {
-			super(textualRepresentation);
+		public ValueExpression() {
 		}
 
 		@Override
@@ -59,9 +56,109 @@ public abstract class EvaluationExpression extends AbstractSopremoType implement
 			return node;
 		}
 
+		/*
+		 * (non-Javadoc)
+		 * @see eu.stratosphere.sopremo.expressions.PathSegmentExpression#iterator()
+		 */
+		@Override
+		public ChildIterator iterator() {
+			final List<EvaluationExpression> emptyList = Collections.emptyList();
+			return new ListChildIterator(emptyList.listIterator());
+		}
+
 		@Override
 		public IJsonNode set(final IJsonNode node, final IJsonNode value) {
 			return value;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see
+		 * eu.stratosphere.sopremo.expressions.PathSegmentExpression#setInputExpression(eu.stratosphere.sopremo.expressions
+		 * .EvaluationExpression)
+		 */
+		@Override
+		public void setInputExpression(EvaluationExpression inputExpression) {
+			throw new IllegalStateException();
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see eu.stratosphere.sopremo.expressions.PathSegmentExpression#getLast()
+		 */
+		@Override
+		public PathSegmentExpression getLast() {
+			return this;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see eu.stratosphere.sopremo.expressions.PathSegmentExpression#withTail(eu.stratosphere.sopremo.expressions.
+		 * EvaluationExpression)
+		 */
+		@Override
+		public PathSegmentExpression withTail(EvaluationExpression tail) {
+			if (tail instanceof PathSegmentExpression)
+				return (PathSegmentExpression) tail;
+			return new ChainedSegmentExpression(tail);
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see eu.stratosphere.sopremo.expressions.PathSegmentExpression#hashCode()
+		 */
+		@Override
+		public int hashCode() {
+			return System.identityHashCode(this);
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see eu.stratosphere.sopremo.expressions.PathSegmentExpression#segmentHashCode()
+		 */
+		@Override
+		protected int segmentHashCode() {
+			return 0;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see
+		 * eu.stratosphere.sopremo.expressions.PathSegmentExpression#equalsSameClass(eu.stratosphere.sopremo.expressions
+		 * .PathSegmentExpression)
+		 */
+		@Override
+		public boolean equalsSameClass(PathSegmentExpression other) {
+			return true;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see eu.stratosphere.sopremo.expressions.PathSegmentExpression#equals(java.lang.Object)
+		 */
+		@Override
+		public boolean equals(Object obj) {
+			return obj == this;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see
+		 * eu.stratosphere.sopremo.expressions.PathSegmentExpression#evaluateSegment(eu.stratosphere.sopremo.type.IJsonNode
+		 * )
+		 */
+		@Override
+		protected IJsonNode evaluateSegment(IJsonNode node) {
+			return node;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see eu.stratosphere.sopremo.expressions.EvaluationExpression#appendAsString(java.lang.Appendable)
+		 */
+		@Override
+		public void appendAsString(Appendable appendable) throws IOException {
+			appendable.append('x');
 		}
 	}
 
@@ -78,7 +175,7 @@ public abstract class EvaluationExpression extends AbstractSopremoType implement
 	 * Represents an expression that returns the input node without any modifications. The constant is mostly used for
 	 * {@link Operator}s that do not perform any transformation to the input, such as a filter operator.
 	 */
-	public static final EvaluationExpression VALUE = new ValueExpression("x");
+	public static final PathSegmentExpression VALUE = new ValueExpression();
 
 	/*
 	 * (non-Javadoc)
@@ -112,7 +209,7 @@ public abstract class EvaluationExpression extends AbstractSopremoType implement
 	}
 
 	public EvaluationExpression findFirst(final Predicate<? super EvaluationExpression> predicate) {
-		if (predicate.isTrue(this))
+		if (predicate.apply(this))
 			return this;
 		for (EvaluationExpression child : this) {
 			final EvaluationExpression expr = child.findFirst(predicate);
@@ -124,12 +221,12 @@ public abstract class EvaluationExpression extends AbstractSopremoType implement
 
 	@SuppressWarnings("unchecked")
 	public <T extends EvaluationExpression> T findFirst(final Class<T> evaluableClass) {
-		return (T) this.findFirst(new IsInstancePredicate(evaluableClass));
+		return (T) this.findFirst(Predicates.instanceOf(evaluableClass));
 	}
 
 	@SuppressWarnings("unchecked")
 	public <T extends EvaluationExpression> List<T> findAll(final Class<T> evaluableClass) {
-		return (List<T>) this.findAll(new IsInstancePredicate(evaluableClass));
+		return (List<T>) this.findAll(Predicates.instanceOf(evaluableClass));
 	}
 
 	public List<EvaluationExpression> findAll(final Predicate<? super EvaluationExpression> predicate) {
@@ -140,7 +237,7 @@ public abstract class EvaluationExpression extends AbstractSopremoType implement
 
 	private void findAll(final Predicate<? super EvaluationExpression> predicate,
 			final ArrayList<EvaluationExpression> expressions) {
-		if (predicate.isTrue(this))
+		if (predicate.apply(this))
 			expressions.add(this);
 
 		for (EvaluationExpression child : this)
@@ -156,7 +253,7 @@ public abstract class EvaluationExpression extends AbstractSopremoType implement
 	 *        the transformation function
 	 * @return the transformed expression
 	 */
-	public EvaluationExpression transformRecursively(final TransformFunction function) {
+	public EvaluationExpression transformRecursively(final Function<EvaluationExpression, EvaluationExpression> function) {
 		final ChildIterator iterator = this.iterator();
 		while (iterator.hasNext()) {
 			EvaluationExpression evaluationExpression = iterator.next();
@@ -200,7 +297,7 @@ public abstract class EvaluationExpression extends AbstractSopremoType implement
 		return this.transformRecursively(new TransformFunction() {
 			@Override
 			public EvaluationExpression apply(final EvaluationExpression evaluationExpression) {
-				return replacePredicate.isTrue(evaluationExpression) ? replaceFunction.apply(evaluationExpression)
+				return replacePredicate.apply(evaluationExpression) ? replaceFunction.apply(evaluationExpression)
 					: evaluationExpression;
 			}
 		});
@@ -216,7 +313,7 @@ public abstract class EvaluationExpression extends AbstractSopremoType implement
 	 * @return the expression with the replaces
 	 */
 	public EvaluationExpression replace(final EvaluationExpression toReplace, final EvaluationExpression replaceFragment) {
-		return this.replace(new IsEqualPredicate(toReplace), replaceFragment);
+		return this.replace(Predicates.equalTo(toReplace), replaceFragment);
 	}
 
 	/**
@@ -228,7 +325,7 @@ public abstract class EvaluationExpression extends AbstractSopremoType implement
 	 * @return this expression without removed sub-expressions
 	 */
 	public EvaluationExpression remove(final Predicate<? super EvaluationExpression> predicate) {
-		if (predicate.isTrue(this))
+		if (predicate.apply(this))
 			return VALUE;
 
 		this.removeRecursively(this, predicate);
@@ -240,7 +337,7 @@ public abstract class EvaluationExpression extends AbstractSopremoType implement
 		final ChildIterator iterator = expressionParent.iterator();
 		while (iterator.hasNext()) {
 			EvaluationExpression child = iterator.next();
-			if (predicate.isTrue(child)) {
+			if (predicate.apply(child)) {
 				if (!iterator.canChildBeRemoved())
 					iterator.set(VALUE);
 				else
@@ -259,7 +356,7 @@ public abstract class EvaluationExpression extends AbstractSopremoType implement
 	 * @return this expression without removed sub-expressions
 	 */
 	public EvaluationExpression remove(final EvaluationExpression expressionToRemove) {
-		return this.remove(new IsEqualPredicate(expressionToRemove));
+		return this.remove(Predicates.equalTo(expressionToRemove));
 	}
 
 	/**
@@ -271,7 +368,7 @@ public abstract class EvaluationExpression extends AbstractSopremoType implement
 	 * @return this expression without removed sub-expressions
 	 */
 	public EvaluationExpression remove(final Class<?> expressionType) {
-		return this.remove(new IsInstancePredicate(expressionType));
+		return this.remove(Predicates.instanceOf(expressionType));
 	}
 
 	/**
@@ -302,22 +399,6 @@ public abstract class EvaluationExpression extends AbstractSopremoType implement
 	@Override
 	public int hashCode() {
 		return 37;
-	}
-
-	/**
-	 * Sets the value of the node specified by this expression using the given {@link EvaluationContext}.
-	 * 
-	 * @param node
-	 *        the node to change
-	 * @param value
-	 *        the value to set
-	 * @param context
-	 *        the current <code>EvaluationContext</code>
-	 * @return the node or a new node if the expression directly accesses the node
-	 */
-	public IJsonNode set(final IJsonNode node, final IJsonNode value) {
-		throw new UnsupportedOperationException(String.format(
-			"Cannot change the value with expression %s of node %s to %s", this, node, value));
 	}
 
 	public EvaluationExpression simplify() {

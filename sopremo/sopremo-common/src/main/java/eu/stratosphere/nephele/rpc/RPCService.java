@@ -97,13 +97,17 @@ public final class RPCService {
 	 */
 	private final Timer cleanupTimer = new Timer();
 
-	private final ConcurrentHashMap<String, RPCProtocol> callbackHandlers = new ConcurrentHashMap<String, RPCProtocol>();
+	private final ConcurrentHashMap<String, RPCProtocol> callbackHandlers =
+		new ConcurrentHashMap<String, RPCProtocol>();
 
-	private final ConcurrentHashMap<Integer, RPCRequestMonitor> pendingRequests = new ConcurrentHashMap<Integer, RPCRequestMonitor>();
+	private final ConcurrentHashMap<Integer, RPCRequestMonitor> pendingRequests =
+		new ConcurrentHashMap<Integer, RPCRequestMonitor>();
 
-	private final ConcurrentHashMap<Integer, RPCRequest> requestsBeingProcessed = new ConcurrentHashMap<Integer, RPCRequest>();
+	private final ConcurrentHashMap<Integer, RPCRequest> requestsBeingProcessed =
+		new ConcurrentHashMap<Integer, RPCRequest>();
 
-	private final ConcurrentHashMap<Integer, CachedResponse> cachedResponses = new ConcurrentHashMap<Integer, CachedResponse>();
+	private final ConcurrentHashMap<Integer, CachedResponse> cachedResponses =
+		new ConcurrentHashMap<Integer, CachedResponse>();
 
 	private final List<Class<?>> kryoTypesToRegister;
 
@@ -116,16 +120,15 @@ public final class RPCService {
 		protected Kryo initialValue() {
 
 			final Kryo kryo = new Kryo();
-			if (kryoTypesToRegister != null) {
+			if (RPCService.this.kryoTypesToRegister != null) {
 				kryo.setAutoReset(false);
 				kryo.setRegistrationRequired(true);
 				kryo.setReferences(true);
 				kryo.addDefaultSerializer(StackTraceElement.class, new StackTraceElementSerializer());
 				kryo.addDefaultSerializer(Collection.class, new CollectionSerializer());
 
-				for (final Class<?> kryoType : kryoTypesToRegister) {
+				for (final Class<?> kryoType : RPCService.this.kryoTypesToRegister)
 					kryo.register(kryoType);
-				}
 			}
 
 			return kryo;
@@ -166,10 +169,10 @@ public final class RPCService {
 		@Override
 		public Object invoke(final Object proxy, final Method method, final Object[] args) throws Throwable {
 
-			final int messageID = (int) ((double) Integer.MIN_VALUE + (Math.random() * (double) Integer.MAX_VALUE * 2.0));
+			final int messageID = (int) (Integer.MIN_VALUE + Math.random() * Integer.MAX_VALUE * 2.0);
 			final RPCRequest rpcRequest = new RPCRequest(messageID, this.interfaceName, method, args);
 
-			return sendRPCRequest(this.remoteSocketAddress, rpcRequest);
+			return RPCService.this.sendRPCRequest(this.remoteSocketAddress, rpcRequest);
 		}
 	}
 
@@ -182,20 +185,20 @@ public final class RPCService {
 		public void run() {
 
 			// Process the collected data
-			statistics.processCollectedData();
+			RPCService.this.statistics.processCollectedData();
 
 			final long now = System.currentTimeMillis();
-			final Iterator<Map.Entry<Integer, CachedResponse>> it = cachedResponses.entrySet().iterator();
+			final Iterator<Map.Entry<Integer, CachedResponse>> it =
+				RPCService.this.cachedResponses.entrySet().iterator();
 			while (it.hasNext()) {
 
 				final Map.Entry<Integer, CachedResponse> entry = it.next();
 				final CachedResponse cachedResponse = entry.getValue();
-				if (cachedResponse.creationTime + CLEANUP_INTERVAL < now) {
+				if (cachedResponse.creationTime + CLEANUP_INTERVAL < now)
 					it.remove();
-				}
 			}
 
-			networkThread.cleanUpStaleState();
+			RPCService.this.networkThread.cleanUpStaleState();
 		}
 	}
 
@@ -204,9 +207,9 @@ public final class RPCService {
 
 		this.rpcHandlers = Executors.newFixedThreadPool(numRPCHandlers);
 
-		if (typesToRegister == null) {
+		if (typesToRegister == null)
 			this.kryoTypesToRegister = null;
-		} else {
+		else {
 			ArrayList<Class<?>> kryoTypesToRegister = new ArrayList<Class<?>>();
 			addBasicRPCTypes(kryoTypesToRegister);
 			kryoTypesToRegister.addAll(typesToRegister);
@@ -281,9 +284,9 @@ public final class RPCService {
 
 		this.rpcHandlers = Executors.newFixedThreadPool(numRPCHandlers);
 
-		if (typesToRegister == null) {
+		if (typesToRegister == null)
 			this.kryoTypesToRegister = null;
-		} else {
+		else {
 			ArrayList<Class<?>> kryoTypesToRegister = new ArrayList<Class<?>>();
 			addBasicRPCTypes(kryoTypesToRegister);
 			kryoTypesToRegister.addAll(typesToRegister);
@@ -303,9 +306,8 @@ public final class RPCService {
 		// Check signature of interface before adding it
 		checkRPCProtocol(protocol);
 
-		if (this.callbackHandlers.putIfAbsent(protocol.getName(), callbackHandler) != null) {
+		if (this.callbackHandlers.putIfAbsent(protocol.getName(), callbackHandler) != null)
 			Log.error("There is already a protocol call back handler set for protocol " + protocol.getName());
-		}
 
 	}
 
@@ -317,9 +319,8 @@ public final class RPCService {
 	 */
 	private static final void checkRPCProtocol(final Class<? extends RPCProtocol> protocol) {
 
-		if (!protocol.isInterface()) {
+		if (!protocol.isInterface())
 			throw new IllegalArgumentException("Provided protocol " + protocol + " is not an interface");
-		}
 
 		try {
 			final Method[] methods = protocol.getMethods();
@@ -329,33 +330,27 @@ public final class RPCService {
 				final Class<?>[] exceptionTypes = method.getExceptionTypes();
 				boolean ioExceptionFound = false;
 				boolean interruptedExceptionFound = false;
-				for (int j = 0; j < exceptionTypes.length; ++j) {
-					if (IOException.class.equals(exceptionTypes[j])) {
+				for (int j = 0; j < exceptionTypes.length; ++j)
+					if (IOException.class.equals(exceptionTypes[j]))
 						ioExceptionFound = true;
-					} else if (InterruptedException.class.equals(exceptionTypes[j])) {
+					else if (InterruptedException.class.equals(exceptionTypes[j]))
 						interruptedExceptionFound = true;
-					}
-				}
 
-				if (!ioExceptionFound) {
+				if (!ioExceptionFound)
 					throw new IllegalArgumentException("Method " + method.getName()
 						+ " of protocol " + protocol.getName() + " must be declared to throw an IOException");
-				}
-				if (!interruptedExceptionFound) {
+				if (!interruptedExceptionFound)
 					throw new IllegalArgumentException("Method " + method.getName()
 						+ " of protocol " + protocol.getName() + " must be declared to throw an InterruptedException");
-				}
 			}
 		} catch (SecurityException se) {
-			if (Log.DEBUG) {
+			if (Log.DEBUG)
 				Log.debug(StringUtils.stringifyException(se));
-			}
 		}
 	}
 
 	@SuppressWarnings("unchecked")
-	public <T extends RPCProtocol> T getProxy(final InetSocketAddress remoteAddress, Class<T> protocol)
-			throws IOException {
+	public <T extends RPCProtocol> T getProxy(final InetSocketAddress remoteAddress, Class<T> protocol) {
 
 		final Class<?>[] interfaces = new Class<?>[1];
 		interfaces[0] = protocol;
@@ -376,12 +371,11 @@ public final class RPCService {
 	 */
 	Object sendRPCRequest(final InetSocketAddress remoteSocketAddress, final RPCRequest request) throws Throwable {
 
-		if (this.shutdownRequested.get()) {
+		if (this.shutdownRequested.get())
 			throw new IOException("Shutdown of RPC service has already been requested");
-		}
 
 		final long start = System.currentTimeMillis();
-		DatagramPacket[] packets = messageToPackets(remoteSocketAddress, request);
+		DatagramPacket[] packets = this.messageToPackets(remoteSocketAddress, request);
 		final Integer messageID = Integer.valueOf(request.getMessageID());
 
 		final RPCRequestMonitor requestMonitor = new RPCRequestMonitor();
@@ -405,11 +399,10 @@ public final class RPCService {
 					}
 
 					final long sleepTime = RPC_TIMEOUT - (System.currentTimeMillis() - start);
-					if (sleepTime > 0L) {
+					if (sleepTime > 0L)
 						requestMonitor.wait(sleepTime);
-					} else {
+					else
 						break;
-					}
 				}
 			}
 
@@ -418,10 +411,9 @@ public final class RPCService {
 			this.pendingRequests.remove(messageID);
 		}
 
-		if (rpcResponse == null) {
+		if (rpcResponse == null)
 			throw new IOException("Unable to complete RPC of method " + request.getMethodName() + " on "
 				+ remoteSocketAddress);
-		}
 
 		// Report the successful call to the statistics module
 		final String methodName = request.getMethodName();
@@ -430,17 +422,15 @@ public final class RPCService {
 
 		// TODO: Send clean up message
 
-		if (rpcResponse instanceof RPCReturnValue) {
+		if (rpcResponse instanceof RPCReturnValue)
 			return ((RPCReturnValue) rpcResponse).getRetVal();
-		}
 		throw ((RPCThrowable) rpcResponse).getThrowable();
 	}
 
 	public void shutDown() {
 
-		if (!this.shutdownRequested.compareAndSet(false, true)) {
+		if (!this.shutdownRequested.compareAndSet(false, true))
 			return;
-		}
 
 		// Request shutdown of network thread
 		try {
@@ -473,18 +463,17 @@ public final class RPCService {
 			@Override
 			public void run() {
 
-				final Kryo k = kryo.get();
+				final Kryo k = RPCService.this.kryo.get();
 				k.reset();
 				final RPCEnvelope envelope = k.readObject(input, RPCEnvelope.class);
 				final RPCMessage msg = envelope.getRPCMessage();
 
-				if (msg instanceof RPCRequest) {
-					processIncomingRPCRequest(remoteSocketAddress, (RPCRequest) msg);
-				} else if (msg instanceof RPCResponse) {
-					processIncomingRPCResponse((RPCResponse) msg);
-				} else {
-					processIncomingRPCCleanup(remoteSocketAddress, (RPCCleanup) msg);
-				}
+				if (msg instanceof RPCRequest)
+					RPCService.this.processIncomingRPCRequest(remoteSocketAddress, (RPCRequest) msg);
+				else if (msg instanceof RPCResponse)
+					RPCService.this.processIncomingRPCResponse((RPCResponse) msg);
+				else
+					RPCService.this.processIncomingRPCCleanup(remoteSocketAddress, (RPCCleanup) msg);
 			}
 		};
 
@@ -514,7 +503,7 @@ public final class RPCService {
 			return;
 		}
 
-		final RPCProtocol callbackHandler = callbackHandlers.get(rpcRequest.getInterfaceName());
+		final RPCProtocol callbackHandler = this.callbackHandlers.get(rpcRequest.getInterfaceName());
 		if (callbackHandler == null) {
 			Log.error("Cannot find callback handler for protocol " + rpcRequest.getInterfaceName());
 			this.requestsBeingProcessed.remove(messageID);
@@ -536,14 +525,13 @@ public final class RPCService {
 				// Make sure the stack trace is correctly filled
 				targetException.getStackTrace();
 
-				if (!isThrowableRegistered(targetException.getClass())) {
+				if (!this.isThrowableRegistered(targetException.getClass()))
 					targetException = wrapInIOException(rpcRequest, targetException);
-				}
 
 				rpcResponse = new RPCThrowable(rpcRequest.getMessageID(), targetException);
 			}
-			final DatagramPacket[] packets = messageToPackets(remoteSocketAddress, rpcResponse);
-			cachedResponses.put(messageID, new CachedResponse(System.currentTimeMillis(), packets));
+			final DatagramPacket[] packets = this.messageToPackets(remoteSocketAddress, rpcResponse);
+			this.cachedResponses.put(messageID, new CachedResponse(System.currentTimeMillis(), packets));
 
 			final int numberOfRetries = this.networkThread.send(packets);
 			this.statistics.reportSuccessfulTransmission(rpcRequest.getMethodName() + " (Response)", packets.length,
@@ -625,9 +613,8 @@ public final class RPCService {
 		final RPCRequestMonitor requestMonitor = this.pendingRequests.get(messageID);
 
 		// The caller has already timed out or received an earlier response
-		if (requestMonitor == null) {
+		if (requestMonitor == null)
 			return;
-		}
 
 		synchronized (requestMonitor) {
 			requestMonitor.rpcResponse = rpcResponse;
@@ -635,7 +622,7 @@ public final class RPCService {
 		}
 	}
 
-	void processIncomingRPCCleanup(final InetSocketAddress remoteSocketAddress, final RPCCleanup rpcCleanup) {
+	void processIncomingRPCCleanup(@SuppressWarnings("unused") final InetSocketAddress remoteSocketAddress, final RPCCleanup rpcCleanup) {
 
 		this.cachedResponses.remove(Integer.valueOf(rpcCleanup.getMessageID()));
 	}
@@ -654,11 +641,10 @@ public final class RPCService {
 	 */
 	static short encodeInteger(final int val) {
 
-		if (val < -1 || val > 65534) {
+		if (val < -1 || val > 65534)
 			throw new IllegalArgumentException("Value must be in the range -1 and 65534 but is " + val);
-		}
 
-		return (short) (val - (int) Short.MIN_VALUE + 1);
+		return (short) (val - Short.MIN_VALUE + 1);
 	}
 
 	/**
@@ -670,6 +656,6 @@ public final class RPCService {
 	 */
 	static int decodeInteger(final short val) {
 
-		return (int) val - (int) Short.MIN_VALUE - 1;
+		return val - Short.MIN_VALUE - 1;
 	}
 }

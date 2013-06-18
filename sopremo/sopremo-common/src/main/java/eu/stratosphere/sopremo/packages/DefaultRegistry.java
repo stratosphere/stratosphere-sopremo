@@ -49,19 +49,6 @@ public class DefaultRegistry<T extends ISopremoType> extends AbstractSopremoType
 
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.AbstractSopremoType#copyPropertiesFrom(eu.stratosphere.sopremo.AbstractSopremoType)
-	 */
-	@SuppressWarnings("unchecked")
-	@Override
-	public void copyPropertiesFrom(ISopremoType original) {
-		super.copyPropertiesFrom(original);
-		DefaultRegistry<? extends ISopremoType> originalRegistry = (DefaultRegistry<?>) original;
-		for (Entry<String, ? extends ISopremoType> element : originalRegistry.elements.entrySet())
-			this.put(element.getKey(), (T) element.getValue().clone());
-	}
-
-	/*
-	 * (non-Javadoc)
 	 * @see eu.stratosphere.sopremo.ISopremoType#toString(java.lang.StringBuilder)
 	 */
 	@Override

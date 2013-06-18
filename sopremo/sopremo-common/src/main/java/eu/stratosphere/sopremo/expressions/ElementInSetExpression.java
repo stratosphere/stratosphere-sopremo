@@ -119,6 +119,14 @@ public class ElementInSetExpression extends BinaryBooleanExpression {
 	public EvaluationExpression getElementExpr() {
 		return this.elementExpr;
 	}
+	
+	/* (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.expressions.BinaryBooleanExpression#getExpr1()
+	 */
+	@Override
+	public EvaluationExpression getExpr1() {
+		return this.elementExpr;
+	}
 
 	/**
 	 * Returns the quantor.
@@ -135,6 +143,14 @@ public class ElementInSetExpression extends BinaryBooleanExpression {
 	 * @return the set expression
 	 */
 	public EvaluationExpression getSetExpr() {
+		return this.setExpr;
+	}
+	
+	/* (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.expressions.BinaryBooleanExpression#getExpr2()
+	 */
+	@Override
+	public EvaluationExpression getExpr2() {
 		return this.setExpr;
 	}
 
@@ -165,7 +181,7 @@ public class ElementInSetExpression extends BinaryBooleanExpression {
 		EXISTS_IN, EXISTS_NOT_IN {
 			@Override
 			protected BooleanNode evaluate(final IJsonNode element, final Iterator<IJsonNode> set) {
-				return super.evaluate(element, set) == BooleanNode.TRUE ? BooleanNode.FALSE : BooleanNode.TRUE;
+				return super.evaluate(element, set).negate();
 			}
 		};
 

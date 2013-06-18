@@ -8,6 +8,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+import com.google.common.base.Predicate;
+
 public class CollectionUtil {
 	/**
 	 * Pads the given collection with <code>null</code>s until the collection has at least the given size.
@@ -40,7 +42,7 @@ public class CollectionUtil {
 				final Set<T> alreadySeen = new HashSet<T>();
 				return new FilteringIterator<T>(iterator, new Predicate<T>() {
 					@Override
-					public boolean isTrue(final T param) {
+					public boolean apply(final T param) {
 						return alreadySeen.add(param);
 					};
 				});

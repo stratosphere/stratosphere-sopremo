@@ -24,6 +24,8 @@ import org.antlr.runtime.Token;
 import org.antlr.runtime.TokenStream;
 import org.antlr.runtime.UnwantedTokenException;
 
+import com.google.common.base.Predicates;
+
 import eu.stratosphere.nephele.fs.Path;
 import eu.stratosphere.sopremo.CoreFunctions;
 import eu.stratosphere.sopremo.EvaluationContext;
@@ -51,7 +53,6 @@ import eu.stratosphere.sopremo.pact.SopremoUtil;
 import eu.stratosphere.sopremo.query.ConfObjectInfo.ConfObjectIndexedPropertyInfo;
 import eu.stratosphere.sopremo.query.ConfObjectInfo.ConfObjectPropertyInfo;
 import eu.stratosphere.sopremo.type.IJsonNode;
-import eu.stratosphere.util.IsInstancePredicate;
 
 public abstract class AbstractQueryParser extends Parser implements ParsingScope {
 	/**
@@ -81,8 +82,7 @@ public abstract class AbstractQueryParser extends Parser implements ParsingScope
 	 * 
 	 */
 	private void init() {
-		this.currentPlan
-			.setContext(new EvaluationContext(0, 0, this.getFunctionRegistry(), this.getConstantRegistry()));
+		this.currentPlan.setContext(new EvaluationContext(0, 0, this.getFunctionRegistry(), this.getConstantRegistry()));
 		this.packageManager.getFunctionRegistry().put(CoreFunctions.class);
 		this.packageManager.getFunctionRegistry().put(MathFunctions.class);
 		this.packageManager.getFunctionRegistry().put(SecondOrderFunctions.class);
@@ -106,6 +106,7 @@ public abstract class AbstractQueryParser extends Parser implements ParsingScope
 
 	/*
 	 * (non-Javadoc)
+	 * 
 	 * @see eu.stratosphere.sopremo.query.ParsingScope#getFileFormatRegistry()
 	 */
 	@Override
@@ -127,7 +128,8 @@ public abstract class AbstractQueryParser extends Parser implements ParsingScope
 	//
 	// public <T> T getBinding(Token name, Class<T> expectedType) {
 	// try {
-	// return this.getContext().getBindings().get(name.getText(), expectedType, this.bindingContraints);
+	// return this.getContext().getBindings().get(name.getText(), expectedType,
+	// this.bindingContraints);
 	// } catch (Exception e) {
 	// throw new QueryParserException(e.getMessage(), name);
 	// }
@@ -135,7 +137,8 @@ public abstract class AbstractQueryParser extends Parser implements ParsingScope
 	//
 	// public boolean hasBinding(Token name, Class<?> expectedType) {
 	// try {
-	// Object result = this.getContext().getBindings().get(name.getText(), expectedType, this.bindingContraints);
+	// Object result = this.getContext().getBindings().get(name.getText(),
+	// expectedType, this.bindingContraints);
 	// return result != null;
 	// } catch (Exception e) {
 	// return false;
@@ -187,11 +190,11 @@ public abstract class AbstractQueryParser extends Parser implements ParsingScope
 			paramList.add(0, object);
 		
 		if (callable instanceof Inlineable)
-			return ((Inlineable) callable).getDefinition().clone().replace(new IsInstancePredicate(InputSelection.class),
+			return ((Inlineable) callable).getDefinition().clone().replace(Predicates.instanceOf(InputSelection.class),
 				new TransformFunction() {
 					@Override
 					public EvaluationExpression apply(EvaluationExpression in) {
-						return paramList.get(((InputSelection) in).getIndex());
+						return paramList.get(((InputSelection) in).getIndex()).clone();
 					}
 				});
 		return new FunctionCall(name.getText(), (SopremoFunction) callable, paramList.elements());
@@ -218,13 +221,11 @@ public abstract class AbstractQueryParser extends Parser implements ParsingScope
 	}
 
 	@Override
-	public Object recoverFromMismatchedSet(IntStream input, RecognitionException e, BitSet follow)
-			throws RecognitionException {
+	public Object recoverFromMismatchedSet(IntStream input, RecognitionException e, BitSet follow) throws RecognitionException {
 		throw e;
 	}
 
-	protected ConfObjectInfo<? extends Operator<?>> findOperatorGreedily(String packageName, Token firstWord)
-			throws RecognitionException {
+	protected ConfObjectInfo<? extends Operator<?>> findOperatorGreedily(String packageName, Token firstWord) throws RecognitionException {
 		StringBuilder name = new StringBuilder(firstWord.getText());
 		IntList wordBoundaries = new IntArrayList();
 		wordBoundaries.add(name.length());
@@ -247,11 +248,11 @@ public abstract class AbstractQueryParser extends Parser implements ParsingScope
 			this.input.consume();
 
 		if (info == null)
-			throw new RecognitionExceptionWithUsageHint(firstWord, String.format(
-				"Unknown operator %s; possible alternatives %s", name,
-				this.inputSuggestion.suggest(name, scope.getOperatorRegistry().keySet())));
+			throw new RecognitionExceptionWithUsageHint(firstWord, String.format("Unknown operator %s; possible alternatives %s", name,
+					this.inputSuggestion.suggest(name, scope.getOperatorRegistry().keySet())));
 		/*
-		 * throw new SimpleException(String.format("Unknown operator %s; possible alternatives %s", name,
+		 * throw new SimpleException(String.format(
+		 * "Unknown operator %s; possible alternatives %s", name,
 		 * this.getOperatorSuggestion().suggest(name)), firstWord);
 		 */
 
@@ -329,16 +330,14 @@ public abstract class AbstractQueryParser extends Parser implements ParsingScope
 					return info;
 			}
 
-			SopremoUtil.LOG
-				.warn("Cannot find file format for " + pathName + " using default " + this.getDefaultFileFormat());
+			SopremoUtil.LOG.warn("Cannot find file format for " + pathName + " using default " + this.getDefaultFileFormat());
 			return fileFormatRegistry.get(fileFormatRegistry.getName(this.getDefaultFileFormat()));
 		}
 		ParsingScope scope = this.getScope(packageName);
 		final ConfObjectInfo<SopremoFileFormat> format = scope.getFileFormatRegistry().get(name.getText());
 		if (format == null)
-			throw new RecognitionExceptionWithUsageHint(name, String.format(
-				"Unknown file format %s; possible alternatives %s", name,
-				this.inputSuggestion.suggest(name.getText(), scope.getFileFormatRegistry().keySet())));
+			throw new RecognitionExceptionWithUsageHint(name, String.format("Unknown file format %s; possible alternatives %s", name,
+					this.inputSuggestion.suggest(name.getText(), scope.getFileFormatRegistry().keySet())));
 		return format;
 	}
 
@@ -356,8 +355,7 @@ public abstract class AbstractQueryParser extends Parser implements ParsingScope
 		return scope;
 	}
 
-	protected ConfObjectInfo.ConfObjectPropertyInfo findPropertyRelunctantly(ConfObjectInfo<?> info, Token firstWord)
-			throws RecognitionException {
+	protected ConfObjectInfo.ConfObjectPropertyInfo findPropertyRelunctantly(ConfObjectInfo<?> info, Token firstWord) throws RecognitionException {
 		String name = firstWord.getText();
 		ConfObjectInfo.ConfObjectPropertyInfo property;
 
@@ -370,9 +368,8 @@ public abstract class AbstractQueryParser extends Parser implements ParsingScope
 		}
 
 		if (property == null)
-			throw new RecognitionExceptionWithUsageHint(firstWord, String.format(
-				"Unknown property %s; possible alternatives %s", name,
-				this.inputSuggestion.suggest(name, propertyRegistry.keySet())));
+			throw new RecognitionExceptionWithUsageHint(firstWord, String.format("Unknown property %s; possible alternatives %s", name,
+					this.inputSuggestion.suggest(name, propertyRegistry.keySet())));
 
 		// consume additional tokens
 		for (; lookAhead > 1; lookAhead--)
@@ -381,8 +378,7 @@ public abstract class AbstractQueryParser extends Parser implements ParsingScope
 		return property;
 	}
 
-	public ConfObjectInfo.ConfObjectIndexedPropertyInfo findInputPropertyRelunctantly(ConfObjectInfo<?> info,
-			Token firstWord) {
+	public ConfObjectInfo.ConfObjectIndexedPropertyInfo findInputPropertyRelunctantly(ConfObjectInfo<?> info, Token firstWord) {
 		String name = firstWord.getText();
 		ConfObjectInfo.ConfObjectIndexedPropertyInfo property;
 
@@ -397,8 +393,11 @@ public abstract class AbstractQueryParser extends Parser implements ParsingScope
 		if (property == null)
 			return null;
 		// throw new FailedPredicateException();
-		// throw new QueryParserException(String.format("Unknown property %s; possible alternatives %s", name,
-		// this.inputSuggestion.suggest(name, inputPropertyRegistry)), firstWord);
+		// throw new
+		// QueryParserException(String.format("Unknown property %s; possible alternatives %s",
+		// name,
+		// this.inputSuggestion.suggest(name, inputPropertyRegistry)),
+		// firstWord);
 
 		// consume additional tokens
 		for (; lookAhead > 1; lookAhead--)
@@ -408,8 +407,7 @@ public abstract class AbstractQueryParser extends Parser implements ParsingScope
 	}
 
 	@Override
-	protected Object recoverFromMismatchedToken(IntStream input, int ttype, BitSet follow)
-			throws RecognitionException {
+	protected Object recoverFromMismatchedToken(IntStream input, int ttype, BitSet follow) throws RecognitionException {
 		// if next token is what we are looking for then "delete" this token
 		if (this.mismatchIsUnwantedToken(input, ttype))
 			throw new UnwantedTokenException(ttype, input);
@@ -454,10 +452,12 @@ public abstract class AbstractQueryParser extends Parser implements ParsingScope
 	// */
 	// protected void setupParser() {
 	// if (this.hasParserFlag(ParserFlag.FUNCTION_OBJECTS))
-	// this.bindingContraints = new BindingConstraint[] { BindingConstraint.AUTO_FUNCTION_POINTER,
+	// this.bindingContraints = new BindingConstraint[] {
+	// BindingConstraint.AUTO_FUNCTION_POINTER,
 	// BindingConstraint.NON_NULL };
 	// else
-	// this.bindingContraints = new BindingConstraint[] { BindingConstraint.NON_NULL };
+	// this.bindingContraints = new BindingConstraint[] {
+	// BindingConstraint.NON_NULL };
 	// }
 	//
 	public void addFunction(String name, ExpressionFunction function) {

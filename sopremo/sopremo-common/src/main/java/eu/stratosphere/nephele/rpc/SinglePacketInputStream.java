@@ -35,7 +35,7 @@ final class SinglePacketInputStream extends InputStream {
 
 	@Override
 	public int available() {
-		return (this.len - this.read);
+		return this.len - this.read;
 	}
 
 	@Override
@@ -43,6 +43,7 @@ final class SinglePacketInputStream extends InputStream {
 		// Nothing to do here
 	}
 
+	@SuppressWarnings("sync-override")
 	@Override
 	public void mark(final int readlimit) {
 		// Nothing to do here
@@ -56,9 +57,8 @@ final class SinglePacketInputStream extends InputStream {
 	@Override
 	public int read() throws IOException {
 
-		if (this.read == this.len) {
+		if (this.read == this.len)
 			return -1;
-		}
 
 		return this.buf[this.read++];
 	}
@@ -66,15 +66,14 @@ final class SinglePacketInputStream extends InputStream {
 	@Override
 	public int read(final byte[] b) {
 
-		return read(b, 0, b.length);
+		return this.read(b, 0, b.length);
 	}
 
 	@Override
 	public int read(final byte[] b, final int off, final int len) {
 
-		if (this.read == this.len) {
+		if (this.read == this.len)
 			return -1;
-		}
 
 		final int r = Math.min(len, this.len - this.read);
 		System.arraycopy(this.buf, this.read, b, off, r);
@@ -83,6 +82,7 @@ final class SinglePacketInputStream extends InputStream {
 		return r;
 	}
 
+	@SuppressWarnings("sync-override")
 	@Override
 	public void reset() {
 		this.read = 0;

@@ -10,6 +10,7 @@ import eu.stratosphere.sopremo.base.replace.StrictReplace;
 import eu.stratosphere.sopremo.expressions.ArrayAccess;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
 import eu.stratosphere.sopremo.expressions.JsonStreamExpression;
+import eu.stratosphere.sopremo.expressions.PathSegmentExpression;
 import eu.stratosphere.sopremo.expressions.UnaryExpression;
 import eu.stratosphere.sopremo.expressions.UnevaluableExpression;
 import eu.stratosphere.sopremo.operator.CompositeOperator;
@@ -24,7 +25,7 @@ import eu.stratosphere.sopremo.operator.SopremoModule;
 @Name(verb = "replace")
 public class Replace extends CompositeOperator<Replace> {
 
-	private EvaluationExpression replaceExpression = EvaluationExpression.VALUE;
+	private PathSegmentExpression replaceExpression = EvaluationExpression.VALUE;
 
 	public final static EvaluationExpression FILTER_RECORDS = new UnevaluableExpression("<filter>");
 
@@ -142,7 +143,7 @@ public class Replace extends CompositeOperator<Replace> {
 		return this.dictionaryValueExtraction;
 	}
 
-	public EvaluationExpression getReplaceExpression() {
+	public PathSegmentExpression getReplaceExpression() {
 		return this.replaceExpression;
 	}
 
@@ -213,7 +214,7 @@ public class Replace extends CompositeOperator<Replace> {
 
 	@Property()
 	@Name(preposition = "on")
-	public void setReplaceExpression(EvaluationExpression inputKeyExtract) {
+	public void setReplaceExpression(PathSegmentExpression inputKeyExtract) {
 		if (inputKeyExtract == null)
 			throw new NullPointerException("inputKeyExtract must not be null");
 
@@ -240,7 +241,7 @@ public class Replace extends CompositeOperator<Replace> {
 		return this;
 	}
 
-	public Replace withReplaceExpression(EvaluationExpression inputKeyExtract) {
+	public Replace withReplaceExpression(PathSegmentExpression inputKeyExtract) {
 		this.setReplaceExpression(inputKeyExtract);
 		return this;
 	}

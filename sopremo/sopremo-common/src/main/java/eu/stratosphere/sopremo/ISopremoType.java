@@ -15,7 +15,6 @@
 package eu.stratosphere.sopremo;
 
 import java.io.IOException;
-import java.io.Serializable;
 
 /**
  * Interface for all types.
@@ -24,6 +23,4 @@ import java.io.Serializable;
  */
 public interface ISopremoType extends ICloneable {
 	public void appendAsString(Appendable appendable) throws IOException;
-
-	public void copyPropertiesFrom(ISopremoType original);
 }

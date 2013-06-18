@@ -7,8 +7,9 @@ import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.google.common.base.Predicate;
+
 import eu.stratosphere.util.FilteringIterable;
-import eu.stratosphere.util.Predicate;
 
 public class DynamicClass<DeclaringClass> {
 	private DynamicConstructor<DeclaringClass> constructor;
@@ -109,7 +110,7 @@ public class DynamicClass<DeclaringClass> {
 	public <BaseType> Iterable<DynamicProperty<BaseType>> getProperties(final Class<BaseType> baseType) {
 		return new FilteringIterable(this.getProperties(), new Predicate<DynamicProperty>() {
 			@Override
-			public boolean isTrue(final DynamicProperty property) {
+			public boolean apply(final DynamicProperty property) {
 				return baseType.isAssignableFrom(property.getType());
 			}
 		});

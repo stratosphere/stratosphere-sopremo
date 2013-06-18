@@ -18,5 +18,7 @@ package eu.stratosphere.sopremo.expressions;
  * @author Arvid Heise
  */
 public abstract class BinaryBooleanExpression extends BooleanExpression {
-
+	public abstract EvaluationExpression getExpr1();
+	
+	public abstract EvaluationExpression getExpr2();
 }

@@ -23,6 +23,7 @@ import java.util.List;
 import junit.framework.Assert;
 import eu.stratosphere.sopremo.operator.Operator;
 import eu.stratosphere.sopremo.operator.SopremoPlan;
+import eu.stratosphere.sopremo.testing.SopremoTestPlan;
 //import eu.stratosphere.sopremo.testing.SopremoTestPlan;
 
 /**
@@ -31,7 +32,7 @@ import eu.stratosphere.sopremo.operator.SopremoPlan;
 public class SopremoTestUtil {
 
 	/**
-	 * Initializes SopremoTestUtil.
+	 * Initializes EqualCloneTestUtil.
 	 */
 	public SopremoTestUtil() {
 		super();
@@ -55,16 +56,15 @@ public class SopremoTestUtil {
 		}
 	}
 
-	// TODO mleich: re-enable tests!
-//	public static String getResourcePath(final String resource) {
-//		try {
-//			final Enumeration<URL> resources = SopremoTestPlan.class.getClassLoader().getResources(resource);
-//			if (resources.hasMoreElements())
-//				return resources.nextElement().toString();
-//		} catch (final IOException e) {
-//			throw new IllegalStateException(e);
-//		}
-//		throw new IllegalArgumentException("no resources found");
-//	}
+	public static String getResourcePath(final String resource) {
+		try {
+			final Enumeration<URL> resources = SopremoTestPlan.class.getClassLoader().getResources(resource);
+			if (resources.hasMoreElements())
+				return resources.nextElement().toString();
+		} catch (final IOException e) {
+			throw new IllegalStateException(e);
+		}
+		throw new IllegalArgumentException("no resources found");
+	}
 
 }

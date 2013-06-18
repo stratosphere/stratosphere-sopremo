@@ -23,7 +23,7 @@ public class MaterializingAggregation extends Aggregation {
 	 */
 	@Override
 	public void initialize() {
-		this.aggregator.clear();
+		this.aggregator.setSize(0);
 	}
 
 	/*

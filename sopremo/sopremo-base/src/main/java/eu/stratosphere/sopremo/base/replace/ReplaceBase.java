@@ -16,28 +16,29 @@ package eu.stratosphere.sopremo.base.replace;
 
 import eu.stratosphere.sopremo.expressions.ArrayAccess;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
+import eu.stratosphere.sopremo.expressions.PathSegmentExpression;
 import eu.stratosphere.sopremo.operator.ElementaryOperator;
 import eu.stratosphere.sopremo.operator.Property;
 
 public abstract class ReplaceBase<Self extends ReplaceBase<Self>> extends ElementaryOperator<Self> {
 
-	protected EvaluationExpression replaceExpression = EvaluationExpression.VALUE;
+	protected PathSegmentExpression replaceExpression = EvaluationExpression.VALUE;
 
 	protected EvaluationExpression dictionaryValueExtraction = new ArrayAccess(1);
 
 	@Property
-	public void setReplaceExpression(EvaluationExpression inputKeyExtractor) {
+	public void setReplaceExpression(PathSegmentExpression inputKeyExtractor) {
 		if (inputKeyExtractor == null)
 			throw new NullPointerException("inputKeyExtractor must not be null");
 
 		this.replaceExpression = inputKeyExtractor;
 	}
 
-	public EvaluationExpression getReplaceExpression() {
+	public PathSegmentExpression getReplaceExpression() {
 		return this.replaceExpression;
 	}
 
-	public Self withReplaceExpression(EvaluationExpression replaceExpression) {
+	public Self withReplaceExpression(PathSegmentExpression replaceExpression) {
 		this.setReplaceExpression(replaceExpression);
 		return this.self();
 	}

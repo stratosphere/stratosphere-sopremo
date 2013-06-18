@@ -155,7 +155,7 @@ public class ClientFrontend {
 	public String getMetaData(String key) {
 		System.out.println("returning metadata for " + currentSopremoID);
 		if (currentSopremoID != null) {
-			return sopremoClient.getMetaData(currentSopremoID, key);
+			return sopremoClient.getMetaData(currentSopremoID, key).toString();
 		}
 		return null;
 	}

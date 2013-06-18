@@ -11,7 +11,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import eu.stratosphere.sopremo.CoreFunctions;
-import eu.stratosphere.sopremo.SopremoRuntime;
 import eu.stratosphere.sopremo.expressions.ArithmeticExpression.ArithmeticOperator;
 import eu.stratosphere.sopremo.expressions.BatchAggregationExpression.Partial;
 import eu.stratosphere.sopremo.type.IArrayNode;

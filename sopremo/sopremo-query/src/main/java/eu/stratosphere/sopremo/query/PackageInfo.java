@@ -168,22 +168,7 @@ public class PackageInfo extends AbstractSopremoType implements ISopremoType, Pa
 	public IFunctionRegistry getFunctionRegistry() {
 		return this.functionRegistry;
 	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.AbstractSopremoType#copyPropertiesFrom(eu.stratosphere.sopremo.AbstractSopremoType)
-	 */
-	@Override
-	public void copyPropertiesFrom(ISopremoType original) {
-		super.copyPropertiesFrom(original);
-		PackageInfo origInfo = (PackageInfo) original;
-		this.constantRegistry.copyPropertiesFrom(origInfo.constantRegistry);
-		this.functionRegistry.copyPropertiesFrom(origInfo.functionRegistry);
-		this.operatorRegistry.copyPropertiesFrom(origInfo.operatorRegistry);
-		this.fileFormatRegistry.copyPropertiesFrom(origInfo.fileFormatRegistry);
-		this.packagePath = origInfo.packagePath;
-	}
-
+	
 	/*
 	 * (non-Javadoc)
 	 * @see java.lang.Object#toString()

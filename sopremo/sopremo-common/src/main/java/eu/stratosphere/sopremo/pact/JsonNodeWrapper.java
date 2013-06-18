@@ -7,11 +7,9 @@ import java.io.IOException;
 import eu.stratosphere.pact.common.type.Key;
 import eu.stratosphere.pact.common.type.Value;
 import eu.stratosphere.sopremo.AbstractSopremoType;
-import eu.stratosphere.sopremo.ISopremoType;
 import eu.stratosphere.sopremo.type.IJsonNode;
 import eu.stratosphere.sopremo.type.IJsonNode.Type;
 import eu.stratosphere.sopremo.type.MissingNode;
-import eu.stratosphere.util.reflect.ReflectUtil;
 
 /**
  * A JsonNodeWrapper wraps a {@link IJsonNode} and adds some new functionality which
@@ -134,17 +132,6 @@ public class JsonNodeWrapper extends AbstractSopremoType implements Key, Value {
 		this.value.appendAsString(sb);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.AbstractSopremoType#copyPropertiesFrom(eu.stratosphere.sopremo.ISopremoType)
-	 */
-	@Override
-	public void copyPropertiesFrom(ISopremoType original) {
-		final JsonNodeWrapper wrapper = (JsonNodeWrapper) original;
-		if (this.value.getType() != wrapper.value.getType())
-			this.value = ReflectUtil.newInstance(wrapper.value.getType().getClazz());
-		this.value.copyValueFrom(wrapper.value);
-	}
 //
 //	@Override
 //	public int getMaxNormalizedKeyLen() {

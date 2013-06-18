@@ -17,6 +17,7 @@ package eu.stratosphere.sopremo.base.replace;
 import java.util.Iterator;
 
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
+import eu.stratosphere.sopremo.expressions.PathSegmentExpression;
 import eu.stratosphere.sopremo.operator.InputCardinality;
 import eu.stratosphere.sopremo.operator.Property;
 import eu.stratosphere.sopremo.pact.JsonCollector;
@@ -46,7 +47,7 @@ public class ReplaceWithDefaultValue extends ReplaceBase<ReplaceWithDefaultValue
 	}
 
 	public static class Implementation extends SopremoCoGroup {
-		private EvaluationExpression replaceExpression;
+		private PathSegmentExpression replaceExpression;
 
 		private EvaluationExpression dictionaryValueExtraction, defaultExpression;
 

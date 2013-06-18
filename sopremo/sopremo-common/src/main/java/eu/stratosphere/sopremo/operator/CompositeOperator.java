@@ -57,6 +57,17 @@ public abstract class CompositeOperator<Self extends CompositeOperator<Self>> ex
 		SopremoModule module = new SopremoModule(this.getNumInputs(), this.getNumOutputs());
 		module.setName(this.toString());
 		this.addImplementation(module, context);
+
+		// inherit the CompositeOperator's DoP, if it was not changed by the
+		// Operator developer explicitly.
+		if (this.getDegreeOfParallelism() != Operator.STANDARD_DEGREE_OF_PARALLELISM) {
+			for (Operator<?> moduleOperator : module.getReachableNodes()) {
+				if (moduleOperator.getDegreeOfParallelism() == Operator.STANDARD_DEGREE_OF_PARALLELISM) {
+					moduleOperator.setDegreeOfParallelism(this.getDegreeOfParallelism());
+				}
+			}
+		}
+		
 		module.validate();
 		return module.asElementary(context);
 	}

@@ -34,18 +34,18 @@ public class SopremoJobInfo {
 	private JobClient jobClient;
 
 	private final SopremoID jobId;
-	
-	private Map<String, String> metadata;
-	
+
+	private Map<String, Object> metadata;
+
 	public static final String PREOPTMIZEDPACTPLANJSON = "pre.optmized.pact.plan.json";
-	
+
 	public static final String OPTMIZEDPACTPLANJSON = "optmized.pact.plan.json";
 
 	public SopremoJobInfo(SopremoID jobId, ExecutionRequest initialRequest, Configuration configuration) {
 		this.initialRequest = initialRequest;
 		this.configuration = configuration;
 		this.jobId = jobId;
-		this.metadata = new HashMap<String, String> ();
+		this.metadata = new HashMap<String, Object>();
 	}
 
 	/**
@@ -126,12 +126,12 @@ public class SopremoJobInfo {
 		this.status = status;
 		this.detail = detail;
 	}
-	
-	protected void setMetaData (String key, String value) {
-		metadata.put(key, value);
+
+	public void setMetaData(String key, String value) {
+		this.metadata.put(key, value);
 	}
-	
-	public String getMetaData (String key) {
-		return metadata.get(key);
+
+	public Object getMetaData(String key) {
+		return this.metadata.get(key);
 	}
 }

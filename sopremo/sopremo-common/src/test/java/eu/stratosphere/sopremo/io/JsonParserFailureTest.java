@@ -1,6 +1,6 @@
 /***********************************************************************************************************************
  *
- * Copyright (C) 2010-2013 by the Stratosphere project (http://stratosphere.eu)
+ * Copyright (C) 2010 by the Stratosphere project (http://stratosphere.eu)
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -12,31 +12,20 @@
  * specific language governing permissions and limitations under the License.
  *
  **********************************************************************************************************************/
-package eu.stratosphere.util;
+package eu.stratosphere.sopremo.io;
+
+import org.junit.Test;
 
 /**
- * @author Arvid Heise
+ * 
  */
-public class IsEqualPredicate implements Predicate<Object> {
-	private final Object object;
+public class JsonParserFailureTest {
+	@Test(expected = JsonParseException.class)
+	public void shouldFailOnMissingComma() throws JsonParseException {
 
-	/**
-	 * Initializes EqualPredicate with the given object.
-	 * 
-	 * @param object
-	 *        the object to compare to
-	 */
-	public IsEqualPredicate(final Object object) {
-		this.object = object;
+		final JsonParser parser = new JsonParser("[{id:1},{id:2}{id:3},{id:4}]");
+
+		for (int index = 0; index < 3; index++) 
+			parser.readValueAsTree();
 	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.util.Predicate#isTrue(java.lang.Object)
-	 */
-	@Override
-	public boolean isTrue(final Object param) {
-		return this.object.equals(param);
-	}
-
 }

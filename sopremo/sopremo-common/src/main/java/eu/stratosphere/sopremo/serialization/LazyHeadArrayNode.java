@@ -7,7 +7,6 @@ import java.util.Iterator;
 
 import com.google.common.collect.Iterators;
 
-import eu.stratosphere.sopremo.ISopremoType;
 import eu.stratosphere.sopremo.type.AbstractArrayNode;
 import eu.stratosphere.sopremo.type.IArrayNode;
 import eu.stratosphere.sopremo.type.IJsonNode;
@@ -38,15 +37,6 @@ class LazyHeadArrayNode extends AbstractArrayNode<IJsonNode> {
 	 */
 	LazyHeadArrayNode() {
 		this.headSize = 0;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.type.AbstractJsonNode#copyPropertiesFrom(eu.stratosphere.sopremo.ISopremoType)
-	 */
-	@Override
-	public void copyPropertiesFrom(ISopremoType original) {
-		this.record = (SopremoRecord) ((LazyHeadArrayNode) original).record.clone();
 	}
 
 	/**

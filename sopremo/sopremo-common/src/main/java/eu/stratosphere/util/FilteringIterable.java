@@ -16,6 +16,8 @@ package eu.stratosphere.util;
 
 import java.util.Iterator;
 
+import com.google.common.base.Predicate;
+
 /**
  * Filters the elements of an {@link Iterable} with a given {@link Predicate}.<br>
  * Changes to the parameters are directly reflected in the result.

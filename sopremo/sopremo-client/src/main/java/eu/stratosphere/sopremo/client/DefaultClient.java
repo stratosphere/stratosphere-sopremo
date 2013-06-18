@@ -15,7 +15,6 @@
 package eu.stratosphere.sopremo.client;
 
 import java.io.Closeable;
-import java.io.DataInput;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -66,7 +65,7 @@ public class DefaultClient implements Closeable {
 	private Configuration configuration;
 
 	private RPCService rpcService;
-	
+
 	private SopremoExecutionProtocol executor;
 
 	private InetSocketAddress serverAddress;
@@ -179,9 +178,9 @@ public class DefaultClient implements Closeable {
 	}
 
 	public SopremoID submit(SopremoPlan plan, ProgressListener progressListener, boolean wait) {
-		if(plan == null)
+		if (plan == null)
 			throw new NullPointerException();
-		
+
 		if (progressListener == null)
 			progressListener = new DummyListener();
 		System.out.println("Init connection");
@@ -191,7 +190,7 @@ public class DefaultClient implements Closeable {
 			System.out.println("did not transfer libraries!");
 			return null;
 		}
-			
+
 		System.out.println("Sending plan");
 		final ExecutionResponse response = this.sendPlan(plan, progressListener);
 		if (response == null)
@@ -232,7 +231,7 @@ public class DefaultClient implements Closeable {
 			LibraryCacheProfileResponse response = null;
 			response = this.executor.getLibraryCacheProfile(request);
 			System.out.println("Received response");
-			
+
 			// Check response and transfer libraries if necessary
 			for (int k = 0; k < internalJarNames.length; k++)
 				if (!response.isCached(k)) {
@@ -343,11 +342,11 @@ public class DefaultClient implements Closeable {
 			return null;
 		}
 	}
-	
-	public String getMetaData (SopremoID id, String key) {
-		String result = null;
+
+	public Object getMetaData(SopremoID id, String key) {
+		Object result = null;
 		try {
-			result = executor.getMetaData(id, key);
+			result = this.executor.getMetaData(id, key);
 		} catch (InterruptedException e) {
 			System.out.println(e);
 			e.printStackTrace(System.out);

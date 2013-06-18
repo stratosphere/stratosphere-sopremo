@@ -80,12 +80,14 @@ final class NetworkThread extends Thread {
 	/**
 	 * A map of all outstanding transmissions, i.e. transmissions that still require an acknowledgment.
 	 */
-	private final ConcurrentHashMap<Integer, OutstandingTransmission> outstandingTransmissions = new ConcurrentHashMap<Integer, OutstandingTransmission>();
+	private final ConcurrentHashMap<Integer, OutstandingTransmission> outstandingTransmissions =
+		new ConcurrentHashMap<Integer, OutstandingTransmission>();
 
 	/**
 	 * A map of all incompletely received sequences of datagram packets.
 	 */
-	private final ConcurrentHashMap<Integer, MultiPacketInputStream> incompleteInputStreams = new ConcurrentHashMap<Integer, MultiPacketInputStream>();
+	private final ConcurrentHashMap<Integer, MultiPacketInputStream> incompleteInputStreams =
+		new ConcurrentHashMap<Integer, MultiPacketInputStream>();
 
 	/**
 	 * Stores whether the thread has been requested to stop and shut down.
@@ -106,11 +108,10 @@ final class NetworkThread extends Thread {
 		super("RPC Network Thread");
 
 		this.rpcService = rpcService;
-		if (rpcPort == -1) {
+		if (rpcPort == -1)
 			this.socket = new DatagramSocket();
-		} else {
+		else
 			this.socket = new DatagramSocket(rpcPort);
-		}
 	}
 
 	/**
@@ -130,9 +131,8 @@ final class NetworkThread extends Thread {
 			try {
 				this.socket.receive(dataDP);
 			} catch (SocketException se) {
-				if (this.shutdownRequested) {
+				if (this.shutdownRequested)
 					return;
-				}
 				Log.error("Shutting down receiver thread due to error: ", se);
 				return;
 			} catch (IOException ioe) {
@@ -151,14 +151,13 @@ final class NetworkThread extends Thread {
 
 				final Integer msgID = Integer.valueOf(messageID);
 				final OutstandingTransmission outstandingTransmission = this.outstandingTransmissions.get(msgID);
-				if (outstandingTransmission != null) {
+				if (outstandingTransmission != null)
 					synchronized (outstandingTransmission) {
 						if (outstandingTransmission.lastAckedPacket < ackedPacket) {
 							outstandingTransmission.lastAckedPacket = ackedPacket;
 							outstandingTransmission.notify();
 						}
 					}
-				}
 
 				continue;
 			}
@@ -178,9 +177,8 @@ final class NetworkThread extends Thread {
 				try {
 					this.socket.send(ackDP);
 				} catch (IOException ioe) {
-					if (this.shutdownRequested) {
+					if (this.shutdownRequested)
 						return;
-					}
 					Log.error("Shutting down receiver thread due to error: ", ioe);
 					return;
 				}
@@ -201,9 +199,8 @@ final class NetworkThread extends Thread {
 				if (mpis == null) {
 					mpis = new MultiPacketInputStream(numberOfPackets);
 					final MultiPacketInputStream oldVal = this.incompleteInputStreams.putIfAbsent(msgID, mpis);
-					if (oldVal != null) {
+					if (oldVal != null)
 						mpis = oldVal;
-					}
 				}
 
 				final int packetIndex = RPCService.decodeInteger(NumberUtils.byteArrayToShort(dbbuf, length));
@@ -212,14 +209,13 @@ final class NetworkThread extends Thread {
 					// Generate acknowledgment for last received packet (works like NACK)
 					final InetSocketAddress remoteSocketAddress = (InetSocketAddress) dataDP.getSocketAddress();
 					NumberUtils.integerToByteArray(messageID, ackBuf, 0);
-					NumberUtils.shortToByteArray(RPCService.encodeInteger((expectedIndex - 1)), ackBuf, 4);
+					NumberUtils.shortToByteArray(RPCService.encodeInteger(expectedIndex - 1), ackBuf, 4);
 					ackDP.setSocketAddress(remoteSocketAddress);
 					try {
 						this.socket.send(ackDP);
 					} catch (IOException ioe) {
-						if (this.shutdownRequested) {
+						if (this.shutdownRequested)
 							return;
-						}
 						Log.error("Shutting down receiver thread due to error: ", ioe);
 						return;
 					}
@@ -227,7 +223,7 @@ final class NetworkThread extends Thread {
 				}
 
 				// Acknowledge every 10th packet and last packet of the sequence
-				if (((packetIndex - 1) % 10 == 0) || (packetIndex == (numberOfPackets - 1))) {
+				if ((packetIndex - 1) % 10 == 0 || packetIndex == numberOfPackets - 1) {
 					final InetSocketAddress remoteSocketAddress = (InetSocketAddress) dataDP.getSocketAddress();
 					NumberUtils.integerToByteArray(messageID, ackBuf, 0);
 					NumberUtils.shortToByteArray(RPCService.encodeInteger(packetIndex), ackBuf, 4);
@@ -235,9 +231,8 @@ final class NetworkThread extends Thread {
 					try {
 						this.socket.send(ackDP);
 					} catch (IOException ioe) {
-						if (this.shutdownRequested) {
+						if (this.shutdownRequested)
 							return;
-						}
 						Log.error("Shutting down receiver thread due to error: ", ioe);
 						return;
 					}
@@ -266,7 +261,7 @@ final class NetworkThread extends Thread {
 		this.shutdownRequested = true;
 		this.socket.close();
 		interrupted();
-		join();
+		this.join();
 	}
 
 	/**
@@ -281,7 +276,7 @@ final class NetworkThread extends Thread {
 	 *         thrown if the calling thread is interrupted while waiting for the acknowledgments
 	 */
 	int send(final DatagramPacket[] packets) throws IOException, InterruptedException {
-		return send(packets, true);
+		return this.send(packets, true);
 	}
 
 	/**
@@ -299,9 +294,8 @@ final class NetworkThread extends Thread {
 	 */
 	int send(final DatagramPacket[] packets, final boolean waitForAck) throws IOException, InterruptedException {
 
-		if (packets.length == 0) {
+		if (packets.length == 0)
 			return 0;
-		}
 
 		final OutstandingTransmission outstandingTransmission = new OutstandingTransmission();
 		final int messageID = NumberUtils.byteArrayToInteger(packets[0].getData(), packets[0].getLength()
@@ -311,9 +305,8 @@ final class NetworkThread extends Thread {
 		// Just send out all the packets at once and return
 		if (!waitForAck) {
 
-			for (int j = 0; j < packets.length; ++j) {
+			for (int j = 0; j < packets.length; ++j)
 				this.socket.send(packets[j]);
-			}
 
 			return 0;
 		}
@@ -332,18 +325,16 @@ final class NetworkThread extends Thread {
 					// Timeout: resend all packets from last acknowledged one
 					final int newNextPacketToSend = Math.min(packets.length, lastAckedPacket
 						+ MAXIMUM_NUMBER_OF_OUTSTANDING_PACKETS + 1);
-					for (int j = lastAckedPacket + 1; j < newNextPacketToSend; ++j) {
+					for (int j = lastAckedPacket + 1; j < newNextPacketToSend; ++j)
 						this.socket.send(packets[j]);
-					}
 					nextPacketToSend = newNextPacketToSend;
 				} else {
 					// Move sending window forward
 					final int numberOfOutstandingPackets = nextPacketToSend - lastAckedPacket - 1;
 					final int newNextPacketToSend = Math.min(packets.length, nextPacketToSend
-						+ (MAXIMUM_NUMBER_OF_OUTSTANDING_PACKETS - numberOfOutstandingPackets));
-					for (int j = nextPacketToSend; j < newNextPacketToSend; ++j) {
+						+ MAXIMUM_NUMBER_OF_OUTSTANDING_PACKETS - numberOfOutstandingPackets);
+					for (int j = nextPacketToSend; j < newNextPacketToSend; ++j)
 						this.socket.send(packets[j]);
-					}
 					nextPacketToSend = newNextPacketToSend;
 				}
 
@@ -352,14 +343,12 @@ final class NetworkThread extends Thread {
 					// Check if we have already received all acknowledgments
 					lastAckedPacket = outstandingTransmission.lastAckedPacket;
 					if (lastAckedPacket == nextPacketToSend - 1) {
-						if (nextPacketToSend == packets.length) {
+						if (nextPacketToSend == packets.length)
 							// If that was all the packets we had to send, we are done
 							break;
-						} else {
-							// Continue to send next batch of packets
-							timeout = false;
-							continue;
-						}
+						// Continue to send next batch of packets
+						timeout = false;
+						continue;
 					}
 
 					outstandingTransmission.wait(RETRANSMISSION_TIMEOUT);
@@ -368,21 +357,16 @@ final class NetworkThread extends Thread {
 					if (lastAckedPacket == newLastAcked) {
 						// We did not receive a single ACK during the last wait period
 						timeout = true;
-						if (++retryCounter == MAXIMUM_NUMBER_OF_RETRANSMISSIONS) {
+						if (++retryCounter == MAXIMUM_NUMBER_OF_RETRANSMISSIONS)
 							break;
-						} else {
-							continue;
-						}
-					} else {
-						timeout = false;
-						lastAckedPacket = newLastAcked;
-						if (lastAckedPacket == nextPacketToSend - 1) {
-							if (nextPacketToSend == packets.length) {
-								break;
-							} else {
-								continue;
-							}
-						}
+						continue;
+					}
+					timeout = false;
+					lastAckedPacket = newLastAcked;
+					if (lastAckedPacket == nextPacketToSend - 1) {
+						if (nextPacketToSend == packets.length)
+							break;
+						continue;
 					}
 				}
 			}
@@ -393,9 +377,8 @@ final class NetworkThread extends Thread {
 			this.outstandingTransmissions.remove(msgID);
 		}
 
-		if (lastAckedPacket != (packets.length - 1)) {
+		if (lastAckedPacket != packets.length - 1)
 			throw new IOException("Unable to send RPC request to " + packets[0].getSocketAddress());
-		}
 
 		return retryCounter;
 	}
@@ -407,11 +390,8 @@ final class NetworkThread extends Thread {
 
 		final long now = System.currentTimeMillis();
 		final Iterator<MultiPacketInputStream> it = this.incompleteInputStreams.values().iterator();
-		while (it.hasNext()) {
-
-			if ((it.next().getCreationTime() + RPCService.CLEANUP_INTERVAL) < now) {
+		while (it.hasNext())
+			if (it.next().getCreationTime() + RPCService.CLEANUP_INTERVAL < now)
 				it.remove();
-			}
-		}
 	}
 }

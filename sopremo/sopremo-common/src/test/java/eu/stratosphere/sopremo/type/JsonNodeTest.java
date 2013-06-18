@@ -5,7 +5,6 @@ import junit.framework.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import eu.stratosphere.pact.common.type.NormalizableKey;
 import eu.stratosphere.sopremo.EqualCloneTest;
 import eu.stratosphere.util.reflect.BoundTypeUtil;
 import eu.stratosphere.util.reflect.ReflectUtil;

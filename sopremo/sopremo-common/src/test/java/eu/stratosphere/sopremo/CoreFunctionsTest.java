@@ -5,30 +5,20 @@ import static eu.stratosphere.sopremo.FunctionTest.assertReturn;
 import static eu.stratosphere.sopremo.type.JsonUtil.createArrayNode;
 import static eu.stratosphere.sopremo.type.JsonUtil.createCompactArray;
 
-import java.io.File;
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
-import junit.framework.Assert;
-
-import org.apache.commons.io.FileUtils;
 import org.junit.Test;
 
-import eu.stratosphere.sopremo.io.JsonParseException;
-import eu.stratosphere.sopremo.io.JsonParser;
 import eu.stratosphere.sopremo.type.DoubleNode;
 import eu.stratosphere.sopremo.type.IArrayNode;
-import eu.stratosphere.sopremo.type.IJsonNode;
 import eu.stratosphere.sopremo.type.IntNode;
-import eu.stratosphere.sopremo.type.JavaToJsonMapper;
 import eu.stratosphere.sopremo.type.JsonUtil;
-import eu.stratosphere.sopremo.type.NullNode;
+import eu.stratosphere.sopremo.type.MissingNode;
 
 /**
  * Tests {@link BuiltinFunctions}
- * 
  */
 public class CoreFunctionsTest {
 
@@ -189,16 +179,16 @@ public class CoreFunctionsTest {
 			createArrayNode(1, 2, 3), createArrayNode(4, 5, 6));
 	}
 
-	// /**
-	// *
-	// */
-	// @Test
-	// public void shouldUnionAllStreamArrays() {
-	// Assert.assertEquals(
-	// JsonUtil.createArrayNode(1, 2, 3, 4, 5, 6),
-	// CoreFunctions.unionAll(JsonUtil.createArrayNode(1, 2, 3), JsonUtil.createArrayNode(4, 5),
-	// JsonUtil.createArrayNode(6)));
-	// }
+	/**
+	 *
+	 */
+	@Test
+	public void shouldUnionAllStreamArrays() {
+		assertReturn(JsonUtil.createArrayNode(1, 2, 3, 4, 5, 6), CoreFunctions.UNION_ALL,
+			JsonUtil.createStreamArrayNode(1, 2, 3),
+			JsonUtil.createStreamArrayNode(4, 5),
+			JsonUtil.createStreamArrayNode(6));
+	}
 
 	@Test
 	public void shouldCalculateMean() {
@@ -214,14 +204,10 @@ public class CoreFunctionsTest {
 		assertReturn(250.0, CoreFunctions.MEAN, numbers.toArray());
 	}
 
-	// Assertion failed: Expected <NaN> but was: <NaN>
-	// @Test
-	// public void shouldReturnNanIfMeanNotAggregated() {
-	// BuiltinFunctions.AVERAGE.initialize();
-	//
-	// Assert.assertEquals(DoubleNode.valueOf(Double.NaN),
-	// BuiltinFunctions.AVERAGE.getFinalAggregate());
-	// }
+	@Test
+	public void shouldReturnMissingIfMeanNotAggregated() {
+		assertReturn(MissingNode.getInstance(), CoreFunctions.MEAN);
+	}
 
 	@Test
 	public void shouldReturnCorrectSubstring() {
@@ -231,36 +217,5 @@ public class CoreFunctionsTest {
 	@Test
 	public void shouldCreateRightCamelCaseRepresentation() {
 		assertReturn("This Is Just A Test !!!", CoreFunctions.CAMEL_CASE, "this iS JusT a TEST !!!");
-	}
-	@Test
-	public void shouldreturnRightDMdata()  {
-
-		String  aString="jsonDataMarketApi([\n{\n\"ds\":\"178f!ikl=5v\",\n\"status\":\"success\",\n\"id\":\"178f\",\n\"title\":\"GDP (current US$)\",\n\"columns\":[\n{\n\"dimension_id\":\"1\",\n\"title\":\"Year\",\n\"cid\":\"year\",\n\"time_granularity\":\"year\"\n},\n{\n\"cid\":\"-5445889268476685030\",\n\"dimension_values\":[],\n\"title\":\"GDP (current US$)\"\n}\n],\n\"applied_filters\":[\n{\n\"dimension_id\":\"ikl\",\n\"title\":\"Country\",\n\"values\":[\n{\n\"id\":\"5v\",\n\"value\":\"Spain\"\n}\n]\n}\n],\n\"data\":[\n[\n\"2011\",\n1490809722222.22\n]\n]\n}\n])";
-		
-		assertReturn( aString,CoreFunctions.GETDMDATA,"178f!ikl=5v&&mindate=2011-01-01");
-	}
-	@Test
-	public void shouldreturnConvertedDMdata() throws IOException {
-		
-		String input= this.getResourceContent("DataMarketAPITest/resultDM.json");
-		String expectedOutput = this.getResourceContent("DataMarketAPITest/resultDM_converted.json");
-		JsonParser parser = new JsonParser(expectedOutput);
-		IJsonNode expected;
-		try {
-			expected = parser.readValueAsTree();
-		} catch (JsonParseException e) {
-			expected = NullNode.getInstance();
-		}
-		@SuppressWarnings("unchecked")
-		final IArrayNode<IJsonNode> params = (IArrayNode<IJsonNode>) JavaToJsonMapper.INSTANCE.valueToTree(new Object[] {input});
-		final IJsonNode result = CoreFunctions.JSONCONVERTER.call(params);
-		Assert.assertEquals(expected, result);
-	}
-	
-	private String getResourceContent(final String name) throws IOException {
-		ClassLoader loader = CoreFunctionsTest.class.getClassLoader();
-		File file = new File (loader.getResources(name).nextElement().getPath());
-		String content = FileUtils.readFileToString(file);
-		return content;
 	}
 }

@@ -399,4 +399,29 @@ public class SopremoUtil {
 			throw new IllegalStateException("IO exceptions should not occur locally", e);
 		}
 	}
+	
+//	/**
+//	 * @param kryo
+//	 * @param output
+//	 * @param iJsonNode
+//	 */
+//	public static void writeNode(Kryo kryo, Output output, IJsonNode node) {
+//		output.writeByte(node.getType().ordinal());
+//		kryo.writeObject(output, node);
+//	}
+//
+//	/**
+//	 * @param kryo
+//	 * @param input
+//	 * @return
+//	 */
+//	public static IJsonNode readNode(Kryo kryo, Input input, IJsonNode possibleTarget) {
+//		final IJsonNode.Type type = IJsonNode.Type.values()[input.readByte()];
+//		final IJsonNode result;
+//		if(possibleTarget == null || possibleTarget.getType()  != type)
+//			result = ReflectUtil.newInstance( type.getClazz());
+//		else result = possibleTarget;
+//		result.readResolve(null)
+//		return null;
+//	}
 }

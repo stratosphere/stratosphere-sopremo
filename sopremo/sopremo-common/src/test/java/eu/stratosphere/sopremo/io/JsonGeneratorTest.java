@@ -64,23 +64,22 @@ public class JsonGeneratorTest {
 		}
 	}
 
-	// TODO mleich: re-enable tests!
-//	@Test
-//	public void shouldGenerateGivenFile() {
-//		try {
-//			final JsonParser parser = new JsonParser(new URL(
-//				SopremoTestUtil.getResourcePath("SopremoTestPlan/test.json")));
-//			final File file = File.createTempFile("test", "json");
-//			final JsonGenerator gen = new JsonGenerator(file);
-//			gen.writeStartArray();
-//			while (!parser.checkEnd())
-//				gen.writeTree(parser.readValueAsTree());
-//			gen.writeEndArray();
-//			gen.close();
-//		} catch (final IOException e) {
-//			e.printStackTrace();
-//		}
-//	}
+	@Test
+	public void shouldGenerateGivenFile() {
+		try {
+			final JsonParser parser = new JsonParser(new URL(
+				SopremoTestUtil.getResourcePath("SopremoTestPlan/test.json")));
+			final File file = File.createTempFile("test", "json");
+			final JsonGenerator gen = new JsonGenerator(file);
+			gen.writeStartArray();
+			while (!parser.checkEnd())
+				gen.writeTree(parser.readValueAsTree());
+			gen.writeEndArray();
+			gen.close();
+		} catch (final IOException e) {
+			e.printStackTrace();
+		}
+	}
 
 	@Test
 	public void testObjectNodeSerialization() {

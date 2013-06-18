@@ -17,10 +17,11 @@ import eu.stratosphere.sopremo.io.JsonFormat.JsonInputFormat;
 import eu.stratosphere.sopremo.io.SopremoFileFormat.SopremoInputFormat;
 import eu.stratosphere.sopremo.pact.SopremoUtil;
 import eu.stratosphere.sopremo.serialization.DirectSchema;
-//import eu.stratosphere.sopremo.testing.SopremoTestPlan;
+import eu.stratosphere.sopremo.testing.SopremoTestPlan;
 import eu.stratosphere.sopremo.type.IArrayNode;
 import eu.stratosphere.sopremo.type.IObjectNode;
 import eu.stratosphere.sopremo.type.IntNode;
+//import eu.stratosphere.sopremo.testing.SopremoTestPlan;
 
 /**
  * Tests {@link JsonInputFormat}.
@@ -33,36 +34,34 @@ public class JsonInputFormatTest {
 	 */
 	private static final DirectSchema SCHEMA = new DirectSchema();
 
-	// TODO mleich: re-enable tests!
-	
-//	/**
-//	 * Tests if a {@link TestPlan} can be executed.
-//	 * 
-//	 * @throws IOException
-//	 */
-//	@Test
-//	public void completeTestPasses() throws IOException {
-//		final Source read = new Source(new JsonFormat(), this.getResource("SopremoTestPlan/test.json"));
-//
-//		final SopremoTestPlan testPlan = new SopremoTestPlan(read);
-//		testPlan.run();
-//		Assert.assertEquals("input and output should be equal in identity map", testPlan.getInput(0), testPlan
-//			.getActualOutput(0));
-//	}
-//
-//	/**
-//	 * Tests if a {@link TestPlan} can be executed.
-//	 * 
-//	 * @throws IOException
-//	 */
-//	@Test
-//	public void completeTestPassesWithExpectedValues() throws IOException {
-//		final Source read = new Source(new JsonFormat(), this.getResource("SopremoTestPlan/test.json"));
-//
-//		final SopremoTestPlan testPlan = new SopremoTestPlan(read);
-//		testPlan.getExpectedOutput(0).load(this.getResource("SopremoTestPlan/test.json"));
-//		testPlan.run();
-//	}
+	/**
+	 * Tests if a {@link TestPlan} can be executed.
+	 * 
+	 * @throws IOException
+	 */
+	@Test
+	public void completeTestPasses() throws IOException {
+		final Source read = new Source(new JsonFormat(), this.getResource("SopremoTestPlan/test.json"));
+
+		final SopremoTestPlan testPlan = new SopremoTestPlan(read);
+		testPlan.run();
+		Assert.assertEquals("input and output should be equal in identity map", testPlan.getInput(0), testPlan
+			.getActualOutput(0));
+	}
+
+	/**
+	 * Tests if a {@link TestPlan} can be executed.
+	 * 
+	 * @throws IOException
+	 */
+	@Test
+	public void completeTestPassesWithExpectedValues() throws IOException {
+		final Source read = new Source(new JsonFormat(), this.getResource("SopremoTestPlan/test.json"));
+
+		final SopremoTestPlan testPlan = new SopremoTestPlan(read);
+		testPlan.getExpectedOutput(0).load(this.getResource("SopremoTestPlan/test.json"));
+		testPlan.run();
+	}
 
 	private String getResource(final String name) throws IOException {
 		return JsonInputFormatTest.class.getClassLoader().getResources(name)

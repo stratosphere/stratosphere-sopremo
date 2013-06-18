@@ -33,7 +33,6 @@ import eu.stratosphere.nephele.fs.FileSystem;
 import eu.stratosphere.nephele.fs.LineReader;
 import eu.stratosphere.nephele.fs.Path;
 import eu.stratosphere.pact.common.io.statistics.BaseStatistics;
-import eu.stratosphere.sopremo.util.Equaler;
 import eu.stratosphere.sopremo.operator.Name;
 import eu.stratosphere.sopremo.operator.Property;
 import eu.stratosphere.sopremo.type.IArrayNode;
@@ -41,6 +40,7 @@ import eu.stratosphere.sopremo.type.IJsonNode;
 import eu.stratosphere.sopremo.type.IObjectNode;
 import eu.stratosphere.sopremo.type.ObjectNode;
 import eu.stratosphere.sopremo.type.TextNode;
+import eu.stratosphere.sopremo.util.Equaler;
 
 @Name(noun = { "csv", "tsv" })
 public class CsvFormat extends SopremoFileFormat {

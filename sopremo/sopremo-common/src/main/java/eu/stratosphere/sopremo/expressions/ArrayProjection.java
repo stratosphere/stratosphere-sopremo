@@ -16,7 +16,6 @@ package eu.stratosphere.sopremo.expressions;
 
 import java.io.IOException;
 
-import eu.stratosphere.sopremo.ISopremoType;
 import eu.stratosphere.sopremo.expressions.tree.ChildIterator;
 import eu.stratosphere.sopremo.expressions.tree.ConcatenatingChildIterator;
 import eu.stratosphere.sopremo.expressions.tree.NamedChildIterator;
@@ -67,18 +66,6 @@ public class ArrayProjection extends PathSegmentExpression {
 		return (ArrayProjection) super.withInputExpression(inputExpression);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see
-	 * eu.stratosphere.sopremo.expressions.PathSegmentExpression#copyPropertiesFrom(eu.stratosphere.sopremo.ISopremoType
-	 * )
-	 */
-	@Override
-	public void copyPropertiesFrom(ISopremoType original) {
-		super.copyPropertiesFrom(original);
-		this.projection = ((ArrayProjection) original).projection.clone();
-	}
-
 	private final transient IArrayNode<IJsonNode> materializedResult = new ArrayNode<IJsonNode>();
 
 	private final transient PullingStreamNode<?> virtualResult = new PullingStreamNode<IJsonNode>();
@@ -102,26 +89,24 @@ public class ArrayProjection extends PathSegmentExpression {
 		});
 	}
 
-	
-	
+	/*
+	 * (non-Javadoc)
+	 * @see
+	 * eu.stratosphere.sopremo.expressions.PathSegmentExpression#equalsSameClass(eu.stratosphere.sopremo.expressions
+	 * .PathSegmentExpression)
+	 */
 	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = super.hashCode();
-		result = prime * result + this.projection.hashCode();
-		return result;
+	public boolean equalsSameClass(PathSegmentExpression other) {
+		return this.projection.equals(((ArrayProjection)other).projection);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.expressions.PathSegmentExpression#segmentHashCode()
+	 */
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (!super.equals(obj))
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		ArrayProjection other = (ArrayProjection) obj;
-		return this.projection.equals(other.projection);
+	protected int segmentHashCode() {
+		return this.projection.hashCode();
 	}
 
 	/*
@@ -151,7 +136,7 @@ public class ArrayProjection extends PathSegmentExpression {
 		@SuppressWarnings("unchecked")
 		final IArrayNode<IJsonNode> arrayNode = (ArrayNode<IJsonNode>) node;
 		for (int index = 0, size = arrayNode.size(); index < size; index++)
-			arrayNode.set(index, inputExpression.set(arrayNode.get(index), value));
+			arrayNode.set(index, ((PathSegmentExpression) inputExpression).set(arrayNode.get(index), value));
 		return arrayNode;
 	}
 

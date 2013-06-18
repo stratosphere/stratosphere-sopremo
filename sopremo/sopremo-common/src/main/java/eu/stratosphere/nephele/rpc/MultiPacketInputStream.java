@@ -46,9 +46,8 @@ final class MultiPacketInputStream extends InputStream {
 
 	int addPacket(final int packetNumber, final DatagramPacket datagramPacket) {
 
-		if (packetNumber != this.nextPacketToAdd) {
+		if (packetNumber != this.nextPacketToAdd)
 			return this.nextPacketToAdd;
-		}
 
 		this.packets[packetNumber] = datagramPacket;
 
@@ -57,7 +56,7 @@ final class MultiPacketInputStream extends InputStream {
 
 	boolean isComplete() {
 
-		return (this.nextPacketToAdd == this.packets.length);
+		return this.nextPacketToAdd == this.packets.length;
 	}
 
 	@Override
@@ -65,14 +64,12 @@ final class MultiPacketInputStream extends InputStream {
 
 		System.out.println("Available called");
 
-		if (!isComplete()) {
+		if (!this.isComplete())
 			return 0;
-		}
 
 		int available = this.currentLength - this.read;
-		for (int i = this.nextPacketToRead; i < this.packets.length; ++i) {
+		for (int i = this.nextPacketToRead; i < this.packets.length; ++i)
 			available += this.packets[i].getLength() - RPCMessage.METADATA_SIZE;
-		}
 
 		return available;
 	}
@@ -82,6 +79,7 @@ final class MultiPacketInputStream extends InputStream {
 		// Nothing to do here
 	}
 
+	@SuppressWarnings("sync-override")
 	@Override
 	public void mark(final int readlimit) {
 		// Nothing to do here
@@ -95,9 +93,8 @@ final class MultiPacketInputStream extends InputStream {
 	@Override
 	public int read() throws IOException {
 
-		if (!moreDataAvailable()) {
+		if (!this.moreDataAvailable())
 			return -1;
-		}
 
 		return this.currentBuffer[this.read++];
 	}
@@ -106,9 +103,8 @@ final class MultiPacketInputStream extends InputStream {
 
 		while (this.read == this.currentLength) {
 
-			if (this.nextPacketToRead == this.packets.length) {
+			if (this.nextPacketToRead == this.packets.length)
 				return false;
-			}
 
 			final DatagramPacket dp = this.packets[this.nextPacketToRead++];
 			this.currentBuffer = dp.getData();
@@ -122,13 +118,13 @@ final class MultiPacketInputStream extends InputStream {
 	@Override
 	public int read(final byte[] b) {
 
-		return read(b, 0, b.length);
+		return this.read(b, 0, b.length);
 	}
 
 	@Override
 	public int read(final byte[] b, final int off, final int len) {
 
-		if (!moreDataAvailable()) {
+		if (!this.moreDataAvailable()) {
 			System.out.println("No data available");
 			return -1;
 		}
@@ -140,6 +136,7 @@ final class MultiPacketInputStream extends InputStream {
 		return r;
 	}
 
+	@SuppressWarnings("sync-override")
 	@Override
 	public void reset() {
 		this.read = 0;
@@ -148,9 +145,8 @@ final class MultiPacketInputStream extends InputStream {
 	@Override
 	public long skip(long n) {
 
-		if (!moreDataAvailable()) {
+		if (!this.moreDataAvailable())
 			return 0L;
-		}
 
 		final int dataLeftInBuffer = this.currentLength - this.read;
 

@@ -15,43 +15,56 @@
 package eu.stratosphere.sopremo.expressions;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
 
-import javolution.text.TypeFormat;
-import eu.stratosphere.sopremo.EvaluationException;
-import eu.stratosphere.sopremo.type.IArrayNode;
+import eu.stratosphere.sopremo.pact.SopremoUtil;
 import eu.stratosphere.sopremo.type.IJsonNode;
 
 /**
- * Returns the element of an array which is saved at the specified index.
+ * Successively evaluates the given expressions on the node.
  */
-@OptimizerHints(scope = Scope.ANY, minNodes = 1, maxNodes = OptimizerHints.UNBOUND)
-public class InputSelection extends PathSegmentExpression {
-	private final int index;
+public class ChainedSegmentExpression extends PathSegmentExpression {
+	private final List<EvaluationExpression> expressions;
 
 	/**
-	 * Initializes an InputSelection with the given index.
+	 * Initializes ChainedSegmentExpression.
 	 * 
-	 * @param index
-	 *        the index of the element that should be returned
+	 * @param expressions
 	 */
-	public InputSelection(final int index) {
-		this.index = index;
+	public ChainedSegmentExpression(final EvaluationExpression... expressions) {
+		this(Arrays.asList(expressions));
+	}
+
+	/**
+	 * Initializes ChainedSegmentExpression.
+	 * 
+	 * @param expressions
+	 */
+	public ChainedSegmentExpression(final Collection<? extends EvaluationExpression> expressions) {
+		this.expressions = new ArrayList<EvaluationExpression>(expressions);
 	}
 
 	/**
 	 * Initializes InputSelection.
 	 */
-	InputSelection() {
-		this.index = 0;
+	public ChainedSegmentExpression() {
+		this.expressions = new ArrayList<EvaluationExpression>();
 	}
 
+	public void addExpression(EvaluationExpression expression) {
+		this.expressions.add(expression);
+	}
+	
 	/*
 	 * (non-Javadoc)
 	 * @see eu.stratosphere.sopremo.expressions.PathSegmentExpression#segmentHashCode()
 	 */
 	@Override
 	protected int segmentHashCode() {
-		return this.index;
+		return this.expressions.hashCode();
 	}
 
 	/*
@@ -62,29 +75,29 @@ public class InputSelection extends PathSegmentExpression {
 	 */
 	@Override
 	public boolean equalsSameClass(PathSegmentExpression other) {
-		return this.index == ((InputSelection) other).index;
+		return this.expressions.equals(((ChainedSegmentExpression) other).expressions);
 	}
 
 	@Override
 	protected IJsonNode evaluateSegment(final IJsonNode node) {
-		if (!node.isArray())
-			throw new EvaluationException("Cannot select input " + node.getClass().getSimpleName());
-		return ((IArrayNode<?>) node).get(this.index);
+		IJsonNode result = node;
+		for (EvaluationExpression expression : this.expressions)
+			result = expression.evaluate(result);
+		return result;
 	}
 
 	/**
-	 * Returns the index
+	 * Returns the expressions.
 	 * 
-	 * @return the index
+	 * @return the expressions
 	 */
-	public int getIndex() {
-		return this.index;
+	public List<EvaluationExpression> getExpressions() {
+		return this.expressions;
 	}
 
 	@Override
 	public void appendAsString(final Appendable appendable) throws IOException {
 		this.appendInputAsString(appendable);
-		appendable.append("in");
-		TypeFormat.format(this.index, appendable);
+		SopremoUtil.append(appendable, "[", this.expressions, "]");
 	}
 }

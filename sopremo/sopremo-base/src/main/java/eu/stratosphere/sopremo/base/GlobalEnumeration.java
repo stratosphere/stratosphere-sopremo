@@ -3,6 +3,7 @@ package eu.stratosphere.sopremo.base;
 import eu.stratosphere.nephele.configuration.Configuration;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
 import eu.stratosphere.sopremo.expressions.ObjectAccess;
+import eu.stratosphere.sopremo.expressions.PathSegmentExpression;
 import eu.stratosphere.sopremo.operator.ElementaryOperator;
 import eu.stratosphere.sopremo.operator.InputCardinality;
 import eu.stratosphere.sopremo.operator.Property;
@@ -44,7 +45,7 @@ public class GlobalEnumeration extends ElementaryOperator<GlobalEnumeration> {
 		return this.idGeneration;
 	}
 
-	public EvaluationExpression getIdAccess() {
+	public ObjectAccess getIdAccess() {
 		return new ObjectAccess(this.idFieldName);
 	}
 
@@ -107,7 +108,7 @@ public class GlobalEnumeration extends ElementaryOperator<GlobalEnumeration> {
 	/**
 	 * Adds the id field if object; wraps the value into an object otherwise.
 	 */
-	static final class AutoProjection extends EvaluationExpression {
+	static final class AutoProjection extends PathSegmentExpression {
 		private GlobalEnumeration ge;
 
 		public AutoProjection(GlobalEnumeration ge) {
@@ -119,9 +120,12 @@ public class GlobalEnumeration extends ElementaryOperator<GlobalEnumeration> {
 		 */
 		AutoProjection() {
 		}
-
+		
+		/* (non-Javadoc)
+		 * @see eu.stratosphere.sopremo.expressions.PathSegmentExpression#setSegment(eu.stratosphere.sopremo.type.IJsonNode, eu.stratosphere.sopremo.type.IJsonNode)
+		 */
 		@Override
-		public IJsonNode set(IJsonNode node, IJsonNode value) {
+		protected IJsonNode setSegment(IJsonNode node, IJsonNode value) {
 			if (node.isObject()) {
 				((IObjectNode) node).put(this.ge.idFieldName, value);
 				return node;
@@ -132,9 +136,28 @@ public class GlobalEnumeration extends ElementaryOperator<GlobalEnumeration> {
 			return objectNode;
 		}
 
+		/* (non-Javadoc)
+		 * @see eu.stratosphere.sopremo.expressions.PathSegmentExpression#evaluateSegment(eu.stratosphere.sopremo.type.IJsonNode)
+		 */
 		@Override
-		public IJsonNode evaluate(IJsonNode node) {
+		protected IJsonNode evaluateSegment(IJsonNode node) {
 			return node;
+		}
+
+		/* (non-Javadoc)
+		 * @see eu.stratosphere.sopremo.expressions.PathSegmentExpression#segmentHashCode()
+		 */
+		@Override
+		protected int segmentHashCode() {
+			return 0;
+		}
+
+		/* (non-Javadoc)
+		 * @see eu.stratosphere.sopremo.expressions.PathSegmentExpression#equalsSameClass(eu.stratosphere.sopremo.expressions.PathSegmentExpression)
+		 */
+		@Override
+		protected boolean equalsSameClass(PathSegmentExpression other) {
+			return true;
 		}
 	}
 
@@ -181,7 +204,7 @@ public class GlobalEnumeration extends ElementaryOperator<GlobalEnumeration> {
 	}
 
 	public static class Implementation extends SopremoMap {
-		private EvaluationExpression enumerationExpression;
+		private PathSegmentExpression enumerationExpression;
 
 		private EvaluationExpression idGeneration;
 

@@ -200,4 +200,11 @@ public class BooleanNode extends AbstractJsonNode implements IPrimitiveNode {
 	public void appendAsString(Appendable appendable) throws IOException {
 		TypeFormat.format(this.value, appendable);
 	}
+
+	/**
+	 * @return
+	 */
+	public BooleanNode negate() {
+		return this.value ? BooleanNode.FALSE : BooleanNode.TRUE;
+	}
 }

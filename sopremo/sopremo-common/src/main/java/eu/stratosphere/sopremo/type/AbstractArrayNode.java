@@ -62,6 +62,28 @@ public abstract class AbstractArrayNode<T extends IJsonNode> extends AbstractJso
 		for (int length = this.size(); index < length; length--)
 			this.remove(index);
 	}
+	
+//	/* (non-Javadoc)
+//	 * @see com.esotericsoftware.kryo.KryoSerializable#write(com.esotericsoftware.kryo.Kryo, com.esotericsoftware.kryo.io.Output)
+//	 */
+//	@Override
+//	public void write(Kryo kryo, Output output) {
+//		final int size = size();
+//		output.write(size);
+//		for (int index = 0; index < size(); index++) 
+//			SopremoUtil.writeNode(kryo, output, get(index));
+//	}
+//	
+//	/* (non-Javadoc)
+//	 * @see com.esotericsoftware.kryo.KryoSerializable#read(com.esotericsoftware.kryo.Kryo, com.esotericsoftware.kryo.io.Input)
+//	 */
+//	@Override
+//	public void read(Kryo kryo, Input input) {
+//		final int size = input.readInt();
+//		clear();
+//		for (int index = 0; index < size(); index++) 
+//			add(SopremoUtil.readNode(kryo, input, null));
+//	}
 
 	@Override
 	public final boolean isArray() {
@@ -125,9 +147,14 @@ public abstract class AbstractArrayNode<T extends IJsonNode> extends AbstractJso
 
 		for (int i = 0; i < len; i++)
 			this.set(i, (T) SopremoUtil.deserializeNode(in, this.get(i)));
+		setSize(len);
+		return this;
+	}
+
+	@SuppressWarnings("unchecked")
+	protected void setSize(final int len) {
 		for (int i = len, size = size(); i < size; i++)
 			this.set(i, (T) MissingNode.getInstance());
-		return this;
 	}
 
 	@Override

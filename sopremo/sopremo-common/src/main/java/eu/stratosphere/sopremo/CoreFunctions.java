@@ -23,6 +23,9 @@ import eu.stratosphere.sopremo.cache.ArrayCache;
 import eu.stratosphere.sopremo.cache.NodeCache;
 import eu.stratosphere.sopremo.cache.PatternCache;
 import eu.stratosphere.sopremo.expressions.ArithmeticExpression;
+import eu.stratosphere.sopremo.expressions.ConstantExpression;
+import eu.stratosphere.sopremo.expressions.EvaluationExpression;
+import eu.stratosphere.sopremo.expressions.TernaryExpression;
 import eu.stratosphere.sopremo.expressions.ArithmeticExpression.ArithmeticOperator;
 import eu.stratosphere.sopremo.expressions.ComparativeExpression;
 import eu.stratosphere.sopremo.function.ExpressionFunction;
@@ -38,6 +41,7 @@ import eu.stratosphere.sopremo.operator.Name;
 import eu.stratosphere.sopremo.packages.BuiltinProvider;
 import eu.stratosphere.sopremo.tokenizer.RegexTokenizer;
 import eu.stratosphere.sopremo.type.ArrayNode;
+import eu.stratosphere.sopremo.type.BooleanNode;
 import eu.stratosphere.sopremo.type.CachingArrayNode;
 import eu.stratosphere.sopremo.type.IArrayNode;
 import eu.stratosphere.sopremo.type.IJsonNode;
@@ -152,9 +156,9 @@ public class CoreFunctions implements BuiltinProvider {
 	};
 
 	@Name(noun = "mean")
-	public static final SopremoFunction MEAN = new ExpressionFunction(1,
-			new ArithmeticExpression(SUM.asExpression(),
-					ArithmeticOperator.DIVISION, COUNT.asExpression()));
+	public static final SopremoFunction MEAN = new ExpressionFunction(1, new TernaryExpression(EvaluationExpression.VALUE,
+			new ArithmeticExpression(SUM.asExpression(),ArithmeticOperator.DIVISION, COUNT.asExpression()),
+			ConstantExpression.MISSING));
 
 	public static final MIN MIN = new MIN();
 
@@ -423,6 +427,29 @@ public class CoreFunctions implements BuiltinProvider {
 		}
 	};
 
+	public static SopremoFunction LIKE = new LIKE().withDefaultParameters(TextNode.valueOf(""));
+
+	@Name(noun = "like")
+	public static class LIKE extends SopremoFunction2<TextNode, TextNode> {
+
+		private static final transient String PLACEHOLDER = "%%";
+
+		private static final transient String REGEX = ".*";
+
+		LIKE() {
+			super("like");
+		}
+
+		@Override
+		protected IJsonNode call(TextNode inputNode, TextNode patternNode) {
+			String pattern = patternNode.getTextValue().toString().replaceAll(PLACEHOLDER, REGEX);
+			String value = inputNode.getTextValue().toString();
+
+			return BooleanNode.valueOf(value.matches(pattern));
+		}
+
+	};
+	
 	public static final LENGTH LENGTH = new LENGTH();
 
 	@Name(noun = "length")
@@ -581,7 +608,7 @@ public class CoreFunctions implements BuiltinProvider {
 		public IJsonNode call(final IArrayNode<IJsonNode> params) {
 			this.union.clear();
 			for (final IJsonNode param : params)
-				for (final IJsonNode child : (IArrayNode<?>) param)
+				for (final IJsonNode child : (IStreamNode<?>) param)
 					this.union.add(child);
 			return this.union;
 		}
@@ -655,8 +682,8 @@ public class CoreFunctions implements BuiltinProvider {
 		protected IJsonNode call(TextNode input, TextNode dateformat) {
 			String tmpIn = input.getTextValue().toString();
 
-			wov(result, tmpIn, dateformat.getTextValue().toString());
-			return result;
+			wov(this.result, tmpIn, dateformat.getTextValue().toString());
+			return this.result;
 		}
 		
 		private void wov(IntNode output, String input, String dateformat) {
@@ -667,7 +694,7 @@ public class CoreFunctions implements BuiltinProvider {
 
 			try {// we parse a String/text into a Date
 
-				date = (Date) formatter.parse(input);
+				date = formatter.parse(input);
 
 				/*
 				 * SimpleDateFormat f = new SimpleDateFormat("YYYY-'W'ww-u");you can
@@ -707,20 +734,20 @@ public class CoreFunctions implements BuiltinProvider {
 			SimpleDateFormat f;
 
 			try {
-				date = (Date) formatter.parse(tmpIn);
+				date = formatter.parse(tmpIn);
 
 				// SimpleDateFormat f = new SimpleDateFormat("YYYY-'W'ww-u");
 
 				f = new SimpleDateFormat("yyyy");
 				final String s = f.format(date).intern();
 
-				result.setValue(Integer.parseInt(s));
+				this.result.setValue(Integer.parseInt(s));
 				// System.out.println(result);
 			} catch (ParseException e1) {
 				System.out.println("Exception :" + e1);
 				System.out.println("Exception : Given Text does not fit our Date-Format.");
 			}
-			return result;
+			return this.result;
 		}
 	};
 	
@@ -740,14 +767,14 @@ public class CoreFunctions implements BuiltinProvider {
 			DateFormat parsedf = new SimpleDateFormat(sourceformat.getTextValue().toString());
 			DateFormat targetdf = new SimpleDateFormat(targetformat.getTextValue().toString());
 			try {
-				Date date = (Date) parsedf.parse(tmpIn);
+				Date date = parsedf.parse(tmpIn);
 				final String s = targetdf.format(date);
-				result.setValue(s);
+				this.result.setValue(s);
 			} catch (ParseException e) {
 				System.out.println("Exception :" + e);
 				System.out.println("Exception : Given Text does not fit our Date-Format.");
 			}
-			return result;
+			return this.result;
 		}
 	};
 	
@@ -782,7 +809,7 @@ public class CoreFunctions implements BuiltinProvider {
 		@Override
 		protected IJsonNode call(TextNode input) {
 			String str = input.getTextValue().toString();
-			result.setValue(Integer.parseInt(str));
+			this.result.setValue(Integer.parseInt(str));
 			return this.result;
 		}
 	};
@@ -800,7 +827,7 @@ public class CoreFunctions implements BuiltinProvider {
 		@Override
 		protected IJsonNode call(TextNode ds) {
 			String dataset=ds.toString();
-			 result.setValue(readDMtoString(dataset));
+			 this.result.setValue(readDMtoString(dataset));
 			 return  this.result;
 		}
 		
@@ -901,7 +928,7 @@ public class CoreFunctions implements BuiltinProvider {
 		SimpleDateFormat f=new SimpleDateFormat("dd-MMM-yyyy");;
 		String time = "";
 		try {
-			date = (Date) formatter.parse(timeIn.toString());
+			date = formatter.parse(timeIn.toString());
 			time = f.format(date).intern();
 			
 		} catch (ParseException e1) {

@@ -16,6 +16,8 @@ package eu.stratosphere.util;
 
 import java.util.Iterator;
 
+import com.google.common.base.Predicate;
+
 /**
  * Filters the elements of an {@link Iterator} with a given {@link Predicate}.<br>
  * Changes to the parameters are directly reflected in the result.
@@ -41,7 +43,7 @@ public class FilteringIterator<T> extends AbstractIterator<T> {
 	protected T loadNext() {
 		while (this.iterator.hasNext()) {
 			final T next = this.iterator.next();
-			if (this.selector.isTrue(next))
+			if (this.selector.apply(next))
 				return next;
 		}
 		return this.noMoreElements();

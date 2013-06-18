@@ -28,7 +28,6 @@ import com.esotericsoftware.kryo.KryoSerializable;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 
-import eu.stratosphere.sopremo.ISopremoType;
 import eu.stratosphere.sopremo.type.AbstractObjectNode;
 import eu.stratosphere.sopremo.type.IJsonNode;
 import eu.stratosphere.sopremo.type.IObjectNode;
@@ -147,11 +146,12 @@ public class LazyObjectNode extends AbstractObjectNode implements KryoSerializab
 	 * (non-Javadoc)
 	 * @see eu.stratosphere.sopremo.type.JsonObject#get(java.lang.String)
 	 */
+	@SuppressWarnings("unchecked")
 	@Override
-	public IJsonNode get(final String fieldName) {
+	public <T extends IJsonNode> T get(final String fieldName) {
 		final int index = this.attributeIndex.getInt(fieldName);
 		if (index != -1)
-			return this.record.getField(index);
+			return (T) this.record.getField(index);
 		return this.getOtherField().get(fieldName);
 	}
 
@@ -269,15 +269,6 @@ public class LazyObjectNode extends AbstractObjectNode implements KryoSerializab
 			this.record.setField(index, MissingNode.getInstance());
 		else
 			this.getOtherFieldForUpdate().remove(fieldName);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.type.AbstractJsonNode#copyPropertiesFrom(eu.stratosphere.sopremo.ISopremoType)
-	 */
-	@Override
-	public void copyPropertiesFrom(ISopremoType original) {
-		this.record = (SopremoRecord) ((LazyObjectNode) original).record.clone();
 	}
 
 	@Override

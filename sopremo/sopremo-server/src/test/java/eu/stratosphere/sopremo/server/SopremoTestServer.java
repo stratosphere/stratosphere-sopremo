@@ -16,6 +16,8 @@ package eu.stratosphere.sopremo.server;
 
 import java.io.Closeable;
 import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.net.InetSocketAddress;
@@ -31,15 +33,11 @@ import junit.framework.AssertionFailedError;
 import org.apache.hadoop.fs.FileSystem;
 import org.junit.Ignore;
 
-import eu.stratosphere.nephele.configuration.ConfigConstants;
 import eu.stratosphere.nephele.execution.librarycache.LibraryCacheProfileRequest;
 import eu.stratosphere.nephele.execution.librarycache.LibraryCacheProfileResponse;
 import eu.stratosphere.nephele.execution.librarycache.LibraryCacheUpdate;
 import eu.stratosphere.nephele.rpc.RPCService;
-import eu.stratosphere.pact.test.util.Constants;
-import eu.stratosphere.pact.test.util.filesystem.FilesystemProvider;
-import eu.stratosphere.pact.test.util.minicluster.ClusterProvider;
-import eu.stratosphere.pact.test.util.minicluster.ClusterProviderPool;
+import eu.stratosphere.pact.client.minicluster.NepheleMiniCluster;
 import eu.stratosphere.sopremo.execution.ExecutionRequest;
 import eu.stratosphere.sopremo.execution.ExecutionResponse;
 import eu.stratosphere.sopremo.execution.ExecutionResponse.ExecutionState;
@@ -59,38 +57,32 @@ import eu.stratosphere.sopremo.type.IJsonNode;
  */
 @Ignore
 public class SopremoTestServer implements Closeable, SopremoExecutionProtocol {
-	
+
 	private RPCService rpcService;
 
 	private SopremoServer server;
-	
+
 	private SopremoExecutionProtocol executor;
 
-	private ClusterProvider cluster;
-
-	private static final int MINIMUM_HEAP_SIZE_MB = 192;
-
-	private final String configName = Constants.DEFAULT_TEST_CONFIG;
+	private NepheleMiniCluster cluster = new NepheleMiniCluster();
 
 	private Set<String> filesToCleanup = new HashSet<String>();
 
 	private String tempDir, protocol;
 
 	/**
-	 * Initializes SopremoTestServer.
+	 * Initializes EqualCloneTestServer.
 	 */
 	public SopremoTestServer(boolean rpc) {
 
-		verifyJvmOptions();
-
-		this.server = new SopremoServer();
-		this.server.setJobManagerAddress(
-			new InetSocketAddress("localhost", ConfigConstants.DEFAULT_JOB_MANAGER_IPC_PORT));
 		try {
-			this.cluster = ClusterProviderPool.getInstance(this.configName);
+			this.cluster.start();
 		} catch (Exception e) {
 			fail(e, "Cannot start mini cluster");
 		}
+		this.server = new SopremoServer();
+		this.server.setJobManagerAddress(
+			new InetSocketAddress("localhost", this.cluster.getJobManagerRpcPort()));
 
 		if (rpc) {
 			try {
@@ -98,7 +90,8 @@ public class SopremoTestServer implements Closeable, SopremoExecutionProtocol {
 					new InetSocketAddress("localhost", SopremoConstants.DEFAULT_SOPREMO_SERVER_IPC_PORT));
 				this.server.start();
 				this.rpcService = new RPCService();
-				this.executor = this.rpcService.getProxy(this.server.getServerAddress(), SopremoExecutionProtocol.class);
+				this.executor =
+					this.rpcService.getProxy(this.server.getServerAddress(), SopremoExecutionProtocol.class);
 			} catch (IOException e) {
 				fail(e, "Cannot start rpc sopremo server");
 			}
@@ -106,10 +99,10 @@ public class SopremoTestServer implements Closeable, SopremoExecutionProtocol {
 			this.executor = this.server;
 		}
 
-		this.tempDir = this.cluster.getFilesystemProvider().getTempDirPath();
-		if(!this.tempDir.endsWith(File.separator))
+		this.tempDir = System.getProperty("java.io.tmpdir");
+		if (!this.tempDir.endsWith(File.separator))
 			this.tempDir += File.separator;
-		this.protocol = this.cluster.getFilesystemProvider().getURIPrefix();
+		this.protocol = "file://";
 	}
 
 	/*
@@ -143,17 +136,21 @@ public class SopremoTestServer implements Closeable, SopremoExecutionProtocol {
 	public void checkContentsOf(String fileName, IJsonNode... expected) throws IOException {
 		List<IJsonNode> remainingValues = new ArrayList<IJsonNode>(Arrays.asList(expected));
 
-		final JsonParser parser = new JsonParser(getFilesystemProvider().getInputStream(this.tempDir + fileName));
-		parser.setWrappingArraySkipping(true);
-		int index = 0;
+		final JsonParser parser = new JsonParser(new FileReader(this.tempDir + fileName));
+		try {
+			parser.setWrappingArraySkipping(true);
+			int index = 0;
 
-		for (; index < expected.length && !parser.checkEnd(); index++) {
-			final IJsonNode actual = parser.readValueAsTree();
-			Assert.assertTrue(String.format("Unexpected value %s; remaining %s", actual, remainingValues),
-				remainingValues.remove(actual));
+			for (; index < expected.length && !parser.checkEnd(); index++) {
+				final IJsonNode actual = parser.readValueAsTree();
+				Assert.assertTrue(String.format("Unexpected value %s; remaining %s", actual, remainingValues),
+					remainingValues.remove(actual));
+			}
+			if (!remainingValues.isEmpty())
+				Assert.fail("More elements expected " + remainingValues);
+		} finally {
+			parser.close();
 		}
-		if (!remainingValues.isEmpty())
-			Assert.fail("More elements expected " + remainingValues);
 	}
 
 	/*
@@ -164,14 +161,12 @@ public class SopremoTestServer implements Closeable, SopremoExecutionProtocol {
 	public void close() throws IOException {
 		for (String fileToClean : this.filesToCleanup)
 			try {
-				if (!getFilesystemProvider().delete(fileToClean, false))
-					getFilesystemProvider().delete(fileToClean, true);
+				delete(fileToClean, true);
 			} catch (IOException e) {
 			}
 
 		try {
-			this.cluster.stopCluster();
-			ClusterProviderPool.removeInstance(this.configName);
+			this.cluster.stop();
 		} catch (Exception e) {
 		}
 		this.server.close();
@@ -193,18 +188,35 @@ public class SopremoTestServer implements Closeable, SopremoExecutionProtocol {
 			}
 	}
 
-	public boolean createDir(String dirName) throws IOException {
+	public boolean createDir(String dirName) {
 		this.filesToCleanup.add(getTempName(dirName));
-		return getFilesystemProvider().createDir(getTempName(dirName));
+		return new File(getTempName(dirName)).mkdirs();
 	}
 
 	public void createFile(String fileName, IJsonNode... nodes) throws IOException {
 		this.filesToCleanup.add(getTempName(fileName));
-		this.cluster.getFilesystemProvider().createFile(getTempName(fileName), getJsonString(nodes));
+		createFile(getTempName(fileName), getJsonString(nodes));
+	}
+
+	private boolean createFile(String fileName, String fileContent) throws IOException {
+		File f = new File(fileName);
+		if (f.exists()) {
+			return false;
+		}
+
+		FileWriter fw = new FileWriter(f);
+		fw.write(fileContent);
+		fw.close();
+
+		return true;
 	}
 
 	public boolean delete(String path, boolean recursive) throws IOException {
-		return getFilesystemProvider().delete(getTempName(path), recursive);
+		final File file = new File(getTempName(path));
+		if (recursive && file.isDirectory())
+			for (String subFile : file.list())
+				delete(path + File.separator + subFile, recursive);
+		return file.delete();
 	}
 
 	@Override
@@ -212,10 +224,6 @@ public class SopremoTestServer implements Closeable, SopremoExecutionProtocol {
 		correctPathsOfPlan(request.getQuery());
 
 		return this.executor.execute(request);
-	}
-
-	public FilesystemProvider getFilesystemProvider() {
-		return this.cluster.getFilesystemProvider();
 	}
 
 	public InetSocketAddress getServerAddress() {
@@ -249,14 +257,6 @@ public class SopremoTestServer implements Closeable, SopremoExecutionProtocol {
 		return this.tempDir + name;
 	}
 
-	private void verifyJvmOptions() {
-		long heap = Runtime.getRuntime().maxMemory() >> 20;
-		Assert.assertTrue("Insufficient java heap space " + heap + "mb - set JVM option: -Xmx" + MINIMUM_HEAP_SIZE_MB
-			+ "m", heap > MINIMUM_HEAP_SIZE_MB - 50);
-		Assert.assertTrue("IPv4 stack required - set JVM option: -Djava.net.preferIPv4Stack=true", "true".equals(System
-			.getProperty("java.net.preferIPv4Stack")));
-	}
-
 	public static ExecutionResponse waitForStateToFinish(SopremoExecutionProtocol server, ExecutionResponse response,
 			ExecutionState status) throws IOException, InterruptedException {
 		for (int waits = 0; response.getState() == status && waits < 1000; waits++) {
@@ -265,9 +265,9 @@ public class SopremoTestServer implements Closeable, SopremoExecutionProtocol {
 		}
 		return response;
 	}
-	
+
 	@Override
-	public String getMetaData(SopremoID jobId, String key) throws IOException, InterruptedException{
+	public Object getMetaData(SopremoID jobId, String key) throws IOException, InterruptedException {
 		return this.executor.getMetaData(jobId, key);
 	}
 

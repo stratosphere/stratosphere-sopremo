@@ -37,9 +37,8 @@ final class MultiPacketOutputStream extends OutputStream {
 	@Override
 	public void write(final int b) throws IOException {
 
-		if (this.totalLen + RPCMessage.METADATA_SIZE == this.buf.length) {
-			resizeBuffer();
-		}
+		if (this.totalLen + RPCMessage.METADATA_SIZE == this.buf.length)
+			this.resizeBuffer();
 
 		if (this.lenInPacket == RPCMessage.MAXIMUM_MSG_SIZE) {
 			this.lenInPacket = 0;
@@ -53,23 +52,22 @@ final class MultiPacketOutputStream extends OutputStream {
 	@Override
 	public void write(final byte[] b) throws IOException {
 
-		write(b, 0, b.length);
+		this.write(b, 0, b.length);
 	}
 
 	private static int getLengthIncludingMetaData(final int length) {
 
-		final int numberOfPackets = ((length + RPCMessage.MAXIMUM_MSG_SIZE - 1) / RPCMessage.MAXIMUM_MSG_SIZE);
+		final int numberOfPackets = (length + RPCMessage.MAXIMUM_MSG_SIZE - 1) / RPCMessage.MAXIMUM_MSG_SIZE;
 
-		return length + (numberOfPackets * RPCMessage.METADATA_SIZE);
+		return length + numberOfPackets * RPCMessage.METADATA_SIZE;
 	}
 
 	@Override
 	public void write(final byte[] b, final int off, final int len) throws IOException {
 
 		final int lengthIncludingMetaData = getLengthIncludingMetaData(len);
-		while (this.totalLen + lengthIncludingMetaData > this.buf.length) {
-			resizeBuffer();
-		}
+		while (this.totalLen + lengthIncludingMetaData > this.buf.length)
+			this.resizeBuffer();
 
 		int written = 0;
 		while (written < len) {
@@ -79,7 +77,7 @@ final class MultiPacketOutputStream extends OutputStream {
 				this.totalLen += RPCMessage.METADATA_SIZE;
 			}
 
-			final int amountOfDataToWrite = Math.min((len - written), (RPCMessage.MAXIMUM_MSG_SIZE - this.lenInPacket));
+			final int amountOfDataToWrite = Math.min(len - written, RPCMessage.MAXIMUM_MSG_SIZE - this.lenInPacket);
 			System.arraycopy(b, off + written, this.buf, this.totalLen, amountOfDataToWrite);
 			this.lenInPacket += amountOfDataToWrite;
 			this.totalLen += amountOfDataToWrite;
@@ -111,9 +109,8 @@ final class MultiPacketOutputStream extends OutputStream {
 
 	DatagramPacket[] createPackets(final InetSocketAddress remoteAddress) {
 
-		if (this.totalLen == 0) {
+		if (this.totalLen == 0)
 			return new DatagramPacket[0];
-		}
 
 		// System.out.println("SENT REQUEST ID " + requestID);
 
@@ -122,28 +119,26 @@ final class MultiPacketOutputStream extends OutputStream {
 		final short numberOfPacketsShort = RPCService.encodeInteger(numberOfPackets);
 
 		final DatagramPacket[] packets = new DatagramPacket[numberOfPackets];
-		final int messageID = (int) ((double) Integer.MIN_VALUE + (Math.random() * (double) Integer.MAX_VALUE * 2.0));
+		final int messageID = (int) (Integer.MIN_VALUE + Math.random() * Integer.MAX_VALUE * 2.0);
 
 		// Write meta data
 		for (int i = 0; i < numberOfPackets; ++i) {
-			final boolean lastPacket = (i == (numberOfPackets - 1));
+			final boolean lastPacket = i == numberOfPackets - 1;
 			int offset;
-			if (lastPacket) {
+			if (lastPacket)
 				offset = (numberOfPackets - 1) * maximumPacketSize + this.lenInPacket;
-			} else {
+			else
 				offset = (i + 1) * maximumPacketSize - RPCMessage.METADATA_SIZE;
-			}
 			NumberUtils.shortToByteArray(RPCService.encodeInteger(i), this.buf, offset);
 			NumberUtils.shortToByteArray(numberOfPacketsShort, this.buf, offset + 2);
 			NumberUtils.integerToByteArray(messageID, this.buf, offset + 4);
 
 			DatagramPacket packet;
-			if (lastPacket) {
+			if (lastPacket)
 				packet = new DatagramPacket(this.buf, i * maximumPacketSize, this.lenInPacket
 					+ RPCMessage.METADATA_SIZE);
-			} else {
+			else
 				packet = new DatagramPacket(this.buf, i * maximumPacketSize, maximumPacketSize);
-			}
 
 			packet.setSocketAddress(remoteAddress);
 			packets[i] = packet;

@@ -22,10 +22,15 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.google.common.base.Predicates;
+
 import eu.stratosphere.sopremo.aggregation.Aggregation;
 import eu.stratosphere.sopremo.aggregation.AggregationFunction;
 import eu.stratosphere.sopremo.aggregation.ArrayAccessAsAggregation;
-import eu.stratosphere.util.IsInstancePredicate;
+import eu.stratosphere.sopremo.cache.NodeCache;
+import eu.stratosphere.sopremo.type.IJsonNode;
+import eu.stratosphere.sopremo.type.MissingNode;
+import eu.stratosphere.sopremo.type.TypeCoercer;
 
 /**
  * @author Arvid Heise
@@ -38,7 +43,7 @@ public class ExpressionUtil {
 	 *        a List of the expressions that should be wrapped
 	 * @return the {@link PathExpression}
 	 */
-	public static EvaluationExpression makePath(final List<PathSegmentExpression> expressions) {
+	public static PathSegmentExpression makePath(final List<PathSegmentExpression> expressions) {
 		if (expressions.size() == 0)
 			return EvaluationExpression.VALUE;
 
@@ -58,7 +63,7 @@ public class ExpressionUtil {
 	 *        an Array of the expressions that should be wrapped
 	 * @return the {@link PathExpression}
 	 */
-	public static EvaluationExpression makePath(final PathSegmentExpression... expressions) {
+	public static PathSegmentExpression makePath(final PathSegmentExpression... expressions) {
 		return makePath(Arrays.asList(expressions));
 	}
 
@@ -66,7 +71,7 @@ public class ExpressionUtil {
 	 * Replaces fragments in the form of path expression (InputSelection, ArrayAccess).
 	 */
 	public static EvaluationExpression replaceIndexAccessWithAggregation(EvaluationExpression baseExpression) {
-		return baseExpression.replace(new IsInstancePredicate(ArrayAccess.class), new TransformFunction() {
+		return baseExpression.replace(Predicates.instanceOf(ArrayAccess.class), new TransformFunction() {
 			@Override
 			public EvaluationExpression apply(EvaluationExpression argument) {
 				ArrayAccess arrayAccess = (ArrayAccess) argument;
@@ -141,7 +146,7 @@ public class ExpressionUtil {
 
 	private static EvaluationExpression adjustAggregationParameters(final EvaluationExpression evaluationExpression) {
 		return evaluationExpression.clone().remove(InputSelection.class).replace(
-			new IsInstancePredicate(ArrayProjection.class), new TransformFunction() {
+			Predicates.instanceOf(ArrayProjection.class), new TransformFunction() {
 				@Override
 				public EvaluationExpression apply(EvaluationExpression argument) {
 					final ArrayProjection arrayProjection = (ArrayProjection) argument;
@@ -151,4 +156,15 @@ public class ExpressionUtil {
 			}).simplify();
 	}
 
+	private final static ThreadLocal<NodeCache> NodeCache = new ThreadLocal<NodeCache>() {
+		@Override
+		protected NodeCache initialValue() {
+			return new NodeCache();
+		};
+	};
+
+	public static <T extends IJsonNode> T getConstant(EvaluationExpression expression, Class<T> type) {
+		final IJsonNode constant = expression.evaluate(MissingNode.getInstance());
+		return TypeCoercer.INSTANCE.coerce(constant, NodeCache.get(), type);
+	}
 }

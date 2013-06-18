@@ -76,8 +76,9 @@ public class JsonGenerator {
 	 */
 	public void writeTree(final IJsonNode iJsonNode) throws IOException {
 		if (iJsonNode != null) {
-			if (!this.isFirst)
-				this.writer.write(",");
+			if (!this.isFirst) {
+				this.writer.write(",\n");
+			}
 			JsonTypeWriter<IJsonNode> typeWriter = JsonTypeWriterPool.getJsonTypeWriterFor(iJsonNode);
 			typeWriter.write(iJsonNode, this.writer);
 			this.isFirst = false;

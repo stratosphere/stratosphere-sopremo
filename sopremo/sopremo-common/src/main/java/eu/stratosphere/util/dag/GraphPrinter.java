@@ -294,7 +294,7 @@ public class GraphPrinter<Node> {
 		}
 
 		private void addPlaceholders(final List<Level<Object>> levels) {
-			for (int levelIndex = levels.size() - 1; levelIndex >= 0; levelIndex--) {
+			for (int levelIndex = levels.size() - 1; levelIndex > 0; levelIndex--) {
 				final Level<Object> level = levels.get(levelIndex);
 				final List<Object> levelNodes = level.getLevelNodes();
 
@@ -308,8 +308,7 @@ public class GraphPrinter<Node> {
 						final Object input = inputs.get(inputIndex);
 						if (levels.get(levelIndex - 1).getLevelNodes().indexOf(input) == -1) {
 							final Object placeholder = this.addPlaceholder(levels.get(levelIndex - 1),
-								placeHolderIndex,
-								input);
+								placeHolderIndex,								input);
 							level.updateLink(node, input, placeholder);
 						}
 					}

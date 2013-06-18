@@ -55,6 +55,7 @@ public class CachingArrayNode<T extends IJsonNode> extends ArrayNode<T> {
 		super.clear();
 	}
 
+	@Override
 	public void setSize(int size) {
 		((CachingList<T>) this.getChildren()).setSize(size);
 	}

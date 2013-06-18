@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map.Entry;
 
-import eu.stratosphere.sopremo.ISopremoType;
 import eu.stratosphere.sopremo.type.IJsonNode;
 import eu.stratosphere.sopremo.type.IObjectNode;
 import eu.stratosphere.sopremo.type.MissingNode;
@@ -133,24 +132,19 @@ public abstract class TypedObjectNode implements ITypedObjectNode {
 	}
 
 	@Override
-	public void copyPropertiesFrom(ISopremoType original) {
-		this.backingObject.copyPropertiesFrom(original);
-
-	}
-
-	@Override
 	public IObjectNode put(String fieldName, IJsonNode value) {
 		if (value == null)
 			return this.backingObject.put(fieldName, NullNode.getInstance());
 		return this.backingObject.put(fieldName, value);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
-	public IJsonNode get(String fieldName) {
+	public <T extends IJsonNode> T get(String fieldName) {
 		IJsonNode result = this.backingObject.get(fieldName);
 		if (result == MissingNode.getInstance() || result == NullNode.getInstance())
 			return null;
-		return result;
+		return (T) result;
 	}
 
 	@SuppressWarnings("unchecked")

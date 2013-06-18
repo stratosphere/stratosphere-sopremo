@@ -8,12 +8,14 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 
+import com.google.common.base.Predicates;
+
 import eu.stratosphere.pact.common.plan.ContractUtil;
 import eu.stratosphere.pact.common.plan.PactModule;
 import eu.stratosphere.sopremo.EvaluationContext;
 import eu.stratosphere.sopremo.base.join.AntiJoin;
-import eu.stratosphere.sopremo.base.join.OuterJoin;
-import eu.stratosphere.sopremo.base.join.OuterJoin.Mode;
+import eu.stratosphere.sopremo.base.join.EquiJoin;
+import eu.stratosphere.sopremo.base.join.EquiJoin.Mode;
 import eu.stratosphere.sopremo.base.join.SemiJoin;
 import eu.stratosphere.sopremo.base.join.ThetaJoin;
 import eu.stratosphere.sopremo.base.join.TwoSourceJoinBase;
@@ -26,7 +28,6 @@ import eu.stratosphere.sopremo.expressions.InputSelection;
 import eu.stratosphere.sopremo.expressions.TransformFunction;
 import eu.stratosphere.sopremo.operator.Name;
 import eu.stratosphere.sopremo.operator.Property;
-import eu.stratosphere.util.IsInstancePredicate;
 
 public class TwoSourceJoin extends TwoSourceJoinBase<TwoSourceJoin> {
 	private BinaryBooleanExpression condition = new ComparativeExpression(new InputSelection(0),
@@ -63,7 +64,7 @@ public class TwoSourceJoin extends TwoSourceJoinBase<TwoSourceJoin> {
 	public PactModule asPactModule(EvaluationContext context) {
 		if (this.inverseInputs)
 			this.strategy.setResultProjection(this.getResultProjection().clone().replace(
-				new IsInstancePredicate(InputSelection.class), new TransformFunction() {
+				Predicates.instanceOf(InputSelection.class), new TransformFunction() {
 					@Override
 					public EvaluationExpression apply(EvaluationExpression argument) {
 						return new InputSelection(1 - ((InputSelection) argument).getIndex());
@@ -71,10 +72,13 @@ public class TwoSourceJoin extends TwoSourceJoinBase<TwoSourceJoin> {
 				}));
 		else
 			this.strategy.setResultProjection(this.getResultProjection());
-		if (!this.outerJoinSources.isEmpty() && this.strategy instanceof OuterJoin)
-			((OuterJoin) this.strategy).withMode(
+		if (!this.outerJoinSources.isEmpty() && this.strategy instanceof EquiJoin)
+			((EquiJoin) this.strategy).withMode(
 				this.outerJoinSources.contains(this.inverseInputs ? 1 : 0),
 				this.outerJoinSources.contains(this.inverseInputs ? 0 : 1));
+		
+		this.strategy.setDegreeOfParallelism(this.getDegreeOfParallelism());
+		
 		final PactModule pactModule = this.strategy.asPactModule(context);
 		if (this.inverseInputs)
 			ContractUtil.swapInputs(pactModule.getOutput(0).getInputs().get(0), 0, 1);
@@ -220,12 +224,12 @@ public class TwoSourceJoin extends TwoSourceJoinBase<TwoSourceJoin> {
 			switch (comparison.getBinaryOperator()) {
 			case EQUAL:
 				this.inverseInputs = comparison.getExpr1().findFirst(InputSelection.class).getIndex() == 1;
-				this.strategy = new OuterJoin().withMode(Mode.NONE).
+				this.strategy = new EquiJoin().withMode(Mode.NONE).
 					withKeyExpression(0, comparison.getExpr1().remove(InputSelection.class)).
 					withKeyExpression(1, comparison.getExpr2().remove(InputSelection.class));
 				break;
 			default:
-				this.strategy = new ThetaJoin().withComparison(comparison);
+				this.strategy = new ThetaJoin().withCondition(comparison);
 			}
 		} else if (this.condition instanceof ElementInSetExpression) {
 			ElementInSetExpression elementInSetExpression = (ElementInSetExpression) this.condition.clone();

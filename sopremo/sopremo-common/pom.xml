@@ -60,6 +60,11 @@
     	<artifactId>kryo</artifactId>
     	<version>2.20</version>
     </dependency>
+    <dependency>
+    	<groupId>eu.stratosphere</groupId>
+    	<artifactId>pact-testplan</artifactId>
+    	<version>0.2</version>
+    </dependency>
   </dependencies>
   <reporting>
     <plugins>

@@ -104,7 +104,6 @@ public class EvaluationContext extends AbstractSopremoType implements ISopremoTy
 	 * (non-Javadoc)
 	 * @see eu.stratosphere.sopremo.AbstractSopremoType#copyPropertiesFrom(eu.stratosphere.sopremo.AbstractSopremoType)
 	 */
-	@Override
 	public void copyPropertiesFrom(ISopremoType original) {
 		final EvaluationContext context = (EvaluationContext) original;
 		this.inputSchemas.addAll(SopremoUtil.deepClone(context.inputSchemas));

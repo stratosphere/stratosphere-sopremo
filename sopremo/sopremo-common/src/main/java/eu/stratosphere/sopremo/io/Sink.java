@@ -3,7 +3,6 @@ package eu.stratosphere.sopremo.io;
 import eu.stratosphere.pact.common.contract.FileDataSink;
 import eu.stratosphere.pact.common.plan.PactModule;
 import eu.stratosphere.sopremo.EvaluationContext;
-import eu.stratosphere.sopremo.ISopremoType;
 import eu.stratosphere.sopremo.io.SopremoFileFormat.SopremoOutputFormat;
 import eu.stratosphere.sopremo.operator.ElementaryOperator;
 import eu.stratosphere.sopremo.operator.ElementarySopremoModule;
@@ -54,18 +53,6 @@ public class Sink extends ElementaryOperator<Sink> {
 	 */
 	Sink() {
 		this("");
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.operator.Operator#copyPropertiesFrom(eu.stratosphere.sopremo.ISopremoType)
-	 */
-	@Override
-	public void copyPropertiesFrom(ISopremoType original) {
-		super.copyPropertiesFrom(original);
-		Sink sink = (Sink) original;
-		this.outputPath = sink.outputPath;
-		this.format = sink.format;
 	}
 
 	/**

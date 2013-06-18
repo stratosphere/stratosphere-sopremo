@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
-import javolution.text.TextFormat;
 import eu.stratosphere.sopremo.pact.SopremoUtil;
 
 /**
@@ -178,6 +177,6 @@ public class DecimalNode extends AbstractNumericNode implements INumericNode {
 	@Override
 	public void appendAsString(Appendable appendable) throws IOException {
 		//TextFormat.getInstance(BigDecimal.class).format(this.value, appendable);
-		appendable.append(value.toPlainString());
+		appendable.append(this.value.toPlainString());
 	}
 }

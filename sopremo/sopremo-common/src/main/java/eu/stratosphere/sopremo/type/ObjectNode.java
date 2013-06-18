@@ -47,6 +47,7 @@ public class ObjectNode extends AbstractObjectNode implements IObjectNode {
 	 * (non-Javadoc)
 	 * @see eu.stratosphere.sopremo.type.JsonObject#get(java.lang.String)
 	 */
+	@SuppressWarnings("unchecked")
 	@Override
 	public IJsonNode get(final String fieldName) {
 		final IJsonNode node = this.children.get(fieldName);

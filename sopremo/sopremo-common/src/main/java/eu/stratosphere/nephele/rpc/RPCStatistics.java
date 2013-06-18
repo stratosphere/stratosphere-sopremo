@@ -83,8 +83,8 @@ public class RPCStatistics {
 
 			this.requestCounter.incrementAndGet();
 			this.sumOfRTTs.addAndGet(rtt);
-			testAndSetLowestRTT(methodName, rtt);
-			testAndSetHighestRTT(methodName, rtt);
+			this.testAndSetLowestRTT(methodName, rtt);
+			this.testAndSetHighestRTT(methodName, rtt);
 		}
 
 		/**
@@ -101,9 +101,8 @@ public class RPCStatistics {
 
 				final int val = this.minRTT.get();
 				if (rtt < val) {
-					if (!this.minRTT.compareAndSet(val, rtt)) {
+					if (!this.minRTT.compareAndSet(val, rtt))
 						continue;
-					}
 
 					this.minMethodName = methodName;
 				}
@@ -126,9 +125,8 @@ public class RPCStatistics {
 
 				final int val = this.maxRTT.get();
 				if (rtt > val) {
-					if (!this.maxRTT.compareAndSet(val, rtt)) {
+					if (!this.maxRTT.compareAndSet(val, rtt))
 						continue;
-					}
 
 					this.maxMethodName = methodName;
 				}
@@ -143,9 +141,8 @@ public class RPCStatistics {
 		private void processCollectedData() {
 
 			final int numberOfRequests = this.requestCounter.getAndSet(0);
-			if (numberOfRequests == 0) {
+			if (numberOfRequests == 0)
 				return;
-			}
 
 			final float avg = (float) this.sumOfRTTs.getAndSet(0) / (float) numberOfRequests;
 			final int min = this.minRTT.getAndSet(Integer.MAX_VALUE);
@@ -240,8 +237,8 @@ public class RPCStatistics {
 
 			this.requestCounter.incrementAndGet();
 			this.sumOfRetries.addAndGet(requiredRetries);
-			testAndSetMin(methodName, requiredRetries);
-			testAndSetMax(methodName, requiredRetries);
+			this.testAndSetMin(methodName, requiredRetries);
+			this.testAndSetMax(methodName, requiredRetries);
 		}
 
 		/**
@@ -258,9 +255,8 @@ public class RPCStatistics {
 
 				final int val = this.minRetries.get();
 				if (requiredRetries < val) {
-					if (!this.minRetries.compareAndSet(val, requiredRetries)) {
+					if (!this.minRetries.compareAndSet(val, requiredRetries))
 						continue;
-					}
 
 					this.minMethodName = methodName;
 				}
@@ -283,9 +279,8 @@ public class RPCStatistics {
 
 				final int val = this.maxRetries.get();
 				if (requiredRetries > val) {
-					if (!this.maxRetries.compareAndSet(val, requiredRetries)) {
+					if (!this.maxRetries.compareAndSet(val, requiredRetries))
 						continue;
-					}
 
 					this.maxMethodName = methodName;
 				}
@@ -302,9 +297,8 @@ public class RPCStatistics {
 			if (Log.DEBUG) {
 
 				final int numberOfRequests = this.requestCounter.get();
-				if (numberOfRequests == 0) {
+				if (numberOfRequests == 0)
 					return;
-				}
 
 				final float avg = (float) this.sumOfRetries.get() / (float) numberOfRequests;
 
@@ -330,7 +324,8 @@ public class RPCStatistics {
 	/**
 	 * Map storing the collected retry statistics data by the number of packets the request consisted of.
 	 */
-	private final ConcurrentMap<Integer, RetryStatistics> statisticsData = new ConcurrentHashMap<Integer, RetryStatistics>();
+	private final ConcurrentMap<Integer, RetryStatistics> statisticsData =
+		new ConcurrentHashMap<Integer, RetryStatistics>();
 
 	/**
 	 * The RTT statistics.
@@ -354,9 +349,8 @@ public class RPCStatistics {
 		if (data == null) {
 			data = new RetryStatistics(numberOfPackets);
 			final RetryStatistics oldValue = this.statisticsData.putIfAbsent(key, data);
-			if (oldValue != null) {
+			if (oldValue != null)
 				data = oldValue;
-			}
 		}
 
 		data.reportNumberOfRequiredRetries(methodName, requiredRetries);

@@ -3,9 +3,9 @@ package eu.stratosphere.sopremo.base;
 import java.util.List;
 
 import eu.stratosphere.pact.common.IdentityMap;
-import eu.stratosphere.pact.generic.contract.Contract;
 import eu.stratosphere.pact.common.contract.MapContract;
 import eu.stratosphere.pact.common.plan.PactModule;
+import eu.stratosphere.pact.generic.contract.Contract;
 import eu.stratosphere.sopremo.EvaluationContext;
 import eu.stratosphere.sopremo.operator.ElementaryOperator;
 import eu.stratosphere.sopremo.operator.InputCardinality;

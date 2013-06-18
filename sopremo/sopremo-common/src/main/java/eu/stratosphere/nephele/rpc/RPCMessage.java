@@ -15,8 +15,6 @@
 
 package eu.stratosphere.nephele.rpc;
 
-import java.net.DatagramPacket;
-
 /**
  * Abstract base class for all types of communication messages used by this RPC service.
  * <p>

@@ -19,10 +19,11 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
+import com.google.common.base.Predicate;
+
 import eu.stratosphere.util.AbstractIterator;
 import eu.stratosphere.util.ConversionIterator;
 import eu.stratosphere.util.FilteringIterable;
-import eu.stratosphere.util.Predicate;
 
 /**
  * @author Arvid Heise
@@ -65,13 +66,13 @@ public class Graph<Node> implements Iterable<Graph<Node>.NodePath> {
 		final Predicate<Graph<Node>.NodePath> selector = equal ?
 			new Predicate<Graph<Node>.NodePath>() {
 				@Override
-				public boolean isTrue(final Graph<Node>.NodePath param) {
+				public boolean apply(final Graph<Node>.NodePath param) {
 					return param.equals(toFind);
 				};
 			} :
 			new Predicate<Graph<Node>.NodePath>() {
 				@Override
-				public boolean isTrue(final Graph<Node>.NodePath param) {
+				public boolean apply(final Graph<Node>.NodePath param) {
 					return param.getNode() == toFind;
 				};
 			};
@@ -111,7 +112,7 @@ public class Graph<Node> implements Iterable<Graph<Node>.NodePath> {
 	public Iterable<Graph<Node>.NodePath> findAllIncomings(final Node node) {
 		return new FilteringIterable<Graph<Node>.NodePath>(this, new Predicate<Graph<Node>.NodePath>() {
 			@Override
-			public boolean isTrue(final Graph<Node>.NodePath param) {
+			public boolean apply(final Graph<Node>.NodePath param) {
 				for (final Node outgoing : param.getOutgoings())
 					if (outgoing == node)
 						return true;
@@ -123,7 +124,7 @@ public class Graph<Node> implements Iterable<Graph<Node>.NodePath> {
 	public Iterable<Graph<Node>.NodePath> findAllTypes(final Class<?> clazz) {
 		return new FilteringIterable<Graph<Node>.NodePath>(this, new Predicate<Graph<Node>.NodePath>() {
 			@Override
-			public boolean isTrue(final Graph<Node>.NodePath param) {
+			public boolean apply(final Graph<Node>.NodePath param) {
 				return clazz.isInstance(param);
 			};
 		});

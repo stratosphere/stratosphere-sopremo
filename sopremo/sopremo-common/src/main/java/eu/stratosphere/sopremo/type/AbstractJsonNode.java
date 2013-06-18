@@ -8,7 +8,6 @@ import java.io.IOException;
 import java.util.Arrays;
 
 import eu.stratosphere.sopremo.AbstractSopremoType;
-import eu.stratosphere.sopremo.ISopremoType;
 
 /**
  * Abstract class to provide basic implementations for all node types.
@@ -32,15 +31,6 @@ public abstract class AbstractJsonNode extends AbstractSopremoType implements IJ
 	@Override
 	public AbstractJsonNode canonicalize() {
 		return this;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.AbstractSopremoType#copyPropertiesFrom(eu.stratosphere.sopremo.AbstractSopremoType)
-	 */
-	@Override
-	public void copyPropertiesFrom(ISopremoType original) {
-		this.copyValueFrom((IJsonNode) original);
 	}
 
 	/*

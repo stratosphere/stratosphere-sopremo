@@ -24,11 +24,11 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import eu.stratosphere.pact.generic.contract.Contract;
 import eu.stratosphere.pact.common.contract.FileDataSink;
 import eu.stratosphere.pact.common.contract.FileDataSource;
 import eu.stratosphere.pact.common.plan.ContractUtil;
 import eu.stratosphere.pact.common.plan.PactModule;
+import eu.stratosphere.pact.generic.contract.Contract;
 import eu.stratosphere.sopremo.EvaluationContext;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
 import eu.stratosphere.sopremo.io.Sink;
@@ -258,11 +258,19 @@ public class ElementarySopremoModule extends SopremoModule {
 	 */
 	public void inferSchema(final SchemaFactory schemaFactory) {
 		final Set<EvaluationExpression> keyExpressions = new HashSet<EvaluationExpression>();
-		for (final ElementaryOperator<?> operator : this.getReachableNodes())
+		final Set<EvaluationExpression> resultExpressions = new HashSet<EvaluationExpression>();
+		for (final ElementaryOperator<?> operator : this.getReachableNodes()) {
 			for (final List<? extends EvaluationExpression> expressions : operator.getAllKeyExpressions())
 				keyExpressions.addAll(expressions);
 
-		this.schema = schemaFactory.create(keyExpressions);
+			if (operator.getNumInputs() != 1 && operator.getResultProjection() == EvaluationExpression.VALUE)
+				resultExpressions.add(SchemaFactory.UNKNOWN);
+			else
+				resultExpressions.add(operator.getResultProjection());
+		}
+
+		resultExpressions.remove(EvaluationExpression.VALUE);
+		this.schema = schemaFactory.create(keyExpressions, resultExpressions);
 	}
 
 	/**

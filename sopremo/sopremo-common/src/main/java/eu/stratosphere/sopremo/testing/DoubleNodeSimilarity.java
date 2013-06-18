@@ -3,7 +3,7 @@ package eu.stratosphere.sopremo.testing;
 import java.util.Iterator;
 import java.util.Map.Entry;
 
-import eu.stratosphere.sopremo.util.AbstractValueSimilarity;
+import eu.stratosphere.pact.testing.fuzzy.AbstractValueSimilarity;
 import eu.stratosphere.sopremo.pact.JsonNodeWrapper;
 import eu.stratosphere.sopremo.type.IArrayNode;
 import eu.stratosphere.sopremo.type.IJsonNode;

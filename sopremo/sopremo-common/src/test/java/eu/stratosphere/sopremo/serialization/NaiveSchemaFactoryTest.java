@@ -29,7 +29,7 @@ public class NaiveSchemaFactoryTest {
 	public void shouldCreateDirectSchema() {
 		final Set<EvaluationExpression> expressions = new HashSet<EvaluationExpression>();
 
-		final Schema schema = this.factory.create(expressions);
+		final Schema schema = this.factory.create(expressions, new HashSet<EvaluationExpression>());
 
 		Assert.assertTrue(schema instanceof DirectSchema);
 	}
@@ -40,7 +40,7 @@ public class NaiveSchemaFactoryTest {
 		expressions.add(new ConstantExpression(IntNode.valueOf(42)));
 		expressions.add(new ArithmeticExpression(new ArrayAccess(0), ArithmeticOperator.ADDITION, new ArrayAccess(1)));
 
-		final Schema schema = this.factory.create(expressions);
+		final Schema schema = this.factory.create(expressions, new HashSet<EvaluationExpression>());
 
 		Assert.assertTrue(schema instanceof GeneralSchema);
 	}
@@ -51,7 +51,7 @@ public class NaiveSchemaFactoryTest {
 		accesses.add(new ArrayAccess(0, 2));
 		accesses.add(new ArrayAccess(1, 3));
 
-		final Schema schema = this.factory.create(accesses);
+		final Schema schema = this.factory.create(accesses, new HashSet<EvaluationExpression>());
 
 		Assert.assertSame(HeadArraySchema.class, schema.getClass());
 		Assert.assertEquals(4, ((HeadArraySchema) schema).getHeadSize());
@@ -63,7 +63,7 @@ public class NaiveSchemaFactoryTest {
 		accesses.add(new ArrayAccess(0, 2));
 		accesses.add(new ArrayAccess(4, 5));
 
-		final Schema schema = this.factory.create(accesses);
+		final Schema schema = this.factory.create(accesses, new HashSet<EvaluationExpression>());
 
 		Assert.assertSame(HeadArraySchema.class, schema.getClass());
 		Assert.assertEquals(6, ((HeadArraySchema) schema).getHeadSize());
@@ -76,7 +76,7 @@ public class NaiveSchemaFactoryTest {
 		accesses.add(new ObjectAccess("lastname"));
 		accesses.add(new ObjectAccess("age"));
 
-		final Schema schema = this.factory.create(accesses);
+		final Schema schema = this.factory.create(accesses, new HashSet<EvaluationExpression>());
 
 		Assert.assertSame(ObjectSchema.class, schema.getClass());
 		Assert.assertEquals(3, ((ObjectSchema) schema).getMappings().size());
@@ -87,7 +87,7 @@ public class NaiveSchemaFactoryTest {
 		final Set<EvaluationExpression> accesses = new HashSet<EvaluationExpression>();
 		accesses.add(new ArrayAccess(-4, -1));
 
-		final Schema schema = this.factory.create(accesses);
+		final Schema schema = this.factory.create(accesses, new HashSet<EvaluationExpression>());
 
 		Assert.assertSame(TailArraySchema.class, schema.getClass());
 		Assert.assertEquals(4, ((TailArraySchema) schema).getTailSize());
@@ -99,7 +99,7 @@ public class NaiveSchemaFactoryTest {
 		accesses.add(new ArrayAccess(-4, -1));
 		accesses.add(new ArrayAccess(-6, -5));
 
-		final Schema schema = this.factory.create(accesses);
+		final Schema schema = this.factory.create(accesses, new HashSet<EvaluationExpression>());
 
 		Assert.assertSame(TailArraySchema.class, schema.getClass());
 		Assert.assertEquals(6, ((TailArraySchema) schema).getTailSize());
@@ -110,7 +110,7 @@ public class NaiveSchemaFactoryTest {
 		final Set<EvaluationExpression> accesses = new HashSet<EvaluationExpression>();
 		accesses.add(new ArrayAccess(2, -1));
 
-		final Schema schema = this.factory.create(accesses);
+		final Schema schema = this.factory.create(accesses, new HashSet<EvaluationExpression>());
 
 		Assert.assertSame(GeneralSchema.class, schema.getClass());
 	}

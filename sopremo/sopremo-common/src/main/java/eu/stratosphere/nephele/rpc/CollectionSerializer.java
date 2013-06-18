@@ -55,9 +55,9 @@ final class CollectionSerializer extends Serializer<Collection> {
 	@Override
 	public void write(final Kryo kryo, final Output output, final Collection object) {
 
-		if (hasNonArgConstructor(object.getClass())) {
+		if (hasNonArgConstructor(object.getClass()))
 			this.defaultSerializer.write(kryo, output, object);
-		} else {
+		else {
 			@SuppressWarnings("unchecked")
 			final ArrayList<Object> al = new ArrayList<Object>(object);
 			kryo.writeObject(output, al, this.defaultSerializer);
@@ -77,9 +77,8 @@ final class CollectionSerializer extends Serializer<Collection> {
 		try {
 			final Constructor<Collection> constructor = (Constructor<Collection>) class1.getConstructor();
 
-			if (constructor != null) {
+			if (constructor != null)
 				return true;
-			}
 
 		} catch (Exception e) {
 		}
@@ -93,9 +92,8 @@ final class CollectionSerializer extends Serializer<Collection> {
 	@Override
 	public Collection read(final Kryo kryo, final Input input, final Class<Collection> type) {
 
-		if (hasNonArgConstructor(type)) {
+		if (hasNonArgConstructor(type))
 			return this.defaultSerializer.read(kryo, input, type);
-		}
 
 		final ArrayList al = kryo.readObject(input, ArrayList.class, this.defaultSerializer);
 

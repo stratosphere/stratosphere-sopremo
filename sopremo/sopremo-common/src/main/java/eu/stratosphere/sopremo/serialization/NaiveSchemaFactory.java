@@ -20,10 +20,14 @@ import java.util.BitSet;
 import java.util.List;
 import java.util.Set;
 
-import eu.stratosphere.sopremo.ISopremoType;
+import com.google.common.base.Predicates;
+import com.google.common.collect.Iterables;
+
 import eu.stratosphere.sopremo.expressions.ArrayAccess;
+import eu.stratosphere.sopremo.expressions.ArrayCreation;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
 import eu.stratosphere.sopremo.expressions.ObjectAccess;
+import eu.stratosphere.sopremo.expressions.ObjectCreation;
 
 /**
  * This Factory provides the functionality described in {@link SchemaFactory} in an simple way.
@@ -40,11 +44,10 @@ import eu.stratosphere.sopremo.expressions.ObjectAccess;
 public class NaiveSchemaFactory implements SchemaFactory {
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.serialization.SchemaFactory#create(java.lang.Iterable)
+	 * @see eu.stratosphere.sopremo.serialization.SchemaFactory#create(java.util.Set, java.util.Set)
 	 */
 	@Override
-	public Schema create(final Set<EvaluationExpression> keyExpressions) {
-
+	public Schema create(Set<EvaluationExpression> keyExpressions, Set<EvaluationExpression> resultProjections) {
 		final List<ObjectAccess> objectAccesses = new ArrayList<ObjectAccess>();
 		final List<ArrayAccess> arrayAccesses = new ArrayList<ArrayAccess>();
 		final List<EvaluationExpression> actualKeyExpressions = new ArrayList<EvaluationExpression>();
@@ -63,10 +66,12 @@ public class NaiveSchemaFactory implements SchemaFactory {
 		if (actualKeyExpressions.isEmpty())
 			return new DirectSchema();
 
-		if (objectAccesses.size() == actualKeyExpressions.size())
+		if (objectAccesses.size() == actualKeyExpressions.size()
+			&& Iterables.all(resultProjections, Predicates.instanceOf(ObjectCreation.class)))
 			// all keyExpressions are ObjectAccesses
 			return new ObjectSchema(objectAccesses);
-		else if (arrayAccesses.size() == actualKeyExpressions.size()) {
+		else if (arrayAccesses.size() == actualKeyExpressions.size()
+			&& Iterables.all(resultProjections, Predicates.instanceOf(ArrayCreation.class))) {
 			// all keyExpressions are ArrayAccesses
 			BitSet positiveIndices = new BitSet(), negativeIndices = new BitSet();
 			boolean applicable = true;
@@ -103,14 +108,6 @@ public class NaiveSchemaFactory implements SchemaFactory {
 	@Override
 	public NaiveSchemaFactory clone() {
 		return this;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.ISopremoType#copyPropertiesFrom(eu.stratosphere.sopremo.ISopremoType)
-	 */
-	@Override
-	public void copyPropertiesFrom(ISopremoType original) {
 	}
 
 	/*

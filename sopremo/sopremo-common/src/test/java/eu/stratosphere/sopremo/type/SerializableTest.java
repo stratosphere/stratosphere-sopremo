@@ -97,40 +97,39 @@ public class SerializableTest {
 		Assert.assertEquals(obj, target);
 	}
 
-	// TODO mleich: re-enable tests!
-//	@Test
-//	public void shouldSerializeAndDeserializeGivenFile() {
-//
-//		final IArrayNode<IJsonNode> array = new ArrayNode<IJsonNode>();
-//
-//		try {
-//			final JsonParser parser = new JsonParser(new URL(
-//				SopremoTestUtil.getResourcePath("SopremoTestPlan/test.json")));
-//			final File file = File.createTempFile("test", "json");
-//
-//			while (!parser.checkEnd())
-//				array.add(parser.readValueAsTree());
-//
-//			array.write(this.outStream);
-//
-//			final ByteArrayInputStream byteArrayIn = new ByteArrayInputStream(this.byteArray.toByteArray());
-//			final DataInputStream inStream = new DataInputStream(byteArrayIn);
-//
-//			final IArrayNode<IJsonNode> target = new ArrayNode<IJsonNode>();
-//			target.readResolve(inStream);
-//
-//			// for watching the output
-//			final JsonGenerator gen = new JsonGenerator(file);
-//			gen.writeStartArray();
-//			gen.writeTree(target);
-//			gen.writeEndArray();
-//			gen.close();
-//
-//			Assert.assertEquals(array, target);
-//		} catch (final IOException e) {
-//			e.printStackTrace();
-//		}
-//	}
+	@Test
+	public void shouldSerializeAndDeserializeGivenFile() {
+
+		final IArrayNode<IJsonNode> array = new ArrayNode<IJsonNode>();
+
+		try {
+			final JsonParser parser = new JsonParser(new URL(
+				SopremoTestUtil.getResourcePath("SopremoTestPlan/test.json")));
+			final File file = File.createTempFile("test", "json");
+
+			while (!parser.checkEnd())
+				array.add(parser.readValueAsTree());
+
+			array.write(this.outStream);
+
+			final ByteArrayInputStream byteArrayIn = new ByteArrayInputStream(this.byteArray.toByteArray());
+			final DataInputStream inStream = new DataInputStream(byteArrayIn);
+
+			final IArrayNode<IJsonNode> target = new ArrayNode<IJsonNode>();
+			target.readResolve(inStream);
+
+			// for watching the output
+			final JsonGenerator gen = new JsonGenerator(file);
+			gen.writeStartArray();
+			gen.writeTree(target);
+			gen.writeEndArray();
+			gen.close();
+
+			Assert.assertEquals(array, target);
+		} catch (final IOException e) {
+			e.printStackTrace();
+		}
+	}
 
 	@After
 	public void tearDown() {

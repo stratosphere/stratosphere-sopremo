@@ -117,4 +117,16 @@ public abstract class SopremoFunction extends Callable<IJsonNode, IArrayNode<IJs
 			sfdp.setDefaultParameter(fixedParameters + index, defaultValues[index]);
 		return sfdp;
 	}
+
+	/**
+	 * Binds a function by setting the last X parameters to predefined values.
+	 */
+	public SopremoFunction bind(IJsonNode... boundParameters) {
+		final int fixedParameters = this.getMinimumNumberOfParameters() - boundParameters.length;
+		final SopremoFunctionWithDefaultParameters sfdp =
+			new SopremoFunctionWithDefaultParameters(this, fixedParameters, fixedParameters);
+		for (int index = 0; index < boundParameters.length; index++)
+			sfdp.setDefaultParameter(fixedParameters + index, boundParameters[index]);
+		return sfdp;
+	}
 }

@@ -10,17 +10,17 @@ import com.google.common.base.Predicates;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 
-import eu.stratosphere.pact.generic.contract.Contract;
 import eu.stratosphere.pact.common.contract.FileDataSink;
 import eu.stratosphere.pact.common.contract.FileDataSource;
 import eu.stratosphere.pact.common.plan.PactModule;
 import eu.stratosphere.pact.common.plan.Plan;
 import eu.stratosphere.pact.common.stubs.Stub;
+import eu.stratosphere.pact.generic.contract.Contract;
 import eu.stratosphere.sopremo.EqualCloneTest;
 import eu.stratosphere.sopremo.io.Sink;
 import eu.stratosphere.sopremo.io.Source;
-//import eu.stratosphere.sopremo.testing.SopremoTestPlanTest.Identity;
-//import eu.stratosphere.sopremo.testing.SopremoTestPlanTest.TokenizeLine;
+import eu.stratosphere.sopremo.testing.SopremoTestPlanTest.Identity;
+import eu.stratosphere.sopremo.testing.SopremoTestPlanTest.TokenizeLine;
 
 public class SopremoPlanTest extends EqualCloneTest<SopremoPlan> {
 	/*
@@ -35,26 +35,24 @@ public class SopremoPlanTest extends EqualCloneTest<SopremoPlan> {
 		return plan;
 	}
 
-	
-	// TODO mleich: re-enable tests!
-//	@Test
-//	public void shouldTranslateDifferentStrategies() {
-//		final SopremoPlan plan = new SopremoPlan();
-//		final Source source = new Source("file:///input.json");
-//		PolymorphOperator operator = new PolymorphOperator().withInputs(source);
-//		plan.setSinks(new Sink("file:///output.json").withInputs(operator));
-//
-//		operator.setMethod(PolymorphOperator.Mode.TOKENIZE);
-//		expectPact(plan.asPactPlan(), TokenizeLine.Implementation.class);
-//		
-//		operator.setMethod(PolymorphOperator.Mode.IDENTITY);
-//		expectPact(plan.asPactPlan(), Identity.Implementation.class);
-//	}
+	@Test
+	public void shouldTranslateDifferentStrategies() {
+		final SopremoPlan plan = new SopremoPlan();
+		final Source source = new Source("file:///input.json");
+		PolymorphOperator operator = new PolymorphOperator().withInputs(source);
+		plan.setSinks(new Sink("file:///output.json").withInputs(operator));
+
+		operator.setMethod(PolymorphOperator.Mode.TOKENIZE);
+		expectPact(plan.asPactPlan(), TokenizeLine.Implementation.class);
+
+		operator.setMethod(PolymorphOperator.Mode.IDENTITY);
+		expectPact(plan.asPactPlan(), Identity.Implementation.class);
+	}
 
 	private void expectPact(Plan plan, Class<?> pactStub) {
 		final PactModule module = PactModule.valueOf(plan.getDataSinks());
-		final ArrayList<Contract> pacts = Lists.newArrayList( module.getReachableNodes());
-		
+		final ArrayList<Contract> pacts = Lists.newArrayList(module.getReachableNodes());
+
 		Assert.assertEquals(3, pacts.size());
 
 		Assert.assertTrue(Iterables.removeIf(pacts, Predicates.instanceOf(FileDataSource.class)));
@@ -65,68 +63,68 @@ public class SopremoPlanTest extends EqualCloneTest<SopremoPlan> {
 	}
 }
 
-//TODO mleich: re-enable tests!
-//@InputCardinality(1)
-//@OutputCardinality(1)
-//class PolymorphOperator extends ElementaryOperator<PolymorphOperator> {
-//	public Mode method = Mode.TOKENIZE;
-//
-//	public enum Mode {
-//		TOKENIZE, IDENTITY;
-//	}
-//
-//	/**
-//	 * Sets the method to the specified value.
-//	 *
-//	 * @param method the method to set
-//	 */
-//	@Property
-//	public void setMethod(Mode method) {
-//		if (method == null)
-//			throw new NullPointerException("method must not be null");
-//
-//		this.method = method;
-//	}
-//
-//	@Override
-//	protected Class<? extends Stub> getStubClass() {
-//		switch (this.method) {
-//		// the dafault case should do the same as the OpenNLP case
-//		case TOKENIZE:
-//			return TokenizeLine.Implementation.class;
-//		case IDENTITY:
-//			return Identity.Implementation.class;
-//		default:
-//			throw new IllegalStateException();
-//		}
-//	}
-//
-//	/*
-//	 * (non-Javadoc)
-//	 * @see java.lang.Object#hashCode()
-//	 */
-//	@Override
-//	public int hashCode() {
-//		final int prime = 31;
-//		int result = super.hashCode();
-//		result = prime * result + this.method.hashCode();
-//		return result;
-//	}
-//
-//	/*
-//	 * (non-Javadoc)
-//	 * @see java.lang.Object#equals(java.lang.Object)
-//	 */
-//	@Override
-//	public boolean equals(Object obj) {
-//		if (this == obj)
-//			return true;
-//		if (!super.equals(obj))
-//			return false;
-//		if (getClass() != obj.getClass())
-//			return false;
-//		PolymorphOperator other = (PolymorphOperator) obj;
-//		return this.method == other.method;
-//	}
-//
-//}
+@InputCardinality(1)
+@OutputCardinality(1)
+class PolymorphOperator extends ElementaryOperator<PolymorphOperator> {
+	public Mode method = Mode.TOKENIZE;
+
+	public enum Mode {
+		TOKENIZE, IDENTITY;
+	}
+
+	/**
+	 * Sets the method to the specified value.
+	 * 
+	 * @param method
+	 *        the method to set
+	 */
+	@Property
+	public void setMethod(Mode method) {
+		if (method == null)
+			throw new NullPointerException("method must not be null");
+
+		this.method = method;
+	}
+
+	@Override
+	protected Class<? extends Stub> getStubClass() {
+		switch (this.method) {
+		// the dafault case should do the same as the OpenNLP case
+		case TOKENIZE:
+			return TokenizeLine.Implementation.class;
+		case IDENTITY:
+			return Identity.Implementation.class;
+		default:
+			throw new IllegalStateException();
+		}
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result + this.method.hashCode();
+		return result;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		PolymorphOperator other = (PolymorphOperator) obj;
+		return this.method == other.method;
+	}
+
+}

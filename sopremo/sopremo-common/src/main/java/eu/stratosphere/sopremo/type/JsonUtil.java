@@ -6,7 +6,6 @@ import java.util.List;
 
 import eu.stratosphere.sopremo.expressions.ArrayAccess;
 import eu.stratosphere.sopremo.expressions.ArrayProjection;
-import eu.stratosphere.sopremo.expressions.EvaluationExpression;
 import eu.stratosphere.sopremo.expressions.ExpressionUtil;
 import eu.stratosphere.sopremo.expressions.InputSelection;
 import eu.stratosphere.sopremo.expressions.ObjectAccess;
@@ -54,7 +53,7 @@ public class JsonUtil {
 	 *        the parts that should be used
 	 * @return the expression
 	 */
-	public static EvaluationExpression createPath(final List<String> parts) {
+	public static PathSegmentExpression createPath(final List<String> parts) {
 		final List<PathSegmentExpression> fragments = new ArrayList<PathSegmentExpression>();
 		for (int index = 0; index < parts.size(); index++) {
 			PathSegmentExpression segment;
@@ -85,7 +84,7 @@ public class JsonUtil {
 	 *        the parts that should be used
 	 * @return the expression
 	 */
-	public static EvaluationExpression createPath(final String... parts) {
+	public static PathSegmentExpression createPath(final String... parts) {
 		return createPath(Arrays.asList(parts));
 	}
 

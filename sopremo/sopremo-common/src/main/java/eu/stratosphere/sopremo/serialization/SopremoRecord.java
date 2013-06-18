@@ -81,12 +81,10 @@ public final class SopremoRecord extends AbstractSopremoType implements ISopremo
 	 * (non-Javadoc)
 	 * @see eu.stratosphere.sopremo.AbstractSopremoType#copyPropertiesFrom(eu.stratosphere.sopremo.ISopremoType)
 	 */
-	@Override
 	public void copyPropertiesFrom(ISopremoType original) {
 		if (this == original)
 			return;
 
-		super.copyPropertiesFrom(original);
 		final SopremoRecord otherRecord = (SopremoRecord) original;
 		if (this.record == null) {
 			if (otherRecord.record == null)

@@ -43,6 +43,7 @@ public class SubArrayNode<T extends IJsonNode> extends AbstractArrayNode<T> {
 		this.init(originalArray, startIndex, originalArray.size() - startIndex);
 	}
 
+	@Override
 	public void setSize(int length) {
 		if (length < 0)
 			throw new IllegalArgumentException();
@@ -137,8 +138,7 @@ public class SubArrayNode<T extends IJsonNode> extends AbstractArrayNode<T> {
 	@Override
 	public Iterator<T> iterator() {
 		final Iterator<T> iterator = this.originalArray.iterator();
-		Iterators.skip(iterator, this.startIndex);
-		//advance has been updated to skip? (Moritz Schubotz 14.03.13)
+		Iterators.advance(iterator, this.startIndex);
 		return Iterators.limit(iterator, this.length);
 	}
 }

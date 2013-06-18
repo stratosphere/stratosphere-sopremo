@@ -2,7 +2,7 @@ package eu.stratosphere.sopremo.base.join;
 
 import eu.stratosphere.pact.common.stubs.Stub;
 
-public class OuterJoin extends TwoSourceJoinBase<OuterJoin> {
+public class EquiJoin extends TwoSourceJoinBase<EquiJoin> {
 	private Mode mode = Mode.BOTH;
 
 	public enum Mode {
@@ -33,7 +33,7 @@ public class OuterJoin extends TwoSourceJoinBase<OuterJoin> {
 	 *        the mode to set
 	 * @return this
 	 */
-	public OuterJoin withMode(Mode mode) {
+	public EquiJoin withMode(Mode mode) {
 		this.setMode(mode);
 		return this;
 	}
@@ -47,7 +47,7 @@ public class OuterJoin extends TwoSourceJoinBase<OuterJoin> {
 	 *        whether right side should be retained
 	 * @return this
 	 */
-	public OuterJoin withMode(boolean retainLeft, boolean retainRight) {
+	public EquiJoin withMode(boolean retainLeft, boolean retainRight) {
 		int modeIndex = (retainLeft ? 1 : 0) + 2 * (retainRight ? 1 : 0);
 		this.setMode(Mode.values()[modeIndex]);
 		return this;

@@ -131,4 +131,5 @@ public class SecondOrderFunctions implements BuiltinProvider {
 			return aggregator;
 		}
 	};
+
 }

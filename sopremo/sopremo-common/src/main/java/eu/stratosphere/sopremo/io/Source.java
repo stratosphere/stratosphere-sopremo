@@ -8,9 +8,7 @@ import eu.stratosphere.nephele.fs.Path;
 import eu.stratosphere.pact.common.contract.FileDataSource;
 import eu.stratosphere.pact.common.contract.GenericDataSource;
 import eu.stratosphere.pact.common.plan.PactModule;
-import eu.stratosphere.sopremo.util.Equaler;
 import eu.stratosphere.sopremo.EvaluationContext;
-import eu.stratosphere.sopremo.ISopremoType;
 import eu.stratosphere.sopremo.expressions.ArrayCreation;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
 import eu.stratosphere.sopremo.io.SopremoFileFormat.SopremoInputFormat;
@@ -20,6 +18,7 @@ import eu.stratosphere.sopremo.operator.Property;
 import eu.stratosphere.sopremo.pact.SopremoUtil;
 import eu.stratosphere.sopremo.type.IJsonNode;
 import eu.stratosphere.sopremo.type.NullNode;
+import eu.stratosphere.sopremo.util.Equaler;
 
 /**
  * Represents a data source in a PactPlan.
@@ -77,19 +76,6 @@ public class Source extends ElementaryOperator<Source> {
 	 */
 	public Source() {
 		this(new ArrayCreation());
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.operator.Operator#copyPropertiesFrom(eu.stratosphere.sopremo.ISopremoType)
-	 */
-	@Override
-	public void copyPropertiesFrom(ISopremoType original) {
-		super.copyPropertiesFrom(original);
-		Source source = (Source) original;
-		this.adhocExpression = source.adhocExpression == null ? null : source.adhocExpression.clone();
-		this.format = source.format.clone();
-		this.inputPath = source.inputPath;
 	}
 
 	/**

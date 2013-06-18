@@ -77,13 +77,6 @@ public abstract class AbstractSopremoType implements ISopremoType {
 	}
 
 	/**
-	 * Copies the values of the given object. The object has the same type as this object.
-	 */
-	@Override
-	public void copyPropertiesFrom(ISopremoType original) {
-	}
-
-	/**
 	 * Returns a string representation of the given {@link SopremoType}.
 	 * 
 	 * @param type

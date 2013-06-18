@@ -22,6 +22,7 @@ public class SopremoRuntime {
 	 * 
 	 */
 	private static final ThreadLocal<SopremoRuntime> INSTANCE = new ThreadLocal<SopremoRuntime>() {
+		@Override
 		protected SopremoRuntime initialValue() {
 			return new SopremoRuntime();
 		};

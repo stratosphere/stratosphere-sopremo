@@ -16,12 +16,7 @@ package eu.stratosphere.sopremo.expressions;
 
 import java.io.IOException;
 
-import eu.stratosphere.sopremo.EvaluationException;
-import eu.stratosphere.sopremo.pact.SopremoUtil;
 import eu.stratosphere.sopremo.type.IJsonNode;
-import eu.stratosphere.sopremo.type.IObjectNode;
-import eu.stratosphere.sopremo.type.MissingNode;
-import eu.stratosphere.sopremo.type.NullNode;
 
 /**
  * Returns the value of an attribute of one or more Json nodes.
@@ -29,25 +24,22 @@ import eu.stratosphere.sopremo.type.NullNode;
  * @author Arvid Heise
  */
 @OptimizerHints(scope = Scope.OBJECT)
-public class ObjectAccess extends PathSegmentExpression {
+public class SetValueExpression extends PathSegmentExpression {
+	private final PathSegmentExpression valueLocator;
 
-	private final String field;
+	private final EvaluationExpression replaceExpression;
 
-	/**
-	 * Initializes ObjectAccess with the given field name.
-	 * 
-	 * @param field
-	 *        the name of the field
-	 */
-	public ObjectAccess(final String field) {
-		this.field = field;
+	public SetValueExpression(PathSegmentExpression valueLocator, EvaluationExpression replaceExpression) {
+		this.valueLocator = valueLocator;
+		this.replaceExpression = replaceExpression;
 	}
 
 	/**
-	 * Initializes ObjectAccess.
+	 * Initializes SetValueExpression.
 	 */
-	ObjectAccess() {
-		this.field = null;
+	SetValueExpression() {
+		this.valueLocator = EvaluationExpression.VALUE;
+		this.replaceExpression = EvaluationExpression.VALUE;
 	}
 
 	/*
@@ -56,21 +48,38 @@ public class ObjectAccess extends PathSegmentExpression {
 	 */
 	@Override
 	protected int segmentHashCode() {
-		return this.field.hashCode();
+		return 41 * this.valueLocator.hashCode() + this.replaceExpression.hashCode();
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see
+	 * eu.stratosphere.sopremo.expressions.PathSegmentExpression#equalsSameClass(eu.stratosphere.sopremo.expressions
+	 * .PathSegmentExpression)
+	 */
 	@Override
 	public boolean equalsSameClass(PathSegmentExpression other) {
-		return this.field.equals(((ObjectAccess) other).field);
+		final SetValueExpression setValueExpression = (SetValueExpression) other;
+		return this.valueLocator.equals(setValueExpression.valueLocator)
+			&& this.replaceExpression.equals(setValueExpression.replaceExpression);
 	}
 
 	/**
-	 * Returns the field.
+	 * Returns the replaceExpression.
 	 * 
-	 * @return the field
+	 * @return the replaceExpression
 	 */
-	public String getField() {
-		return this.field;
+	public EvaluationExpression getReplaceExpression() {
+		return this.replaceExpression;
+	}
+
+	/**
+	 * Returns the valueLocator.
+	 * 
+	 * @return the valueLocator
+	 */
+	public EvaluationExpression getValueLocator() {
+		return this.valueLocator;
 	}
 
 	/**
@@ -86,29 +95,14 @@ public class ObjectAccess extends PathSegmentExpression {
 	 */
 	@Override
 	protected IJsonNode evaluateSegment(final IJsonNode node) {
-		if (!node.isObject()) {
-			return MissingNode.getInstance();
-		}
-		final IJsonNode value = ((IObjectNode) node).get(this.field);
-		return value == null ? NullNode.getInstance() : value;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.expressions.PathSegmentExpression#setSegment(eu.stratosphere.sopremo.type.IJsonNode,
-	 * eu.stratosphere.sopremo.type.IJsonNode)
-	 */
-	@Override
-	protected IJsonNode setSegment(IJsonNode node, IJsonNode value) {
-		if (!node.isObject())
-			throw new EvaluationException("Cannot access field of non-object " + node.getClass().getSimpleName());
-		SopremoUtil.replaceWithCopy((IObjectNode) node, this.field, value);
-		return node;
+		return this.valueLocator.set(node, this.replaceExpression.evaluate(node));
 	}
 
 	@Override
 	public void appendAsString(final Appendable appendable) throws IOException {
 		this.appendInputAsString(appendable);
-		appendable.append('.').append(this.field);
+		this.valueLocator.appendAsString(appendable);
+		appendable.append("<-");
+		this.replaceExpression.appendAsString(appendable);
 	}
 }

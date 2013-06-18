@@ -17,6 +17,11 @@ package eu.stratosphere.sopremo.util;
 
 import java.util.Iterator;
 
+import junit.framework.Assert;
+import junit.framework.AssertionFailedError;
+
+import org.junit.internal.ArrayComparisonFailure;
+
 /**
  * Additional assertions for unit tests.
  * 
@@ -37,19 +42,14 @@ public class AssertUtil {
 		for (; actualIterator.hasNext() && expectedIterator.hasNext(); index++) {
 			final T expected = expectedIterator.next(), actual = actualIterator.next();
 			if (!equaler.equal(expected, actual))
-				throw new AssertionError(message);
-				// TODO mleich: clean up junit dependency!
-				//throw new ArrayComparisonFailure(message, new AssertionFailedError(Assert.format(message, expected,
-				//	actual)), index);
+				throw new ArrayComparisonFailure(message, new AssertionFailedError(Assert.format(message, expected,
+					actual)), index);
 		}
 
-		// TODO mleich: clean up junit dependency!
 		if (expectedIterator.hasNext())
-			throw new AssertionError("More elements expected");
-			//throw new ArrayComparisonFailure(message, new AssertionError("More elements expected"), index);
+			throw new ArrayComparisonFailure(message, new AssertionError("More elements expected"), index);
 		if (actualIterator.hasNext())
-			throw new AssertionError("Less elements expected");
-			//throw new ArrayComparisonFailure(message, new AssertionError("Less elements expected"), index);
+			throw new ArrayComparisonFailure(message, new AssertionError("Less elements expected"), index);
 	}
 
 	/**
