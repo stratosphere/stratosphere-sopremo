@@ -1,0 +1,8 @@
+$s = read from 'file:///home/fabian/Desktop/supplier_21.json';
+$li = read from 'file:///home/fabian/Desktop/lineitem_21.json';
+
+$fli = filter $li where ($li.l_shipdate >= '1996-01-01' and $li.l_shipdate < '1996-04-01') parallel 16;
+$fr = group $fli by $fli.l_suppkey into {supplier_no: $fli[0].l_suppkey, total_revenue: sum($fli[*].l_extendedprice*(1-$fli[*].l_discount))} parallel 16;
+$joinResult = join $s, $fr where $s.s_suppkey == $fr.supplier_no into {$s.s_suppkey, $s.s_name, $s.s_address, $s.s_phone, $fr.total_revenue} parallel 16;
+
+write $joinResult to 'file:///home/fabian/Desktop/q15_modified.result';

@@ -95,6 +95,9 @@ public class CLClient {
 					case ENQUEUED:
 						System.out.print("Submitted script " + script);
 						break;
+					case SETUP:
+						System.out.print("Setting script up " + script);
+						break;
 					case RUNNING:
 						System.out.print("Executing script "  + script);
 						break;
@@ -103,6 +106,8 @@ public class CLClient {
 						break;
 					case ERROR:
 						System.out.print(detail);
+						break;
+					default:
 						break;
 					}
 				}
@@ -166,7 +171,7 @@ public class CLClient {
 			this.dealWithError(null, "Given file %s not found", file);
 
 		try {
-			return new QueryParser().withInputDirectory(new File(script).getParentFile()).tryParse(new FileInputStream(file));
+			return new QueryParser().withInputDirectory(new File(script).getAbsoluteFile().getParentFile()).tryParse(new FileInputStream(file));
 		} catch (IOException e) {
 			this.dealWithError(e, "Error while parsing script");
 			return null;

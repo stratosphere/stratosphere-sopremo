@@ -16,6 +16,7 @@ package eu.stratosphere.meteor;
 
 import org.junit.Test;
 
+import eu.stratosphere.meteor.MeteorTest;
 import eu.stratosphere.sopremo.io.JsonFormat;
 import eu.stratosphere.sopremo.io.Sink;
 import eu.stratosphere.sopremo.io.Source;

@@ -86,7 +86,7 @@ inlineFunction returns [ExpressionFunction func]
     for(int index = 0; index < params.size(); index++) 
       this.getConstantRegistry().put(params.get(index).getText(), new InputSelection(index)); 
   } 
-  def=contextAwareExpression[null] 
+  '{' def=contextAwareExpression[null] '}'
   { 
     $func = new ExpressionFunction(params.size(), def.tree);
     removeConstantScope(); 
@@ -106,8 +106,8 @@ expression
   | ternaryExpression;
 
 ternaryExpression
-	:	(orExpression '?')=> ifClause=orExpression '?' ifExpr=orExpression ':' elseExpr=orExpression
-	-> ^(EXPRESSION["TernaryExpression"] $ifClause { ifExpr == null ? EvaluationExpression.VALUE : $ifExpr.tree } { $elseExpr.tree })
+	:	(orExpression '?')=> ifClause=orExpression '?' ifExpr=orExpression? ':' elseExpr=orExpression
+	-> ^(EXPRESSION["TernaryExpression"] $ifClause { ifExpr == null ? $ifClause.tree : $ifExpr.tree } { $elseExpr.tree })
 	| (orExpression IF)=> ifExpr2=orExpression IF ifClause2=orExpression
   -> ^(EXPRESSION["TernaryExpression"] $ifClause2 $ifExpr2 { EvaluationExpression.VALUE })
   | orExpression;
@@ -203,6 +203,8 @@ arrayAccess
   
 valueExpression
 	:	(ID '(')=> functionCall
+	| functionReference
+  | (FN)=> func=inlineFunction -> ^(EXPRESSION["ConstantExpression"] { new FunctionNode($func.func) })
 	| parenthesesExpression 
 	| literal 
   | (VAR '[' VAR)=> streamIndexAccess
@@ -210,7 +212,7 @@ valueExpression
   | ((ID ':')=> packageName=ID ':')? constant=ID { getScope($packageName.text).getConstantRegistry().get($constant.text) != null }? => 
     -> { getScope($packageName.text).getConstantRegistry().get($constant.text) }  
 	| arrayCreation 
-	| objectCreation ;
+	| objectCreation;
 	
 operatorExpression
 	:	op=operator -> ^(EXPRESSION["NestedOperatorExpression"] { $op.op });
@@ -223,17 +225,16 @@ methodCall [EvaluationExpression targetExpr]
         paraphrase.push("a method call"); }
 @after { paraphrase.pop(); }
   : (packageName=ID ':')? name=ID '(' 
-  ((param=expression { params.add($param.tree); } | func=lowerOrderFunction { params.add($func.tree); }) 
-  (',' (param=expression { params.add($param.tree); } | func=lowerOrderFunction { params.add($func.tree); }))*)? 
+  ((param=expression { params.add($param.tree); }) 
+  (',' (param=expression { params.add($param.tree); }))*)? 
   ')' -> { createCheckedMethodCall($packageName.text, $name, $targetExpr, params.toArray(new EvaluationExpression[params.size()])) };
   
 functionCall
 	:	methodCall[null];
-	
-lowerOrderFunction
-  : '&' (packageName=ID ':')? name=ID 
-        -> ^(EXPRESSION["ConstantExpression"] { new FunctionNode(getSopremoFunction($packageName.text, $name)) })
-  | func=inlineFunction -> ^(EXPRESSION["ConstantExpression"] { new FunctionNode($func.func) });
+
+functionReference
+  : '&' ((ID ':')=> packageName=ID ':')? name=ID 
+        -> ^(EXPRESSION["ConstantExpression"] { new FunctionNode(getSopremoFunction($packageName.text, $name)) });	
 
 fieldAssignment
 	:	((ID ':')=> ID ':' expression 
@@ -424,7 +425,7 @@ FN  : 'fn';
 
 AS  : 'as';
 
-ID	:	(LOWER_LETTER | UPPER_LETTER) (LOWER_LETTER | UPPER_LETTER | DIGIT | '_')*;
+ID	:	(LOWER_LETTER | UPPER_LETTER | '_') (LOWER_LETTER | UPPER_LETTER | DIGIT | '_')*;
 
 VAR	:	'$' ID;
 

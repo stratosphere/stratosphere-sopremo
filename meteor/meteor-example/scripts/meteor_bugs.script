@@ -1,0 +1,45 @@
+using govwild;
+//1------------------------------------------------------------------------------
+$distinctError = read from 'file:///home/fabian/workspace/git/ftschirschnitz/meteor/meteor-example/resources/meteor_bugs_example.json';
+
+$distinctError = group $distinctError by $distinctError.key into {
+	field : distinct_aggr($distinctError[*].field),
+	a : distinct_aggr($distinctError[*].a), //bei mir fehlt die 6
+	key : distinct_aggr($distinctError[*].key)
+};
+
+write $distinctError to 'file:///home/fabian/Desktop/distinctError.json';
+//2------------------------------------------------------------------------------
+//arrayAccessUDF = fn(array, index) { array[index]}; // gibt nen parser-fehler
+arrayAccessUDF = fn(array, index) {array[1]};
+
+$arrayAccessUDFError = read from 'file:///home/fabian/workspace/git/ftschirschnitz/meteor/meteor-example/resources/meteor_bugs_example.json';
+$array = read from 'file:///home/fabian/workspace/git/ftschirschnitz/meteor/meteor-example/resources/meteor_bugs_example.json';
+ 
+$arrayAccessUDFError = transform $arrayAccessUDFError into {
+	test : arrayAccessUDF($array, 0) // ausgabe bei mir: [{},{},{}]???
+};
+
+write $arrayAccessUDFError to 'file:///home/fabian/Desktop/arrayAccessUDFError.json';
+//3------------------------------------------------------------------------------
+echoUDF = fn(input) { input };
+
+$echoUDFUDFError = read from 'file:///home/fabian/workspace/git/ftschirschnitz/meteor/meteor-example/resources/meteor_bugs_example.json';
+
+$echoUDFUDFError = transform $echoUDFUDFError into {
+	test : echoUDF($echoUDFUDFError.key) // ausgabe bei mir [{"test":{"a":6,"field":null,"key":1}}, ...]
+};
+
+write $echoUDFUDFError to 'file:///home/fabian/Desktop/echoUDFUDFError.json';
+//4------------------------------------------------------------------------------
+firstUDF = fn(input) { input.key+input.key }; //wegen letzem bug, feldzugriff
+secondUDF = fn(input) { input+input }; //index-zugriff wegen letzten beschriebenen bug
+
+$chainingUDFError = read from 'file:///home/fabian/workspace/git/ftschirschnitz/meteor/meteor-example/resources/meteor_bugs_example.json';
+
+$chainingUDFError = transform $chainingUDFError into {
+	//test : secondUDF(firstUDF($chainingUDFError.key)) aus firstUDF kommt ein ObjectNode --> ClassCastException
+	test : firstUDF($chainingUDFError.key)
+};
+
+write $chainingUDFError to 'file:///home/fabian/Desktop/chainingUDFError.json';

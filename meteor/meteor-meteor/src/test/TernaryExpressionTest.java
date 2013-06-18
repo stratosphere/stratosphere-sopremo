@@ -12,15 +12,14 @@
  * specific language governing permissions and limitations under the License.
  *
  **********************************************************************************************************************/
-package eu.stratosphere.meteor.base;
+package eu.stratosphere.meteor;
 
 import org.junit.Test;
 
-import eu.stratosphere.meteor.MeteorTest;
 import eu.stratosphere.sopremo.base.Projection;
-import eu.stratosphere.sopremo.expressions.ArithmeticExpression;
-import eu.stratosphere.sopremo.expressions.ArithmeticExpression.ArithmeticOperator;
+import eu.stratosphere.sopremo.expressions.ConstantExpression;
 import eu.stratosphere.sopremo.expressions.ObjectCreation;
+import eu.stratosphere.sopremo.expressions.TernaryExpression;
 import eu.stratosphere.sopremo.io.Sink;
 import eu.stratosphere.sopremo.io.Source;
 import eu.stratosphere.sopremo.operator.SopremoPlan;
@@ -29,27 +28,46 @@ import eu.stratosphere.sopremo.type.JsonUtil;
 /**
  * @author Arvid Heise
  */
-public class TransformTest extends MeteorTest {
+public class TernaryExpressionTest extends MeteorTest {
 
 	@Test
-	public void testTransform() {
+	public void shouldSupportTernary() {
 		final SopremoPlan actualPlan = this.parseScript("$input = read from 'file://input.json';\n" +
-			"$result = transform $input into {sum: $input.a + $input.b};\n" +
+			"$result = transform $input into {name: $input.name ? $input.name : 'unknown'};\n" +
 			"write $result to 'file://output.json'; ");
 
 		final SopremoPlan expectedPlan = new SopremoPlan();
 		final Source input = new Source("file://input.json");
 		final Projection projection = new Projection().
-			withResultProjection(
-				new ObjectCreation(
-					new ObjectCreation.FieldAssignment("sum",
-						new ArithmeticExpression(JsonUtil.createPath("0", "a"), ArithmeticOperator.ADDITION,
-							JsonUtil.createPath("0", "b"))))).
+			withResultProjection(new ObjectCreation(
+				new ObjectCreation.FieldAssignment("name",
+					new TernaryExpression(JsonUtil.createPath("0", "name"),
+						JsonUtil.createPath("0", "name"),
+						new ConstantExpression("unknown"))))).
 			withInputs(input);
 		final Sink output = new Sink("file://output.json").withInputs(projection);
 		expectedPlan.setSinks(output);
 
 		assertPlanEquals(expectedPlan, actualPlan);
 	}
+	@Test
+	public void shouldSupportElvis() {
+		final SopremoPlan actualPlan = this.parseScript("$input = read from 'file://input.json';\n" +
+			"$result = transform $input into {name: $input.name ? $input.name : 'unknown'};\n" +
+			"write $result to 'file://output.json'; ");
 
+		final SopremoPlan expectedPlan = new SopremoPlan();
+		final Source input = new Source("file://input.json");
+		final Projection projection = new Projection().
+			withResultProjection(new ObjectCreation(
+				new ObjectCreation.FieldAssignment("name",
+					new TernaryExpression(JsonUtil.createPath("0", "name"),
+						JsonUtil.createPath("0", "name"),
+						new ConstantExpression("unknown"))))).
+			withInputs(input);
+		final Sink output = new Sink("file://output.json").withInputs(projection);
+		expectedPlan.setSinks(output);
+
+		assertPlanEquals(expectedPlan, actualPlan);
+	}
 }

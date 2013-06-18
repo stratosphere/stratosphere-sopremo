@@ -1,0 +1,7 @@
+$article1 = read from 'file:///home/fabian/Desktop/article.json';
+$article2 = read from 'file:///home/fabian/Desktop/article__.json';
+
+$article = join $a2 in $article2, $a1 in $article1 where $a1.id == $a2.id parallel 4;
+//into {a1id: $a1.id, a2id: $a2.id, a1text: $a1.text, a2text: $a2.text};
+
+write $article to 'file:///home/fabian/Desktop/bug293_result.json';
