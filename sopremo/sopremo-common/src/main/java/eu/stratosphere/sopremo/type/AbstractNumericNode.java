@@ -55,7 +55,7 @@ public abstract class AbstractNumericNode extends AbstractJsonNode implements IN
 	 */
 	@Override
 	protected int compareToOtherType(IJsonNode other) {
-		if (other.getType().isNumeric())
+		if (other instanceof INumericNode)
 			return Double.compare(this.getDoubleValue(), ((INumericNode) other).getDoubleValue());
 		return super.compareToOtherType(other);
 	}

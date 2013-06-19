@@ -19,6 +19,7 @@ import eu.stratosphere.sopremo.aggregation.FixedTypeTransitiveAggregation;
 import eu.stratosphere.sopremo.type.ArrayNode;
 import eu.stratosphere.sopremo.type.IArrayNode;
 import eu.stratosphere.sopremo.type.IJsonNode;
+import eu.stratosphere.sopremo.type.MissingNode;
 
 public final class ArrayUnion extends FixedTypeTransitiveAggregation<ArrayNode<IJsonNode>> {
 	public ArrayUnion() {
@@ -35,7 +36,7 @@ public final class ArrayUnion extends FixedTypeTransitiveAggregation<ArrayNode<I
 	protected void aggregateInto(final ArrayNode<IJsonNode> aggregator, IJsonNode element) {
 		final IArrayNode<?> node = (IArrayNode<?>) element;
 		for (int index = 0; index < node.size(); index++)
-			if (aggregator.get(index).isMissing() && !node.get(index).isMissing())
+			if (aggregator.get(index) == MissingNode.getInstance() && node.get(index) != MissingNode.getInstance())
 				aggregator.set(index, node.get(index));
 	}
 

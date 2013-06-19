@@ -34,6 +34,7 @@ import eu.stratosphere.sopremo.type.ArrayNode;
 import eu.stratosphere.sopremo.type.IArrayNode;
 import eu.stratosphere.sopremo.type.IJsonNode;
 import eu.stratosphere.sopremo.type.IStreamNode;
+import eu.stratosphere.sopremo.type.MissingNode;
 
 /**
  * Batch aggregates one stream of {@link IJsonNode} with several {@link AggregationFunction}s.
@@ -142,7 +143,7 @@ public class BatchAggregationExpression extends PathSegmentExpression implements
 		for (final IJsonNode input : stream)
 			for (Partial partial : this.partials) {
 				final IJsonNode preprocessedValue = partial.getInputExpression().evaluate(input);
-				if (preprocessedValue.isMissing())
+				if (preprocessedValue == MissingNode.getInstance())
 					throw new EvaluationException(String.format("Cannot access %s for aggregation %s",
 						partial.getInputExpression(), partial));
 				partial.getAggregation().aggregate(preprocessedValue);

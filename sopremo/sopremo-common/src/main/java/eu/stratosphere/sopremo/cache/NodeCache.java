@@ -14,7 +14,6 @@
  **********************************************************************************************************************/
 package eu.stratosphere.sopremo.cache;
 
-import java.util.EnumMap;
 import java.util.IdentityHashMap;
 import java.util.Map;
 
@@ -25,8 +24,6 @@ import eu.stratosphere.util.reflect.ReflectUtil;
  * @author Arvid Heise
  */
 public final class NodeCache implements ISopremoCache {
-	private final transient Map<IJsonNode.Type, IJsonNode> typeCache =
-		new EnumMap<IJsonNode.Type, IJsonNode>(IJsonNode.Type.class);
 
 	private final transient Map<Class<? extends IJsonNode>, IJsonNode> classCache =
 		new IdentityHashMap<Class<? extends IJsonNode>, IJsonNode>();
@@ -39,15 +36,6 @@ public final class NodeCache implements ISopremoCache {
 		final IJsonNode newValue = ReflectUtil.newInstance(type);
 		this.classCache.put(type, newValue);
 		return (T) newValue;
-	}
-
-	public IJsonNode getNode(IJsonNode.Type type) {
-		final IJsonNode cachedValue = this.typeCache.get(type);
-		if (cachedValue != null)
-			return cachedValue;
-		final IJsonNode newValue = ReflectUtil.newInstance(type.getClazz());
-		this.typeCache.put(type, newValue);
-		return newValue;
 	}
 
 	/**

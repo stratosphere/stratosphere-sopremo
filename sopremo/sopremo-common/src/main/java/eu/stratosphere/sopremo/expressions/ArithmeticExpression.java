@@ -18,22 +18,19 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
-import java.util.EnumMap;
+import java.util.IdentityHashMap;
 import java.util.Map;
 
 import eu.stratosphere.sopremo.cache.NodeCache;
 import eu.stratosphere.sopremo.expressions.tree.ChildIterator;
 import eu.stratosphere.sopremo.expressions.tree.NamedChildIterator;
-import eu.stratosphere.sopremo.type.AbstractJsonNode;
 import eu.stratosphere.sopremo.type.BigIntegerNode;
 import eu.stratosphere.sopremo.type.DecimalNode;
 import eu.stratosphere.sopremo.type.DoubleNode;
 import eu.stratosphere.sopremo.type.IJsonNode;
-import eu.stratosphere.sopremo.type.IJsonNode.Type;
 import eu.stratosphere.sopremo.type.INumericNode;
 import eu.stratosphere.sopremo.type.IntNode;
 import eu.stratosphere.sopremo.type.LongNode;
-import eu.stratosphere.sopremo.type.NumberCoercer;
 
 /**
  * Represents all basic arithmetic expressions covering the addition, subtraction, division, and multiplication for
@@ -267,9 +264,8 @@ public class ArithmeticExpression extends EvaluationExpression {
 
 		private final String sign;
 
-		private final Map<AbstractJsonNode.Type, NumberEvaluator<INumericNode>> typeEvaluators =
-			new EnumMap<AbstractJsonNode.Type, NumberEvaluator<INumericNode>>(
-				AbstractJsonNode.Type.class);
+		private final Map<Class<? extends INumericNode>, NumberEvaluator<INumericNode>> typeEvaluators =
+			new IdentityHashMap<Class<? extends INumericNode>, NumberEvaluator<INumericNode>>();
 
 		@SuppressWarnings({ "rawtypes", "unchecked" })
 		private ArithmeticOperator(final String sign, final NumberEvaluator integerEvaluator,
@@ -277,11 +273,11 @@ public class ArithmeticExpression extends EvaluationExpression {
 				final NumberEvaluator doubleEvaluator, final NumberEvaluator bigIntegerEvaluator,
 				final NumberEvaluator bigDecimalEvaluator) {
 			this.sign = sign;
-			this.typeEvaluators.put(AbstractJsonNode.Type.IntNode, integerEvaluator);
-			this.typeEvaluators.put(AbstractJsonNode.Type.LongNode, longEvaluator);
-			this.typeEvaluators.put(AbstractJsonNode.Type.DoubleNode, doubleEvaluator);
-			this.typeEvaluators.put(AbstractJsonNode.Type.BigIntegerNode, bigIntegerEvaluator);
-			this.typeEvaluators.put(AbstractJsonNode.Type.DecimalNode, bigDecimalEvaluator);
+			this.typeEvaluators.put(IntNode.class, integerEvaluator);
+			this.typeEvaluators.put(LongNode.class, longEvaluator);
+			this.typeEvaluators.put(DoubleNode.class, doubleEvaluator);
+			this.typeEvaluators.put(BigIntegerNode.class, bigIntegerEvaluator);
+			this.typeEvaluators.put(DecimalNode.class, bigDecimalEvaluator);
 		}
 
 		/**
@@ -294,7 +290,8 @@ public class ArithmeticExpression extends EvaluationExpression {
 		 * @return the result of the operation
 		 */
 		public INumericNode evaluate(final INumericNode left, final INumericNode right, final NodeCache cache) {
-			final Type widerType = NumberCoercer.INSTANCE.getWiderType(left, right);
+			final Class<? extends INumericNode> widerType =
+				(left.getGeneralilty() > right.getGeneralilty() ? left : right).getClass();
 			final NumberEvaluator<INumericNode> evaluator = this.typeEvaluators.get(widerType);
 			final Class<? extends INumericNode> implementationType = evaluator.getReturnType();
 			final INumericNode numericTarget = cache.getNode(implementationType);

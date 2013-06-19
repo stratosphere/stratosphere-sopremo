@@ -23,12 +23,12 @@ public class DecimalNodeTest extends JsonNodeTest<DecimalNode> {
 
 	@Override
 	protected IJsonNode lowerNode() {
-		return DecimalNode.valueOf(BigDecimal.valueOf(10042, 2));
+		return DecimalNode.valueOf(BigDecimal.valueOf(10042, -1));
 	}
 
 	@Override
 	protected IJsonNode higherNode() {
-		return DecimalNode.valueOf(BigDecimal.valueOf(10042, -1));
+		return DecimalNode.valueOf(BigDecimal.valueOf(10042, 2));
 	}
 
 }

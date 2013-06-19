@@ -1,7 +1,5 @@
 package eu.stratosphere.sopremo.type;
 
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -44,22 +42,6 @@ public class BigIntegerNode extends AbstractNumericNode implements INumericNode 
 
 	public void setValue(final BigInteger value) {
 		this.value = value;
-	}
-
-	@Override
-	public IJsonNode readResolve(final DataInput in) throws IOException {
-		final byte[] inValue = new byte[in.readInt()];
-		in.readFully(inValue);
-
-		this.value = new BigInteger(inValue);
-		return this;
-	}
-
-	@Override
-	public void write(final DataOutput out) throws IOException {
-		final byte[] outValue = this.value.toByteArray();
-		out.writeInt(outValue.length);
-		out.write(outValue);
 	}
 
 	@Override
@@ -134,8 +116,8 @@ public class BigIntegerNode extends AbstractNumericNode implements INumericNode 
 	}
 
 	@Override
-	public Type getType() {
-		return Type.BigIntegerNode;
+	public Class<BigIntegerNode> getType() {
+		return BigIntegerNode.class;
 	}
 
 	@Override
@@ -147,6 +129,26 @@ public class BigIntegerNode extends AbstractNumericNode implements INumericNode 
 	@Override
 	public int compareToSameType(final IJsonNode other) {
 		return this.value.compareTo(((BigIntegerNode) other).value);
+	}
+	
+	/* (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.type.AbstractJsonNode#copyNormalizedKey(byte[], int, int)
+	 */
+	@Override
+	public void copyNormalizedKey(byte[] target, int offset, int len) {
+		final byte[] byteArray = value.toByteArray();
+		final int keyLen = Math.min(len, byteArray.length);
+		System.arraycopy(byteArray, 0, target, offset, keyLen);
+		if(keyLen < len)
+			fillWithZero(target, keyLen, len);
+	}
+	
+	/* (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.type.INumericNode#getGeneralilty()
+	 */
+	@Override
+	public byte getGeneralilty() {
+		return 48;
 	}
 
 	@Override

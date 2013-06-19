@@ -29,7 +29,7 @@ public final class PatternCache implements ISopremoCache {
 	public Pattern getPatternOf(TextNode node) {
 		Pattern pattern = this.cache.get(node);
 		if (pattern == null)
-			this.cache.put(node, pattern = Pattern.compile(node.getTextValue().toString()));
+			this.cache.put((CharSequence) node.clone(), pattern = Pattern.compile(node.toString()));
 		return pattern;
 	}
 

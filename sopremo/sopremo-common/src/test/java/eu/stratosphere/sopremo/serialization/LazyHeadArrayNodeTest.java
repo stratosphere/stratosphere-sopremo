@@ -11,7 +11,6 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 
 import eu.stratosphere.pact.common.type.PactRecord;
-import eu.stratosphere.sopremo.pact.JsonNodeWrapper;
 import eu.stratosphere.sopremo.type.ArrayNode;
 import eu.stratosphere.sopremo.type.ArrayNodeBaseTest;
 import eu.stratosphere.sopremo.type.IArrayNode;
@@ -89,12 +88,6 @@ public class LazyHeadArrayNodeTest extends ArrayNodeBaseTest<LazyHeadArrayNode> 
 		final PactRecord record = new PactRecord();
 		schema.jsonToRecord(new ArrayNode<IntNode>(IntNode.valueOf(0), IntNode.valueOf(1), IntNode.valueOf(3)), record);
 		return schema.recordToJson(record);
-	}
-
-	@Override
-	@Test(expected = UnsupportedOperationException.class)
-	public void shouldNormalizeKeys() {
-		super.shouldNormalizeKeys();
 	}
 
 }

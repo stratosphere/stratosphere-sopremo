@@ -111,7 +111,7 @@ public class ArrayNode<T extends IJsonNode> extends AbstractArrayNode<T> {
 	@Override
 	public int size() {
 		int size = this.children.size();
-		while (size > 0 && this.children.get(size - 1).isMissing())
+		while (size > 0 && this.children.get(size - 1) == MissingNode.getInstance())
 			size--;
 		return size;
 	}

@@ -1,14 +1,11 @@
 package eu.stratosphere.sopremo.type;
 
-import java.io.DataInput;
-import java.io.DataOutput;
+import it.unimi.dsi.fastutil.chars.CharArrayList;
+
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.util.Arrays;
 import java.util.Formatter;
 import java.util.Locale;
-
-import eu.stratosphere.pact.common.type.base.PactString;
 
 /**
  * This node represents a string value.
@@ -20,7 +17,7 @@ public class TextNode extends AbstractJsonNode implements IPrimitiveNode, CharSe
 
 	public final static TextNode EMPTY_STRING = new TextNode("");
 
-	private PactString value;
+	private CharArrayList value = new CharArrayList();
 
 	private transient Formatter formatter;
 
@@ -28,7 +25,6 @@ public class TextNode extends AbstractJsonNode implements IPrimitiveNode, CharSe
 	 * Initializes a TextNode which represents an empty String.
 	 */
 	public TextNode() {
-		this.value = new PactString();
 	}
 
 	/**
@@ -39,7 +35,8 @@ public class TextNode extends AbstractJsonNode implements IPrimitiveNode, CharSe
 	 *        the value that should be represented by this node
 	 */
 	public TextNode(final CharSequence v) {
-		this.value = new PactString(v);
+		for (int index = 0, count = v.length(); index < count; index++)
+			this.value.add(v.charAt(index));
 	}
 
 	public Formatter asFormatter() {
@@ -63,31 +60,15 @@ public class TextNode extends AbstractJsonNode implements IPrimitiveNode, CharSe
 		return new TextNode(v);
 	}
 
-	/**
-	 * Returns the String which is represented by this node.
-	 * 
-	 * @return the represented String
-	 */
-	public CharSequence getTextValue() {
-		return this.value;
-	}
-
 	public void setValue(final CharSequence value) {
-		this.value.setValue(value);
+		this.value.clear();
+		for (int index = 0, count = value.length(); index < count; index++)
+			this.value.add(value.charAt(index));
 	}
 
 	@Override
 	public void appendAsString(final Appendable appendable) throws IOException {
-		appendable.append(this.value);
-	}
-
-	/**
-	 * Returns the directly backing char array, which may be larger than the actual length.
-	 * 
-	 * @return the backing array
-	 */
-	public char[] asCharArray() {
-		return this.value.getCharArray();
+		appendable.append(this);
 	}
 
 	/**
@@ -124,92 +105,102 @@ public class TextNode extends AbstractJsonNode implements IPrimitiveNode, CharSe
 
 	@Override
 	public void clear() {
-		this.value.setLength(0);
+		this.value.clear();
 	}
 
-	public void setLength(int len) {
-		this.value.setLength(len);
-	}
-
-	@Override
-	public IJsonNode readResolve(final DataInput in) throws IOException {
-		this.value.read(in);
-		return this;
+	public void setLength(int newLength) {
+		value.size(newLength);
 	}
 
 	@Override
-	public void write(final DataOutput out) throws IOException {
-		this.value.write(out);
-	}
-
-	@Override
-	public boolean isTextual() {
-		return true;
-	}
-
-	@Override
-	public Type getType() {
-		return Type.TextNode;
+	public Class<TextNode> getType() {
+		return TextNode.class;
 	}
 
 	@Override
 	public int compareToSameType(final IJsonNode other) {
-		return this.value.compareTo(((TextNode) other).value);
-	}
+		final TextNode otherNode = (TextNode) other;
+		final int len1 = this.value.size();
+		final int len2 = otherNode.value.size();
+		final int n = Math.min(len1, len2);
+		final char v1[] = this.value.elements();
+		final char v2[] = otherNode.value.elements();
 
-	private void writeObject(final ObjectOutputStream out) throws IOException {
-		out.writeUTF(this.value.getValue());
-	}
+		for (int index = 0; index < n; index++)
+			if (v1[index] != v2[index])
+				return v1[index] - v2[index];
 
-	private void readObject(final ObjectInputStream in) throws IOException {
-		this.value = new PactString(in.readUTF());
+		return len1 - len2;
 	}
 
 	@Override
 	public void copyValueFrom(final IJsonNode otherNode) {
 		this.checkForSameType(otherNode);
-		this.value.setValue(((TextNode) otherNode).value);
+		this.value.clear();
+		this.value.addAll(((TextNode) otherNode).value);
 	}
 
 	@Override
 	public int getMaxNormalizedKeyLen() {
-		return this.value.getMaxNormalizedKeyLen();
+		return Integer.MAX_VALUE;
 	}
 
 	@Override
 	public void copyNormalizedKey(final byte[] target, final int offset, final int len) {
-		this.value.copyNormalizedKey(target, offset, len);
+		final int strLen = value.size();
+		for (int index = 0, count = Math.min(strLen, len / 2); index < count; index++) {
+			final char ch = value.getChar(index);
+			final int targetIndex = offset + 2 * index;
+			target[targetIndex] = (byte) (ch >>> 8);
+			target[targetIndex + 1] = (byte) ch;
+		}
+
+		if (strLen * 2 < len)
+			Arrays.fill(target, strLen * 2, len, (byte) 0);
+		else if (len % 2 == 1)
+			target[offset + len - 1] = (byte) (value.getChar(strLen) >>> 8);
 	}
 
 	public void setValue(TextNode text, int start, int end) {
-		this.value.setValue(text.value, start, end - start);
+		this.value.size(end - start);
+		System.arraycopy(text.value.elements(), start, this.value.elements(), 0, end - start);
 	}
 
 	public void setValue(CharSequence text, int start, int end) {
-		this.value.setValue(text, start, end - start);
-	}
-
-	public int find(CharSequence str) {
-		return this.value.find(str);
-	}
-
-	public int find(CharSequence str, int start) {
-		return this.value.find(str, start);
+		this.value.clear();
+		for (int index = start; index < end; index++)
+			this.value.add(text.charAt(index));
 	}
 
 	@Override
 	public int length() {
-		return this.value.length();
+		return this.value.size();
 	}
 
 	@Override
 	public char charAt(int index) {
-		return this.value.charAt(index);
+		return this.value.getChar(index);
 	}
 
 	@Override
-	public CharSequence subSequence(int start, int end) {
-		return this.value.subSequence(start, end);
+	public CharSequence subSequence(final int start, final int end) {
+		return new CharSequence() {
+
+			@Override
+			public CharSequence subSequence(int s, int e) {
+				return TextNode.this.subSequence(start + e, end - e);
+			}
+
+			@Override
+			public int length() {
+				return end - start;
+			}
+
+			@Override
+			public char charAt(int index) {
+				return charAt(start + index);
+			}
+		};
 	}
 
 	/*
@@ -218,7 +209,8 @@ public class TextNode extends AbstractJsonNode implements IPrimitiveNode, CharSe
 	 */
 	@Override
 	public Appendable append(CharSequence csq) {
-		this.value.append(csq);
+		for (int index = 0, count = csq.length(); index < count; index++)
+			this.value.add(csq.charAt(index));
 		return this;
 	}
 
@@ -228,7 +220,8 @@ public class TextNode extends AbstractJsonNode implements IPrimitiveNode, CharSe
 	 */
 	@Override
 	public Appendable append(CharSequence csq, int start, int end) {
-		this.value.append(csq, start, end);
+		for (int index = start; index < end; index++)
+			this.value.add(csq.charAt(index));
 		return this;
 	}
 
@@ -237,7 +230,7 @@ public class TextNode extends AbstractJsonNode implements IPrimitiveNode, CharSe
 	 * @see java.lang.Appendable#append(java.lang.CharSequence)
 	 */
 	public Appendable append(TextNode csq) {
-		this.value.append(csq.value);
+		this.value.addAll(csq.value);
 		return this;
 	}
 
@@ -246,7 +239,7 @@ public class TextNode extends AbstractJsonNode implements IPrimitiveNode, CharSe
 	 * @see java.lang.Appendable#append(java.lang.CharSequence, int, int)
 	 */
 	public Appendable append(TextNode csq, int start, int end) {
-		this.value.append(csq.value, start, end);
+		this.value.addElements(this.value.size(), csq.value.elements(), start, end);
 		return this;
 	}
 
@@ -256,7 +249,7 @@ public class TextNode extends AbstractJsonNode implements IPrimitiveNode, CharSe
 	 */
 	@Override
 	public Appendable append(char c) {
-		this.value.append(c);
+		this.value.add(c);
 		return this;
 	}
 

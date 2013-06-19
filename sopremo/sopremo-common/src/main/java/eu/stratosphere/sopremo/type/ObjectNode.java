@@ -1,14 +1,17 @@
 package eu.stratosphere.sopremo.type;
 
-import java.io.DataInput;
-import java.io.IOException;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
+
+import javolution.util.FastSet;
+
+import com.esotericsoftware.kryo.Kryo;
+import com.esotericsoftware.kryo.io.Input;
+import com.esotericsoftware.kryo.io.Output;
 
 import eu.stratosphere.sopremo.pact.SopremoUtil;
 
@@ -36,7 +39,7 @@ public class ObjectNode extends AbstractObjectNode implements IObjectNode {
 		if (value == null)
 			throw new NullPointerException();
 
-		if (value.isMissing())
+		if (value == MissingNode.getInstance())
 			this.children.remove(fieldName);
 		else
 			this.children.put(fieldName, value);
@@ -56,21 +59,91 @@ public class ObjectNode extends AbstractObjectNode implements IObjectNode {
 		return MissingNode.getInstance();
 	}
 
-	@Override
-	public IJsonNode readResolve(final DataInput in) throws IOException {
-		final int len = in.readInt();
+	//
+	// @Override
+	// public IJsonNode readResolve(final DataInput in) throws IOException {
+	// final int len = in.readInt();
+	//
+	// // performance optimization: reuse existing nodes
+	// Set<String> currentKeys = new HashSet<String>(this.children.keySet());
+	// for (int i = 0; i < len; i++) {
+	// final String key = in.readUTF();
+	// currentKeys.remove(key);
+	// this.children.put(key, SopremoUtil.deserializeNode(in, this.children.get(key)));
+	// }
+	// for (String currentKey : currentKeys)
+	// this.children.remove(currentKey);
+	//
+	// return this;
+	// }
 
-		// performance optimization: reuse existing nodes
-		Set<String> currentKeys = new HashSet<String>(this.children.keySet());
-		for (int i = 0; i < len; i++) {
-			final String key = in.readUTF();
-			currentKeys.remove(key);
-			this.children.put(key, SopremoUtil.deserializeNode(in, this.children.get(key)));
+	public static final class ObjectSerializer extends ReusingSerializer<AbstractObjectNode> {
+		/*
+		 * (non-Javadoc)
+		 * @see com.esotericsoftware.kryo.Serializer#write(com.esotericsoftware.kryo.Kryo,
+		 * com.esotericsoftware.kryo.io.Output, java.lang.Object)
+		 */
+		@Override
+		public void write(Kryo kryo, Output output, AbstractObjectNode object) {
+			output.writeInt(object.size());
+
+			for (final Entry<String, IJsonNode> entry : object) {
+				output.writeString(entry.getKey());
+				kryo.writeClassAndObject(output, entry.getValue());
+			}
 		}
-		for (String currentKey : currentKeys)
-			this.children.remove(currentKey);
-		
-		return this;
+
+		/*
+		 * (non-Javadoc)
+		 * @see com.esotericsoftware.kryo.Serializer#read(com.esotericsoftware.kryo.Kryo,
+		 * com.esotericsoftware.kryo.io.Input, java.lang.Class)
+		 */
+		@Override
+		public AbstractObjectNode read(Kryo kryo, Input input, Class<AbstractObjectNode> type) {
+			final int len = input.readInt();
+
+			AbstractObjectNode object = new ObjectNode();
+			for (int i = 0; i < len; i++) {
+				final String key = input.readString();
+				object.put(key, (IJsonNode) kryo.readClassAndObject(input));
+			}
+			return object;
+		}
+
+		private Set<String> currentKeys = new FastSet<String>();
+
+		/*
+		 * (non-Javadoc)
+		 * @see eu.stratosphere.sopremo.type.ReusingSerializer#read(com.esotericsoftware.kryo.Kryo,
+		 * com.esotericsoftware.kryo.io.Input, java.lang.Object, java.lang.Class)
+		 */
+		@Override
+		public AbstractObjectNode read(Kryo kryo, Input input, AbstractObjectNode oldInstance,
+				Class<AbstractObjectNode> type) {
+			if (oldInstance == null)
+				return this.read(kryo, input, type);
+
+			final int len = input.readInt();
+			ObjectNode object = (ObjectNode) oldInstance;
+
+			// performance optimization: reuse existing nodes
+			final SortedMap<String, IJsonNode> children = object.children;
+			this.currentKeys.addAll(children.keySet());
+			for (int i = 0; i < len; i++) {
+				final String key = input.readString();
+				this.currentKeys.remove(key);
+				children.put(key, SopremoUtil.deserializeInto(kryo, input, children.get(key)));
+			}
+			for (String currentKey : this.currentKeys)
+				children.remove(currentKey);
+			this.currentKeys.clear();
+
+			for (int i = 0; i < len; i++) {
+				final String key = input.readString();
+				object.put(key, (IJsonNode) kryo.readClassAndObject(input));
+			}
+			return object;
+		}
 	}
 
 	/*

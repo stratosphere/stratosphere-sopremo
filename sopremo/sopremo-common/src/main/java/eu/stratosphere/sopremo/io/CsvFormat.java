@@ -270,11 +270,11 @@ public class CsvFormat extends SopremoFileFormat {
 		@Override
 		protected void writeValue(IJsonNode value) throws IOException {
 			if (this.keyNames.length == 0)
-				if (value.isArray()) {
+				if (value instanceof IArrayNode<?>) {
 					this.writeArray(value);
 					return;
 				}
-				else if (!value.isObject()) {
+				else if (value instanceof IObjectNode) {
 					this.write(value);
 					this.writeLineTerminator();
 					return;

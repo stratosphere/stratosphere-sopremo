@@ -19,7 +19,6 @@ import junit.framework.Assert;
 import org.junit.Test;
 
 import eu.stratosphere.pact.common.type.PactRecord;
-import eu.stratosphere.sopremo.pact.JsonNodeWrapper;
 import eu.stratosphere.sopremo.type.ArrayNode;
 import eu.stratosphere.sopremo.type.IArrayNode;
 import eu.stratosphere.sopremo.type.IJsonNode;

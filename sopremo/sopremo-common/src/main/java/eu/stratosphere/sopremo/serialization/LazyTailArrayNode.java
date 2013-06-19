@@ -1,7 +1,5 @@
 package eu.stratosphere.sopremo.serialization;
 
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Iterator;
 
@@ -133,7 +131,7 @@ final class LazyTailArrayNode extends AbstractArrayNode<IJsonNode> {
 		final int recordPosition = this.tailSize - size + index + 1;
 		return recordPosition;
 	}
-	
+
 	/**
 	 * Returns the arrayNode "others", which is the first in the PactRecord before the tail starts.
 	 * 
@@ -190,11 +188,6 @@ final class LazyTailArrayNode extends AbstractArrayNode<IJsonNode> {
 		};
 
 		return new ConcatenatingIterator<IJsonNode>(othersIterator, tailIterator);
-	}
-
-	@Override
-	public IJsonNode readResolve(final DataInput in) throws IOException {
-		throw new UnsupportedOperationException("Use other ArrayNode<IJsonNode>  Implementation instead");
 	}
 
 	@Override
@@ -261,20 +254,4 @@ final class LazyTailArrayNode extends AbstractArrayNode<IJsonNode> {
 
 		sb.append(']');
 	}
-
-	@Override
-	public void write(final DataOutput out) throws IOException {
-		throw new UnsupportedOperationException("Use other ArrayNode<IJsonNode>  Implementation instead");
-	}
-
-	@Override
-	public int getMaxNormalizedKeyLen() {
-		return 0;
-	}
-
-	@Override
-	public void copyNormalizedKey(final byte[] target, final int offset, final int len) {
-		throw new UnsupportedOperationException("Use other ArrayNode<IJsonNode>  Implementation instead");
-	}
-
 }

@@ -14,10 +14,6 @@
  **********************************************************************************************************************/
 package eu.stratosphere.sopremo.type;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-
 import eu.stratosphere.sopremo.ICloneable;
 import eu.stratosphere.sopremo.ISopremoType;
 
@@ -28,69 +24,9 @@ import eu.stratosphere.sopremo.ISopremoType;
  * @author Tommy Neubert
  */
 public interface IJsonNode extends ISopremoType, ICloneable, Comparable<IJsonNode> {
-	/**
-	 * This enumeration contains all possible types of JsonNode.
-	 * 
-	 * @author Michael Hopstock
-	 * @author Tommy Neubert
-	 */
-	public enum Type {
-		IntNode(IntNode.class, true),
-		LongNode(LongNode.class, true),
-		BigIntegerNode(BigIntegerNode.class, true),
-		DecimalNode(DecimalNode.class, true),
-		DoubleNode(DoubleNode.class, true),
-
-		ArrayNode(ArrayNode.class, false),
-		ObjectNode(ObjectNode.class, false),
-		TextNode(TextNode.class, false),
-		BooleanNode(BooleanNode.class, false),
-		NullNode(NullNode.class, false),
-		MissingNode(MissingNode.class, false),
-		CustomNode(AbstractJsonNode.class, false);
-
-		private final Class<? extends IJsonNode> clazz;
-
-		private final boolean numeric;
-
-		private Type(final Class<? extends IJsonNode> clazz, final boolean isNumeric) {
-			this.clazz = clazz;
-			this.numeric = isNumeric;
-		}
-
-		/**
-		 * Returns either the node represented by a specific enumeration element is numeric or not.
-		 */
-		public boolean isNumeric() {
-			return this.numeric;
-		}
-
-		/**
-		 * Returns an instantiable class of the node which is represented by a specific enumeration element.
-		 * 
-		 * @return the class of the represented node
-		 */
-		public Class<? extends IJsonNode> getClazz() {
-			return this.clazz;
-		}
-
-	};
-
-	public abstract void clear();
-
-	/**
-	 * Returns the {@link eu.stratosphere.sopremo.type.JsonNode.Type} of this node.
-	 * 
-	 * @return nodetype
-	 */
-	public abstract AbstractJsonNode.Type getType();
-
-	/**
-	 * Transforms this node into his standard representation.
-	 * 
-	 * @return standard representation
-	 */
-	public abstract IJsonNode canonicalize();
+	public void clear();
+	
+	public Class<? extends IJsonNode> getType();
 
 	/**
 	 * Deeply copies the state of the given node to this node.
@@ -121,31 +57,6 @@ public interface IJsonNode extends ISopremoType, ICloneable, Comparable<IJsonNod
 	public IJsonNode clone();
 
 	/**
-	 * Returns either this node is a representation for a null-value or not.
-	 */
-	public abstract boolean isNull();
-
-	/**
-	 * Returns either this node is a representation for a missing value or not.
-	 */
-	public abstract boolean isMissing();
-
-	/**
-	 * Returns either this node is a representation of a Json-Object or not.
-	 */
-	public abstract boolean isObject();
-
-	/**
-	 * Returns either this node is a representation of a Json-Array or not.
-	 */
-	public abstract boolean isArray();
-
-	/**
-	 * Returns either this node is a representation of a Text-value or not.
-	 */
-	public abstract boolean isTextual();
-
-	/**
 	 * Compares this node with another.
 	 * 
 	 * @param other
@@ -167,14 +78,4 @@ public interface IJsonNode extends ISopremoType, ICloneable, Comparable<IJsonNod
 	public int getMaxNormalizedKeyLen();
 
 	public void copyNormalizedKey(final byte[] target, final int offset, final int len);
-
-	/**
-	 * @param in
-	 */
-	public abstract IJsonNode readResolve(DataInput in) throws IOException;
-
-	/**
-	 * @param out
-	 */
-	public abstract void write(DataOutput out) throws IOException;
 }

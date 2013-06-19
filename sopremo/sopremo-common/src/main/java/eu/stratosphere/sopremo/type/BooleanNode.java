@@ -1,9 +1,5 @@
 package eu.stratosphere.sopremo.type;
 
-import java.io.ByteArrayOutputStream;
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.DataOutputStream;
 import java.io.IOException;
 
 import javolution.text.TypeFormat;
@@ -21,27 +17,11 @@ import com.esotericsoftware.kryo.io.Output;
  * @author Tommy Neubert
  */
 public class BooleanNode extends AbstractJsonNode implements IPrimitiveNode {
-	@SuppressWarnings("rawtypes")
-	public static class BooleanSerializer extends Serializer {
-		{
-			this.setImmutable(true);
-		}
-
-		@Override
-		public void write(Kryo kryo, Output output, Object object) {
-			output.writeBoolean(((BooleanNode) object).value);
-		}
-
-		@Override
-		public Object read(Kryo kryo, Input input, Class type) {
-			return BooleanNode.valueOf(input.readBoolean());
-		}
-	}
 
 	/**
 	 * @author Arvid Heise
 	 */
-	@DefaultSerializer(BooleanSerializer.class)
+	@DefaultSerializer(UnmodifiableBoolean.BooleanSerializer.class)
 	private static final class UnmodifiableBoolean extends BooleanNode {
 		/**
 		 * Initializes UnmodifiableBoolean.
@@ -68,6 +48,22 @@ public class BooleanNode extends AbstractJsonNode implements IPrimitiveNode {
 		@Override
 		public void copyValueFrom(IJsonNode otherNode) {
 			throw new UnsupportedOperationException();
+		}
+
+		public static class BooleanSerializer extends Serializer<UnmodifiableBoolean> {
+			{
+				this.setImmutable(true);
+			}
+
+			@Override
+			public void write(Kryo kryo, Output output, UnmodifiableBoolean object) {
+				output.writeBoolean(object == TRUE);
+			}
+
+			@Override
+			public UnmodifiableBoolean read(Kryo kryo, Input input, Class<UnmodifiableBoolean> type) {
+				return (UnmodifiableBoolean) BooleanNode.valueOf(input.readBoolean());
+			}
 		}
 	}
 
@@ -136,30 +132,14 @@ public class BooleanNode extends AbstractJsonNode implements IPrimitiveNode {
 	}
 
 	@Override
-	public BooleanNode canonicalize() {
-		return this.value ? TRUE : FALSE;
-	}
-
-	@Override
-	public IJsonNode readResolve(final DataInput in) throws IOException {
-		boolean value = in.readByte() == 1;
-		return value ? TRUE : FALSE;
-	}
-
-	@Override
 	public void copyValueFrom(final IJsonNode otherNode) {
 		this.checkForSameType(otherNode);
 		this.value = ((BooleanNode) otherNode).value;
 	}
 
 	@Override
-	public void write(final DataOutput out) throws IOException {
-		out.writeByte(this.value ? 1 : 0);
-	}
-
-	@Override
-	public Type getType() {
-		return Type.BooleanNode;
+	public Class<BooleanNode> getType() {
+		return BooleanNode.class;
 	}
 
 	@Override
@@ -178,18 +158,8 @@ public class BooleanNode extends AbstractJsonNode implements IPrimitiveNode {
 
 	@Override
 	public void copyNormalizedKey(final byte[] target, final int offset, final int len) {
-
-		if (len >= this.getMaxNormalizedKeyLen()) {
-			final ByteArrayOutputStream stream = new ByteArrayOutputStream();
-			try {
-				this.write(new DataOutputStream(stream));
-				final byte[] result = stream.toByteArray();
-				target[offset] = result[result.length - 1];
-				this.fillWithZero(target, offset + 1, offset + len);
-			} catch (final IOException e) {
-				e.printStackTrace();
-			}
-		}
+		target[offset] = (byte) (value ? 1 : 0);
+		this.fillWithZero(target, offset + 1, offset + len);
 	}
 
 	/*

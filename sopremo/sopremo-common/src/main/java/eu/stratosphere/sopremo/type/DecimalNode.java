@@ -1,7 +1,5 @@
 package eu.stratosphere.sopremo.type;
 
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -34,6 +32,41 @@ public class DecimalNode extends AbstractNumericNode implements INumericNode {
 	 */
 	public DecimalNode(final BigDecimal v) {
 		this.value = v;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.type.INumericNode#getGeneralilty()
+	 */
+	@Override
+	public byte getGeneralilty() {
+		return 80;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.type.AbstractJsonNode#copyNormalizedKey(byte[], int, int)
+	 */
+	@Override
+	public void copyNormalizedKey(byte[] target, int offset, int len) {
+		final int scale = this.value.scale();
+
+		switch (len) {
+		default:
+			final byte[] byteArray = this.value.unscaledValue().toByteArray();
+			final int filledLen = Math.min(byteArray.length, len - 4);
+			System.arraycopy(byteArray, 0, target, offset + 4, filledLen);
+			if (filledLen < len)
+				fillWithZero(target, filledLen + 4, len - 4);
+		case 4:
+			target[offset + 3] = (byte) (scale);
+		case 3:
+			target[offset + 2] = (byte) (scale >>> 8);
+		case 2:
+			target[offset + 1] = (byte) (scale >>> 16);
+		case 1:
+			target[offset] = (byte) (scale >>> 24);
+		}
 	}
 
 	/**
@@ -82,38 +115,6 @@ public class DecimalNode extends AbstractNumericNode implements INumericNode {
 	}
 
 	@Override
-	public IJsonNode readResolve(final DataInput in) throws IOException {
-		// final byte[] unscaledValue = new byte[in.readInt()];
-		// in.readFully(unscaledValue);
-		//
-		// this.value = new BigDecimal(new BigInteger(unscaledValue), in.readInt());
-
-		final int unscaledMinusScale = in.readInt();
-		final int unscaledLenght = in.readInt();
-		final byte[] unscaledValue = new byte[unscaledLenght];
-		in.readFully(unscaledValue);
-
-		this.value = new BigDecimal(new BigInteger(unscaledValue), unscaledLenght - unscaledMinusScale);
-		return this;
-	}
-
-	@Override
-	public void write(final DataOutput out) throws IOException {
-		// final byte[] unscaledValue = this.value.unscaledValue().toByteArray();
-		// out.writeInt(unscaledValue.length);
-		// out.write(unscaledValue);
-		//
-		// out.writeInt(this.value.scale());
-
-		final byte[] unscaledValue = this.value.unscaledValue().toByteArray();
-		final int unscaledValueLenght = unscaledValue.length;
-
-		out.writeInt(unscaledValueLenght - this.value.scale());
-		out.writeInt(unscaledValueLenght);
-		out.write(unscaledValue);
-	}
-
-	@Override
 	public int getIntValue() {
 		return this.value.intValue();
 	}
@@ -144,8 +145,8 @@ public class DecimalNode extends AbstractNumericNode implements INumericNode {
 	}
 
 	@Override
-	public Type getType() {
-		return Type.DecimalNode;
+	public Class<DecimalNode> getType() {
+		return DecimalNode.class;
 	}
 
 	@Override

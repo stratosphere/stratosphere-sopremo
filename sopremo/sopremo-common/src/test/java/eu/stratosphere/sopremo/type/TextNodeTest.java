@@ -15,7 +15,7 @@ public class TextNodeTest extends JsonNodeTest<TextNode> {
 	@Override
 	public void testValue() {
 		final TextNode textnode = new TextNode("sample TextNode");
-		Assert.assertEquals("sample TextNode", textnode.getTextValue().toString());
+		Assert.assertEquals("sample TextNode", textnode.toString());
 	}
 
 	@Override

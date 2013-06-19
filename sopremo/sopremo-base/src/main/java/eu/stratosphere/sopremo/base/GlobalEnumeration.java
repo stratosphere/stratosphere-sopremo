@@ -126,7 +126,7 @@ public class GlobalEnumeration extends ElementaryOperator<GlobalEnumeration> {
 		 */
 		@Override
 		protected IJsonNode setSegment(IJsonNode node, IJsonNode value) {
-			if (node.isObject()) {
+			if (node instanceof IObjectNode) {
 				((IObjectNode) node).put(this.ge.idFieldName, value);
 				return node;
 			}

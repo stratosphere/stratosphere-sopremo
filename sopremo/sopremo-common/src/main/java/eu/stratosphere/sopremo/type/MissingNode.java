@@ -1,7 +1,5 @@
 package eu.stratosphere.sopremo.type;
 
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 
 import com.esotericsoftware.kryo.DefaultSerializer;
@@ -48,36 +46,8 @@ public class MissingNode extends AbstractJsonNode implements IPrimitiveNode {
 	}
 
 	@Override
-	public MissingNode canonicalize() {
-		return Instance;
-	}
-
-	@Override
-	public IJsonNode readResolve(final DataInput in) throws IOException {
-		return Instance;
-	}
-
-	@Override
-	public void write(final DataOutput out) throws IOException {
-	}
-
-	@Override
-	public boolean isNull() {
-		return true;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.type.JsonNode#isMissing()
-	 */
-	@Override
-	public boolean isMissing() {
-		return true;
-	}
-
-	@Override
-	public Type getType() {
-		return Type.MissingNode;
+	public Class<MissingNode> getType() {
+		return MissingNode.class;
 	}
 
 	/*

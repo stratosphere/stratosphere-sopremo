@@ -1,15 +1,10 @@
 package eu.stratosphere.sopremo.type;
 
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
 import javolution.text.TypeFormat;
-import eu.stratosphere.pact.common.type.base.PactLong;
 import eu.stratosphere.sopremo.pact.SopremoUtil;
 
 /**
@@ -20,7 +15,7 @@ import eu.stratosphere.sopremo.pact.SopremoUtil;
  */
 public class LongNode extends AbstractNumericNode implements INumericNode {
 
-	private PactLong value;
+	private long value;
 
 	/**
 	 * Initializes a LongNode which represents the given <code>long</code>. To create new LongNodes please
@@ -30,7 +25,7 @@ public class LongNode extends AbstractNumericNode implements INumericNode {
 	 *        the value that should be represented by this node
 	 */
 	public LongNode(final long value) {
-		this.value = new PactLong(value);
+		this.value = value;
 	}
 
 	/**
@@ -42,22 +37,11 @@ public class LongNode extends AbstractNumericNode implements INumericNode {
 
 	@Override
 	public Long getJavaValue() {
-		return this.value.getValue();
+		return this.value;
 	}
 
 	public void setValue(final long value) {
-		this.value.setValue(value);
-	}
-
-	@Override
-	public IJsonNode readResolve(final DataInput in) throws IOException {
-		this.value.read(in);
-		return this;
-	}
-
-	@Override
-	public void write(final DataOutput out) throws IOException {
-		this.value.write(out);
+		this.value = value;
 	}
 
 	/**
@@ -73,10 +57,7 @@ public class LongNode extends AbstractNumericNode implements INumericNode {
 
 	@Override
 	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + this.value.hashCode();
-		return result;
+		return (int) (this.value >>> 32) | (int) (this.value & 0xFFFFFFFF);
 	}
 
 	@Override
@@ -88,34 +69,40 @@ public class LongNode extends AbstractNumericNode implements INumericNode {
 		if (this.getClass() != obj.getClass())
 			return false;
 		final LongNode other = (LongNode) obj;
-		if (!this.value.equals(other.value))
-			return false;
-		return true;
+		return this.value == other.value;
 	}
 
 	@Override
 	public int getIntValue() {
-		return (int) this.value.getValue();
+		return (int) this.value;
 	}
 
 	@Override
 	public long getLongValue() {
-		return this.value.getValue();
+		return this.value;
 	}
 
+	/* (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.type.INumericNode#getGeneralilty()
+	 */
+	@Override
+	public byte getGeneralilty() {
+		return 32;
+	}
+	
 	@Override
 	public BigInteger getBigIntegerValue() {
-		return BigInteger.valueOf(this.value.getValue());
+		return BigInteger.valueOf(this.value);
 	}
 
 	@Override
 	public BigDecimal getDecimalValue() {
-		return BigDecimal.valueOf(this.value.getValue());
+		return BigDecimal.valueOf(this.value);
 	}
 
 	@Override
 	public double getDoubleValue() {
-		return Double.valueOf(this.value.getValue());
+		return Double.valueOf(this.value);
 	}
 
 	@Override
@@ -124,48 +111,43 @@ public class LongNode extends AbstractNumericNode implements INumericNode {
 	}
 
 	@Override
-	public Type getType() {
-		return Type.LongNode;
+	public Class<LongNode> getType() {
+		return LongNode.class;
 	}
 
 	@Override
 	public String getValueAsText() {
-		return this.value.toString();
-	}
-
-	private void writeObject(final ObjectOutputStream out) throws IOException {
-		out.writeLong(this.value.getValue());
-	}
-
-	private void readObject(final ObjectInputStream in) throws IOException {
-		this.value = new PactLong(in.readLong());
+		return String.valueOf(this.value);
 	}
 
 	@Override
 	public void copyValueFrom(final IJsonNode otherNode) {
 		checkNumber(otherNode);
-		this.value.setValue(((INumericNode) otherNode).getLongValue());
+		this.value = ((INumericNode) otherNode).getLongValue();
 	}
 
 	@Override
 	public int compareToSameType(final IJsonNode other) {
-		return Long.signum(this.value.getValue() - ((LongNode) other).value.getValue());
+		return Long.signum(this.value - ((LongNode) other).value);
 	}
 
 	@Override
 	public void clear() {
 		if (SopremoUtil.DEBUG)
-			this.value.setValue(0);
+			this.value = 0;
 	}
 
 	@Override
 	public int getMaxNormalizedKeyLen() {
-		return this.value.getMaxNormalizedKeyLen();
+		return 8;
 	}
 
 	@Override
 	public void copyNormalizedKey(final byte[] target, final int offset, final int len) {
-		this.value.copyNormalizedKey(target, offset, len);
+		long value = this.value;
+		for (int index = 0; index < len; index++, value <<= 8)
+			target[index + offset] = (byte) (value >>> 56);
+		this.fillWithZero(target, 8, len);
 	}
 
 	/*
@@ -174,6 +156,6 @@ public class LongNode extends AbstractNumericNode implements INumericNode {
 	 */
 	@Override
 	public void appendAsString(Appendable appendable) throws IOException {
-		TypeFormat.format(this.value.getValue(), appendable);
+		TypeFormat.format(this.value, appendable);
 	}
 }

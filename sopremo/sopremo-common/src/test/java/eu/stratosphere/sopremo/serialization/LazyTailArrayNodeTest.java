@@ -86,12 +86,6 @@ public class LazyTailArrayNodeTest extends ArrayNodeBaseTest<LazyTailArrayNode> 
 	}
 
 	@Override
-	@Test(expected = UnsupportedOperationException.class)
-	public void shouldNormalizeKeys() {
-		super.shouldNormalizeKeys();
-	}
-
-	@Override
 	public void initArrayNode() {
 		final TailArraySchema schema = new TailArraySchema(5);
 		final PactRecord record = new PactRecord();

@@ -18,6 +18,7 @@ import eu.stratosphere.sopremo.EqualCloneTest;
 import eu.stratosphere.sopremo.SopremoTestUtil;
 import eu.stratosphere.sopremo.io.JsonGenerator;
 import eu.stratosphere.sopremo.io.JsonParser;
+import eu.stratosphere.sopremo.serialization.JsonNodeWrapper;
 import eu.stratosphere.sopremo.type.ArrayNode;
 import eu.stratosphere.sopremo.type.BooleanNode;
 import eu.stratosphere.sopremo.type.IJsonNode;
@@ -82,6 +83,7 @@ public class JsonNodeWrapperTest extends EqualCloneTest<JsonNodeWrapper> {
 				array.add(parser.readValueAsTree());
 
 			new JsonNodeWrapper(array).write(this.outStream);
+			this.outStream.close();
 
 			final ByteArrayInputStream byteArrayIn = new ByteArrayInputStream(this.byteArray.toByteArray());
 			final DataInputStream inStream = new DataInputStream(byteArrayIn);

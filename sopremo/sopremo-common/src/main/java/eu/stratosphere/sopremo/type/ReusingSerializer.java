@@ -12,43 +12,25 @@
  * specific language governing permissions and limitations under the License.
  *
  **********************************************************************************************************************/
-package eu.stratosphere.sopremo;
+package eu.stratosphere.sopremo.type;
 
 import com.esotericsoftware.kryo.Kryo;
+import com.esotericsoftware.kryo.Serializer;
 import com.esotericsoftware.kryo.io.Input;
-import com.esotericsoftware.kryo.io.Output;
-
-import eu.stratosphere.sopremo.type.ReusingSerializer;
 
 /**
- * @author Arvid Heise
+ * @author arv
  */
-@SuppressWarnings("rawtypes")
-public abstract class SingletonSerializer extends ReusingSerializer {
-	private final Object singleton;
-
-	/**
-	 * Initializes SingletonSerializer.
+public abstract class ReusingSerializer<T> extends Serializer<T> {
+	/*
+	 * (non-Javadoc)
+	 * @see com.esotericsoftware.kryo.Serializer#read(com.esotericsoftware.kryo.Kryo,
+	 * com.esotericsoftware.kryo.io.Input, java.lang.Class)
 	 */
-	public SingletonSerializer(Object singleton) {
-		this.singleton = singleton;
-		this.setImmutable(true);
-	}
-
-	@Override
-	public void write(Kryo kryo, Output output, Object object) {
-	}
-
-	@Override
-	public Object read(Kryo kryo, Input input, Class type) {
-		return this.singleton;
-	}
+	public abstract T read(Kryo kryo, Input input, T oldInstance, Class<T> type);
 	
-	/* (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.type.ReusingSerializer#read(com.esotericsoftware.kryo.Kryo, com.esotericsoftware.kryo.io.Input, java.lang.Object, java.lang.Class)
-	 */
 	@Override
-	public Object read(Kryo kryo, Input input, Object oldInstance, Class type) {
-		return this.singleton;
+	public T read(Kryo kryo, Input input, Class<T> type) {
+		return read(kryo, input, null, type);
 	}
 }

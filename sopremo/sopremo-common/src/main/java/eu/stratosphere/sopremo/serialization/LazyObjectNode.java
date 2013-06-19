@@ -195,7 +195,7 @@ public class LazyObjectNode extends AbstractObjectNode implements KryoSerializab
 
 				for (; !this.loadedNextMappings && this.mappingIndex < this.mappings.size(); this.mappingIndex++) {
 					IJsonNode value = LazyObjectNode.this.record.getField(this.mappingIndex);
-					if (!value.isMissing()) {
+					if (value != MissingNode.getInstance()) {
 						this.nextMapping.setValue(value);
 						this.nextMapping.setKey(this.mappings.get(this.mappingIndex));
 						this.loadedNextMappings = true;

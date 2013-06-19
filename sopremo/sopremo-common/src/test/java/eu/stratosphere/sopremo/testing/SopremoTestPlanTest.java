@@ -52,6 +52,7 @@ import eu.stratosphere.sopremo.type.IObjectNode;
 import eu.stratosphere.sopremo.type.IStreamNode;
 import eu.stratosphere.sopremo.type.IntNode;
 import eu.stratosphere.sopremo.type.JsonUtil;
+import eu.stratosphere.sopremo.type.MissingNode;
 import eu.stratosphere.sopremo.type.TextNode;
 //import eu.stratosphere.pact.testing.TestRecords;
 
@@ -274,8 +275,7 @@ public class SopremoTestPlanTest extends EqualVerifyTest<SopremoTestPlan> {
 			 */
 			@Override
 			protected void map(final IJsonNode value, final JsonCollector out) {
-				final Matcher matcher = WORD_PATTERN.matcher(((TextNode) ((IObjectNode) value).get("line"))
-					.getTextValue());
+				final Matcher matcher = WORD_PATTERN.matcher(((TextNode) ((IObjectNode) value).get("line")));
 				while (matcher.find())
 					out.collect(JsonUtil.createObjectNode("word", TextNode.valueOf(matcher.group())));
 			}
@@ -317,7 +317,7 @@ public class SopremoTestPlanTest extends EqualVerifyTest<SopremoTestPlan> {
 
 			protected int getCount(final IObjectNode entry) {
 				final IJsonNode countNode = entry.get("count");
-				if (countNode.isMissing())
+				if (countNode == MissingNode.getInstance())
 					return 1;
 				return ((IntNode) countNode).getIntValue();
 			}

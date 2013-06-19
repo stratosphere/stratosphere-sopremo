@@ -29,7 +29,7 @@ public class CoreFunctionsTest {
 	 */
 	@Test
 	public void shouldCoerceDataWhenSumming() {
-		assertAggregate(6.4, CoreFunctions.SUM, 1.1, 2, new BigDecimal("3.3"));
+		assertAggregate(new BigDecimal("6.5"), CoreFunctions.SUM, 1.2, 2, new BigDecimal("3.3"));
 	}
 
 	/**

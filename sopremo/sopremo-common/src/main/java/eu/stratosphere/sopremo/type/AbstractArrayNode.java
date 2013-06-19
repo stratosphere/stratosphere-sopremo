@@ -14,16 +14,17 @@
  **********************************************************************************************************************/
 package eu.stratosphere.sopremo.type;
 
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import java.util.AbstractCollection;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 
+import com.esotericsoftware.kryo.DefaultSerializer;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.KryoCopyable;
+import com.esotericsoftware.kryo.io.Input;
+import com.esotericsoftware.kryo.io.Output;
 
 import eu.stratosphere.sopremo.cache.ArrayCache;
 import eu.stratosphere.sopremo.pact.SopremoUtil;
@@ -31,6 +32,7 @@ import eu.stratosphere.sopremo.pact.SopremoUtil;
 /**
  * @author Arvid Heise
  */
+@DefaultSerializer(AbstractArrayNode.ArraySerializer.class)
 public abstract class AbstractArrayNode<T extends IJsonNode> extends AbstractJsonNode implements IArrayNode<T>,
 		KryoCopyable<AbstractArrayNode<T>> {
 
@@ -62,33 +64,30 @@ public abstract class AbstractArrayNode<T extends IJsonNode> extends AbstractJso
 		for (int length = this.size(); index < length; length--)
 			this.remove(index);
 	}
-	
-//	/* (non-Javadoc)
-//	 * @see com.esotericsoftware.kryo.KryoSerializable#write(com.esotericsoftware.kryo.Kryo, com.esotericsoftware.kryo.io.Output)
-//	 */
-//	@Override
-//	public void write(Kryo kryo, Output output) {
-//		final int size = size();
-//		output.write(size);
-//		for (int index = 0; index < size(); index++) 
-//			SopremoUtil.writeNode(kryo, output, get(index));
-//	}
-//	
-//	/* (non-Javadoc)
-//	 * @see com.esotericsoftware.kryo.KryoSerializable#read(com.esotericsoftware.kryo.Kryo, com.esotericsoftware.kryo.io.Input)
-//	 */
-//	@Override
-//	public void read(Kryo kryo, Input input) {
-//		final int size = input.readInt();
-//		clear();
-//		for (int index = 0; index < size(); index++) 
-//			add(SopremoUtil.readNode(kryo, input, null));
-//	}
 
-	@Override
-	public final boolean isArray() {
-		return true;
-	}
+	// /* (non-Javadoc)
+	// * @see com.esotericsoftware.kryo.KryoSerializable#write(com.esotericsoftware.kryo.Kryo,
+	// com.esotericsoftware.kryo.io.Output)
+	// */
+	// @Override
+	// public void write(Kryo kryo, Output output) {
+	// final int size = size();
+	// output.write(size);
+	// for (int index = 0; index < size(); index++)
+	// SopremoUtil.writeNode(kryo, output, get(index));
+	// }
+	//
+	// /* (non-Javadoc)
+	// * @see com.esotericsoftware.kryo.KryoSerializable#read(com.esotericsoftware.kryo.Kryo,
+	// com.esotericsoftware.kryo.io.Input)
+	// */
+	// @Override
+	// public void read(Kryo kryo, Input input) {
+	// final int size = input.readInt();
+	// clear();
+	// for (int index = 0; index < size(); index++)
+	// add(SopremoUtil.readNode(kryo, input, null));
+	// }
 
 	@Override
 	public IArrayNode<T> addAll(final Iterable<? extends T> it) {
@@ -135,20 +134,14 @@ public abstract class AbstractArrayNode<T extends IJsonNode> extends AbstractJso
 		};
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.type.IJsonNode#getType()
+	 */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
-	public final Type getType() {
-		return Type.ArrayNode;
-	}
-
-	@SuppressWarnings("unchecked")
-	@Override
-	public IJsonNode readResolve(final DataInput in) throws IOException {
-		final int len = in.readInt();
-
-		for (int i = 0; i < len; i++)
-			this.set(i, (T) SopremoUtil.deserializeNode(in, this.get(i)));
-		setSize(len);
-		return this;
+	public Class<IArrayNode<T>> getType() {
+		return (Class) IArrayNode.class;
 	}
 
 	@SuppressWarnings("unchecked")
@@ -157,23 +150,57 @@ public abstract class AbstractArrayNode<T extends IJsonNode> extends AbstractJso
 			this.set(i, (T) MissingNode.getInstance());
 	}
 
-	@Override
-	public void write(final DataOutput out) throws IOException {
-		out.writeInt(this.size());
+	public static final class ArraySerializer extends ReusingSerializer<AbstractArrayNode<?>> {
+		/*
+		 * (non-Javadoc)
+		 * @see com.esotericsoftware.kryo.Serializer#write(com.esotericsoftware.kryo.Kryo,
+		 * com.esotericsoftware.kryo.io.Output, java.lang.Object)
+		 */
+		@Override
+		public void write(Kryo kryo, Output output, AbstractArrayNode<?> array) {
+			output.writeInt(array.size());
 
-		for (final IJsonNode child : this)
-			SopremoUtil.serializeNode(out, child);
+			for (IJsonNode entry : array)
+				kryo.writeClassAndObject(output, entry);
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see com.esotericsoftware.kryo.Serializer#read(com.esotericsoftware.kryo.Kryo,
+		 * com.esotericsoftware.kryo.io.Input, java.lang.Class)
+		 */
+		@Override
+		public AbstractArrayNode<?> read(Kryo kryo, Input input, Class<AbstractArrayNode<?>> type) {
+			final int len = input.readInt();
+
+			AbstractArrayNode<IJsonNode> array = new ArrayNode<IJsonNode>(len);
+			for (int i = 0; i < len; i++)
+				array.add((IJsonNode) kryo.readClassAndObject(input));
+			return array;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see eu.stratosphere.sopremo.type.ReusingSerializer#read(com.esotericsoftware.kryo.Kryo,
+		 * com.esotericsoftware.kryo.io.Input, java.lang.Object, java.lang.Class)
+		 */
+		@Override
+		public AbstractArrayNode<?> read(Kryo kryo, Input input, AbstractArrayNode<?> oldInstance,
+				Class<AbstractArrayNode<?>> type) {
+			if (oldInstance == null)
+				return read(kryo, input, type);
+
+			final int len = input.readInt();
+			@SuppressWarnings("unchecked")
+			ArrayNode<IJsonNode> array = (ArrayNode<IJsonNode>) oldInstance;
+
+			for (int i = 0; i < len; i++)
+				array.set(i, SopremoUtil.deserializeInto(kryo, input, array.get(i)));
+
+			array.setSize(len);
+			return array;
+		}
 	}
-
-	//
-	// @Override
-	// public void setAll(final T[] nodes) {
-	// for (int index = 0; index < nodes.length; index++)
-	// this.set(index, nodes[index]);
-	// final int size = this.size();
-	// for (int index = size; index > nodes.length; index--)
-	// this.remove(nodes.length);
-	// }
 
 	@Override
 	public T[] toArray(ArrayCache<T> arrayCache) {

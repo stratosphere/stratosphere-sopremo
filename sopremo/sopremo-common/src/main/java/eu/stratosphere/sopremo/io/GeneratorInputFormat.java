@@ -73,7 +73,7 @@ public class GeneratorInputFormat extends GenericInputFormat {
 			(EvaluationExpression) SopremoUtil.getObject(parameters, ADHOC_EXPRESSION_PARAMETER_KEY, null);
 		final IJsonNode value = expression.evaluate(NullNode.getInstance());
 
-		if (value.isArray()) {
+		if (value instanceof ArrayNode<?>) {
 			this.numValues = ((ArrayNode<?>) value).size();
 			this.valueIterator = ((IArrayNode<IJsonNode>) value).iterator();
 		}

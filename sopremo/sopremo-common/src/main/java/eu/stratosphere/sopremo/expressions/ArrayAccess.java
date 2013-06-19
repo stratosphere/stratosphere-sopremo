@@ -91,7 +91,7 @@ public class ArrayAccess extends PathSegmentExpression {
 
 	@Override
 	protected IJsonNode evaluateSegment(final IJsonNode node) {
-		if (!node.isArray())
+		if (!(node instanceof IArrayNode<?>))
 			return MissingNode.getInstance();
 
 		final IArrayNode<?> arrayNode = (IArrayNode<?>) node;

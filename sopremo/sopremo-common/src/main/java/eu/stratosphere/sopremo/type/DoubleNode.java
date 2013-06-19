@@ -1,15 +1,10 @@
 package eu.stratosphere.sopremo.type;
 
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
 import javolution.text.TypeFormat;
-import eu.stratosphere.pact.common.type.base.PactDouble;
 import eu.stratosphere.sopremo.pact.SopremoUtil;
 
 /**
@@ -20,7 +15,7 @@ import eu.stratosphere.sopremo.pact.SopremoUtil;
  */
 public class DoubleNode extends AbstractNumericNode implements INumericNode {
 
-	private PactDouble value;
+	private double value;
 
 	public final static DoubleNode NaN = DoubleNode.valueOf(Double.NaN);
 
@@ -28,7 +23,6 @@ public class DoubleNode extends AbstractNumericNode implements INumericNode {
 	 * Initializes a DoubleNode which represents 0.0
 	 */
 	public DoubleNode() {
-		this.value = new PactDouble();
 	}
 
 	/**
@@ -39,7 +33,7 @@ public class DoubleNode extends AbstractNumericNode implements INumericNode {
 	 *        the value that should be represented by this node
 	 */
 	public DoubleNode(final double v) {
-		this.value = new PactDouble(v);
+		this.value = v;
 	}
 
 	/**
@@ -50,12 +44,12 @@ public class DoubleNode extends AbstractNumericNode implements INumericNode {
 	 *        the value that should be represented by this node
 	 */
 	public DoubleNode(final float v) {
-		this.value = new PactDouble(v);
+		this.value = v;
 	}
 
 	@Override
 	public Double getJavaValue() {
-		return this.value.getValue();
+		return this.value;
 	}
 
 	/**
@@ -70,7 +64,16 @@ public class DoubleNode extends AbstractNumericNode implements INumericNode {
 	}
 
 	public void setValue(final double value) {
-		this.value.setValue(value);
+		this.value = value;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.type.INumericNode#getGeneralilty()
+	 */
+	@Override
+	public byte getGeneralilty() {
+		return 64;
 	}
 
 	@Override
@@ -78,7 +81,7 @@ public class DoubleNode extends AbstractNumericNode implements INumericNode {
 		final int prime = 31;
 		int result = 1;
 		long temp;
-		temp = Double.doubleToLongBits(this.value.getValue());
+		temp = Double.doubleToLongBits(this.value);
 		result = prime * result + (int) (temp ^ temp >>> 32);
 		return result;
 	}
@@ -93,30 +96,19 @@ public class DoubleNode extends AbstractNumericNode implements INumericNode {
 			return false;
 
 		final DoubleNode other = (DoubleNode) obj;
-		if (Double.doubleToLongBits(this.value.getValue()) != Double.doubleToLongBits(other.value.getValue()))
+		if (Double.doubleToLongBits(this.value) != Double.doubleToLongBits(other.value))
 			return false;
 		return true;
 	}
 
 	@Override
-	public IJsonNode readResolve(final DataInput in) throws IOException {
-		this.value.read(in);
-		return this;
-	}
-
-	@Override
-	public void write(final DataOutput out) throws IOException {
-		this.value.write(out);
-	}
-
-	@Override
 	public int getIntValue() {
-		return (int) this.value.getValue();
+		return (int) this.value;
 	}
 
 	@Override
 	public long getLongValue() {
-		return (long) this.value.getValue();
+		return (long) this.value;
 	}
 
 	@Override
@@ -126,12 +118,12 @@ public class DoubleNode extends AbstractNumericNode implements INumericNode {
 
 	@Override
 	public BigDecimal getDecimalValue() {
-		return BigDecimal.valueOf(this.value.getValue());
+		return BigDecimal.valueOf(this.value);
 	}
 
 	@Override
 	public double getDoubleValue() {
-		return this.value.getValue();
+		return this.value;
 	}
 
 	@Override
@@ -140,38 +132,30 @@ public class DoubleNode extends AbstractNumericNode implements INumericNode {
 	}
 
 	@Override
-	public Type getType() {
-		return Type.DoubleNode;
+	public Class<DoubleNode> getType() {
+		return DoubleNode.class;
 	}
 
 	@Override
 	public String getValueAsText() {
-		return this.value.toString();
-	}
-
-	private void writeObject(final ObjectOutputStream out) throws IOException {
-		out.writeDouble(this.value.getValue());
-	}
-
-	private void readObject(final ObjectInputStream in) throws IOException {
-		this.value = new PactDouble(in.readDouble());
+		return String.valueOf(this.value);
 	}
 
 	@Override
 	public int compareToSameType(final IJsonNode other) {
-		return Double.compare(this.value.getValue(), ((DoubleNode) other).value.getValue());
+		return Double.compare(this.value, ((DoubleNode) other).value);
 	}
 
 	@Override
 	public void copyValueFrom(final IJsonNode otherNode) {
 		checkNumber(otherNode);
-		this.value.setValue(((INumericNode) otherNode).getDoubleValue());
+		this.value = ((INumericNode) otherNode).getDoubleValue();
 	}
 
 	@Override
 	public void clear() {
 		if (SopremoUtil.DEBUG)
-			this.value.setValue(0);
+			this.value = 0;
 	}
 
 	@Override
@@ -181,6 +165,9 @@ public class DoubleNode extends AbstractNumericNode implements INumericNode {
 
 	@Override
 	public void copyNormalizedKey(final byte[] target, final int offset, final int len) {
+		long value = Double.doubleToLongBits(this.value);
+		for (int index = 0; index < len; index++, value <<= 8)
+			target[index + offset] = (byte) (value >>> 56);
 		this.fillWithZero(target, offset, offset + len);
 	}
 
@@ -190,6 +177,6 @@ public class DoubleNode extends AbstractNumericNode implements INumericNode {
 	 */
 	@Override
 	public void appendAsString(Appendable appendable) throws IOException {
-		TypeFormat.format(this.value.getValue(), appendable);
+		TypeFormat.format(this.value, appendable);
 	}
 }

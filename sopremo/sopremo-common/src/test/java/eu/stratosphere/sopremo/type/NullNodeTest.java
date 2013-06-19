@@ -16,9 +16,4 @@ public class NullNodeTest {
 		Assert.assertFalse(NullNode.getInstance().equals(new NullNode()));
 	}
 
-	@Test
-	public void shouldCanonicalizeToTheCommonInstance() {
-		final NullNode node = new NullNode();
-		Assert.assertEquals(NullNode.getInstance(), node.canonicalize());
-	}
 }

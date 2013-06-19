@@ -1,7 +1,5 @@
 package eu.stratosphere.sopremo.type.typed;
 
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map.Entry;
@@ -50,13 +48,8 @@ public abstract class TypedObjectNode implements ITypedObjectNode {
 	}
 
 	@Override
-	public Type getType() {
-		return this.backingObject.getType();
-	}
-
-	@Override
-	public IJsonNode canonicalize() {
-		return this.backingObject.canonicalize();
+	public Class<IObjectNode> getType() {
+		return IObjectNode.class;
 	}
 
 	@Override
@@ -67,42 +60,6 @@ public abstract class TypedObjectNode implements ITypedObjectNode {
 	@Override
 	public boolean isCopyable(IJsonNode otherNode) {
 		return this.backingObject.isCopyable(otherNode);
-	}
-
-	@Override
-	public IJsonNode readResolve(DataInput in) throws IOException {
-		this.backingObject.readResolve(in);
-		return this;
-	}
-
-	@Override
-	public void write(DataOutput out) throws IOException {
-		this.backingObject.write(out);
-	}
-
-	@Override
-	public boolean isNull() {
-		return this.backingObject.isNull();
-	}
-
-	@Override
-	public boolean isMissing() {
-		return this.backingObject.isMissing();
-	}
-
-	@Override
-	public boolean isObject() {
-		return this.backingObject.isObject();
-	}
-
-	@Override
-	public boolean isArray() {
-		return this.backingObject.isArray();
-	}
-
-	@Override
-	public boolean isTextual() {
-		return this.backingObject.isTextual();
 	}
 
 	@Override

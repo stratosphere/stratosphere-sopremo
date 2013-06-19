@@ -75,7 +75,7 @@ public class JsonToJavaMapper {
 			T[] constants = targetClass.getEnumConstants();
 			if (!(node instanceof TextNode))
 				throw new IllegalArgumentException("Cannot convert " + node + " to " + targetClass);
-			CharSequence nodeString = ((TextNode) node).getTextValue();
+			CharSequence nodeString = ((TextNode) node);
 			for (T constant : constants)
 				if (StringUtils.equalsIgnoreCase(constant.toString(), nodeString))
 					return constant;

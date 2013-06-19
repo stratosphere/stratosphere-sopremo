@@ -4,10 +4,9 @@ import java.util.Iterator;
 import java.util.Map.Entry;
 
 import eu.stratosphere.pact.testing.fuzzy.AbstractValueSimilarity;
-import eu.stratosphere.sopremo.pact.JsonNodeWrapper;
+import eu.stratosphere.sopremo.serialization.JsonNodeWrapper;
 import eu.stratosphere.sopremo.type.IArrayNode;
 import eu.stratosphere.sopremo.type.IJsonNode;
-import eu.stratosphere.sopremo.type.IJsonNode.Type;
 import eu.stratosphere.sopremo.type.INumericNode;
 import eu.stratosphere.sopremo.type.IObjectNode;
 
@@ -42,14 +41,14 @@ public class DoubleNodeSimilarity extends AbstractValueSimilarity<JsonNodeWrappe
 		if (value1.equals(value2))
 			return 0;
 
-		final Type type1 = value1.getType();
-		final Type type2 = value2.getType();
+		final Class<? extends IJsonNode> type1 = value1.getType();
+		final Class<? extends IJsonNode> type2 = value2.getType();
 		if (type1 == type2)
-			if (type1 == Type.ArrayNode)
+			if (type1 == IArrayNode.class)
 				return this.getDistance((IArrayNode<?>) value1, (IArrayNode<?>) value2);
-			else if (type1 == Type.ObjectNode)
+			else if (type1 == IObjectNode.class)
 				return this.getDistance((IObjectNode) value1, (IObjectNode) value2);
-		if (!type1.isNumeric() || !type2.isNumeric())
+		if (!(INumericNode.class.isAssignableFrom(type1)) || !(INumericNode.class.isAssignableFrom(type2)))
 			return NO_MATCH;
 
 		final INumericNode inner1 = (INumericNode) value1;

@@ -1,14 +1,17 @@
-package eu.stratosphere.sopremo.pact;
+package eu.stratosphere.sopremo.serialization;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
+import com.esotericsoftware.kryo.io.Input;
+import com.esotericsoftware.kryo.io.Output;
+
 import eu.stratosphere.pact.common.type.Key;
 import eu.stratosphere.pact.common.type.Value;
 import eu.stratosphere.sopremo.AbstractSopremoType;
+import eu.stratosphere.sopremo.pact.SopremoUtil;
 import eu.stratosphere.sopremo.type.IJsonNode;
-import eu.stratosphere.sopremo.type.IJsonNode.Type;
 import eu.stratosphere.sopremo.type.MissingNode;
 
 /**
@@ -41,26 +44,31 @@ public class JsonNodeWrapper extends AbstractSopremoType implements Key, Value {
 		this.value = value;
 	}
 
+	private final DataInputToInputStreamAdapter di2isa = new DataInputToInputStreamAdapter();
+
+	private final Input input = new Input(this.di2isa);
+
+	private final DataOutputToOutputStreamAdapter do2osa = new DataOutputToOutputStreamAdapter();
+
+	private final Output output = new Output(this.do2osa);
+
 	/*
 	 * (non-Javadoc)
 	 * @see eu.stratosphere.nephele.types.Record#read(java.io.DataInput)
 	 */
 	@Override
 	public void read(DataInput in) throws IOException {
-		try {
-			final int typeIndex = in.readByte();
-			if (this.value == null || this.value.getType().ordinal() != typeIndex)
-				this.value = Type.values()[typeIndex].getClazz().newInstance();
-			this.value = this.value.readResolve(in);
-		} catch (final Exception e) {
-			throw new RuntimeException(e);
-		}
+		this.di2isa.setDataInput(in);
+		this.value = SopremoUtil.deserializeInto(getKryo(), this.input, this.value);
+		// if (this.value == null || this.value.getType() != registration.getType())
+		// this.value = Type.values()[typeIndex].getClazz().newInstance();
 	}
 
 	@Override
 	public void write(final DataOutput out) throws IOException {
-		out.writeByte(this.value.getType().ordinal());
-		this.value.write(out);
+		this.do2osa.setDataOutput(out);
+		getKryo().writeClassAndObject(this.output, this.value);
+		this.output.flush();
 	}
 
 	/*
@@ -131,23 +139,4 @@ public class JsonNodeWrapper extends AbstractSopremoType implements Key, Value {
 	public void appendAsString(final Appendable sb) throws IOException {
 		this.value.appendAsString(sb);
 	}
-
-//
-//	@Override
-//	public int getMaxNormalizedKeyLen() {
-//		final int maxNormalizedKeyLen = this.value.getMaxNormalizedKeyLen();
-//		if (maxNormalizedKeyLen == Integer.MAX_VALUE)
-//			return Integer.MAX_VALUE;
-//		return maxNormalizedKeyLen + 1;
-//	}
-//
-//	@Override
-//	public void copyNormalizedKey(final byte[] target, final int offset, final int len) {
-//		if (len > 0) {
-//			target[offset] = (byte) this.value.getType().ordinal();
-//
-//			if (len > 1)
-//				this.value.copyNormalizedKey(target, offset + 1, len - 1);
-//		}
-//	}
 }

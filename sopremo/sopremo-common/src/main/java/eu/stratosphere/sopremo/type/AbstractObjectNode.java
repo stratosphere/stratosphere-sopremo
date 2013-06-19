@@ -14,22 +14,20 @@
  **********************************************************************************************************************/
 package eu.stratosphere.sopremo.type;
 
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map.Entry;
 
+import com.esotericsoftware.kryo.DefaultSerializer;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.KryoCopyable;
-
-import eu.stratosphere.sopremo.pact.SopremoUtil;
 
 /**
  * Abstract class to provide basic implementations for object type nodes.
  * 
  * @author Arvid Heise
  */
+@DefaultSerializer(ObjectNode.ObjectSerializer.class)
 public abstract class AbstractObjectNode extends AbstractJsonNode implements IObjectNode,
 		KryoCopyable<AbstractObjectNode> {
 
@@ -41,30 +39,8 @@ public abstract class AbstractObjectNode extends AbstractJsonNode implements IOb
 	}
 
 	@Override
-	public final Type getType() {
-		return Type.ObjectNode;
-	}
-
-	@Override
-	public IJsonNode readResolve(final DataInput in) throws IOException {
-		this.clear();
-		final int len = in.readInt();
-
-		for (int i = 0; i < len; i++) {
-			final String key = in.readUTF();
-			this.put(key, SopremoUtil.deserializeNode(in, null));
-		}
-		return this;
-	}
-
-	@Override
-	public void write(final DataOutput out) throws IOException {
-		out.writeInt(this.size());
-
-		for (final Entry<String, IJsonNode> entry : this) {
-			out.writeUTF(entry.getKey());
-			SopremoUtil.serializeNode(out, entry.getValue());
-		}
+	public final Class<IObjectNode> getType() {
+		return IObjectNode.class;
 	}
 
 	@Override
@@ -85,22 +61,6 @@ public abstract class AbstractObjectNode extends AbstractJsonNode implements IOb
 		for (final Entry<String, IJsonNode> entry : jsonNode)
 			this.put(entry.getKey(), entry.getValue());
 		return this;
-	}
-
-	// @Override
-	// public boolean equals(final Object obj) {
-	// if (this == obj)
-	// return true;
-	// if (obj == null)
-	// return false;
-	//
-	// final AbstractObjectNode other = (AbstractObjectNode) obj;
-	// return this.compareToSameType(other) == 0;
-	// }
-
-	@Override
-	public final boolean isObject() {
-		return true;
 	}
 
 	@Override

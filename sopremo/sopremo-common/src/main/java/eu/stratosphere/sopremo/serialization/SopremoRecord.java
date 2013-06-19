@@ -26,7 +26,6 @@ import eu.stratosphere.pact.common.type.PactRecord;
 import eu.stratosphere.pact.common.type.Value;
 import eu.stratosphere.sopremo.AbstractSopremoType;
 import eu.stratosphere.sopremo.ISopremoType;
-import eu.stratosphere.sopremo.pact.JsonNodeWrapper;
 import eu.stratosphere.sopremo.type.IJsonNode;
 import eu.stratosphere.sopremo.type.MissingNode;
 
@@ -150,7 +149,7 @@ public final class SopremoRecord extends AbstractSopremoType implements ISopremo
 	}
 
 	public boolean isEmpty(int index) {
-		return this.getField(index).isMissing();
+		return this.getField(index) == MissingNode.getInstance();
 	}
 
 	public void setField(int index, IJsonNode node) {

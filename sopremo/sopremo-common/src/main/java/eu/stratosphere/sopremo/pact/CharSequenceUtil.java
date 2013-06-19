@@ -56,4 +56,5 @@ public class CharSequenceUtil {
 		return true;
 	}
 
+
 }

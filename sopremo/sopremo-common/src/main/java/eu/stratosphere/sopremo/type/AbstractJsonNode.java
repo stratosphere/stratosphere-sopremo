@@ -1,11 +1,9 @@
 package eu.stratosphere.sopremo.type;
 
 import java.io.ByteArrayOutputStream;
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.DataOutputStream;
-import java.io.IOException;
 import java.util.Arrays;
+
+import com.esotericsoftware.kryo.io.Output;
 
 import eu.stratosphere.sopremo.AbstractSopremoType;
 
@@ -17,21 +15,7 @@ import eu.stratosphere.sopremo.AbstractSopremoType;
  */
 public abstract class AbstractJsonNode extends AbstractSopremoType implements IJsonNode {
 
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.type.IJsonNode#getType()
-	 */
-	@Override
-	public abstract Type getType();
-
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.type.IJsonNode#canonicalize()
-	 */
-	@Override
-	public AbstractJsonNode canonicalize() {
-		return this;
-	}
+	public abstract void clear();
 
 	/*
 	 * (non-Javadoc)
@@ -44,71 +28,11 @@ public abstract class AbstractJsonNode extends AbstractSopremoType implements IJ
 
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.type.IJsonNode#read(java.io.DataInput)
-	 */
-	@Override
-	public abstract IJsonNode readResolve(DataInput in) throws IOException;
-
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.type.IJsonNode#write(java.io.DataOutput)
-	 */
-
-	@Override
-	public abstract void write(DataOutput out) throws IOException;
-
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.type.IJsonNode#isNull()
-	 */
-	@Override
-	public boolean isNull() {
-		return false;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.type.IJsonNode#isMissing()
-	 */
-	@Override
-	public boolean isMissing() {
-		return false;
-	}
-
-	/*
-	 * (non-Javadoc)
 	 * @see eu.stratosphere.sopremo.type.IJsonNode#isCopyable(eu.stratosphere.sopremo.type.IJsonNode)
 	 */
 	@Override
 	public boolean isCopyable(IJsonNode otherNode) {
 		return otherNode.getType() == this.getType();
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.type.IJsonNode#isObject()
-	 */
-	@Override
-	public boolean isObject() {
-		return false;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.type.IJsonNode#isArray()
-	 */
-	@Override
-	public boolean isArray() {
-		return false;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.type.IJsonNode#isTextual()
-	 */
-	@Override
-	public boolean isTextual() {
-		return false;
 	}
 
 	/*
@@ -128,7 +52,7 @@ public abstract class AbstractJsonNode extends AbstractSopremoType implements IJ
 	}
 
 	protected int compareToOtherType(final IJsonNode other) {
-		return this.getType().compareTo(other.getType());
+		return this.getType().getName().compareTo(other.getType().getName());
 	}
 
 	protected void checkForSameType(final IJsonNode other) {
@@ -152,18 +76,14 @@ public abstract class AbstractJsonNode extends AbstractSopremoType implements IJ
 
 	@Override
 	public void copyNormalizedKey(final byte[] target, final int offset, final int len) {
-		final ByteArrayOutputStream stream = new ByteArrayOutputStream();
-		try {
-			this.write(new DataOutputStream(stream));
-			final byte[] result = stream.toByteArray();
-			final int resultLenght = result.length;
-			for (int i = 0; i < resultLenght; i++)
-				target[offset + i] = result[i];
-			this.fillWithZero(target, offset + resultLenght, offset + len);
-		} catch (final IOException e) {
-			e.printStackTrace();
-
-		}
+		final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		final Output output = new Output(baos);
+		getKryo().writeObject(output, this);
+		output.close();
+		byte[] buffer = baos.toByteArray();
+		System.arraycopy(buffer, 0, target, offset, Math.min(len, buffer.length));
+		if (buffer.length < len)
+			fillWithZero(target, buffer.length, len);
 	}
 
 	protected void fillWithZero(final byte[] target, final int fromIndex, final int toIndex) {

@@ -3,7 +3,6 @@ package eu.stratosphere.sopremo.pact;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -24,6 +23,8 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.commons.logging.impl.SimpleLog;
 
 import com.esotericsoftware.kryo.Kryo;
+import com.esotericsoftware.kryo.Registration;
+import com.esotericsoftware.kryo.Serializer;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 
@@ -37,9 +38,8 @@ import eu.stratosphere.sopremo.expressions.UnevaluableExpression;
 import eu.stratosphere.sopremo.function.SopremoFunction;
 import eu.stratosphere.sopremo.type.IArrayNode;
 import eu.stratosphere.sopremo.type.IJsonNode;
-import eu.stratosphere.sopremo.type.IJsonNode.Type;
 import eu.stratosphere.sopremo.type.IObjectNode;
-import eu.stratosphere.util.reflect.ReflectUtil;
+import eu.stratosphere.sopremo.type.ReusingSerializer;
 
 /**
  * Provides utility methods for sopremo
@@ -140,49 +140,6 @@ public class SopremoUtil {
 
 			if (tarClass == targetStopClass)
 				break;
-		}
-	}
-
-	/**
-	 * Deserializes a {@link IJsonNode} from a given {@link DataInput}
-	 * 
-	 * @param in
-	 *        the datainput that contains the serialized node
-	 * @return the deserialized node
-	 */
-	public static IJsonNode deserializeNode(final DataInput in, IJsonNode priorTarget) throws IOException {
-		IJsonNode value = priorTarget;
-		try {
-			final Type type = IJsonNode.Type.values()[in.readInt()];
-			if (type == IJsonNode.Type.CustomNode) {
-				final String className = in.readUTF();
-				value = (IJsonNode) ReflectUtil.newInstance(Class.forName(className));
-			} else if (priorTarget == null || priorTarget.getType() != type)
-				value = ReflectUtil.newInstance(type.getClazz());
-			return value.readResolve(in);
-		} catch (final ClassNotFoundException e) {
-			throw new IllegalStateException("Cannot instantiate value because class is not in class path", e);
-		}
-	}
-
-	/**
-	 * Serializes the given {@link IJsonNode} into the given {@link DataOutput}
-	 * 
-	 * @param out
-	 *        the DataOutput that should be used for serialization
-	 * @param iJsonNode
-	 *        the IJsonNode that should be serialized
-	 */
-	public static void serializeNode(final DataOutput out, final IJsonNode iJsonNode) {
-
-		try {
-			out.writeInt(iJsonNode.getType().ordinal());
-
-			if (iJsonNode.getType() == IJsonNode.Type.CustomNode)
-				out.writeUTF(iJsonNode.getClass().getName());
-			iJsonNode.write(out);
-		} catch (final IOException e) {
-			e.printStackTrace();
 		}
 	}
 
@@ -387,7 +344,7 @@ public class SopremoUtil {
 		else
 			node.put(field, element.clone());
 	}
-	
+
 	public static byte[] serializableToByteArray(Serializable serializable) {
 		try {
 			final ByteArrayOutputStream byteOutStream = new ByteArrayOutputStream();
@@ -399,29 +356,14 @@ public class SopremoUtil {
 			throw new IllegalStateException("IO exceptions should not occur locally", e);
 		}
 	}
-	
-//	/**
-//	 * @param kryo
-//	 * @param output
-//	 * @param iJsonNode
-//	 */
-//	public static void writeNode(Kryo kryo, Output output, IJsonNode node) {
-//		output.writeByte(node.getType().ordinal());
-//		kryo.writeObject(output, node);
-//	}
-//
-//	/**
-//	 * @param kryo
-//	 * @param input
-//	 * @return
-//	 */
-//	public static IJsonNode readNode(Kryo kryo, Input input, IJsonNode possibleTarget) {
-//		final IJsonNode.Type type = IJsonNode.Type.values()[input.readByte()];
-//		final IJsonNode result;
-//		if(possibleTarget == null || possibleTarget.getType()  != type)
-//			result = ReflectUtil.newInstance( type.getClazz());
-//		else result = possibleTarget;
-//		result.readResolve(null)
-//		return null;
-//	}
+
+	@SuppressWarnings("unchecked")
+	public static <T> T deserializeInto(Kryo kryo, Input input, T oldNode) {
+		final Registration registration = kryo.readClass(input);
+
+		final Serializer<T> serializer = registration.getSerializer();
+		if (serializer instanceof ReusingSerializer<?> && registration.getType() == oldNode.getClass())
+			return ((ReusingSerializer<T>) serializer).read(kryo, input, oldNode, registration.getType());
+		return serializer.read(kryo, input, registration.getType());
+	}
 }

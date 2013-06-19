@@ -67,7 +67,7 @@ public class InputSelection extends PathSegmentExpression {
 
 	@Override
 	protected IJsonNode evaluateSegment(final IJsonNode node) {
-		if (!node.isArray())
+		if (!(node instanceof IArrayNode<?>))
 			throw new EvaluationException("Cannot select input " + node.getClass().getSimpleName());
 		return ((IArrayNode<?>) node).get(this.index);
 	}

@@ -55,6 +55,7 @@ public interface IObjectNode extends IJsonNode, Iterable<Entry<String, IJsonNode
 	 */
 	public abstract void remove(final String fieldName);
 
+	public abstract void clear();
 	//
 	// /**
 	// * Returns a Set of all bindings contained in this node.

@@ -15,13 +15,13 @@ public abstract class TransitiveAggregation<ElementType extends IJsonNode> exten
 	public TransitiveAggregation(final String name, final ElementType initialAggregate) {
 		super(name);
 		this.initialAggregate = initialAggregate;
-		this.aggregator = (ElementType) ReflectUtil.newInstance(this.initialAggregate.getClass());
+		this.aggregator = (ElementType) initialAggregate.clone();
 	}
 
 	@SuppressWarnings("unchecked")
 	private void readObject(ObjectInputStream ois) throws IOException, ClassNotFoundException {
 		ois.defaultReadObject();
-		this.aggregator = (ElementType) ReflectUtil.newInstance(this.initialAggregate.getClass());
+		this.aggregator = (ElementType) this.initialAggregate.clone();
 	}
 
 	/*

@@ -19,6 +19,7 @@ import java.io.IOException;
 import eu.stratosphere.sopremo.type.ArrayNode;
 import eu.stratosphere.sopremo.type.IArrayNode;
 import eu.stratosphere.sopremo.type.IJsonNode;
+import eu.stratosphere.sopremo.type.MissingNode;
 import eu.stratosphere.sopremo.type.NullNode;
 
 /**
@@ -48,7 +49,7 @@ public class ArrayMerger extends EvaluationExpression {
 	}
 
 	private boolean isNull(final IJsonNode value) {
-		return value == null || value.isNull();
+		return value == MissingNode.getInstance() || value == NullNode.getInstance();
 	}
 
 	@Override

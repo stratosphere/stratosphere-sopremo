@@ -95,7 +95,6 @@ public interface IArrayNode<T extends IJsonNode> extends IStreamNode<T> {
 	/**
 	 * Clears this array from all saved nodes.
 	 */
-	@Override
 	public abstract void clear();
 
 	/**

@@ -1,7 +1,5 @@
 package eu.stratosphere.sopremo.type;
 
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 
 import com.esotericsoftware.kryo.DefaultSerializer;
@@ -48,29 +46,10 @@ public class NullNode extends AbstractJsonNode implements IPrimitiveNode {
 		return o == Instance;
 		// return o instanceof NullNode ? true : false;
 	}
-
+	
 	@Override
-	public NullNode canonicalize() {
-		return Instance;
-	}
-
-	@Override
-	public IJsonNode readResolve(final DataInput in) throws IOException {
-		return Instance;
-	}
-
-	@Override
-	public void write(final DataOutput out) throws IOException {
-	}
-
-	@Override
-	public boolean isNull() {
-		return true;
-	}
-
-	@Override
-	public Type getType() {
-		return Type.NullNode;
+	public Class<NullNode> getType() {
+		return NullNode.class;
 	}
 
 	@Override

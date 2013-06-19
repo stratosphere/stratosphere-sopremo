@@ -49,12 +49,19 @@ public abstract class AbstractSopremoType implements ISopremoType {
 	 */
 	@Override
 	public AbstractSopremoType clone() {
-		return CloneHelper.get().copy(this);
+		return getKryo().copy(this);
 		// kryo 2.20 makes fancy stuff such as caching of clones - we need more control
 		// if (this instanceof KryoCopyable<?>)
 		// return ((KryoCopyable<AbstractSopremoType>) this).copy(CloneHelper);
 		// final Serializer<AbstractSopremoType> serializer = CloneHelper.getSerializer(getClass());
 		// return serializer.copy(CloneHelper, this);
+	}
+
+	/**
+	 * Unreliable API - subject to change
+	 */
+	protected Kryo getKryo() {
+		return CloneHelper.get();
 	}
 
 	protected void checkCopyType(AbstractSopremoType copy) {
@@ -68,7 +75,7 @@ public abstract class AbstractSopremoType implements ISopremoType {
 	 * @see java.lang.Object#clone()
 	 */
 	public AbstractSopremoType shallowClone() {
-		return CloneHelper.get().copyShallow(this);
+		return getKryo().copyShallow(this);
 	}
 
 	@SuppressWarnings("unchecked")

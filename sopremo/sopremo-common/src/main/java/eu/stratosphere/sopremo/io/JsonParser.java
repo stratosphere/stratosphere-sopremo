@@ -98,10 +98,10 @@ public class JsonParser {
 				IJsonNode element = state.createJsonNode((char) nextChar,
 					parser);
 				if (currentInputIsAKey) {
-					if (!element.isTextual())
+					if (!(element instanceof TextNode))
 						throw parser.getInvalidJsonException(this.getName(), "key must be a string", element
 							.getType().toString());
-					currentKey.append(((TextNode) element).getTextValue());
+					currentKey.append(((TextNode) element));
 					return false;
 				}
 				result.put(currentKey.toString(), element);
@@ -235,9 +235,7 @@ public class JsonParser {
 					throws JsonParseException {
 				STATE state = this.nextState(nextChar);
 				if (state != null) {
-					String escapeSequence = ((TextNode) state
-						.createJsonNode(nextChar, parser))
-						.getTextValue().toString();
+					String escapeSequence = ((TextNode) state.createJsonNode(nextChar, parser)).toString();
 					buffer.append(escapeSequence);
 				} else
 					buffer.append(nextChar);

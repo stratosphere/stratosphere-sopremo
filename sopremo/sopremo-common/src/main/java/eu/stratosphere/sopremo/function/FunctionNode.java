@@ -14,9 +14,13 @@
  **********************************************************************************************************************/
 package eu.stratosphere.sopremo.function;
 
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
+
+import com.esotericsoftware.kryo.DefaultSerializer;
+import com.esotericsoftware.kryo.Kryo;
+import com.esotericsoftware.kryo.Serializer;
+import com.esotericsoftware.kryo.io.Input;
+import com.esotericsoftware.kryo.io.Output;
 
 import eu.stratosphere.sopremo.type.AbstractJsonNode;
 import eu.stratosphere.sopremo.type.IJsonNode;
@@ -24,6 +28,7 @@ import eu.stratosphere.sopremo.type.IJsonNode;
 /**
  * @author Arvid Heise
  */
+@DefaultSerializer(FunctionNode.FunctionNodeSerializer.class)
 public class FunctionNode extends AbstractJsonNode {
 	private SopremoFunction function;
 
@@ -87,8 +92,8 @@ public class FunctionNode extends AbstractJsonNode {
 	 * @see eu.stratosphere.sopremo.type.AbstractJsonNode#getType()
 	 */
 	@Override
-	public Type getType() {
-		return Type.CustomNode;
+	public Class<FunctionNode> getType() {
+		return FunctionNode.class;
 	}
 
 	@Override
@@ -111,15 +116,6 @@ public class FunctionNode extends AbstractJsonNode {
 		return this.function.equals(other.function);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.type.AbstractJsonNode#read(java.io.DataInput)
-	 */
-	@Override
-	public IJsonNode readResolve(DataInput in) throws IOException {
-		throw new UnsupportedOperationException();
-	}
-
 	/**
 	 * Sets the function to the specified value.
 	 * 
@@ -133,12 +129,25 @@ public class FunctionNode extends AbstractJsonNode {
 		this.function = function;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.type.AbstractJsonNode#write(java.io.DataOutput)
-	 */
-	@Override
-	public void write(DataOutput out) throws IOException {
-		throw new UnsupportedOperationException();
+	static class FunctionNodeSerializer extends Serializer<FunctionNode> {
+		/*
+		 * (non-Javadoc)
+		 * @see com.esotericsoftware.kryo.Serializer#write(com.esotericsoftware.kryo.Kryo,
+		 * com.esotericsoftware.kryo.io.Output, java.lang.Object)
+		 */
+		@Override
+		public void write(Kryo kryo, Output output, FunctionNode object) {
+			throw new UnsupportedOperationException("Internal error: a function node should never be serialized");
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see com.esotericsoftware.kryo.Serializer#read(com.esotericsoftware.kryo.Kryo,
+		 * com.esotericsoftware.kryo.io.Input, java.lang.Class)
+		 */
+		@Override
+		public FunctionNode read(Kryo kryo, Input input, Class<FunctionNode> type) {
+			throw new UnsupportedOperationException();
+		}
 	}
 }

@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
-import java.util.EnumMap;
+import java.util.IdentityHashMap;
 import java.util.Map;
 
 import eu.stratosphere.sopremo.type.IJsonNode;
@@ -149,7 +149,7 @@ public class JsonGenerator {
 		@Override
 		public void write(TextNode node, Writer writer) throws IOException {
 			writer.append('\"');
-			final CharSequence textValue = node.getTextValue();
+			final CharSequence textValue = node;
 			for (int index = 0, count = textValue.length(); index < count; index++) {
 				final char ch = textValue.charAt(index);
 				if (ch == '"')
@@ -239,13 +239,13 @@ public class JsonGenerator {
 	 */
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private static class JsonTypeWriterPool {
-		private static Map<IJsonNode.Type, JsonTypeWriter<IJsonNode>> writerMap;
+		private static Map<Class<? extends IJsonNode>, JsonTypeWriter<IJsonNode>> writerMap;
 
 		static {
-			writerMap = new EnumMap<IJsonNode.Type, JsonGenerator.JsonTypeWriter<IJsonNode>>(IJsonNode.Type.class);
-			writerMap.put(IJsonNode.Type.TextNode, (JsonTypeWriter) TextNodeTypeWriter.Instance);
-			writerMap.put(IJsonNode.Type.ObjectNode, (JsonTypeWriter) ObjectNodeTypeWriter.Instance);
-			writerMap.put(IJsonNode.Type.ArrayNode, (JsonTypeWriter) ArrayNodeTypeWriter.Instance);
+			writerMap = new IdentityHashMap<Class<? extends IJsonNode>, JsonGenerator.JsonTypeWriter<IJsonNode>>();
+			writerMap.put(TextNode.class, (JsonTypeWriter) TextNodeTypeWriter.Instance);
+			writerMap.put(IObjectNode.class, (JsonTypeWriter) ObjectNodeTypeWriter.Instance);
+			writerMap.put(IStreamNode.class, (JsonTypeWriter) ArrayNodeTypeWriter.Instance);
 		}
 
 		/**

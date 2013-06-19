@@ -169,7 +169,7 @@ public class ElementInSetExpression extends BinaryBooleanExpression {
 
 	@SuppressWarnings("unchecked")
 	static Iterator<IJsonNode> asIterator(final IJsonNode evaluate) {
-		if (evaluate.isArray())
+		if (evaluate instanceof IArrayNode<?>)
 			return ((IArrayNode<IJsonNode>) evaluate).iterator();
 		return Arrays.asList(evaluate).iterator();
 	}

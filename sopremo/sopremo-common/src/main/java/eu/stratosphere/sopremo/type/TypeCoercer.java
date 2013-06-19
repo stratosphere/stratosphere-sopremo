@@ -63,7 +63,7 @@ public class TypeCoercer {
 			final IdentityHashMap<Class<? extends IJsonNode>, Coercer<?, ?>> typeCoercers =
 				new IdentityHashMap<Class<? extends IJsonNode>, Coercer<?, ?>>();
 			coercers.put(numericType, typeCoercers);
-			typeCoercers.put(AbstractNumericNode.class, NumberCoercer.INSTANCE.getClassCoercers().get(numericType));
+			typeCoercers.put(AbstractNumericNode.class, NumberCoercer.INSTANCE.getCoercers().get(numericType));
 		}
 
 		// boolean to number
@@ -121,7 +121,7 @@ public class TypeCoercer {
 			@Override
 			public IntNode coerce(final TextNode from, final IntNode target) {
 				try {
-					target.setValue(TypeFormat.parseInt(from.getTextValue()));
+					target.setValue(TypeFormat.parseInt(from));
 					return target;
 				} catch (final Exception e) {
 					return null;
@@ -132,7 +132,7 @@ public class TypeCoercer {
 			@Override
 			public DoubleNode coerce(final TextNode from, final DoubleNode target) {
 				try {
-					target.setValue(TypeFormat.parseDouble(from.getTextValue()));
+					target.setValue(TypeFormat.parseDouble(from));
 					return target;
 				} catch (final Exception e) {
 					return null;
@@ -143,7 +143,7 @@ public class TypeCoercer {
 			@Override
 			public LongNode coerce(final TextNode from, final LongNode target) {
 				try {
-					target.setValue(TypeFormat.parseLong(from.getTextValue()));
+					target.setValue(TypeFormat.parseLong(from));
 					return target;
 				} catch (final Exception e) {
 					return null;
@@ -155,7 +155,7 @@ public class TypeCoercer {
 			public DecimalNode coerce(final TextNode from, final DecimalNode target) {
 				try {
 					// TODO: bottleneck
-					target.setValue(new BigDecimal(from.getTextValue().toString()));
+					target.setValue(new BigDecimal(from.toString()));
 					return target;
 				} catch (final NumberFormatException e) {
 					return null;
@@ -168,7 +168,7 @@ public class TypeCoercer {
 				public BigIntegerNode coerce(final TextNode from, final BigIntegerNode target) {
 					try {
 						// TODO: bottleneck
-						target.setValue(new BigInteger(from.getTextValue().toString()));
+						target.setValue(new BigInteger(from.toString()));
 						return target;
 					} catch (final NumberFormatException e) {
 						return null;
@@ -327,7 +327,7 @@ public class TypeCoercer {
 		toBooleanCoercers.put(TextNode.class, new Coercer<TextNode, BooleanNode>(BooleanNode.class) {
 			@Override
 			public BooleanNode coerce(final TextNode from, final BooleanNode target) {
-				return BooleanNode.valueOf(from.getTextValue().length() > 0);
+				return BooleanNode.valueOf(from.length() > 0);
 			}
 		});
 		toBooleanCoercers.put(NullNode.class, new Coercer<NullNode, BooleanNode>(BooleanNode.class) {

@@ -5,19 +5,27 @@ import junit.framework.Assert;
 
 import org.junit.Test;
 
-import eu.stratosphere.sopremo.type.AbstractJsonNode;
 import eu.stratosphere.sopremo.type.ArrayNode;
 import eu.stratosphere.sopremo.type.BooleanNode;
 import eu.stratosphere.sopremo.type.CoercionException;
+import eu.stratosphere.sopremo.type.DoubleNode;
 import eu.stratosphere.sopremo.type.IJsonNode;
 import eu.stratosphere.sopremo.type.IntNode;
+import eu.stratosphere.sopremo.type.LongNode;
 import eu.stratosphere.sopremo.type.TextNode;
 
 public class CoerceExpressionTest extends EvaluableExpressionTest<CoerceExpression> {
 
 	@Override
 	protected CoerceExpression createDefaultInstance(final int index) {
-		return new CoerceExpression(AbstractJsonNode.Type.values()[index].getClazz());
+		switch (index) {
+		case 0:
+			return new CoerceExpression(LongNode.class);
+		case 1:			
+			return new CoerceExpression(IntNode.class);
+		default:
+			return new CoerceExpression(DoubleNode.class);
+		}
 	}
 
 	@Test

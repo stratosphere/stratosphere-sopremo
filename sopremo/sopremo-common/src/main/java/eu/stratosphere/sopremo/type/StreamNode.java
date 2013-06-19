@@ -14,18 +14,22 @@
  **********************************************************************************************************************/
 package eu.stratosphere.sopremo.type;
 
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
+import com.esotericsoftware.kryo.DefaultSerializer;
+import com.esotericsoftware.kryo.Kryo;
+import com.esotericsoftware.kryo.Serializer;
+import com.esotericsoftware.kryo.io.Input;
+import com.esotericsoftware.kryo.io.Output;
+
 /**
  * @author Arvid Heise
  */
+@DefaultSerializer(StreamNode.StreamNodeSerializer.class)
 public class StreamNode<T extends IJsonNode> extends AbstractJsonNode implements IStreamNode<T> {
 	private transient Iterator<T> nodeIterator;
 
@@ -45,19 +49,14 @@ public class StreamNode<T extends IJsonNode> extends AbstractJsonNode implements
 		this(EMPTY_ITERATOR);
 	}
 
-	@SuppressWarnings("unchecked")
-	private void readObject(ObjectInputStream ois) throws IOException, ClassNotFoundException {
-		ois.defaultReadObject();
-		this.nodeIterator = EMPTY_ITERATOR;
-	}
-
 	/*
 	 * (non-Javadoc)
 	 * @see eu.stratosphere.sopremo.type.AbstractJsonNode#getType()
 	 */
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Override
-	public Type getType() {
-		return Type.ArrayNode;
+	public Class<IArrayNode<T>> getType() {
+		return (Class) IArrayNode.class;
 	}
 
 	public Iterator<T> getNodeIterator() {
@@ -140,25 +139,6 @@ public class StreamNode<T extends IJsonNode> extends AbstractJsonNode implements
 
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.type.AbstractJsonNode#read(java.io.DataInput)
-	 */
-	@Override
-	public IJsonNode readResolve(DataInput in) throws IOException {
-		throw new UnsupportedOperationException();
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.type.AbstractJsonNode#write(java.io.DataOutput)
-	 */
-	@Override
-	public void write(DataOutput out) throws IOException {
-		throw new UnsupportedOperationException(
-			"Use CoreFunctions#ALL to transform this stream array into a materialized array");
-	}
-
-	/*
-	 * (non-Javadoc)
 	 * @see eu.stratosphere.sopremo.type.AbstractJsonNode#compareToSameType(eu.stratosphere.sopremo.type.IJsonNode)
 	 */
 	@Override
@@ -174,4 +154,28 @@ public class StreamNode<T extends IJsonNode> extends AbstractJsonNode implements
 	public int hashCode() {
 		return 42;
 	}
+
+	static class StreamNodeSerializer extends Serializer<StreamNode<?>> {
+		/*
+		 * (non-Javadoc)
+		 * @see com.esotericsoftware.kryo.Serializer#write(com.esotericsoftware.kryo.Kryo,
+		 * com.esotericsoftware.kryo.io.Output, java.lang.Object)
+		 */
+		@Override
+		public void write(Kryo kryo, Output output, StreamNode<?> object) {
+			throw new UnsupportedOperationException(
+				"Use CoreFunctions#ALL to transform this stream array into a materialized array");
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see com.esotericsoftware.kryo.Serializer#read(com.esotericsoftware.kryo.Kryo,
+		 * com.esotericsoftware.kryo.io.Input, java.lang.Class)
+		 */
+		@Override
+		public StreamNode<?> read(Kryo kryo, Input input, Class<StreamNode<?>> type) {
+			throw new UnsupportedOperationException();
+		}
+	}
+
 }

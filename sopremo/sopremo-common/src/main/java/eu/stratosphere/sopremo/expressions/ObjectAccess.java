@@ -86,9 +86,8 @@ public class ObjectAccess extends PathSegmentExpression {
 	 */
 	@Override
 	protected IJsonNode evaluateSegment(final IJsonNode node) {
-		if (!node.isObject()) {
+		if (!(node instanceof IObjectNode)) 
 			return MissingNode.getInstance();
-		}
 		final IJsonNode value = ((IObjectNode) node).get(this.field);
 		return value == null ? NullNode.getInstance() : value;
 	}
@@ -100,8 +99,8 @@ public class ObjectAccess extends PathSegmentExpression {
 	 */
 	@Override
 	protected IJsonNode setSegment(IJsonNode node, IJsonNode value) {
-		if (!node.isObject())
-			throw new EvaluationException("Cannot access field of non-object " + node.getClass().getSimpleName());
+		if (!(node instanceof IObjectNode))
+			throw new EvaluationException("Cannot set field of non-object " + node.getClass().getSimpleName());
 		SopremoUtil.replaceWithCopy((IObjectNode) node, this.field, value);
 		return node;
 	}

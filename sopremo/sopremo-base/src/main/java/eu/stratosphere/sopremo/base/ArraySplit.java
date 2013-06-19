@@ -109,7 +109,7 @@ public class ArraySplit extends ElementaryOperator<ArraySplit> {
 		@Override
 		protected void map(final IJsonNode value, JsonCollector out) {
 			final IJsonNode target = this.arrayPath.evaluate(value);
-			if (!target.isArray())
+			if (!(target instanceof IArrayNode<?>))				
 				throw new EvaluationException("Cannot split non-array");
 			final IArrayNode<?> array = (IArrayNode<?>) target;
 

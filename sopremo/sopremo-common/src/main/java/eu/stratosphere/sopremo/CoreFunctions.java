@@ -121,7 +121,7 @@ public class CoreFunctions implements BuiltinProvider {
 
 		@Override
 		protected IJsonNode aggregate(IJsonNode aggregator, IJsonNode element) {
-			return aggregator.isNull() ? element : aggregator;
+			return aggregator == NullNode.getInstance() ? element : aggregator;
 		}
 	};
 
@@ -171,7 +171,7 @@ public class CoreFunctions implements BuiltinProvider {
 		@Override
 		public IJsonNode aggregate(final IJsonNode aggregator,
 				final IJsonNode node) {
-			if (aggregator.isNull())
+			if (aggregator == NullNode.getInstance())
 				return node.clone();
 			else if (ComparativeExpression.BinaryOperator.LESS.evaluate(node,
 					aggregator))
@@ -191,7 +191,7 @@ public class CoreFunctions implements BuiltinProvider {
 		@Override
 		public IJsonNode aggregate(final IJsonNode aggregator,
 				final IJsonNode node) {
-			if (aggregator.isNull())
+			if (aggregator == NullNode.getInstance())
 				return node.clone();
 			else if (ComparativeExpression.BinaryOperator.LESS.evaluate(
 					aggregator, node))
@@ -332,7 +332,7 @@ public class CoreFunctions implements BuiltinProvider {
 			final Pattern compiledPattern = this.patternCache
 					.getPatternOf(pattern);
 			final Matcher matcher = compiledPattern.matcher(input
-					.getTextValue());
+					);
 
 			if (!matcher.find())
 				return defaultValue;
@@ -386,7 +386,7 @@ public class CoreFunctions implements BuiltinProvider {
 				paramsAsObjects[index] = varargs.get(index).toString();
 
 			this.result.clear();
-			this.result.asFormatter().format(format.getTextValue().toString(),
+			this.result.asFormatter().format(format.toString(),
 					paramsAsObjects);
 			return this.result;
 		}
@@ -442,8 +442,8 @@ public class CoreFunctions implements BuiltinProvider {
 
 		@Override
 		protected IJsonNode call(TextNode inputNode, TextNode patternNode) {
-			String pattern = patternNode.getTextValue().toString().replaceAll(PLACEHOLDER, REGEX);
-			String value = inputNode.getTextValue().toString();
+			String pattern = patternNode.toString().replaceAll(PLACEHOLDER, REGEX);
+			String value = inputNode.toString();
 
 			return BooleanNode.valueOf(value.matches(pattern));
 		}
@@ -462,7 +462,7 @@ public class CoreFunctions implements BuiltinProvider {
 
 		@Override
 		protected IJsonNode call(TextNode node) {
-			this.result.setValue(node.getTextValue().length());
+			this.result.setValue(node.length());
 			return this.result;
 		}
 	};
@@ -495,7 +495,7 @@ public class CoreFunctions implements BuiltinProvider {
 			final Pattern compiledPattern = this.patternCache
 					.getPatternOf(search);
 			final Matcher matcher = compiledPattern.matcher(input
-					.getTextValue());
+					);
 			this.result.setValue(matcher.replaceAll(replace.toString()));
 			return this.result;
 		}
@@ -517,7 +517,8 @@ public class CoreFunctions implements BuiltinProvider {
 
 		private final transient CachingArrayNode<TextNode> result = new CachingArrayNode<TextNode>();
 
-		private final transient Map<Pattern, RegexTokenizer> tokenizers = new IdentityHashMap<Pattern, RegexTokenizer>();
+		private final transient Map<Pattern, RegexTokenizer> tokenizers =
+			new IdentityHashMap<Pattern, RegexTokenizer>();
 
 		/*
 		 * (non-Javadoc)
@@ -616,7 +617,7 @@ public class CoreFunctions implements BuiltinProvider {
 
 	@Name(verb = "setWorkingDirectory")
 	public static MissingNode setWorkingDirectory(TextNode node) {
-		String path = node.getTextValue().toString();
+		String path = node.toString();
 		if (!path.startsWith("hdfs://"))
 			path = new File(path).toURI().toString();
 		SopremoRuntime.getInstance().getCurrentEvaluationContext().setWorkingPath(new Path(path));
@@ -644,11 +645,11 @@ public class CoreFunctions implements BuiltinProvider {
 
 		@Override
 		protected IJsonNode call(TextNode source, IStreamNode<IJsonNode> input) {
-			String str = source.getTextValue().toString().toLowerCase();
+			String str = source.toString().toLowerCase();
 			int sumcount = 0;
 			for (IJsonNode node : input) {
-				if (node.isTextual()) {
-					String findStr = ((TextNode)node).getTextValue().toString().toLowerCase();
+				if (node instanceof TextNode) {
+					String findStr = ((TextNode)node).toString().toLowerCase();
 					int lastIndex = 0;
 					int count = 0;
 					while (lastIndex != -1) {
@@ -680,9 +681,9 @@ public class CoreFunctions implements BuiltinProvider {
 
 		@Override
 		protected IJsonNode call(TextNode input, TextNode dateformat) {
-			String tmpIn = input.getTextValue().toString();
+			String tmpIn = input.toString();
 
-			wov(this.result, tmpIn, dateformat.getTextValue().toString());
+			wov(this.result, tmpIn, dateformat.toString());
 			return this.result;
 		}
 		
@@ -727,9 +728,9 @@ public class CoreFunctions implements BuiltinProvider {
 
 		@Override
 		protected IJsonNode call(TextNode input, TextNode dateformat) {
-			String tmpIn = input.getTextValue().toString();
+			String tmpIn = input.toString();
 
-			DateFormat formatter = new SimpleDateFormat(dateformat.getTextValue().toString());
+			DateFormat formatter = new SimpleDateFormat(dateformat.toString());
 			Date date;
 			SimpleDateFormat f;
 
@@ -763,9 +764,9 @@ public class CoreFunctions implements BuiltinProvider {
 
 		@Override
 		protected IJsonNode call(TextNode input, TextNode sourceformat, TextNode targetformat) {
-			String tmpIn = input.getTextValue().toString();
-			DateFormat parsedf = new SimpleDateFormat(sourceformat.getTextValue().toString());
-			DateFormat targetdf = new SimpleDateFormat(targetformat.getTextValue().toString());
+			String tmpIn = input.toString();
+			DateFormat parsedf = new SimpleDateFormat(sourceformat.toString());
+			DateFormat targetdf = new SimpleDateFormat(targetformat.toString());
 			try {
 				Date date = parsedf.parse(tmpIn);
 				final String s = targetdf.format(date);
@@ -788,7 +789,7 @@ public class CoreFunctions implements BuiltinProvider {
 
 		@Override
 		protected IJsonNode call(IJsonNode input, IJsonNode replacement) {
-			if (input.isMissing() || input.isNull()) {
+			if (input == MissingNode.getInstance() || input == NullNode.getInstance()) {
 				return replacement;
 			}
 			return input;
@@ -808,7 +809,7 @@ public class CoreFunctions implements BuiltinProvider {
 
 		@Override
 		protected IJsonNode call(TextNode input) {
-			String str = input.getTextValue().toString();
+			String str = input.toString();
 			this.result.setValue(Integer.parseInt(str));
 			return this.result;
 		}
