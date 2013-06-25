@@ -4,7 +4,7 @@
   <parent>
     <artifactId>sopremo</artifactId>
     <groupId>eu.stratosphere</groupId>
-    <version>0.2</version>
+    <version>0.3</version>
   </parent>
   <artifactId>sopremo-common</artifactId>
   <name>sopremo-common</name>
@@ -20,7 +20,7 @@
     <dependency>
       <groupId>eu.stratosphere</groupId>
       <artifactId>pact-clients</artifactId>
-      <version>${project.version}</version>
+      <version>0.2</version>
       <type>jar</type>
       <scope>compile</scope>
     </dependency>

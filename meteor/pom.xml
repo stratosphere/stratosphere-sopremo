@@ -7,6 +7,7 @@
     <version>0.3</version>
   </parent>
   <artifactId>meteor</artifactId>
+  <version>0.3</version>
   <packaging>pom</packaging>
   <name>meteor</name>
   <inceptionYear>2011</inceptionYear>
