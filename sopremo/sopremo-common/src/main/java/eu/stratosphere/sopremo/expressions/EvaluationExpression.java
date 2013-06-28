@@ -443,15 +443,4 @@ public abstract class EvaluationExpression extends AbstractSopremoType implement
 			child.printAsTree(appendable, level + 1);
 	}
 
-	protected void appendChildExpressions(final Appendable appendable,
-			final List<? extends EvaluationExpression> children, final String separator) throws IOException {
-		for (int index = 0; index < children.size(); index++) {
-			if (children.get(index) == null)
-				appendable.append("!null!");
-			else
-				children.get(index).appendAsString(appendable);
-			if (index < children.size() - 1)
-				appendable.append(separator);
-		}
-	}
 }

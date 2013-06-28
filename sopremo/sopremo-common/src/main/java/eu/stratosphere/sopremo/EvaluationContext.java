@@ -2,18 +2,34 @@ package eu.stratosphere.sopremo;
 
 import java.io.File;
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.TreeMap;
+
+import com.esotericsoftware.kryo.Kryo;
 
 import eu.stratosphere.nephele.fs.Path;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
 import eu.stratosphere.sopremo.packages.DefaultConstantRegistry;
 import eu.stratosphere.sopremo.packages.DefaultFunctionRegistry;
+import eu.stratosphere.sopremo.packages.DefaultTypeRegistry;
 import eu.stratosphere.sopremo.packages.EvaluationScope;
 import eu.stratosphere.sopremo.packages.IConstantRegistry;
 import eu.stratosphere.sopremo.packages.IFunctionRegistry;
+import eu.stratosphere.sopremo.packages.ITypeRegistry;
 import eu.stratosphere.sopremo.pact.SopremoUtil;
-import eu.stratosphere.sopremo.serialization.Schema;
+import eu.stratosphere.sopremo.serialization.SopremoRecordLayout;
+import eu.stratosphere.sopremo.type.BooleanNode;
+import eu.stratosphere.sopremo.type.IArrayNode;
+import eu.stratosphere.sopremo.type.IJsonNode;
+import eu.stratosphere.sopremo.type.IObjectNode;
+import eu.stratosphere.sopremo.type.MissingNode;
+import eu.stratosphere.sopremo.type.NullNode;
+import eu.stratosphere.sopremo.type.TextNode;
+import eu.stratosphere.sopremo.type.TypeCoercer;
 
 /**
  * Provides additional context to the evaluation of {@link Evaluable}s, such as access to all registered functions.
@@ -25,15 +41,11 @@ public class EvaluationContext extends AbstractSopremoType implements ISopremoTy
 
 	private final IConstantRegistry constantRegistry;
 
+	private final ITypeRegistry typeRegistry;
+
 	private Path workingPath = new Path(new File(".").toURI().toString());
 
 	private String operatorDescription;
-
-	private List<Schema> inputSchemas = new ArrayList<Schema>(), outputSchemas = new ArrayList<Schema>();
-
-	private Schema schema;
-
-	private transient int inputCount = 0;
 
 	private EvaluationExpression resultProjection = EvaluationExpression.VALUE;
 
@@ -43,30 +55,59 @@ public class EvaluationContext extends AbstractSopremoType implements ISopremoTy
 
 	private int taskId;
 
+	private final transient Kryo kryo;
+
 	/**
 	 * Initializes EvaluationContext.
 	 */
 	public EvaluationContext() {
-		this(0, 0, new DefaultFunctionRegistry(), new DefaultConstantRegistry());
+		this(new DefaultFunctionRegistry(), new DefaultConstantRegistry(), new DefaultTypeRegistry());
+
 	}
 
 	/**
 	 * Initializes EvaluationContext.
 	 */
-	public EvaluationContext(final int numInputs, final int numOutputs, IFunctionRegistry methodRegistry,
-			IConstantRegistry constantRegistry) {
+	public EvaluationContext(IFunctionRegistry methodRegistry,
+			IConstantRegistry constantRegistry, ITypeRegistry typeRegistry) {
 		this.methodRegistry = methodRegistry;
 		this.constantRegistry = constantRegistry;
-		this.setInputsAndOutputs(numInputs, numOutputs);
+		this.typeRegistry = typeRegistry;
+
+		this.kryo = new Kryo();
+		for (Class<? extends IJsonNode> type : TypeCoercer.NUMERIC_TYPES)
+			register(type);
+		@SuppressWarnings("unchecked")
+		List<Class<? extends Object>> defaultTypes =
+			Arrays.asList(BooleanNode.class, TextNode.class, IObjectNode.class, IArrayNode.class, NullNode.class,
+				MissingNode.class, TreeMap.class, ArrayList.class, BigInteger.class, BigDecimal.class);
+		for (Class<?> type : defaultTypes)
+			register(type);
+
+		final List<Class<? extends IJsonNode>> types = typeRegistry.getTypes();
+		for (Class<? extends IJsonNode> type : types)
+			register(type);
+		this.kryo.setReferences(false);
+	}
+
+	private void register(Class<?> type) {
+		this.kryo.register(type);
 	}
 
 	/**
 	 * Initializes EvaluationContext.
 	 */
 	public EvaluationContext(EvaluationContext context) {
-		this(context.inputSchemas.size(), context.outputSchemas.size(), context.methodRegistry,
-			context.constantRegistry);
+		this(context.methodRegistry, context.constantRegistry, context.typeRegistry);
 		this.copyPropertiesFrom(context);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.AbstractSopremoType#getKryo()
+	 */
+	public Kryo getKryo() {
+		return this.kryo;
 	}
 
 	/*
@@ -100,15 +141,23 @@ public class EvaluationContext extends AbstractSopremoType implements ISopremoTy
 		return (EvaluationContext) super.shallowClone();
 	}
 
+	// /**
+	// * Returns the classResolver.
+	// *
+	// * @return the classResolver
+	// */
+	// public ClassResolver getClassResolver() {
+	// if(this.classResolver == null)
+	// this.classResolver = new SopremoClassResolver(this.getTypeRegistry());
+	// return this.classResolver;
+	// }
+	//
 	/*
 	 * (non-Javadoc)
 	 * @see eu.stratosphere.sopremo.AbstractSopremoType#copyPropertiesFrom(eu.stratosphere.sopremo.AbstractSopremoType)
 	 */
 	public void copyPropertiesFrom(ISopremoType original) {
 		final EvaluationContext context = (EvaluationContext) original;
-		this.inputSchemas.addAll(SopremoUtil.deepClone(context.inputSchemas));
-		this.outputSchemas.addAll(SopremoUtil.deepClone(context.outputSchemas));
-		this.schema = context.schema;
 		this.resultProjection = context.resultProjection.clone();
 		this.operatorDescription = context.operatorDescription;
 	}
@@ -133,51 +182,21 @@ public class EvaluationContext extends AbstractSopremoType implements ISopremoTy
 	}
 
 	/**
-	 * Returns the inputCount.
+	 * Returns the typeRegistry.
 	 * 
-	 * @return the inputCount
+	 * @return the typeRegistry
 	 */
-	public int getInputCount() {
-		return this.inputCount;
-	}
-
-	/**
-	 * Returns the inputSchemas.
-	 * 
-	 * @return the inputSchemas
-	 */
-	public Schema getInputSchema(final int index) {
-		return this.inputSchemas.get(index);
-	}
-
-	/**
-	 * Returns the outputSchemas.
-	 * 
-	 * @return the outputSchemas
-	 */
-	public Schema getOutputSchema(final int index) {
-		return this.outputSchemas.get(index);
+	@Override
+	public ITypeRegistry getTypeRegistry() {
+		return this.typeRegistry;
 	}
 
 	public EvaluationExpression getResultProjection() {
 		return this.resultProjection;
 	}
 
-	/**
-	 * Returns the schema.
-	 * 
-	 * @return the schema
-	 */
-	public Schema getSchema() {
-		return this.schema;
-	}
-
 	public int getTaskId() {
 		return this.taskId;
-	}
-
-	public void incrementInputCount() {
-		this.inputCount++;
 	}
 
 	/**
@@ -202,27 +221,11 @@ public class EvaluationContext extends AbstractSopremoType implements ISopremoTy
 		return this.operatorDescription;
 	}
 
-	public void setInputsAndOutputs(final int numInputs, final int numOutputs) {
-		this.inputSchemas.clear();
-		this.outputSchemas.clear();
-		for (int index = 0; index < numInputs; index++)
-			this.inputSchemas.add((Schema) this.schema.clone());
-		for (int index = 0; index < numOutputs; index++)
-			this.outputSchemas.add((Schema) this.schema.clone());
-	}
-
 	public void setResultProjection(final EvaluationExpression resultProjection) {
 		if (resultProjection == null)
 			throw new NullPointerException("resultProjection must not be null");
 
 		this.resultProjection = resultProjection;
-	}
-
-	/**
-	 * @param schema
-	 */
-	public void setSchema(final Schema schema) {
-		this.schema = schema;
 	}
 
 	public void setTaskId(final int taskId) {

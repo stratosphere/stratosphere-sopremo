@@ -18,7 +18,7 @@ import org.antlr.runtime.CharStream;
 import org.antlr.runtime.CommonTokenStream;
 
 import eu.stratosphere.nephele.fs.Path;
-import eu.stratosphere.sopremo.SopremoRuntime;
+import eu.stratosphere.sopremo.SopremoEnvironment;
 import eu.stratosphere.sopremo.operator.JsonStream;
 import eu.stratosphere.sopremo.operator.Operator;
 import eu.stratosphere.sopremo.operator.SopremoPlan;
@@ -168,7 +168,7 @@ public class QueryParser extends PlanCreator {
 		final CommonTokenStream tokens = new CommonTokenStream();
 		tokens.setTokenSource(lexer);
 		final MeteorParser parser = new MeteorParser(tokens);
-		SopremoRuntime.getInstance().getCurrentEvaluationContext()
+		SopremoEnvironment.getInstance().getEvaluationContext()
 			.setWorkingPath(new Path(this.inputDirectory.toURI().toString()));
 		parser.getPackageManager().addJarPathLocation(this.inputDirectory);
 		parser.setTreeAdaptor(new SopremoTreeAdaptor());

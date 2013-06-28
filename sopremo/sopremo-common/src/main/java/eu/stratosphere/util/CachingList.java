@@ -41,8 +41,25 @@ public class CachingList<T> extends AbstractList<T> implements Serializable {
 	public void add(int index, T element) {
 		this.checkRange(index, this.size + 1);
 
+		if (index < this.size) // insert
+			this.backingList.add(index, element);
+		else if (this.size == this.backingList.size()) // append
+			this.backingList.add(element);
+		else
+			this.backingList.set(index, element);
+
 		this.size++;
-		this.backingList.add(index, element);
+	}
+
+	@Override
+	public boolean add(T element) {
+		if (this.size == this.backingList.size()) // append
+			this.backingList.add(element);
+		else
+			this.backingList.set(this.size, element);
+
+		this.size++;
+		return true;
 	}
 
 	@SuppressWarnings("unchecked")
@@ -51,7 +68,10 @@ public class CachingList<T> extends AbstractList<T> implements Serializable {
 	}
 
 	private void writeObject(ObjectOutputStream oos) throws IOException {
-		oos.writeObject(new ArrayList<T>(this.backingList.subList(0, this.size)));
+		if (this.size == this.backingList.size())
+			oos.writeObject(this.backingList);
+		else
+			oos.writeObject(new ArrayList<T>(this.backingList.subList(0, this.size)));
 	}
 
 	/*
@@ -110,6 +130,12 @@ public class CachingList<T> extends AbstractList<T> implements Serializable {
 		return this.backingList.get(this.size++);
 	}
 
+	public T getUnusedElement() {
+		if (this.backingList.size() == this.size)
+			return null;
+		return this.backingList.get(this.size);
+	}
+	
 	/**
 	 * Sets the size to the specified value.
 	 * 

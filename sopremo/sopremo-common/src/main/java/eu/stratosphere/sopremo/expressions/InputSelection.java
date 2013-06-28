@@ -87,4 +87,11 @@ public class InputSelection extends PathSegmentExpression {
 		appendable.append("in");
 		TypeFormat.format(this.index, appendable);
 	}
+
+	/**
+	 * @return
+	 */
+	public ArrayAccess asArrayAccess() {
+		return new ArrayAccess(index);
+	}
 }

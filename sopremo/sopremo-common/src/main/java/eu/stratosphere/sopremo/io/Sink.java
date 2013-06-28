@@ -10,6 +10,7 @@ import eu.stratosphere.sopremo.operator.InputCardinality;
 import eu.stratosphere.sopremo.operator.OutputCardinality;
 import eu.stratosphere.sopremo.operator.Property;
 import eu.stratosphere.sopremo.pact.SopremoUtil;
+import eu.stratosphere.sopremo.serialization.SopremoRecordLayout;
 
 /**
  * Represents a data sink in a PactPlan.
@@ -86,14 +87,14 @@ public class Sink extends ElementaryOperator<Sink> {
 	}
 
 	@Override
-	public PactModule asPactModule(final EvaluationContext context) {
-		context.setInputsAndOutputs(1, 0);
+	public PactModule asPactModule(final EvaluationContext context, SopremoRecordLayout layout) {
 		final PactModule pactModule = new PactModule(1, 0);
 		final FileDataSink contract = new FileDataSink(this.format.getOutputFormat(), this.outputPath, this.outputPath);
 		SopremoUtil.transferFieldsToConfiguration(this.format, SopremoFileFormat.class, contract.getParameters(),
 			this.format.getOutputFormat(), SopremoOutputFormat.class);
 		contract.setInput(pactModule.getInput(0));
-		SopremoUtil.setObject(contract.getParameters(), SopremoUtil.CONTEXT, context);
+		SopremoUtil.setEvaluationContext(contract.getParameters(), context);
+		SopremoUtil.setLayout(contract.getParameters(), layout);
 		// if(this.outputFormat == JsonOutputFormat.class)
 		contract.setDegreeOfParallelism(1);
 		pactModule.addInternalOutput(contract);

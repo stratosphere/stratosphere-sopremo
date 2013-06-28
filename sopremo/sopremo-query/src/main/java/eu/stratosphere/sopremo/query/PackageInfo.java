@@ -32,8 +32,11 @@ import eu.stratosphere.sopremo.packages.BuiltinProvider;
 import eu.stratosphere.sopremo.packages.ConstantRegistryCallback;
 import eu.stratosphere.sopremo.packages.DefaultConstantRegistry;
 import eu.stratosphere.sopremo.packages.DefaultFunctionRegistry;
+import eu.stratosphere.sopremo.packages.DefaultTypeRegistry;
 import eu.stratosphere.sopremo.packages.IConstantRegistry;
 import eu.stratosphere.sopremo.packages.IFunctionRegistry;
+import eu.stratosphere.sopremo.packages.ITypeRegistry;
+import eu.stratosphere.sopremo.type.IJsonNode;
 import eu.stratosphere.util.reflect.ReflectUtil;
 
 /**
@@ -55,11 +58,14 @@ public class PackageInfo extends AbstractSopremoType implements ISopremoType, Pa
 
 	private IConfObjectRegistry<Operator<?>> operatorRegistry = new DefaultConfObjectRegistry<Operator<?>>();
 
-	private IConfObjectRegistry<SopremoFileFormat> fileFormatRegistry = new DefaultConfObjectRegistry<SopremoFileFormat>();
+	private IConfObjectRegistry<SopremoFileFormat> fileFormatRegistry =
+		new DefaultConfObjectRegistry<SopremoFileFormat>();
 
 	private IConstantRegistry constantRegistry = new DefaultConstantRegistry();
 
 	private IFunctionRegistry functionRegistry = new DefaultFunctionRegistry();
+
+	private ITypeRegistry typeRegistry = new DefaultTypeRegistry();
 
 	private String packageName;
 
@@ -73,6 +79,15 @@ public class PackageInfo extends AbstractSopremoType implements ISopremoType, Pa
 		return this.packagePath;
 	}
 
+	/**
+	 * Returns the typeRegistry.
+	 * 
+	 * @return the typeRegistry
+	 */
+	public ITypeRegistry getTypeRegistry() {
+		return this.typeRegistry;
+	}
+	
 	/**
 	 * Returns the fileFormatRegistry.
 	 * 
@@ -100,7 +115,8 @@ public class PackageInfo extends AbstractSopremoType implements ISopremoType, Pa
 			} else if (BuiltinProvider.class.isAssignableFrom(clazz)) {
 				clazz = Class.forName(className, true, this.classLoader);
 				this.addFunctionsAndConstants(clazz);
-			}
+			} else if (IJsonNode.class.isAssignableFrom(clazz))
+				this.getTypeRegistry().put((Class<? extends IJsonNode>) clazz);
 		} catch (ClassNotFoundException e) {
 			QueryUtil.LOG.warn("could not load operator " + className + ": " + StringUtils.stringifyException(e));
 		}

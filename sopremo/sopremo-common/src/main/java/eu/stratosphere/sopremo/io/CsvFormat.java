@@ -526,7 +526,8 @@ public class CsvFormat extends SopremoFileFormat {
 					if (digit != -1)
 						this.unicodeChar = (char) ((this.unicodeChar << 4) | digit);
 					else
-						throw new IOException("Cannot parse unicode character at position: " + this.pos + " split start: " + this.splitStart);
+						throw new IOException("Cannot parse unicode character at position: " + this.pos +
+							" split start: " + this.splitStart);
 					if (++this.unicodeCount >= 4) {
 						this.builder.append(this.unicodeChar);
 						this.unicodeChar = 0;
@@ -615,7 +616,8 @@ public class CsvFormat extends SopremoFileFormat {
 			if (cachedStatistics != null && cachedStatistics instanceof FileBaseStatistics)
 				stats = (FileBaseStatistics) cachedStatistics;
 			else
-				stats = new FileBaseStatistics(-1, BaseStatistics.SIZE_UNKNOWN, BaseStatistics.AVG_RECORD_BYTES_UNKNOWN);
+				stats =
+					new FileBaseStatistics(-1, BaseStatistics.SIZE_UNKNOWN, BaseStatistics.AVG_RECORD_BYTES_UNKNOWN);
 
 			try {
 				final Path file = this.filePath;
@@ -774,7 +776,7 @@ public class CsvFormat extends SopremoFileFormat {
 		}
 
 		public void seek(long absolutePos) throws IOException {
-			this.relativePos = Math.max(absolutePos - this.start,0);
+			this.relativePos = Math.max(absolutePos - this.start, 0);
 			this.stream.seek(absolutePos);
 			// mark as empty
 			this.charBuffer.limit(0);
@@ -804,19 +806,15 @@ public class CsvFormat extends SopremoFileFormat {
 					final int read = this.stream.read(this.streamBuffer.array(), 0, maxLen);
 					this.streamBuffer.limit(read);
 				} else {
-					final int read =
-						this.stream.read(this.streamBuffer.array(), 0, (int) Math.min(maxLen, this.limit
-							- this.relativePos));
-					System.out.println("read: "+read+" this.limit:" + this.limit +" relpos "+this.relativePos );
-					if(read>0){
+					final int read = this.stream.read(this.streamBuffer.array(), 0,
+						(int) Math.min(maxLen, this.limit - this.relativePos));
+					if (read == -1) 
+						this.reachedLimit = true;
+					else {
 						this.relativePos += read;
 						this.streamBuffer.limit(read);
 						this.reachedLimit = this.limit <= this.relativePos;
-					} else {
-						this.reachedLimit=true;
-						System.out.println("failed to read");
-					}
-					
+					} 
 				}
 
 				this.charBuffer.clear();

@@ -13,19 +13,18 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
 import eu.stratosphere.nephele.configuration.Configuration;
-import eu.stratosphere.pact.common.contract.MapContract;
-import eu.stratosphere.pact.common.contract.ReduceContract;
 import eu.stratosphere.pact.common.plan.ContractUtil;
 import eu.stratosphere.pact.common.stubs.Stub;
 import eu.stratosphere.pact.generic.contract.Contract;
+import eu.stratosphere.pact.generic.contract.GenericMapContract;
+import eu.stratosphere.pact.generic.contract.GenericReduceContract;
 import eu.stratosphere.pact.generic.contract.SingleInputContract;
 import eu.stratosphere.pact.generic.stub.AbstractStub;
 import eu.stratosphere.sopremo.expressions.ObjectAccess;
 import eu.stratosphere.sopremo.pact.JsonCollector;
 import eu.stratosphere.sopremo.pact.SopremoMap;
 import eu.stratosphere.sopremo.pact.SopremoReduce;
-import eu.stratosphere.sopremo.serialization.ObjectSchema;
-import eu.stratosphere.sopremo.serialization.Schema;
+import eu.stratosphere.sopremo.serialization.SopremoRecordLayout;
 import eu.stratosphere.sopremo.type.IJsonNode;
 import eu.stratosphere.sopremo.type.IStreamNode;
 
@@ -39,7 +38,7 @@ public class ElementaryOperatorTest {
 	/**
 	 * 
 	 */
-	private static final Schema SCHEMA = new ObjectSchema();
+	private static final SopremoRecordLayout LAYOUT = SopremoRecordLayout.create();
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Test(expected = IllegalStateException.class)
@@ -48,38 +47,38 @@ public class ElementaryOperatorTest {
 		PowerMockito.mockStatic(ContractUtil.class);
 		Mockito.when(ContractUtil.getContractClass(OperatorWithOneStub.Implementation.class)).thenReturn(
 			(Class) UninstanceableContract.class);
-		new OperatorWithOneStub().getContract(SCHEMA);
+		new OperatorWithOneStub().getContract(LAYOUT);
 	}
 
 	@Test(expected = IllegalStateException.class)
 	public void getContractShouldFailIfNoStub() {
-		new OperatorWithNoStubs().getContract(SCHEMA);
+		new OperatorWithNoStubs().getContract(LAYOUT);
 	}
 
 	@Test(expected = IllegalStateException.class)
 	public void getContractShouldFailIfOnlyInstanceStub() {
-		new OperatorWithInstanceStub().getContract(SCHEMA);
+		new OperatorWithInstanceStub().getContract(LAYOUT);
 	}
 
 	@Test(expected = IllegalStateException.class)
 	public void getContractShouldFailIfOnlyUnknownStub() {
-		new OperatorWithUnknownStub().getContract(SCHEMA);
+		new OperatorWithUnknownStub().getContract(LAYOUT);
 	}
 
 	@SuppressWarnings("unchecked")
 	@Test
 	public void getContractShouldReturnTheMatchingContractToTheFirstStub() {
-		final ObjectSchema schema = new ObjectSchema("someField");
-		final Contract contract = new OperatorWithTwoStubs().getContract(schema);
-		assertEquals(ReduceContract.class, contract.getClass());
+		final SopremoRecordLayout layout = SopremoRecordLayout.create(new ObjectAccess("someField"));
+		final Contract contract = new OperatorWithTwoStubs().getContract(layout);
+		assertEquals(GenericReduceContract.class, contract.getClass());
 		assertTrue(Arrays.asList(OperatorWithTwoStubs.Implementation1.class,
 			OperatorWithTwoStubs.Implementation2.class).contains(contract.getUserCodeClass()));
 	}
 
 	@Test
 	public void getContractShouldReturnTheMatchingContractToTheOnlyStub() {
-		final Contract contract = new OperatorWithOneStub().getContract(SCHEMA);
-		assertEquals(MapContract.class, contract.getClass());
+		final Contract contract = new OperatorWithOneStub().getContract(LAYOUT);
+		assertEquals(GenericMapContract.class, contract.getClass());
 		assertEquals(OperatorWithOneStub.Implementation.class, contract.getUserCodeClass());
 	}
 

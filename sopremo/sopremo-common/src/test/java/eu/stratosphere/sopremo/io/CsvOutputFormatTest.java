@@ -7,15 +7,10 @@ import junit.framework.Assert;
 import org.junit.Test;
 
 import eu.stratosphere.sopremo.io.CsvFormat.CsvOutputFormat;
-import eu.stratosphere.sopremo.serialization.DirectSchema;
 import eu.stratosphere.sopremo.type.IJsonNode;
 import eu.stratosphere.sopremo.type.JsonUtil;
 
 public class CsvOutputFormatTest extends OutputFormatTest {
-	/**
-	 * 
-	 */
-	private static final DirectSchema SCHEMA = new DirectSchema();
 
 	/**
 	 * Tests if a {@link TestPlan} can be executed.
@@ -41,7 +36,6 @@ public class CsvOutputFormatTest extends OutputFormatTest {
 
 		final CsvFormat format = new CsvFormat();
 		format.setKeyNames("id", "name", "addr", "city", "phone", "type", "class");
-		final DirectSchema schema = SCHEMA;
 
 		IJsonNode[] values = {
 			JsonUtil.createObjectNode("id", "1", "name", "arnie morton's of chicago",
@@ -54,7 +48,7 @@ public class CsvOutputFormatTest extends OutputFormatTest {
 				"addr", "435 s. la cienega blv.", "city", "los\nangeles", "phone", "310/246-1501",
 				"type", "american", "class", "'0'"), };
 
-		writeAndRead(format, schema, values);
+		writeAndRead(format, NULL_LAYOUT, values);
 	}
 
 	@Test

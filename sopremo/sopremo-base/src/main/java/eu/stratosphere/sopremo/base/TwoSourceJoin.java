@@ -28,6 +28,7 @@ import eu.stratosphere.sopremo.expressions.InputSelection;
 import eu.stratosphere.sopremo.expressions.TransformFunction;
 import eu.stratosphere.sopremo.operator.Name;
 import eu.stratosphere.sopremo.operator.Property;
+import eu.stratosphere.sopremo.serialization.SopremoRecordLayout;
 
 public class TwoSourceJoin extends TwoSourceJoinBase<TwoSourceJoin> {
 	private BinaryBooleanExpression condition = new ComparativeExpression(new InputSelection(0),
@@ -59,9 +60,12 @@ public class TwoSourceJoin extends TwoSourceJoinBase<TwoSourceJoin> {
 			this.getResultProjection().appendAsString(appendable);
 		}
 	}
-
+	
+	/* (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.operator.ElementaryOperator#asPactModule(eu.stratosphere.sopremo.EvaluationContext, eu.stratosphere.sopremo.serialization.SopremoRecordLayout)
+	 */
 	@Override
-	public PactModule asPactModule(EvaluationContext context) {
+	public PactModule asPactModule(EvaluationContext context, SopremoRecordLayout layout) {
 		if (this.inverseInputs)
 			this.strategy.setResultProjection(this.getResultProjection().clone().replace(
 				Predicates.instanceOf(InputSelection.class), new TransformFunction() {
@@ -79,7 +83,7 @@ public class TwoSourceJoin extends TwoSourceJoinBase<TwoSourceJoin> {
 		
 		this.strategy.setDegreeOfParallelism(this.getDegreeOfParallelism());
 		
-		final PactModule pactModule = this.strategy.asPactModule(context);
+		final PactModule pactModule = this.strategy.asPactModule(context, layout);
 		if (this.inverseInputs)
 			ContractUtil.swapInputs(pactModule.getOutput(0).getInputs().get(0), 0, 1);
 		return pactModule;

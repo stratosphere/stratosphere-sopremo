@@ -10,17 +10,18 @@ import junit.framework.Assert;
 import org.junit.Test;
 
 import eu.stratosphere.nephele.configuration.Configuration;
-import eu.stratosphere.pact.common.type.PactRecord;
 import eu.stratosphere.pact.generic.io.FormatUtil;
 import eu.stratosphere.sopremo.EvaluationContext;
 import eu.stratosphere.sopremo.io.JsonFormat.JsonInputFormat;
 import eu.stratosphere.sopremo.io.SopremoFileFormat.SopremoInputFormat;
 import eu.stratosphere.sopremo.pact.SopremoUtil;
-import eu.stratosphere.sopremo.serialization.DirectSchema;
+import eu.stratosphere.sopremo.serialization.SopremoRecord;
+import eu.stratosphere.sopremo.serialization.SopremoRecordLayout;
 import eu.stratosphere.sopremo.testing.SopremoTestPlan;
 import eu.stratosphere.sopremo.type.IArrayNode;
 import eu.stratosphere.sopremo.type.IObjectNode;
 import eu.stratosphere.sopremo.type.IntNode;
+
 //import eu.stratosphere.sopremo.testing.SopremoTestPlan;
 
 /**
@@ -29,10 +30,6 @@ import eu.stratosphere.sopremo.type.IntNode;
  * @author Arvid Heise
  */
 public class JsonInputFormatTest {
-	/**
-	 * 
-	 */
-	private static final DirectSchema SCHEMA = new DirectSchema();
 
 	/**
 	 * Tests if a {@link TestPlan} can be executed.
@@ -81,25 +78,24 @@ public class JsonInputFormatTest {
 
 		Configuration config = new Configuration();
 		final EvaluationContext context = new EvaluationContext();
-		context.setSchema(SCHEMA);
-		context.setInputsAndOutputs(0, 1);
-		SopremoUtil.setObject(config, SopremoUtil.CONTEXT, context);
+		SopremoUtil.setEvaluationContext(config, context);
+		SopremoUtil.setLayout(config, SopremoRecordLayout.EMPTY);
 		final JsonFormat format = new JsonFormat();
 		SopremoUtil.transferFieldsToConfiguration(format, SopremoFileFormat.class, config,
 			JsonInputFormat.class, SopremoInputFormat.class);
 		final SopremoInputFormat inputFormat =
 			FormatUtil.openInput(JsonInputFormat.class, file.toURI().toString(), config);
-		final PactRecord record = new PactRecord();
+		final SopremoRecord record = new SopremoRecord(SopremoRecordLayout.EMPTY);
 		for (int index = 1; index <= 5; index++) {
 			Assert.assertFalse("more pairs expected @ " + index, inputFormat.reachedEnd());
 			Assert.assertTrue("valid pair expected @ " + index, inputFormat.nextRecord(record));
 			Assert.assertEquals("other order expected", index,
-				((IntNode) ((IObjectNode) SCHEMA.recordToJson(record)).get("id")).getIntValue());
+				((IntNode) ((IObjectNode) record.getNode()).get("id")).getIntValue());
 		}
 
 		if (!inputFormat.reachedEnd()) {
 			Assert.assertTrue("no more pairs but reachedEnd did not return false", inputFormat.nextRecord(record));
-			Assert.fail("pair unexpected: " + SCHEMA.recordToJson(record));
+			Assert.fail("pair unexpected: " + record.getNode());
 		}
 	}
 
@@ -116,25 +112,24 @@ public class JsonInputFormatTest {
 
 		Configuration config = new Configuration();
 		final EvaluationContext context = new EvaluationContext();
-		context.setSchema(SCHEMA);
-		context.setInputsAndOutputs(0, 1);
-		SopremoUtil.setObject(config, SopremoUtil.CONTEXT, context);
+		SopremoUtil.setEvaluationContext(config, context);
+		SopremoUtil.setLayout(config, SopremoRecordLayout.EMPTY);
 		SopremoUtil.transferFieldsToConfiguration(new JsonFormat(), SopremoFileFormat.class, config,
 			JsonInputFormat.class, SopremoInputFormat.class);
 		final SopremoInputFormat inputFormat =
 			FormatUtil.openInput(JsonInputFormat.class, file.toURI().toString(), config);
-		final PactRecord record = new PactRecord();
+		final SopremoRecord record = new SopremoRecord(SopremoRecordLayout.EMPTY);
 
 		if (!inputFormat.reachedEnd())
 			if (!inputFormat.nextRecord(record))
-				Assert.fail("one value expected expected: " + SCHEMA.recordToJson(record));
+				Assert.fail("one value expected expected: " + record.getNode());
 
 		if (!inputFormat.reachedEnd()) {
 			Assert.assertTrue("no more values but reachedEnd did not return false", inputFormat.nextRecord(record));
-			Assert.fail("value unexpected: " + SCHEMA.recordToJson(record));
+			Assert.fail("value unexpected: " + record.getNode());
 		}
 
-		final IArrayNode<?> arrayNode = (IArrayNode<?>) ((IObjectNode) SCHEMA.recordToJson(record)).get("array");
+		final IArrayNode<?> arrayNode = (IArrayNode<?>) ((IObjectNode) record.getNode()).get("array");
 		Assert.assertNotNull("could not find top level node", arrayNode);
 		for (int index = 1; index <= 5; index++) {
 			Assert.assertNotNull("could not find array element " + index, arrayNode.get(index - 1));

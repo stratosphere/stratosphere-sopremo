@@ -1,6 +1,12 @@
 package eu.stratosphere.sopremo.base;
 
+import com.esotericsoftware.kryo.DefaultSerializer;
+import com.esotericsoftware.kryo.Kryo;
+import com.esotericsoftware.kryo.io.Input;
+
 import eu.stratosphere.nephele.configuration.Configuration;
+import eu.stratosphere.pact.generic.contract.Contract;
+import eu.stratosphere.sopremo.EvaluationContext;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
 import eu.stratosphere.sopremo.expressions.ObjectAccess;
 import eu.stratosphere.sopremo.expressions.PathSegmentExpression;
@@ -9,6 +15,7 @@ import eu.stratosphere.sopremo.operator.InputCardinality;
 import eu.stratosphere.sopremo.operator.Property;
 import eu.stratosphere.sopremo.pact.JsonCollector;
 import eu.stratosphere.sopremo.pact.SopremoMap;
+import eu.stratosphere.sopremo.serialization.SopremoRecordLayout;
 import eu.stratosphere.sopremo.type.ArrayNode;
 import eu.stratosphere.sopremo.type.IArrayNode;
 import eu.stratosphere.sopremo.type.IJsonNode;
@@ -17,6 +24,7 @@ import eu.stratosphere.sopremo.type.IObjectNode;
 import eu.stratosphere.sopremo.type.IntNode;
 import eu.stratosphere.sopremo.type.LongNode;
 import eu.stratosphere.sopremo.type.ObjectNode;
+import eu.stratosphere.sopremo.type.ReusingSerializer;
 import eu.stratosphere.sopremo.type.TextNode;
 
 @InputCardinality(1)
@@ -25,9 +33,9 @@ public class GlobalEnumeration extends ElementaryOperator<GlobalEnumeration> {
 
 	public static final EvaluationExpression LONG_COMBINATION = new LongExpression();
 
-	public final EvaluationExpression AUTO_ENUMERATION = new AutoProjection(this);
+	public static final EvaluationExpression AUTO_ENUMERATION = null;
 
-	private EvaluationExpression enumerationExpression = this.AUTO_ENUMERATION;
+	private EvaluationExpression enumerationExpression = AUTO_ENUMERATION;
 
 	private EvaluationExpression idGeneration = CONCATENATION;
 
@@ -47,6 +55,19 @@ public class GlobalEnumeration extends ElementaryOperator<GlobalEnumeration> {
 
 	public ObjectAccess getIdAccess() {
 		return new ObjectAccess(this.idFieldName);
+	}
+	
+	/* (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.operator.ElementaryOperator#configureContract(eu.stratosphere.pact.generic.contract.Contract, eu.stratosphere.nephele.configuration.Configuration, eu.stratosphere.sopremo.EvaluationContext, eu.stratosphere.sopremo.serialization.SopremoRecordLayout)
+	 */
+	@Override
+	protected void configureContract(Contract contract, Configuration stubConfiguration, EvaluationContext context,
+			SopremoRecordLayout layout) {
+		if(this.enumerationExpression == AUTO_ENUMERATION)
+			this.enumerationExpression = new AutoProjection(this.idFieldName, this.valueFieldName);
+		super.configureContract(contract, stubConfiguration, context, layout);
+		if(this.enumerationExpression instanceof AutoProjection)
+			this.enumerationExpression = AUTO_ENUMERATION;
 	}
 
 	@Property
@@ -109,42 +130,51 @@ public class GlobalEnumeration extends ElementaryOperator<GlobalEnumeration> {
 	 * Adds the id field if object; wraps the value into an object otherwise.
 	 */
 	static final class AutoProjection extends PathSegmentExpression {
-		private GlobalEnumeration ge;
+		private final String idFieldName, valueFieldName;
 
-		public AutoProjection(GlobalEnumeration ge) {
-			this.ge = ge;
+		AutoProjection(String idFieldName, String valueFieldName) {
+			this.idFieldName = idFieldName;
+			this.valueFieldName = valueFieldName;
 		}
 
 		/**
 		 * Initializes GlobalEnumeration.AutoProjection.
 		 */
 		AutoProjection() {
+			this(null, null);
 		}
-		
-		/* (non-Javadoc)
-		 * @see eu.stratosphere.sopremo.expressions.PathSegmentExpression#setSegment(eu.stratosphere.sopremo.type.IJsonNode, eu.stratosphere.sopremo.type.IJsonNode)
+
+		/*
+		 * (non-Javadoc)
+		 * @see
+		 * eu.stratosphere.sopremo.expressions.PathSegmentExpression#setSegment(eu.stratosphere.sopremo.type.IJsonNode,
+		 * eu.stratosphere.sopremo.type.IJsonNode)
 		 */
 		@Override
 		protected IJsonNode setSegment(IJsonNode node, IJsonNode value) {
 			if (node instanceof IObjectNode) {
-				((IObjectNode) node).put(this.ge.idFieldName, value);
+				((IObjectNode) node).put(this.idFieldName, value);
 				return node;
 			}
 			ObjectNode objectNode = new ObjectNode();
-			objectNode.put(this.ge.idFieldName, value);
-			objectNode.put(this.ge.valueFieldName, node);
+			objectNode.put(this.idFieldName, value);
+			objectNode.put(this.valueFieldName, node);
 			return objectNode;
 		}
 
-		/* (non-Javadoc)
-		 * @see eu.stratosphere.sopremo.expressions.PathSegmentExpression#evaluateSegment(eu.stratosphere.sopremo.type.IJsonNode)
+		/*
+		 * (non-Javadoc)
+		 * @see
+		 * eu.stratosphere.sopremo.expressions.PathSegmentExpression#evaluateSegment(eu.stratosphere.sopremo.type.IJsonNode
+		 * )
 		 */
 		@Override
 		protected IJsonNode evaluateSegment(IJsonNode node) {
 			return node;
 		}
 
-		/* (non-Javadoc)
+		/*
+		 * (non-Javadoc)
 		 * @see eu.stratosphere.sopremo.expressions.PathSegmentExpression#segmentHashCode()
 		 */
 		@Override
@@ -152,8 +182,11 @@ public class GlobalEnumeration extends ElementaryOperator<GlobalEnumeration> {
 			return 0;
 		}
 
-		/* (non-Javadoc)
-		 * @see eu.stratosphere.sopremo.expressions.PathSegmentExpression#equalsSameClass(eu.stratosphere.sopremo.expressions.PathSegmentExpression)
+		/*
+		 * (non-Javadoc)
+		 * @see
+		 * eu.stratosphere.sopremo.expressions.PathSegmentExpression#equalsSameClass(eu.stratosphere.sopremo.expressions
+		 * .PathSegmentExpression)
 		 */
 		@Override
 		protected boolean equalsSameClass(PathSegmentExpression other) {

@@ -1,6 +1,5 @@
 package eu.stratosphere.sopremo;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import eu.stratosphere.sopremo.base.Grouping;
@@ -12,7 +11,6 @@ import eu.stratosphere.sopremo.testing.SopremoTestPlan;
 /**
  * Tests {@link BuiltinFunctions}
  */
-@Ignore
 public class AggregationIT {
 	@Test
 	public void shouldGroupAll() {

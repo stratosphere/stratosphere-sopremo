@@ -16,6 +16,7 @@ import eu.stratosphere.sopremo.operator.ElementaryOperator;
 import eu.stratosphere.sopremo.operator.InputCardinality;
 import eu.stratosphere.sopremo.operator.Property;
 import eu.stratosphere.sopremo.pact.SopremoUtil;
+import eu.stratosphere.sopremo.serialization.SopremoRecordLayout;
 import eu.stratosphere.sopremo.type.IJsonNode;
 import eu.stratosphere.sopremo.type.NullNode;
 import eu.stratosphere.sopremo.util.Equaler;
@@ -141,8 +142,7 @@ public class Source extends ElementaryOperator<Source> {
 	}
 
 	@Override
-	public PactModule asPactModule(final EvaluationContext context) {
-		context.setInputsAndOutputs(0, 1);
+	public PactModule asPactModule(final EvaluationContext context, SopremoRecordLayout layout) {
 		final String inputPath = this.inputPath, name = this.getName();
 		GenericDataSource<?> contract;
 		if (this.isAdhoc()) {
@@ -165,7 +165,8 @@ public class Source extends ElementaryOperator<Source> {
 				contract.getParameters(), this.format.getInputFormat(), SopremoInputFormat.class);
 		}
 		final PactModule pactModule = new PactModule(0, 1);
-		SopremoUtil.setObject(contract.getParameters(), SopremoUtil.CONTEXT, context);
+		SopremoUtil.setEvaluationContext(contract.getParameters(), context);
+		SopremoUtil.setLayout(contract.getParameters(), layout);
 		pactModule.getOutput(0).setInput(contract);
 		// pactModule.setInput(0, contract);
 		return pactModule;

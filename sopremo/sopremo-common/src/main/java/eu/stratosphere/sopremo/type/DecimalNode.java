@@ -43,32 +43,6 @@ public class DecimalNode extends AbstractNumericNode implements INumericNode {
 		return 80;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.type.AbstractJsonNode#copyNormalizedKey(byte[], int, int)
-	 */
-	@Override
-	public void copyNormalizedKey(byte[] target, int offset, int len) {
-		final int scale = this.value.scale();
-
-		switch (len) {
-		default:
-			final byte[] byteArray = this.value.unscaledValue().toByteArray();
-			final int filledLen = Math.min(byteArray.length, len - 4);
-			System.arraycopy(byteArray, 0, target, offset + 4, filledLen);
-			if (filledLen < len)
-				fillWithZero(target, filledLen + 4, len - 4);
-		case 4:
-			target[offset + 3] = (byte) (scale);
-		case 3:
-			target[offset + 2] = (byte) (scale >>> 8);
-		case 2:
-			target[offset + 1] = (byte) (scale >>> 16);
-		case 1:
-			target[offset] = (byte) (scale >>> 24);
-		}
-	}
-
 	/**
 	 * Creates a new DecimalNode which represents the given {@link BigDecimal}.
 	 * 

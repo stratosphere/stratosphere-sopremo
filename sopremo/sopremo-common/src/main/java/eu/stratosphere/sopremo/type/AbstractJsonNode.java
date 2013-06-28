@@ -6,6 +6,7 @@ import java.util.Arrays;
 import com.esotericsoftware.kryo.io.Output;
 
 import eu.stratosphere.sopremo.AbstractSopremoType;
+import eu.stratosphere.sopremo.SopremoEnvironment;
 
 /**
  * Abstract class to provide basic implementations for all node types.
@@ -24,15 +25,6 @@ public abstract class AbstractJsonNode extends AbstractSopremoType implements IJ
 	@Override
 	public AbstractJsonNode clone() {
 		return (AbstractJsonNode) super.clone();
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.type.IJsonNode#isCopyable(eu.stratosphere.sopremo.type.IJsonNode)
-	 */
-	@Override
-	public boolean isCopyable(IJsonNode otherNode) {
-		return otherNode.getType() == this.getType();
 	}
 
 	/*
@@ -68,27 +60,6 @@ public abstract class AbstractJsonNode extends AbstractSopremoType implements IJ
 	 */
 	@Override
 	public abstract int compareToSameType(IJsonNode other);
-
-	@Override
-	public int getMaxNormalizedKeyLen() {
-		return Integer.MAX_VALUE;
-	}
-
-	@Override
-	public void copyNormalizedKey(final byte[] target, final int offset, final int len) {
-		final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		final Output output = new Output(baos);
-		getKryo().writeObject(output, this);
-		output.close();
-		byte[] buffer = baos.toByteArray();
-		System.arraycopy(buffer, 0, target, offset, Math.min(len, buffer.length));
-		if (buffer.length < len)
-			fillWithZero(target, buffer.length, len);
-	}
-
-	protected void fillWithZero(final byte[] target, final int fromIndex, final int toIndex) {
-		Arrays.fill(target, fromIndex, toIndex, (byte) 0);
-	}
 
 	@Override
 	public boolean equals(final Object obj) {

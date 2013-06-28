@@ -1,5 +1,6 @@
 package eu.stratosphere.sopremo.type;
 
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -11,6 +12,7 @@ import javolution.util.FastSet;
 
 import com.esotericsoftware.kryo.DefaultSerializer;
 import com.esotericsoftware.kryo.Kryo;
+import com.esotericsoftware.kryo.KryoCopyable;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 
@@ -20,7 +22,7 @@ import eu.stratosphere.sopremo.pact.SopremoUtil;
  * This node represents a json object.
  */
 @DefaultSerializer(ObjectNode.ObjectSerializer.class)
-public class ObjectNode extends AbstractObjectNode implements IObjectNode {
+public class ObjectNode extends AbstractJsonNode implements IObjectNode, KryoCopyable<ObjectNode> {
 
 	/**
 	 * Do not store null nodes
@@ -30,6 +32,92 @@ public class ObjectNode extends AbstractObjectNode implements IObjectNode {
 	@Override
 	public int size() {
 		return this.children.size();
+	}
+
+	@Override
+	public final Class<IObjectNode> getType() {
+		return IObjectNode.class;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.type.JsonObject#putAll(eu.stratosphere.sopremo.type.JsonObject)
+	 */
+	@Override
+	public IObjectNode putAll(final IObjectNode jsonNode) {
+		for (final Entry<String, IJsonNode> entry : jsonNode)
+			this.put(entry.getKey(), entry.getValue());
+		return this;
+	}
+
+	@Override
+	public void appendAsString(final Appendable appendable) throws IOException {
+		appendable.append("{");
+		boolean first = true;
+		final Iterator<Entry<String, IJsonNode>> iterator = this.iterator();
+		while (iterator.hasNext()) {
+			if (first)
+				first = false;
+			else
+				appendable.append(", ");
+			final Entry<String, IJsonNode> child = iterator.next();
+			appendable.append(child.getKey()).append(": ");
+			child.getValue().appendAsString(appendable);
+		}
+		appendable.append("}");
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.type.AbstractJsonNode#clone()
+	 */
+	@Override
+	public ObjectNode clone() {
+		return (ObjectNode) super.clone();
+	}
+
+	@Override
+	public int compareToSameType(final IJsonNode other) {
+		final IObjectNode node = (IObjectNode) other;
+		final Iterator<Entry<String, IJsonNode>> entries1 = this.iterator(), entries2 = node.iterator();
+
+		while (entries1.hasNext() && entries2.hasNext()) {
+			final Entry<String, IJsonNode> entry1 = entries1.next(), entry2 = entries2.next();
+			final int keyComparison = entry1.getKey().compareTo(entry2.getKey());
+			if (keyComparison != 0)
+				return keyComparison;
+
+			final int valueComparison = entry1.getValue().compareTo(entry2.getValue());
+			if (valueComparison != 0)
+				return valueComparison;
+		}
+
+		if (!entries1.hasNext())
+			return entries2.hasNext() ? -1 : 0;
+		if (!entries2.hasNext())
+			return 1;
+		return 0;
+	}
+
+	@Override
+	public void copyValueFrom(final IJsonNode otherNode) {
+		this.checkForSameType(otherNode);
+		final IObjectNode objectNode = (IObjectNode) otherNode;
+		this.clear();
+
+		for (final Entry<String, IJsonNode> child : objectNode)
+			this.put(child.getKey(), child.getValue().clone());
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see com.esotericsoftware.kryo.KryoCopyable#copy(com.esotericsoftware.kryo.Kryo)
+	 */
+	@Override
+	public ObjectNode copy(Kryo kryo) {
+		final ObjectNode node = new ObjectNode();
+		node.copyValueFrom(this);
+		return node;
 	}
 
 	/*
@@ -79,14 +167,14 @@ public class ObjectNode extends AbstractObjectNode implements IObjectNode {
 	// return this;
 	// }
 
-	public static final class ObjectSerializer extends ReusingSerializer<AbstractObjectNode> {
+	public static final class ObjectSerializer extends ReusingSerializer<ObjectNode> {
 		/*
 		 * (non-Javadoc)
 		 * @see com.esotericsoftware.kryo.Serializer#write(com.esotericsoftware.kryo.Kryo,
 		 * com.esotericsoftware.kryo.io.Output, java.lang.Object)
 		 */
 		@Override
-		public void write(Kryo kryo, Output output, AbstractObjectNode object) {
+		public void write(Kryo kryo, Output output, ObjectNode object) {
 			output.writeInt(object.size());
 
 			for (final Entry<String, IJsonNode> entry : object) {
@@ -101,10 +189,10 @@ public class ObjectNode extends AbstractObjectNode implements IObjectNode {
 		 * com.esotericsoftware.kryo.io.Input, java.lang.Class)
 		 */
 		@Override
-		public AbstractObjectNode read(Kryo kryo, Input input, Class<AbstractObjectNode> type) {
+		public ObjectNode read(Kryo kryo, Input input, Class<ObjectNode> type) {
 			final int len = input.readInt();
 
-			AbstractObjectNode object = new ObjectNode();
+			ObjectNode object = new ObjectNode();
 			for (int i = 0; i < len; i++) {
 				final String key = input.readString();
 				object.put(key, (IJsonNode) kryo.readClassAndObject(input));
@@ -120,13 +208,11 @@ public class ObjectNode extends AbstractObjectNode implements IObjectNode {
 		 * com.esotericsoftware.kryo.io.Input, java.lang.Object, java.lang.Class)
 		 */
 		@Override
-		public AbstractObjectNode read(Kryo kryo, Input input, AbstractObjectNode oldInstance,
-				Class<AbstractObjectNode> type) {
-			if (oldInstance == null)
+		public ObjectNode read(Kryo kryo, Input input, ObjectNode object, Class<ObjectNode> type) {
+			if (object == null)
 				return this.read(kryo, input, type);
 
 			final int len = input.readInt();
-			ObjectNode object = (ObjectNode) oldInstance;
 
 			// performance optimization: reuse existing nodes
 			final SortedMap<String, IJsonNode> children = object.children;
@@ -181,6 +267,7 @@ public class ObjectNode extends AbstractObjectNode implements IObjectNode {
 	 * (non-Javadoc)
 	 * @see eu.stratosphere.sopremo.type.JsonObject#getFieldNames()
 	 */
+	@Override
 	public SortedSet<String> getFieldNames() {
 		// safe cast, since children is a SortedMap
 		return (SortedSet<String>) this.children.keySet();

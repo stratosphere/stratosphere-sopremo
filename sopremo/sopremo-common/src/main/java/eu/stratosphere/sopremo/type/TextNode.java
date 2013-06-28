@@ -176,6 +176,8 @@ public class TextNode extends AbstractJsonNode implements IPrimitiveNode, CharSe
 
 	@Override
 	public void copyValueFrom(final IJsonNode otherNode) {
+		if (this == otherNode)
+			return;
 		this.checkForSameType(otherNode);
 		this.value.clear();
 		this.value.addAll(((TextNode) otherNode).value);
@@ -220,8 +222,9 @@ public class TextNode extends AbstractJsonNode implements IPrimitiveNode, CharSe
 			public char charAt(int index) {
 				return TextNode.this.charAt(start + index);
 			}
-			
-			/* (non-Javadoc)
+
+			/*
+			 * (non-Javadoc)
 			 * @see java.lang.Object#toString()
 			 */
 			@Override

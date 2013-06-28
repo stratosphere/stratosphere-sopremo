@@ -23,12 +23,12 @@ import java.util.List;
 import org.junit.Ignore;
 
 import eu.stratosphere.nephele.configuration.Configuration;
-import eu.stratosphere.pact.common.type.PactRecord;
 import eu.stratosphere.pact.generic.io.FormatUtil;
 import eu.stratosphere.sopremo.EvaluationContext;
 import eu.stratosphere.sopremo.io.SopremoFileFormat.SopremoInputFormat;
 import eu.stratosphere.sopremo.pact.SopremoUtil;
-import eu.stratosphere.sopremo.serialization.Schema;
+import eu.stratosphere.sopremo.serialization.SopremoRecord;
+import eu.stratosphere.sopremo.serialization.SopremoRecordLayout;
 import eu.stratosphere.sopremo.type.IJsonNode;
 
 /**
@@ -37,13 +37,11 @@ import eu.stratosphere.sopremo.type.IJsonNode;
 @Ignore
 public class InputFormatTest {
 	public static Collection<IJsonNode> readFromFile(final File file, final SopremoFileFormat format,
-			final Schema schema)
-			throws IOException {
+			final SopremoRecordLayout layout) throws IOException {
 		Configuration config = new Configuration();
 		final EvaluationContext context = new EvaluationContext();
-		context.setSchema(schema);
-		context.setInputsAndOutputs(0, 1);
-		SopremoUtil.setObject(config, SopremoUtil.CONTEXT, context);
+		SopremoUtil.setEvaluationContext(config, context);
+		SopremoUtil.setLayout(config, layout);
 		SopremoUtil.transferFieldsToConfiguration(format, SopremoFileFormat.class, config,
 			format.getInputFormat(), SopremoInputFormat.class);
 		final SopremoInputFormat inputFormat =
@@ -51,9 +49,9 @@ public class InputFormatTest {
 
 		List<IJsonNode> values = new ArrayList<IJsonNode>();
 		while (!inputFormat.reachedEnd()) {
-			final PactRecord record = new PactRecord();
+			final SopremoRecord record = new SopremoRecord(layout);
 			inputFormat.nextRecord(record);
-			values.add(schema.recordToJson(record).clone());
+			values.add(record.getNode().clone());
 		}
 		inputFormat.close();
 		return values;

@@ -1,0 +1,15 @@
+diff a/sopremo/sopremo-common/src/test/java/eu/stratosphere/sopremo/operator/ElementaryOperatorTest.java b/sopremo/sopremo-common/src/test/java/eu/stratosphere/sopremo/operator/ElementaryOperatorTest.java	(rejected hunks)
+@@ -19,12 +19,11 @@ import eu.stratosphere.pact.common.contract.ReduceContract;
+ import eu.stratosphere.pact.common.contract.SingleInputContract;
+ import eu.stratosphere.pact.common.plan.ContractUtil;
+ import eu.stratosphere.pact.common.stubs.Stub;
++import eu.stratosphere.sopremo.Schema;
+ import eu.stratosphere.sopremo.expressions.ObjectAccess;
+ import eu.stratosphere.sopremo.pact.JsonCollector;
+ import eu.stratosphere.sopremo.pact.SopremoMap;
+ import eu.stratosphere.sopremo.pact.SopremoReduce;
+-import eu.stratosphere.sopremo.serialization.ObjectSchema;
+-import eu.stratosphere.sopremo.serialization.Schema;
+ import eu.stratosphere.sopremo.type.IJsonNode;
+ import eu.stratosphere.sopremo.type.IStreamNode;
+ 

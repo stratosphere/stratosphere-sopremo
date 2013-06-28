@@ -14,6 +14,7 @@ import org.junit.Test;
 import eu.stratosphere.pact.common.plan.PactModule;
 import eu.stratosphere.sopremo.EqualCloneTest;
 import eu.stratosphere.sopremo.EvaluationContext;
+import eu.stratosphere.sopremo.serialization.SopremoRecordLayout;
 
 /**
  * The class <code>OperatorTest</code> contains tests for the class <code>{@link Operator<?>}</code>.
@@ -302,7 +303,7 @@ public class OperatorTest extends EqualCloneTest<OperatorTest.OpImpl> {
 		}
 
 		@Override
-		public PactModule asPactModule(final EvaluationContext context) {
+		public PactModule asPactModule(final EvaluationContext context, SopremoRecordLayout layout) {
 			return null;
 		}
 

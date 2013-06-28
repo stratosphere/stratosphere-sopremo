@@ -137,19 +137,6 @@ public class LongNode extends AbstractNumericNode implements INumericNode {
 			this.value = 0;
 	}
 
-	@Override
-	public int getMaxNormalizedKeyLen() {
-		return 8;
-	}
-
-	@Override
-	public void copyNormalizedKey(final byte[] target, final int offset, final int len) {
-		long value = this.value;
-		for (int index = 0; index < len; index++, value <<= 8)
-			target[index + offset] = (byte) (value >>> 56);
-		this.fillWithZero(target, 8, len);
-	}
-
 	/*
 	 * (non-Javadoc)
 	 * @see eu.stratosphere.sopremo.ISopremoType#toString(java.lang.StringBuilder)

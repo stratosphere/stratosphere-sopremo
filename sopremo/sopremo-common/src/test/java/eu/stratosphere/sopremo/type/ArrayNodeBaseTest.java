@@ -132,9 +132,4 @@ public abstract class ArrayNodeBaseTest<T extends IArrayNode<IJsonNode>> extends
 		final Iterator<IJsonNode> it = this.node.iterator();
 		AssertUtil.assertIteratorEquals(expected.iterator(), it);
 	}
-
-	@Test
-	public void shouldBeEqualWithAnotherArrayNode() {
-		Assert.assertEquals(this.higherNode(), this.higherNode());
-	}
 }

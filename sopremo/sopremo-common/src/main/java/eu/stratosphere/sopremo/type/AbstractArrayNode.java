@@ -28,6 +28,7 @@ import com.esotericsoftware.kryo.io.Output;
 
 import eu.stratosphere.sopremo.cache.ArrayCache;
 import eu.stratosphere.sopremo.pact.SopremoUtil;
+import eu.stratosphere.util.AppendUtil;
 
 /**
  * @author Arvid Heise
@@ -53,7 +54,7 @@ public abstract class AbstractArrayNode<T extends IJsonNode> extends AbstractJso
 		for (int length = Math.max(this.size(), array.size()); index < length; index++) {
 			final IJsonNode existingNode = this.get(index);
 			final IJsonNode newNode = array.get(index);
-			if (existingNode.isCopyable(newNode))
+			if (existingNode.getType() == newNode.getType())
 				existingNode.copyValueFrom(newNode);
 			else
 				this.set(index, (T) newNode.clone());
@@ -263,16 +264,7 @@ public abstract class AbstractArrayNode<T extends IJsonNode> extends AbstractJso
 
 	@Override
 	public void appendAsString(final Appendable appendable) throws IOException {
-		appendable.append('[');
-		boolean first = true;
-		for (IJsonNode node : this) {
-			if (first)
-				first = false;
-			else
-				appendable.append(", ");
-			node.appendAsString(appendable);
-		}
-		appendable.append(']');
+		AppendUtil.append(appendable, this);
 	}
 
 	/*

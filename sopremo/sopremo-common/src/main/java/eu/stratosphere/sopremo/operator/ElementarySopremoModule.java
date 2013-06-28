@@ -30,11 +30,11 @@ import eu.stratosphere.pact.common.plan.ContractUtil;
 import eu.stratosphere.pact.common.plan.PactModule;
 import eu.stratosphere.pact.generic.contract.Contract;
 import eu.stratosphere.sopremo.EvaluationContext;
+import eu.stratosphere.sopremo.Schema;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
 import eu.stratosphere.sopremo.io.Sink;
 import eu.stratosphere.sopremo.io.Source;
-import eu.stratosphere.sopremo.serialization.Schema;
-import eu.stratosphere.sopremo.serialization.SchemaFactory;
+import eu.stratosphere.sopremo.serialization.SopremoRecordLayout;
 import eu.stratosphere.util.IdentityList;
 import eu.stratosphere.util.dag.GraphTraverseListener;
 import eu.stratosphere.util.dag.OneTimeTraverser;
@@ -148,8 +148,8 @@ public class ElementarySopremoModule extends SopremoModule {
 			this.context = context.clone();
 		}
 
-		public Collection<Contract> assemble() {
-			this.convertDAGToModules();
+		public Collection<Contract> assemble(SopremoRecordLayout layout) {
+			this.convertDAGToModules(layout);
 
 			this.connectModules();
 
@@ -177,7 +177,7 @@ public class ElementarySopremoModule extends SopremoModule {
 			}
 		}
 
-		private void convertDAGToModules() {
+		private void convertDAGToModules(final SopremoRecordLayout layout) {
 			// final Schema schema = getSchema();
 			OneTimeTraverser.INSTANCE.traverse(ElementarySopremoModule.this.getAllOutputs(),
 				OperatorNavigator.INSTANCE, new GraphTraverseListener<Operator<?>>() {
@@ -188,7 +188,7 @@ public class ElementarySopremoModule extends SopremoModule {
 							context.setOperatorDescription(ElementarySopremoModule.this.getName());
 						else
 							context.setOperatorDescription(node.toString());
-						final PactModule module = node.asPactModule(context);
+						final PactModule module = node.asPactModule(context, layout);
 
 						PactAssembler.this.modules.put(node, module);
 						final List<FileDataSink> outputStubs = module.getOutputs();
@@ -250,27 +250,20 @@ public class ElementarySopremoModule extends SopremoModule {
 	 * @return a list of Pact sinks
 	 */
 	public Collection<Contract> assemblePact(final EvaluationContext context) {
-		return new PactAssembler(context).assemble();
+		return new PactAssembler(context).assemble(SopremoRecordLayout.create(this.schema.getKeyExpressions()));
 	}
 
 	/**
 	 * @param schemaFactory
 	 */
-	public void inferSchema(final SchemaFactory schemaFactory) {
+	public void inferSchema() {
 		final Set<EvaluationExpression> keyExpressions = new HashSet<EvaluationExpression>();
-		final Set<EvaluationExpression> resultExpressions = new HashSet<EvaluationExpression>();
 		for (final ElementaryOperator<?> operator : this.getReachableNodes()) {
 			for (final List<? extends EvaluationExpression> expressions : operator.getAllKeyExpressions())
 				keyExpressions.addAll(expressions);
-
-			if (operator.getNumInputs() != 1 && operator.getResultProjection() == EvaluationExpression.VALUE)
-				resultExpressions.add(SchemaFactory.UNKNOWN);
-			else
-				resultExpressions.add(operator.getResultProjection());
 		}
 
-		resultExpressions.remove(EvaluationExpression.VALUE);
-		this.schema = schemaFactory.create(keyExpressions, resultExpressions);
+		this.schema = new Schema(new ArrayList<EvaluationExpression>(keyExpressions));
 	}
 
 	/**

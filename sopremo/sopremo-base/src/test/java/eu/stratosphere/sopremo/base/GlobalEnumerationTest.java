@@ -14,35 +14,41 @@
  **********************************************************************************************************************/
 package eu.stratosphere.sopremo.base;
 
-import org.junit.Ignore;
+import java.util.List;
+
+import junit.framework.Assert;
+
+import org.junit.Test;
+
+import eu.stratosphere.sopremo.testing.SopremoTestPlan;
+import eu.stratosphere.sopremo.type.IObjectNode;
+import eu.stratosphere.sopremo.type.TextNode;
 
 //import eu.stratosphere.sopremo.testing.SopremoTestPlan;
 
 /**
  * @author Arvid Heise
  */
-@Ignore
 public class GlobalEnumerationTest {
 
-	// TODO mleich: re-enable tests!
-	// @Test
-	// public void shouldEnumerate() {
-	// final GlobalEnumeration globalEnumeration = new GlobalEnumeration();
-	// SopremoTestPlan plan = new SopremoTestPlan(globalEnumeration);
-	// for (int index = 0; index < 5; index++)
-	// plan.getInput(0).addObject("text", "value");
-	// plan.run();
-	//
-	// @SuppressWarnings({ "unchecked", "rawtypes" })
-	// final List<IObjectNode> results = (List) plan.getActualOutput(0).getAllNodes();
-	// Assert.assertEquals(5, results.size());
-	// for (IObjectNode result : results)
-	// Assert.assertEquals(TextNode.valueOf("value"), result.get("text"));
-	//
-	// for (int index1 = 0; index1 < results.size(); index1++)
-	// for (int index2 = index1 + 1; index2 < results.size(); index2++)
-	// Assert.assertFalse("different ids expected", results.get(index1)
-	// .get(globalEnumeration.getIdFieldName()).equals(
-	// results.get(index2).get(globalEnumeration.getIdFieldName())));
-	// }
+	@Test
+	public void shouldEnumerate() {
+		final GlobalEnumeration globalEnumeration = new GlobalEnumeration();
+		SopremoTestPlan plan = new SopremoTestPlan(globalEnumeration);
+		for (int index = 0; index < 5; index++)
+			plan.getInput(0).addObject("text", "value");
+		plan.run();
+
+		@SuppressWarnings({ "unchecked", "rawtypes" })
+		final List<IObjectNode> results = (List) plan.getActualOutput(0).getAllNodes();
+		Assert.assertEquals(5, results.size());
+		for (IObjectNode result : results)
+			Assert.assertEquals(TextNode.valueOf("value"), result.get("text"));
+
+		for (int index1 = 0; index1 < results.size(); index1++)
+			for (int index2 = index1 + 1; index2 < results.size(); index2++)
+				Assert.assertFalse("different ids expected", results.get(index1)
+					.get(globalEnumeration.getIdFieldName()).equals(
+						results.get(index2).get(globalEnumeration.getIdFieldName())));
+	}
 }

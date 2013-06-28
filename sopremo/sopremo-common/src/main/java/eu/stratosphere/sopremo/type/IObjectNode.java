@@ -16,6 +16,7 @@ package eu.stratosphere.sopremo.type;
 
 import java.util.Iterator;
 import java.util.Map.Entry;
+import java.util.SortedSet;
 
 /**
  * Interface for all object type nodes.
@@ -55,6 +56,7 @@ public interface IObjectNode extends IJsonNode, Iterable<Entry<String, IJsonNode
 	 */
 	public abstract void remove(final String fieldName);
 
+	@Override
 	public abstract void clear();
 	//
 	// /**
@@ -81,6 +83,8 @@ public interface IObjectNode extends IJsonNode, Iterable<Entry<String, IJsonNode
 	 */
 	@Override
 	public abstract Iterator<Entry<String, IJsonNode>> iterator();
+	
+	public abstract SortedSet<String> getFieldNames();
 
 	/**
 	 * Returns the number of bindings contained in this node.

@@ -22,17 +22,18 @@ import eu.stratosphere.nephele.fs.FSDataInputStream;
 import eu.stratosphere.nephele.fs.FSDataOutputStream;
 import eu.stratosphere.nephele.fs.FileInputSplit;
 import eu.stratosphere.nephele.fs.Path;
-import eu.stratosphere.pact.common.io.FileInputFormat;
-import eu.stratosphere.pact.common.io.FileOutputFormat;
-import eu.stratosphere.pact.common.type.PactRecord;
+import eu.stratosphere.pact.generic.io.FileInputFormat;
+import eu.stratosphere.pact.generic.io.FileOutputFormat;
 import eu.stratosphere.sopremo.EvaluationContext;
-import eu.stratosphere.sopremo.SopremoRuntime;
+import eu.stratosphere.sopremo.Schema;
+import eu.stratosphere.sopremo.SopremoEnvironment;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
 import eu.stratosphere.sopremo.operator.ConfigurableSopremoType;
 import eu.stratosphere.sopremo.operator.Name;
 import eu.stratosphere.sopremo.operator.Property;
 import eu.stratosphere.sopremo.pact.SopremoUtil;
-import eu.stratosphere.sopremo.serialization.Schema;
+import eu.stratosphere.sopremo.serialization.SopremoRecord;
+import eu.stratosphere.sopremo.serialization.SopremoRecordLayout;
 import eu.stratosphere.sopremo.type.IJsonNode;
 
 /**
@@ -170,9 +171,9 @@ public abstract class SopremoFileFormat extends ConfigurableSopremoType {
 		return this.projection;
 	}
 
-	public static abstract class SopremoOutputFormat extends FileOutputFormat {
+	public static abstract class SopremoOutputFormat extends FileOutputFormat<SopremoRecord> {
 
-		private Schema schema;
+		private SopremoRecordLayout layout;
 
 		private EvaluationContext context;
 
@@ -187,12 +188,12 @@ public abstract class SopremoFileFormat extends ConfigurableSopremoType {
 		public void configure(final Configuration parameters) {
 			super.configure(parameters);
 
-			SopremoRuntime.getInstance().setClassLoader(getClass().getClassLoader());
-			this.context = (EvaluationContext) SopremoUtil.getObject(parameters, SopremoUtil.CONTEXT, null);
-			SopremoRuntime.getInstance().setCurrentEvaluationContext(this.context);
+			SopremoEnvironment.getInstance().setClassLoader(getClass().getClassLoader());
+			this.context = SopremoUtil.getEvaluationContext(parameters);
+			this.layout = SopremoUtil.getLayout(parameters);
+			SopremoEnvironment.getInstance().setEvaluationContext(this.context);
 			SopremoUtil.configureWithTransferredState(this, SopremoInputFormat.class, parameters);
-			this.schema = this.context.getInputSchema(0);
-			if (this.schema == null)
+			if (this.layout == null)
 				throw new IllegalStateException("Could not deserialize input schema");
 		}
 
@@ -231,22 +232,13 @@ public abstract class SopremoFileFormat extends ConfigurableSopremoType {
 			return this.context;
 		}
 
-		/**
-		 * Returns the schema.
-		 * 
-		 * @return the schema
-		 */
-		protected Schema getSchema() {
-			return this.schema;
-		}
-
 		/*
 		 * (non-Javadoc)
 		 * @see eu.stratosphere.pact.common.io.OutputFormat#writeRecord(eu.stratosphere.pact.common.type.PactRecord)
 		 */
 		@Override
-		public void writeRecord(final PactRecord record) throws IOException {
-			final IJsonNode value = this.schema.recordToJson(record);
+		public void writeRecord(final SopremoRecord record) throws IOException {
+			final IJsonNode value = record.getNode();
 			if (SopremoUtil.DEBUG && SopremoUtil.LOG.isTraceEnabled())
 				SopremoUtil.LOG.trace(String.format("%s output %s", this.context.getOperatorDescription(), value));
 			this.writeValue(value);
@@ -259,17 +251,17 @@ public abstract class SopremoFileFormat extends ConfigurableSopremoType {
 
 	}
 
-	public static abstract class SopremoInputFormat extends FileInputFormat {
+	public static abstract class SopremoInputFormat extends FileInputFormat<SopremoRecord> {
 
 		private boolean end;
 
 		private EvaluationContext context;
 
-		private Schema schema;
-
 		private String encoding;
 
 		private EvaluationExpression projection;
+
+		private SopremoRecordLayout layout;
 
 		/**
 		 * Returns the context.
@@ -287,15 +279,6 @@ public abstract class SopremoFileFormat extends ConfigurableSopremoType {
 		 */
 		protected String getEncoding() {
 			return this.encoding;
-		}
-
-		/**
-		 * Returns the schema.
-		 * 
-		 * @return the schema
-		 */
-		protected Schema getSchema() {
-			return this.schema;
 		}
 
 		/*
@@ -319,13 +302,13 @@ public abstract class SopremoFileFormat extends ConfigurableSopremoType {
 		public void configure(final Configuration parameters) {
 			super.configure(parameters);
 
-			SopremoRuntime.getInstance().setClassLoader(getClass().getClassLoader());
-			this.context = (EvaluationContext) SopremoUtil.getObject(parameters, SopremoUtil.CONTEXT, null);
-			SopremoRuntime.getInstance().setCurrentEvaluationContext(this.context);
+			SopremoEnvironment.getInstance().setClassLoader(getClass().getClassLoader());
+			this.context = SopremoUtil.getEvaluationContext(parameters);
+			this.layout = SopremoUtil.getLayout(parameters);
+			SopremoEnvironment.getInstance().setEvaluationContext(this.context);
 			SopremoUtil.configureWithTransferredState(this, SopremoInputFormat.class, parameters);
-			this.schema = this.context.getOutputSchema(0);
-			if (this.schema == null)
-				throw new IllegalStateException("Could not deserialize output schema");
+			if (this.layout == null)
+				throw new IllegalStateException("Could not deserialize layout");
 		}
 
 		protected String getDefaultEncoding() {
@@ -333,12 +316,12 @@ public abstract class SopremoFileFormat extends ConfigurableSopremoType {
 		}
 
 		@Override
-		public boolean nextRecord(final PactRecord record) throws IOException {
+		public boolean nextRecord(final SopremoRecord record) throws IOException {
 			if (!this.end) {
 				final IJsonNode value = this.nextValue();
 				if (SopremoUtil.DEBUG && SopremoUtil.LOG.isTraceEnabled())
 					SopremoUtil.LOG.trace(String.format("%s input %s", this.context.getOperatorDescription(), value));
-				this.schema.jsonToRecord(this.projection.evaluate(value), record);
+				record.setNode(this.projection.evaluate(value));
 				return true;
 			}
 

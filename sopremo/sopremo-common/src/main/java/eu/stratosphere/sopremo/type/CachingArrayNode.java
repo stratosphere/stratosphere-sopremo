@@ -30,6 +30,10 @@ public class CachingArrayNode<T extends IJsonNode> extends ArrayNode<T> {
 	public T reuseUnusedNode() {
 		return ((CachingList<T>) this.getChildren()).reuseUnusedElement();
 	}
+	
+	public T getUnusedNode() {
+		return ((CachingList<T>) this.getChildren()).getUnusedElement();
+	}
 
 	@SuppressWarnings("unchecked")
 	public CachingArrayNode<T> addClone(T node) {

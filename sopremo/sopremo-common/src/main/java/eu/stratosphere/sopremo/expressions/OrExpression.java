@@ -114,7 +114,7 @@ public class OrExpression extends BooleanExpression {
 
 	@Override
 	public void appendAsString(final Appendable appendable) throws IOException {
-		this.appendChildExpressions(appendable, this.expressions, " OR ");
+		this.append(appendable, this.expressions, " OR ");
 	}
 
 	/**

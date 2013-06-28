@@ -3,9 +3,8 @@ package eu.stratosphere.sopremo.base;
 import java.util.ArrayList;
 import java.util.List;
 
-import eu.stratosphere.pact.common.contract.ReduceContract;
 import eu.stratosphere.pact.common.contract.ReduceContract.Combinable;
-import eu.stratosphere.pact.generic.contract.Contract;
+import eu.stratosphere.pact.common.stubs.Stub;
 import eu.stratosphere.sopremo.EvaluationContext;
 import eu.stratosphere.sopremo.expressions.ConstantExpression;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
@@ -18,13 +17,11 @@ import eu.stratosphere.sopremo.operator.JsonStream;
 import eu.stratosphere.sopremo.operator.Name;
 import eu.stratosphere.sopremo.operator.Operator;
 import eu.stratosphere.sopremo.operator.OutputCardinality;
-import eu.stratosphere.sopremo.operator.PactBuilderUtil;
 import eu.stratosphere.sopremo.operator.Property;
 import eu.stratosphere.sopremo.operator.SopremoModule;
 import eu.stratosphere.sopremo.pact.JsonCollector;
 import eu.stratosphere.sopremo.pact.SopremoCoGroup;
 import eu.stratosphere.sopremo.pact.SopremoReduce;
-import eu.stratosphere.sopremo.serialization.Schema;
 import eu.stratosphere.sopremo.type.ArrayNode;
 import eu.stratosphere.sopremo.type.IArrayNode;
 import eu.stratosphere.sopremo.type.IJsonNode;
@@ -188,21 +185,27 @@ public class Grouping extends CompositeOperator<Grouping> {
 
 	@InputCardinality(1)
 	public static class GroupProjection extends ElementaryOperator<GroupProjection> {
-		/*
-		 * (non-Javadoc)
-		 * @see
-		 * eu.stratosphere.sopremo.operator.ElementaryOperator#getContract(eu.stratosphere.sopremo.serialization.Schema)
+//		/* (non-Javadoc)
+//		 * @see eu.stratosphere.sopremo.operator.ElementaryOperator#getContract(eu.stratosphere.sopremo.serialization.SopremoRecordLayout)
+//		 */
+//		@Override
+//		protected Contract getContract(SopremoRecordLayout layout) {
+//			ReduceContract.Builder builder =
+//				ReduceContract.builder(this.isCombinable() ? CombinableImplementation.class : Implementation.class);
+//			if (!this.getKeyExpressions(0).contains(GROUP_ALL)) {
+//				int[] keyIndices = this.getKeyIndices(globalSchema, this.getKeyExpressions(0));
+//				PactBuilderUtil.addKeys(builder, this.getKeyClasses(globalSchema, keyIndices), keyIndices);
+//			}
+//			builder.name(this.toString());
+//			return builder.build();
+//		}
+		
+		/* (non-Javadoc)
+		 * @see eu.stratosphere.sopremo.operator.ElementaryOperator#getStubClass()
 		 */
 		@Override
-		protected Contract getContract(Schema globalSchema) {
-			ReduceContract.Builder builder =
-				ReduceContract.builder(this.isCombinable() ? CombinableImplementation.class : Implementation.class);
-			if (!this.getKeyExpressions(0).contains(GROUP_ALL)) {
-				int[] keyIndices = this.getKeyIndices(globalSchema, this.getKeyExpressions(0));
-				PactBuilderUtil.addKeys(builder, this.getKeyClasses(globalSchema, keyIndices), keyIndices);
-			}
-			builder.name(this.toString());
-			return builder.build();
+		protected Class<? extends Stub> getStubClass() {
+			return this.isCombinable() ? CombinableImplementation.class : Implementation.class;
 		}
 
 		private boolean isCombinable() {

@@ -3,14 +3,14 @@ package eu.stratosphere.sopremo.query;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.Queue;
 import java.util.Set;
 
 import eu.stratosphere.sopremo.AbstractSopremoType;
-import eu.stratosphere.sopremo.ISopremoType;
 import eu.stratosphere.sopremo.packages.IRegistry;
 
-public class StackedRegistry<T extends ISopremoType, R extends IRegistry<T>> extends AbstractSopremoType
-		implements IRegistry<T> {
+public class StackedRegistry<T, R extends IRegistry<T>> extends AbstractSopremoType
+	implements IRegistry<T> {
 	private LinkedList<R> registryStack = new LinkedList<R>();
 
 	public StackedRegistry(R defaultRegistry) {
@@ -59,6 +59,15 @@ public class StackedRegistry<T extends ISopremoType, R extends IRegistry<T>> ext
 
 	protected R getTopRegistry() {
 		return this.registryStack.peek();
+	}
+	
+	/**
+	 * Returns the registryStack.
+	 * 
+	 * @return the registryStack
+	 */
+	protected Queue<R> getRegistryStack() {
+		return this.registryStack;
 	}
 
 	@Override

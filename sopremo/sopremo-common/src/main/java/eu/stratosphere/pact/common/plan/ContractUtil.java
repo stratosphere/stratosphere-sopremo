@@ -23,27 +23,25 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import eu.stratosphere.pact.common.contract.CoGroupContract;
-import eu.stratosphere.pact.common.contract.CrossContract;
-import eu.stratosphere.pact.common.contract.FileDataSink;
-import eu.stratosphere.pact.common.contract.FileDataSource;
 import eu.stratosphere.pact.common.contract.GenericDataSink;
 import eu.stratosphere.pact.common.contract.GenericDataSource;
-import eu.stratosphere.pact.common.contract.MapContract;
-import eu.stratosphere.pact.common.contract.MatchContract;
-import eu.stratosphere.pact.common.contract.ReduceContract;
 import eu.stratosphere.pact.common.io.FileInputFormat;
 import eu.stratosphere.pact.common.io.FileOutputFormat;
-import eu.stratosphere.pact.common.stubs.CoGroupStub;
-import eu.stratosphere.pact.common.stubs.CrossStub;
-import eu.stratosphere.pact.common.stubs.MapStub;
-import eu.stratosphere.pact.common.stubs.MatchStub;
-import eu.stratosphere.pact.common.stubs.ReduceStub;
 import eu.stratosphere.pact.generic.contract.Contract;
 import eu.stratosphere.pact.generic.contract.DualInputContract;
+import eu.stratosphere.pact.generic.contract.GenericCoGroupContract;
+import eu.stratosphere.pact.generic.contract.GenericCrossContract;
+import eu.stratosphere.pact.generic.contract.GenericMapContract;
+import eu.stratosphere.pact.generic.contract.GenericMatchContract;
+import eu.stratosphere.pact.generic.contract.GenericReduceContract;
 import eu.stratosphere.pact.generic.contract.SingleInputContract;
 import eu.stratosphere.pact.generic.io.InputFormat;
 import eu.stratosphere.pact.generic.io.OutputFormat;
+import eu.stratosphere.pact.generic.stub.GenericCoGrouper;
+import eu.stratosphere.pact.generic.stub.GenericCrosser;
+import eu.stratosphere.pact.generic.stub.GenericMapper;
+import eu.stratosphere.pact.generic.stub.GenericMatcher;
+import eu.stratosphere.pact.generic.stub.GenericReducer;
 
 /**
  * Convenience methods when dealing with {@link Contract}s.
@@ -55,13 +53,13 @@ public class ContractUtil {
 		new LinkedHashMap<Class<?>, Class<? extends Contract>>();
 
 	static {
-		STUB_CONTRACTS.put(MapStub.class, MapContract.class);
-		STUB_CONTRACTS.put(ReduceStub.class, ReduceContract.class);
-		STUB_CONTRACTS.put(CoGroupStub.class, CoGroupContract.class);
-		STUB_CONTRACTS.put(CrossStub.class, CrossContract.class);
-		STUB_CONTRACTS.put(MatchStub.class, MatchContract.class);
-		STUB_CONTRACTS.put(FileInputFormat.class, FileDataSource.class);
-		STUB_CONTRACTS.put(FileOutputFormat.class, FileDataSink.class);
+		STUB_CONTRACTS.put(GenericMapper.class, GenericMapContract.class);
+		STUB_CONTRACTS.put(GenericReducer.class, GenericReduceContract.class);
+		STUB_CONTRACTS.put(GenericCoGrouper.class, GenericCoGroupContract.class);
+		STUB_CONTRACTS.put(GenericCrosser.class, GenericCrossContract.class);
+		STUB_CONTRACTS.put(GenericMatcher.class, GenericMatchContract.class);
+		STUB_CONTRACTS.put(FileInputFormat.class, GenericDataSource.class);
+		STUB_CONTRACTS.put(FileOutputFormat.class, GenericDataSink.class);
 		STUB_CONTRACTS.put(InputFormat.class, GenericDataSource.class);
 		STUB_CONTRACTS.put(OutputFormat.class, GenericDataSink.class);
 	}

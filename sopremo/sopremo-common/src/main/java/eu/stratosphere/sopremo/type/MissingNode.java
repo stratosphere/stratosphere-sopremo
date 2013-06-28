@@ -79,16 +79,6 @@ public class MissingNode extends AbstractJsonNode implements IPrimitiveNode {
 		throw new UnsupportedOperationException("MissingNode");
 	}
 
-	@Override
-	public int getMaxNormalizedKeyLen() {
-		return 0;
-	}
-
-	@Override
-	public void copyNormalizedKey(final byte[] target, final int offset, final int len) {
-		this.fillWithZero(target, offset, offset + len);
-	}
-
 	public static class MissingSerializer extends SingletonSerializer {
 		/**
 		 * Initializes MissingNode.MissingSerializer.

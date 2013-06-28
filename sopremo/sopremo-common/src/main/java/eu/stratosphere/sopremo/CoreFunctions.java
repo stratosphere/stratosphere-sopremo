@@ -620,7 +620,7 @@ public class CoreFunctions implements BuiltinProvider {
 		String path = node.toString();
 		if (!path.startsWith("hdfs://"))
 			path = new File(path).toURI().toString();
-		SopremoRuntime.getInstance().getCurrentEvaluationContext().setWorkingPath(new Path(path));
+		SopremoEnvironment.getInstance().getEvaluationContext().setWorkingPath(new Path(path));
 		return MissingNode.getInstance();
 	}
 

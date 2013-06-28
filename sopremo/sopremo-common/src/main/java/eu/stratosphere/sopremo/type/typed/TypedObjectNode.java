@@ -58,11 +58,6 @@ public abstract class TypedObjectNode implements ITypedObjectNode {
 	}
 
 	@Override
-	public boolean isCopyable(IJsonNode otherNode) {
-		return this.backingObject.isCopyable(otherNode);
-	}
-
-	@Override
 	public int compareTo(IJsonNode other) {
 		return this.backingObject.compareTo(other);
 	}
@@ -70,16 +65,6 @@ public abstract class TypedObjectNode implements ITypedObjectNode {
 	@Override
 	public int compareToSameType(IJsonNode other) {
 		return this.backingObject.compareTo(other);
-	}
-
-	@Override
-	public int getMaxNormalizedKeyLen() {
-		return this.backingObject.getMaxNormalizedKeyLen();
-	}
-
-	@Override
-	public void copyNormalizedKey(byte[] target, int offset, int len) {
-		this.backingObject.copyNormalizedKey(target, offset, len);
 	}
 
 	@Override

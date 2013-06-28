@@ -41,6 +41,7 @@ import com.google.common.collect.Iterables;
 
 import eu.stratosphere.sopremo.expressions.ConstantExpression;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
+import eu.stratosphere.sopremo.pact.SopremoUtil;
 import eu.stratosphere.util.reflect.BoundTypeUtil;
 
 /**
@@ -71,18 +72,25 @@ public abstract class EqualVerifyTest<T> {
 	@SuppressWarnings("unchecked")
 	@Test
 	public void testKryoSerialization() {
-		final Kryo k = new Kryo();
-
-		for (T original : Iterables.concat(Arrays.asList(this.first, this.second), this.more)) {
-			final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			final Output output = new Output(baos);
-			k.writeClassAndObject(output, original);
-			output.close();
-			final ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-			final T deserialized = (T) k.readClassAndObject(new Input(bais));
-
-			Assert.assertEquals(original, deserialized);
+		for (Object original : Iterables.concat(Arrays.asList(this.first, this.second), this.more)) {
+			testKryoSerialization(original);
 		}
+	}
+
+	protected void testKryoSerialization(Object original) {
+		final Kryo kryo = SopremoUtil.getKryo();
+
+		kryo.reset();
+		final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		final Output output = new Output(baos);
+		kryo.writeClassAndObject(output, original);
+		output.close();
+		
+		kryo.reset();
+		final ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
+		final Object deserialized = kryo.readClassAndObject(new Input(bais));
+
+		Assert.assertEquals(original, deserialized);
 	}
 
 	protected abstract T createDefaultInstance(final int index);

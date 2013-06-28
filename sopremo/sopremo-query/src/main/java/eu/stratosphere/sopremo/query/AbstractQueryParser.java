@@ -9,6 +9,7 @@ import java.math.BigInteger;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,7 +32,7 @@ import eu.stratosphere.sopremo.CoreFunctions;
 import eu.stratosphere.sopremo.EvaluationContext;
 import eu.stratosphere.sopremo.MathFunctions;
 import eu.stratosphere.sopremo.SecondOrderFunctions;
-import eu.stratosphere.sopremo.SopremoRuntime;
+import eu.stratosphere.sopremo.SopremoEnvironment;
 import eu.stratosphere.sopremo.expressions.CoerceExpression;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
 import eu.stratosphere.sopremo.expressions.FunctionCall;
@@ -49,10 +50,18 @@ import eu.stratosphere.sopremo.operator.SopremoPlan;
 import eu.stratosphere.sopremo.packages.IConstantRegistry;
 import eu.stratosphere.sopremo.packages.IFunctionRegistry;
 import eu.stratosphere.sopremo.packages.IRegistry;
+import eu.stratosphere.sopremo.packages.ITypeRegistry;
 import eu.stratosphere.sopremo.pact.SopremoUtil;
 import eu.stratosphere.sopremo.query.ConfObjectInfo.ConfObjectIndexedPropertyInfo;
 import eu.stratosphere.sopremo.query.ConfObjectInfo.ConfObjectPropertyInfo;
+import eu.stratosphere.sopremo.type.AbstractJsonNode;
+import eu.stratosphere.sopremo.type.ArrayNode;
+import eu.stratosphere.sopremo.type.BooleanNode;
 import eu.stratosphere.sopremo.type.IJsonNode;
+import eu.stratosphere.sopremo.type.MissingNode;
+import eu.stratosphere.sopremo.type.NullNode;
+import eu.stratosphere.sopremo.type.ObjectNode;
+import eu.stratosphere.sopremo.type.TypeCoercer;
 
 public abstract class AbstractQueryParser extends Parser implements ParsingScope {
 	/**
@@ -82,11 +91,11 @@ public abstract class AbstractQueryParser extends Parser implements ParsingScope
 	 * 
 	 */
 	private void init() {
-		this.currentPlan.setContext(new EvaluationContext(0, 0, this.getFunctionRegistry(), this.getConstantRegistry()));
+		this.currentPlan.setContext(new EvaluationContext(this.getFunctionRegistry(), this.getConstantRegistry(), this.getTypeRegistry()));
 		this.packageManager.getFunctionRegistry().put(CoreFunctions.class);
 		this.packageManager.getFunctionRegistry().put(MathFunctions.class);
 		this.packageManager.getFunctionRegistry().put(SecondOrderFunctions.class);
-		SopremoRuntime.getInstance().setCurrentEvaluationContext(this.getContext());
+		SopremoEnvironment.getInstance().setEvaluationContext(this.getContext());
 	}
 
 	@Override
@@ -104,6 +113,12 @@ public abstract class AbstractQueryParser extends Parser implements ParsingScope
 		return this.packageManager.getFunctionRegistry();
 	}
 
+	@Override
+	public ITypeRegistry getTypeRegistry() {
+		return this.packageManager.getTypeRegistry();
+	}
+
+	
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -267,7 +282,7 @@ public abstract class AbstractQueryParser extends Parser implements ParsingScope
 			try {
 				URI uri = new URI(filePath);
 				if (uri.getScheme() == null)
-					return new Path(SopremoRuntime.getInstance().getCurrentEvaluationContext().getWorkingPath(),
+					return new Path(SopremoEnvironment.getInstance().getEvaluationContext().getWorkingPath(),
 						filePath)
 						.toString();
 				return new Path(uri).toString();
@@ -281,7 +296,7 @@ public abstract class AbstractQueryParser extends Parser implements ParsingScope
 				// still self-contained
 				return new Path(filePath).toString();
 
-			final Path workingPath = SopremoRuntime.getInstance().getCurrentEvaluationContext().getWorkingPath();
+			final Path workingPath = SopremoEnvironment.getInstance().getEvaluationContext().getWorkingPath();
 			if (workingPath.toUri().getScheme().equals("hdfs"))
 				try {
 					return new Path(workingPath, filePath).toString();
@@ -306,13 +321,13 @@ public abstract class AbstractQueryParser extends Parser implements ParsingScope
 			if (new File(filePath).isAbsolute())
 				return new Path("file://" + filePath).toString();
 
-			final Path workingPath = SopremoRuntime.getInstance().getCurrentEvaluationContext().getWorkingPath();
+			final Path workingPath = SopremoEnvironment.getInstance().getEvaluationContext().getWorkingPath();
 			// else prepend working directory if it specifies an hdfs path
 			if (workingPath.toUri().getScheme().equals("file"))
 				throw new IllegalArgumentException(
 					"To use shortened local path, a valid local path must be set as the working path");
 
-			return new Path(SopremoRuntime.getInstance().getCurrentEvaluationContext().getWorkingPath(), filePath)
+			return new Path(SopremoEnvironment.getInstance().getEvaluationContext().getWorkingPath(), filePath)
 				.toString();
 		}
 

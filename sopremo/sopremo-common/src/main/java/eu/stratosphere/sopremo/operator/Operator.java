@@ -15,6 +15,7 @@ import eu.stratosphere.sopremo.AbstractSopremoType;
 import eu.stratosphere.sopremo.EvaluationContext;
 import eu.stratosphere.sopremo.ISopremoType;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
+import eu.stratosphere.sopremo.serialization.SopremoRecordLayout;
 import eu.stratosphere.util.CollectionUtil;
 import eu.stratosphere.util.reflect.ReflectUtil;
 
@@ -87,7 +88,7 @@ public abstract class Operator<Self extends Operator<Self>> extends Configurable
 	 *        the context in which the evaluation should be conducted
 	 * @return the {@link PactModule} representing this operator
 	 */
-	public abstract PactModule asPactModule(EvaluationContext context);
+	public abstract PactModule asPactModule(EvaluationContext context, SopremoRecordLayout layout);
 
 	@SuppressWarnings("unchecked")
 	@Override

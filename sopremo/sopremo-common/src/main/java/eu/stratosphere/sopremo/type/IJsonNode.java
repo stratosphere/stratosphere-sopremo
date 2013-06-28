@@ -37,16 +37,6 @@ public interface IJsonNode extends ISopremoType, ICloneable, Comparable<IJsonNod
 	public abstract void copyValueFrom(IJsonNode otherNode);
 
 	/**
-	 * Checks whether the state of the given node can be deeply copied with {@link #copyValueFrom(IJsonNode)} to this
-	 * node.
-	 * 
-	 * @param otherNode
-	 *        the node of which the state should be copied
-	 * @return true if it can be copied
-	 */
-	public boolean isCopyable(IJsonNode otherNode);
-
-	/**
 	 * Creates a new instance of this class and invokes {@link #copyValueFrom(IJsonNode)}.<br />
 	 * A call to this function should be completely avoided during runtime and only used during query construction and
 	 * optimization.
@@ -74,8 +64,4 @@ public interface IJsonNode extends ISopremoType, ICloneable, Comparable<IJsonNod
 	 * @return result of the comparison
 	 */
 	public abstract int compareToSameType(IJsonNode other);
-
-	public int getMaxNormalizedKeyLen();
-
-	public void copyNormalizedKey(final byte[] target, final int offset, final int len);
 }

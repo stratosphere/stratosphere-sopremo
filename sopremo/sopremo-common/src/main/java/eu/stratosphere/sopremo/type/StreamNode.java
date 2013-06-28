@@ -155,7 +155,7 @@ public class StreamNode<T extends IJsonNode> extends AbstractJsonNode implements
 		return 42;
 	}
 
-	static class StreamNodeSerializer extends Serializer<StreamNode<?>> {
+	public static class StreamNodeSerializer extends Serializer<StreamNode<?>> {
 		/*
 		 * (non-Javadoc)
 		 * @see com.esotericsoftware.kryo.Serializer#write(com.esotericsoftware.kryo.Kryo,
@@ -165,6 +165,14 @@ public class StreamNode<T extends IJsonNode> extends AbstractJsonNode implements
 		public void write(Kryo kryo, Output output, StreamNode<?> object) {
 			throw new UnsupportedOperationException(
 				"Use CoreFunctions#ALL to transform this stream array into a materialized array");
+		}
+		
+		/* (non-Javadoc)
+		 * @see com.esotericsoftware.kryo.Serializer#copy(com.esotericsoftware.kryo.Kryo, java.lang.Object)
+		 */
+		@Override
+		public StreamNode<?> copy(Kryo kryo, StreamNode<?> original) {
+			return original;
 		}
 
 		/*

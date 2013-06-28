@@ -14,11 +14,23 @@
  **********************************************************************************************************************/
 package eu.stratosphere.sopremo.type;
 
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.TreeMap;
+
+import junit.framework.Assert;
+
+import org.junit.Before;
+import org.junit.Test;
+
+import eu.stratosphere.pact.testing.AssertUtil;
+
 /**
  * @author Michael Hopstock
  * @author Tommy Neubert
  */
-public class ObjectNodeTest extends ObjectNodeBaseTest<ObjectNode> {
+public class ObjectNodeTest extends JsonNodeTest<ObjectNode> {
 	/*
 	 * (non-Javadoc)
 	 * @see eu.stratosphere.sopremo.EqualVerifyTest#createDefaultInstance(int)
@@ -28,31 +40,71 @@ public class ObjectNodeTest extends ObjectNodeBaseTest<ObjectNode> {
 		return new ObjectNode().put("age", new IntNode(index));
 	}
 
+	@Before
+	public void initObjectNode() {
+		this.node = this.createObjectNode();
+	}
+
+	@Test
+	public void shouldSetAndGetValue() {
+		this.node.put("key", IntNode.valueOf(42));
+		Assert.assertEquals(IntNode.valueOf(42), this.node.get("key"));
+	}
+
+	@Test
+	public void shouldHaveCorrectSize() {
+		this.node.clear();
+		Assert.assertEquals(0, this.node.size());
+		this.node.put("key1", IntNode.valueOf(23)).put("key2", IntNode.valueOf(42));
+		Assert.assertEquals(2, this.node.size());
+	}
+
+	@Test
+	public void shouldReturnMissingNodeIfFieldNotSet() {
+		Assert.assertSame(MissingNode.getInstance(), this.node.get("thisFieldShouldNotBeAssigned"));
+	}
+
+	@Test
+	public void shouldRemoveNode() {
+		this.node.put("testkey", NullNode.getInstance());
+		this.node.remove("testkey");
+		Assert.assertSame(MissingNode.getInstance(), this.node.get("testkey"));
+	}
+
+	@Test
+	public void shouldCreateIterator() {
+		this.node.clear();
+		final Map<String, IJsonNode> expected = new TreeMap<String, IJsonNode>();
+
+		for (int i = 0; i < 5; i++) {
+			final String key = "key" + i;
+			final IJsonNode value = IntNode.valueOf(i);
+
+			expected.put(key, value);
+			this.node.put(key, value);
+		}
+
+		final Iterator<Entry<String, IJsonNode>> it = this.node.iterator();
+		AssertUtil.assertIteratorEquals(expected.entrySet().iterator(), it);
+	}
+
+	@Test
+	public void shouldPutAll() {
+		Assert.assertEquals(this.node, this.node.putAll(this.node));
+	}
+
+	@Test
+	public void shouldBeEqualWithAnotherObjectNode() {
+		Assert.assertEquals(this.createObjectNode(), this.createObjectNode());
+	}
+	
 	/*
 	 * (non-Javadoc)
 	 * @see eu.stratosphere.sopremo.type.ObjectNodeBaseTest#initObjectNode()
 	 */
-	@Override
 	public ObjectNode createObjectNode() {
 		return new ObjectNode().put("firstName", TextNode.valueOf("Hans")).put("age", IntNode.valueOf(25))
 			.put("gender", TextNode.valueOf("male"));
 
 	}
-
-	@Override
-	public void testValue() {
-	}
-
-	@Override
-	protected IJsonNode lowerNode() {
-		return new ObjectNode().put("fieldname 1", IntNode.valueOf(42)).put("fieldname 2",
-			TextNode.valueOf("1 lowerNode"));
-	}
-
-	@Override
-	protected IJsonNode higherNode() {
-		return new ObjectNode().put("fieldname 1", IntNode.valueOf(42)).put("fieldname 2",
-			TextNode.valueOf("2 higherNode"));
-	}
-
 }
