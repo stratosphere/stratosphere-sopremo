@@ -39,7 +39,8 @@ public abstract class AbstractSopremoType implements ISopremoType {
 		 */
 		@Override
 		protected Kryo initialValue() {
-			return new Kryo();
+			Kryo kryo = new Kryo();kryo.setReferences(false);
+			return kryo;
 		}
 	};
 
