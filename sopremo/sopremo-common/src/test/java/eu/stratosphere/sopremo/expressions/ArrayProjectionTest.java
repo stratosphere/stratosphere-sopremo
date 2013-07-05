@@ -7,10 +7,10 @@ import junit.framework.Assert;
 
 import org.junit.Test;
 
+import eu.stratosphere.pact.testing.AssertUtil;
 import eu.stratosphere.sopremo.type.IArrayNode;
 import eu.stratosphere.sopremo.type.IJsonNode;
 import eu.stratosphere.sopremo.type.IStreamNode;
-import eu.stratosphere.sopremo.util.AssertUtil;
 
 public class ArrayProjectionTest extends EvaluableExpressionTest<ArrayProjection> {
 	@Override

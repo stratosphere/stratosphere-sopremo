@@ -12,8 +12,7 @@ import org.junit.Test;
 
 import com.google.common.collect.Lists;
 
-import eu.stratosphere.sopremo.util.AssertUtil;
-import eu.stratosphere.sopremo.util.Equaler;
+import eu.stratosphere.pact.testing.AssertUtil;
 
 @Ignore
 public abstract class ArrayNodeBaseTest<T extends IArrayNode<IJsonNode>> extends JsonNodeTest<T> {
@@ -131,7 +130,7 @@ public abstract class ArrayNodeBaseTest<T extends IArrayNode<IJsonNode>> extends
 		}
 
 		final Iterator<IJsonNode> it = this.node.iterator();
-		AssertUtil.assertIteratorEquals(expected.iterator(), it, Equaler.JavaEquals);
+		AssertUtil.assertIteratorEquals(expected.iterator(), it);
 	}
 
 	@Test

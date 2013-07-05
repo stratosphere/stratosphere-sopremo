@@ -24,12 +24,12 @@ import org.junit.Ignore;
 import eu.stratosphere.nephele.configuration.Configuration;
 import eu.stratosphere.pact.common.type.PactRecord;
 import eu.stratosphere.pact.generic.io.FormatUtil;
+import eu.stratosphere.pact.testing.AssertUtil;
 import eu.stratosphere.sopremo.EvaluationContext;
 import eu.stratosphere.sopremo.io.SopremoFileFormat.SopremoOutputFormat;
 import eu.stratosphere.sopremo.pact.SopremoUtil;
 import eu.stratosphere.sopremo.serialization.Schema;
 import eu.stratosphere.sopremo.type.IJsonNode;
-import eu.stratosphere.sopremo.util.AssertUtil;
 
 /**
  * Base class for testing output formats.
