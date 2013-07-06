@@ -28,6 +28,7 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+		<ozone.version>0.3</ozone.version>
 	</properties>
 
 	<pluginRepositories>
@@ -300,10 +301,6 @@
 						</configuration>
 					</execution>
 				</executions>
-				<configuration>
-					<!-- exclude example classes from JavaDoc -->
-					<excludePackageNames>eu.stratosphere.nephele.example.*:eu.stratosphere.pact.example.*</excludePackageNames>
-				</configuration>
 			</plugin>
 			<plugin>
 				<artifactId>maven-failsafe-plugin</artifactId>
@@ -348,9 +345,6 @@
 			</plugin>
 		</plugins>
 	</build>
-
-	<profiles>
-	</profiles>
 
 	<modules>
 		<module>sopremo</module>

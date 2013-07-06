@@ -36,7 +36,7 @@
     <dependency>
       <groupId>eu.stratosphere</groupId>
       <artifactId>pact-tests</artifactId>
-      <version>0.2</version>
+      <version>${ozone.version}</version>
       <type>test-jar</type>
       <scope>test</scope>
     </dependency>

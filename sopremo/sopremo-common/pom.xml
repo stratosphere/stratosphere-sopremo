@@ -19,10 +19,13 @@
     </dependency>
     <dependency>
       <groupId>eu.stratosphere</groupId>
-      <artifactId>pact-clients</artifactId>
-      <version>0.2</version>
-      <type>jar</type>
-      <scope>compile</scope>
+      <artifactId>pact-common</artifactId>
+      <version>${ozone.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>eu.stratosphere</groupId>
+      <artifactId>nephele-common</artifactId>
+      <version>${ozone.version}</version>
     </dependency>
     <dependency>
         <groupId>javolution</groupId>
@@ -63,7 +66,7 @@
     <dependency>
     	<groupId>eu.stratosphere</groupId>
     	<artifactId>pact-testplan</artifactId>
-    	<version>0.2</version>
+        <version>${ozone.version}</version>
     </dependency>
   </dependencies>
   <reporting>
