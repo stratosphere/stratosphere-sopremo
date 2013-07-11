@@ -19,7 +19,7 @@ import eu.stratosphere.util.reflect.ReflectUtil;
 public abstract class AbstractSchema extends AbstractSopremoType implements Schema {
 	private final IntSet keyIndices;
 
-	private final SopremoRecord inputRecord, outputRecord;
+	private final transient SopremoRecord inputRecord, outputRecord;
 
 	protected AbstractSchema(final int numFields, final IntSet keyIndices) {
 		if (keyIndices == null)

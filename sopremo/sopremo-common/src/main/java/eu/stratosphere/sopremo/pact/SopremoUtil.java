@@ -282,7 +282,7 @@ public class SopremoUtil {
 		@Override
 		protected Kryo initialValue() {
 			final Kryo kryo = new Kryo();
-			kryo.setReferences(true);
+			kryo.setReferences(false);
 			kryo.setAutoReset(true);
 			return kryo;
 		};
