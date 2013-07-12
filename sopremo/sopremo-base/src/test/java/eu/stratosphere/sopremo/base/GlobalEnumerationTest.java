@@ -14,11 +14,14 @@
  **********************************************************************************************************************/
 package eu.stratosphere.sopremo.base;
 
+import org.junit.Ignore;
+
 //import eu.stratosphere.sopremo.testing.SopremoTestPlan;
 
 /**
  * @author Arvid Heise
  */
+@Ignore
 public class GlobalEnumerationTest {
 
 	// TODO mleich: re-enable tests!

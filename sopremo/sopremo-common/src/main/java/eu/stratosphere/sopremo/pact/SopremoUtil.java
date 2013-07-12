@@ -32,6 +32,7 @@ import eu.stratosphere.nephele.configuration.Configuration;
 import eu.stratosphere.nephele.util.StringUtils;
 import eu.stratosphere.sopremo.ICloneable;
 import eu.stratosphere.sopremo.ISopremoType;
+import eu.stratosphere.sopremo.KryoFactory;
 import eu.stratosphere.sopremo.SopremoRuntime;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
 import eu.stratosphere.sopremo.expressions.UnevaluableExpression;
@@ -281,10 +282,7 @@ public class SopremoUtil {
 	private final static ThreadLocal<Kryo> Serialization = new ThreadLocal<Kryo>() {
 		@Override
 		protected Kryo initialValue() {
-			final Kryo kryo = new Kryo();
-			kryo.setReferences(false);
-			kryo.setAutoReset(true);
-			return kryo;
+			return KryoFactory.getKryo();
 		};
 	};
 
@@ -362,7 +360,7 @@ public class SopremoUtil {
 		final Registration registration = kryo.readClass(input);
 
 		final Serializer<T> serializer = registration.getSerializer();
-		if (serializer instanceof ReusingSerializer<?> && registration.getType() == oldNode.getClass())
+		if (oldNode != null && serializer instanceof ReusingSerializer<?> && registration.getType() == oldNode.getClass())
 			return ((ReusingSerializer<T>) serializer).read(kryo, input, oldNode, registration.getType());
 		return serializer.read(kryo, input, registration.getType());
 	}

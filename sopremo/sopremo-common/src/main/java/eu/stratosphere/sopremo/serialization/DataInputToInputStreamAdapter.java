@@ -44,12 +44,12 @@ public class DataInputToInputStreamAdapter extends InputStream {
 	 */
 	@Override
 	public int read(byte[] b, int off, int len) throws IOException {
-		try {
-			this.dataInput.readFully(b, off, len);
-			return len;
-		} catch (EOFException e) {
+//		try {
+//			this.dataInput.readFully(b, off, len);
+//			return len;
+//		} catch (EOFException e) {
 			return super.read(b, off, len);
-		}
+//		}
 	}
 
 	/*

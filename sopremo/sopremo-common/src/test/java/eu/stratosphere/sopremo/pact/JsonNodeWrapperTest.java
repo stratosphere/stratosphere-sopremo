@@ -77,6 +77,7 @@ public class JsonNodeWrapperTest extends EqualCloneTest<JsonNodeWrapper> {
 			final ArrayNode<IJsonNode> array = new ArrayNode<IJsonNode>();
 			final JsonParser parser = new JsonParser(new URL(
 				SopremoTestUtil.getResourcePath("SopremoTestPlan/test.json")));
+			parser.setWrappingArraySkipping(true);
 			final File file = File.createTempFile("test", "json");
 
 			while (!parser.checkEnd())

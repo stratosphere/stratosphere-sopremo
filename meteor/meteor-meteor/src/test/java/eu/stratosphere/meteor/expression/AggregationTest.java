@@ -25,6 +25,7 @@ import eu.stratosphere.sopremo.base.Selection;
 import eu.stratosphere.sopremo.expressions.ArrayCreation;
 import eu.stratosphere.sopremo.expressions.BatchAggregationExpression;
 import eu.stratosphere.sopremo.expressions.ComparativeExpression;
+import eu.stratosphere.sopremo.expressions.InputSelection;
 import eu.stratosphere.sopremo.expressions.ComparativeExpression.BinaryOperator;
 import eu.stratosphere.sopremo.expressions.ConstantExpression;
 import eu.stratosphere.sopremo.expressions.ObjectAccess;
@@ -57,12 +58,10 @@ public class AggregationTest extends MeteorTest {
 				BinaryOperator.GREATER_EQUAL,
 				new ConstantExpression(1)));
 		final BatchAggregationExpression batch = new BatchAggregationExpression();
-		final Grouping grouping = new Grouping()
-			.
-			withInputs(filter)
-			.
-			withGroupingKey(0, new ArrayCreation(new ObjectAccess("l_linestatus"), new ObjectAccess("l_returnflag")))
-			.
+		batch.withInputExpression(new InputSelection(0));
+		final Grouping grouping = new Grouping().
+			withInputs(filter).
+			withGroupingKey(0, new ArrayCreation(new ObjectAccess("l_linestatus"), new ObjectAccess("l_returnflag"))).
 			withResultProjection(
 				new ObjectCreation(
 					new ObjectCreation.FieldAssignment("first", batch.add(new ArrayAccessAsAggregation(0))),

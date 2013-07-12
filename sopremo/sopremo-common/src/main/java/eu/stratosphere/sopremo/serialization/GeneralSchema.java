@@ -8,9 +8,17 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
+import com.esotericsoftware.kryo.Kryo;
+import com.esotericsoftware.kryo.KryoCopyable;
+import com.esotericsoftware.kryo.KryoSerializable;
+import com.esotericsoftware.kryo.io.Input;
+import com.esotericsoftware.kryo.io.Output;
+
+import eu.stratosphere.sopremo.EvaluationContext;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
 import eu.stratosphere.sopremo.type.IJsonNode;
 import eu.stratosphere.util.CollectionUtil;
+import eu.stratosphere.util.reflect.ReflectUtil;
 
 /**
  * This {@link Schema} handles any kind of JsonNode and provides the functionality to save the result of the evaluation
@@ -20,7 +28,7 @@ import eu.stratosphere.util.CollectionUtil;
  * 
  * @author Tommy Neubert
  */
-public class GeneralSchema extends AbstractSchema {
+public class GeneralSchema extends AbstractSchema implements KryoSerializable, KryoCopyable<GeneralSchema> {
 
 	private final List<EvaluationExpression> mappings = new ArrayList<EvaluationExpression>();
 
@@ -97,5 +105,36 @@ public class GeneralSchema extends AbstractSchema {
 		// System.err.println("rtj: " + record + " -> " + value + " " + System.identityHashCode(record) + " " +
 		// System.identityHashCode(this) + " " + System.identityHashCode(value) + " " + Thread.currentThread());
 		return value;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see com.esotericsoftware.kryo.KryoCopyable#copy(com.esotericsoftware.kryo.Kryo)
+	 */
+	@Override
+	public GeneralSchema copy(Kryo kryo) {
+		return new GeneralSchema(this.getMappings());
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see com.esotericsoftware.kryo.KryoSerializable#write(com.esotericsoftware.kryo.Kryo,
+	 * com.esotericsoftware.kryo.io.Output)
+	 */
+	@Override
+	public void write(Kryo kryo, Output output) {
+		kryo.writeObject(output, this.getMappings().toArray(new EvaluationExpression[0]));
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see com.esotericsoftware.kryo.KryoSerializable#read(com.esotericsoftware.kryo.Kryo,
+	 * com.esotericsoftware.kryo.io.Input)
+	 */
+	@Override
+	public void read(Kryo kryo, Input input) {
+		mappings.clear();
+		mappings.addAll(Arrays.asList(kryo.readObject(input, EvaluationExpression[].class)));
+		this.kryoInit(mappings.size() + 1, CollectionUtil.setRangeFrom(0, mappings.size()));
 	}
 }

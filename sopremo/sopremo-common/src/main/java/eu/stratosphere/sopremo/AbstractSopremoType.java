@@ -34,13 +34,13 @@ public abstract class AbstractSopremoType implements ISopremoType {
 	}
 
 	private final static ThreadLocal<Kryo> CloneHelper = new ThreadLocal<Kryo>() {
-		/* (non-Javadoc)
+		/*
+		 * (non-Javadoc)
 		 * @see java.lang.ThreadLocal#initialValue()
 		 */
 		@Override
 		protected Kryo initialValue() {
-			Kryo kryo = new Kryo();kryo.setReferences(false);
-			return kryo;
+			return KryoFactory.getKryo();
 		}
 	};
 

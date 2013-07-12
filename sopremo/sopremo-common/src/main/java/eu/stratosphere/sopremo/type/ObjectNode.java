@@ -9,6 +9,7 @@ import java.util.TreeMap;
 
 import javolution.util.FastSet;
 
+import com.esotericsoftware.kryo.DefaultSerializer;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
@@ -18,6 +19,7 @@ import eu.stratosphere.sopremo.pact.SopremoUtil;
 /**
  * This node represents a json object.
  */
+@DefaultSerializer(ObjectNode.ObjectSerializer.class)
 public class ObjectNode extends AbstractObjectNode implements IObjectNode {
 
 	/**
@@ -138,10 +140,6 @@ public class ObjectNode extends AbstractObjectNode implements IObjectNode {
 				children.remove(currentKey);
 			this.currentKeys.clear();
 
-			for (int i = 0; i < len; i++) {
-				final String key = input.readString();
-				object.put(key, (IJsonNode) kryo.readClassAndObject(input));
-			}
 			return object;
 		}
 	}
