@@ -20,8 +20,6 @@ import eu.stratosphere.sopremo.packages.EvaluationScope;
 import eu.stratosphere.sopremo.packages.IConstantRegistry;
 import eu.stratosphere.sopremo.packages.IFunctionRegistry;
 import eu.stratosphere.sopremo.packages.ITypeRegistry;
-import eu.stratosphere.sopremo.pact.SopremoUtil;
-import eu.stratosphere.sopremo.serialization.SopremoRecordLayout;
 import eu.stratosphere.sopremo.type.BooleanNode;
 import eu.stratosphere.sopremo.type.IArrayNode;
 import eu.stratosphere.sopremo.type.IJsonNode;
@@ -77,7 +75,6 @@ public class EvaluationContext extends AbstractSopremoType implements ISopremoTy
 		this.kryo = new Kryo();
 		for (Class<? extends IJsonNode> type : TypeCoercer.NUMERIC_TYPES)
 			register(type);
-		@SuppressWarnings("unchecked")
 		List<Class<? extends Object>> defaultTypes =
 			Arrays.asList(BooleanNode.class, TextNode.class, IObjectNode.class, IArrayNode.class, NullNode.class,
 				MissingNode.class, TreeMap.class, ArrayList.class, BigInteger.class, BigDecimal.class);

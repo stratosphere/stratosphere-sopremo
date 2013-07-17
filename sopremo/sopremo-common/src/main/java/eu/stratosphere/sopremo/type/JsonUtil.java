@@ -10,7 +10,6 @@ import eu.stratosphere.sopremo.expressions.ExpressionUtil;
 import eu.stratosphere.sopremo.expressions.InputSelection;
 import eu.stratosphere.sopremo.expressions.ObjectAccess;
 import eu.stratosphere.sopremo.expressions.PathSegmentExpression;
-import eu.stratosphere.util.reflect.ReflectUtil;
 
 /**
  * Provides a set of utility functions and objects to handle json data.

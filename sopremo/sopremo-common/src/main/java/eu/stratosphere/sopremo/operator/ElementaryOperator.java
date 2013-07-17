@@ -25,7 +25,6 @@ import eu.stratosphere.pact.generic.contract.GenericCrossContract;
 import eu.stratosphere.pact.generic.contract.GenericMapContract;
 import eu.stratosphere.pact.generic.contract.GenericMatchContract;
 import eu.stratosphere.pact.generic.contract.GenericReduceContract;
-import eu.stratosphere.sopremo.DegreeOfParallelism;
 import eu.stratosphere.sopremo.EvaluationContext;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
 import eu.stratosphere.sopremo.expressions.InputSelection;
@@ -34,7 +33,6 @@ import eu.stratosphere.sopremo.pact.SopremoUtil;
 import eu.stratosphere.sopremo.serialization.SopremoRecordLayout;
 import eu.stratosphere.util.CollectionUtil;
 import eu.stratosphere.util.IdentityList;
-import eu.stratosphere.util.reflect.ReflectUtil;
 
 /**
  * An ElementaryOperator is an {@link Operator} that directly translates to a
@@ -302,12 +300,7 @@ public abstract class ElementaryOperator<Self extends ElementaryOperator<Self>>
 				} while ((clazz = clazz.getSuperclass()) != ElementaryOperator.class);
 			}
 
-		final DegreeOfParallelism degreeOfParallelism = ReflectUtil
-			.getAnnotation(this.getClass(), DegreeOfParallelism.class);
-		if (degreeOfParallelism != null)
-			contract.setDegreeOfParallelism(degreeOfParallelism.value());
-		else
-			contract.setDegreeOfParallelism(this.getDegreeOfParallelism());
+		contract.setDegreeOfParallelism(this.getDegreeOfParallelism());
 		SopremoUtil.setEvaluationContext(stubConfiguration, context);
 		SopremoUtil.setLayout(contract.getParameters(), layout);
 	}

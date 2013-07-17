@@ -24,8 +24,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import eu.stratosphere.pact.common.contract.FileDataSink;
 import eu.stratosphere.pact.common.contract.FileDataSource;
+import eu.stratosphere.pact.common.contract.GenericDataSink;
+import eu.stratosphere.pact.common.contract.GenericDataSource;
 import eu.stratosphere.pact.common.plan.ContractUtil;
 import eu.stratosphere.pact.common.plan.PactModule;
 import eu.stratosphere.pact.generic.contract.Contract;
@@ -191,10 +192,10 @@ public class ElementarySopremoModule extends SopremoModule {
 						final PactModule module = node.asPactModule(context, layout);
 
 						PactAssembler.this.modules.put(node, module);
-						final List<FileDataSink> outputStubs = module.getOutputs();
+						final List<GenericDataSink> outputStubs = module.getOutputs();
 						final List<List<Contract>> outputContracts = new ArrayList<List<Contract>>();
-						for (FileDataSink fileDataSink : outputStubs)
-							outputContracts.add(fileDataSink.getInputs());
+						for (GenericDataSink sink : outputStubs)
+							outputContracts.add(sink.getInputs());
 						PactAssembler.this.operatorOutputs.put(node, outputContracts);
 					}
 				});
@@ -205,7 +206,7 @@ public class ElementarySopremoModule extends SopremoModule {
 
 		private void addOutputtingPactInOperator(final Operator<?> operator, final Contract o,
 				final List<Contract> connectedInputs) {
-			int inputIndex = new IdentityList<FileDataSource>(this.modules.get(operator).getInputs()).indexOf(o);
+			int inputIndex = new IdentityList<GenericDataSource<?>>(this.modules.get(operator).getInputs()).indexOf(o);
 			// final List<FileDataSource> inputPacts =
 			// this.modules.get(operator).getInputs();
 			// for (int index = 0; index < inputPacts.size(); index++)
@@ -232,7 +233,7 @@ public class ElementarySopremoModule extends SopremoModule {
 		private List<Contract> findPACTSinks() {
 			final List<Contract> pactSinks = new ArrayList<Contract>();
 			for (final Operator<?> sink : ElementarySopremoModule.this.getAllOutputs())
-				for (final FileDataSink outputStub : this.modules.get(sink).getAllOutputs())
+				for (final GenericDataSink outputStub : this.modules.get(sink).getAllOutputs())
 					if (sink instanceof Sink)
 						pactSinks.add(outputStub);
 					else

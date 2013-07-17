@@ -31,11 +31,14 @@ import eu.stratosphere.sopremo.operator.Name;
 import eu.stratosphere.sopremo.type.IJsonNode;
 
 /**
+ * Format for reading and writing json files. The structure of the file naturally translates into the Sopremo data model
+ * as it is based on json.<br />
+ * Splits are assumed to be an array of json values. Each value is successively returned by the input iterator.
  */
 @Name(noun = "json")
-public class JsonFormat extends SopremoFileFormat {
+public class JsonFormat extends SopremoFormat {
 
-	public static class JsonInputFormat extends SopremoInputFormat {
+	public static class JsonInputFormat extends SopremoFileInputFormat {
 
 		private JsonParser parser;
 
@@ -48,7 +51,7 @@ public class JsonFormat extends SopremoFileFormat {
 		/*
 		 * (non-Javadoc)
 		 * @see
-		 * eu.stratosphere.sopremo.io.SopremoFileFormat.SopremoInputFormat#open(eu.stratosphere.nephele.fs.FSDataInputStream
+		 * eu.stratosphere.sopremo.io.SopremoFormat.SopremoFileInputFormat#open(eu.stratosphere.nephele.fs.FSDataInputStream
 		 * , eu.stratosphere.nephele.fs.FileInputSplit)
 		 */
 		@Override
@@ -60,7 +63,7 @@ public class JsonFormat extends SopremoFileFormat {
 				if (this.parser.checkEnd())
 					this.endReached();
 			} catch (UnsupportedEncodingException e) {
-				// cannot happen as encoding is validated in SopremoFileFormat
+				// cannot happen as encoding is validated in SopremoFormat
 			}
 		}
 
@@ -69,7 +72,7 @@ public class JsonFormat extends SopremoFileFormat {
 		 * @see eu.stratosphere.sopremo.pact.SopremoInputFormat#nextValue()
 		 */
 		@Override
-		protected IJsonNode nextValue() throws IOException {
+		public IJsonNode nextValue() throws IOException {
 			final IJsonNode value = this.parser.readValueAsTree();
 			if (this.parser.checkEnd())
 				this.endReached();
@@ -120,22 +123,12 @@ public class JsonFormat extends SopremoFileFormat {
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.io.SopremoFileFormat#getOutputFormat()
-	 */
-	@Override
-	public Class<? extends SopremoOutputFormat> getOutputFormat() {
-		return JsonOutputFormat.class;
-	}
-
 	/**
-	 * Writes json files with Jackson. The incoming key/value pair consists of {@link PactNull} and a {@link IJsonNode}
-	 * .
+	 * Writes json files with {@link JsonGenerator}.
 	 * 
 	 * @author Arvid Heise
 	 */
-	public static class JsonOutputFormat extends SopremoOutputFormat {
+	public static class JsonOutputFormat extends SopremoFileOutputFormat {
 
 		private JsonGenerator generator;
 
@@ -148,7 +141,7 @@ public class JsonFormat extends SopremoFileFormat {
 
 		/*
 		 * (non-Javadoc)
-		 * @see eu.stratosphere.sopremo.io.SopremoFileFormat.SopremoOutputFormat#open(eu.stratosphere.nephele.fs.
+		 * @see eu.stratosphere.sopremo.io.SopremoFormat.SopremoFileOutputFormat#open(eu.stratosphere.nephele.fs.
 		 * FSDataOutputStream, int)
 		 */
 		@Override
@@ -160,30 +153,21 @@ public class JsonFormat extends SopremoFileFormat {
 		/*
 		 * (non-Javadoc)
 		 * @see
-		 * eu.stratosphere.sopremo.io.SopremoFileFormat.SopremoOutputFormat#writeValue(eu.stratosphere.sopremo.type.
+		 * eu.stratosphere.sopremo.io.SopremoFormat.SopremoFileOutputFormat#writeValue(eu.stratosphere.sopremo.type.
 		 * IJsonNode)
 		 */
 		@Override
-		protected void writeValue(IJsonNode value) throws IOException {
+		public void writeValue(IJsonNode value) throws IOException {
 			this.generator.writeTree(value);
 		}
 	}
 
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.io.SopremoFileFormat#getPreferredFilenameExtension()
+	 * @see eu.stratosphere.sopremo.io.SopremoFormat#getPreferredFilenameExtensions()
 	 */
 	@Override
-	protected String getPreferredFilenameExtension() {
-		return "json";
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.io.SopremoFileFormat#getInputFormat()
-	 */
-	@Override
-	public Class<? extends SopremoInputFormat> getInputFormat() {
-		return JsonInputFormat.class;
+	protected String[] getPreferredFilenameExtensions() {
+		return new String[] { "json" };
 	}
 }

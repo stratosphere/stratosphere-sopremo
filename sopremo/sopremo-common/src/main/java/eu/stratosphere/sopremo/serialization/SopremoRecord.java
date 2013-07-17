@@ -32,7 +32,6 @@ import com.esotericsoftware.kryo.Registration;
 import com.esotericsoftware.kryo.Serializer;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
-import com.google.common.primitives.Ints;
 
 import eu.stratosphere.nephele.types.Record;
 import eu.stratosphere.sopremo.AbstractSopremoType;

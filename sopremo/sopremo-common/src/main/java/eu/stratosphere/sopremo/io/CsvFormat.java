@@ -9,6 +9,7 @@ import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.Charset;
@@ -25,6 +26,7 @@ import org.apache.commons.logging.LogFactory;
 
 import com.google.common.collect.Lists;
 
+import eu.stratosphere.nephele.configuration.Configuration;
 import eu.stratosphere.nephele.fs.FSDataInputStream;
 import eu.stratosphere.nephele.fs.FSDataOutputStream;
 import eu.stratosphere.nephele.fs.FileInputSplit;
@@ -43,14 +45,16 @@ import eu.stratosphere.sopremo.type.TextNode;
 import eu.stratosphere.sopremo.util.Equaler;
 
 @Name(noun = { "csv", "tsv" })
-public class CsvFormat extends SopremoFileFormat {
+public class CsvFormat extends SopremoFormat {
 
 	/**
 	 * The default number of sample lines to consider when calculating the line width.
 	 */
-	private static final int DEFAULT_NUM_SAMPLES = 10;
+	public static final int DEFAULT_NUM_SAMPLES = 10;
 
-	private char fieldDelimiter = ',';
+	public static final char AUTO = 0;
+
+	private char fieldDelimiter = AUTO;
 
 	private Boolean quotation;
 
@@ -159,29 +163,40 @@ public class CsvFormat extends SopremoFileFormat {
 
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.io.SopremoFileFormat#getPreferredFilenameExtension()
+	 * @see
+	 * eu.stratosphere.sopremo.io.SopremoFormat#configureForInput(eu.stratosphere.nephele.configuration.Configuration,
+	 * java.net.URI)
 	 */
 	@Override
-	protected String getPreferredFilenameExtension() {
-		return "csv";
+	public void configureForInput(Configuration configuration, String inputPath) {
+		configureDelimiter(inputPath);
+		super.configureForInput(configuration, inputPath);
 	}
 
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.io.SopremoFileFormat#getInputFormat()
+	 * @see
+	 * eu.stratosphere.sopremo.io.SopremoFormat#configureForOutput(eu.stratosphere.nephele.configuration.Configuration,
+	 * java.net.URI)
 	 */
 	@Override
-	public Class<? extends SopremoInputFormat> getInputFormat() {
-		return CsvInputFormat.class;
+	public void configureForOutput(Configuration configuration, String outputPath) {
+		configureDelimiter(outputPath);
+		super.configureForOutput(configuration, outputPath);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.io.SopremoFileFormat#getOutputFormat()
-	 */
+	private void configureDelimiter(String outputPath) {
+		if (this.fieldDelimiter == AUTO)
+			try {
+				this.fieldDelimiter = new URI(outputPath).getPath().endsWith(".tsv") ? '\t' : ',';
+			} catch (URISyntaxException e) {
+				// cannot happen - path has been validated by operator
+			}
+	}
+
 	@Override
-	public Class<? extends SopremoOutputFormat> getOutputFormat() {
-		return CsvOutputFormat.class;
+	protected String[] getPreferredFilenameExtensions() {
+		return new String[] { "csv", "tsv" };
 	}
 
 	/**
@@ -232,7 +247,7 @@ public class CsvFormat extends SopremoFileFormat {
 			&& Arrays.equals(this.keyNames, other.keyNames);
 	}
 
-	public static class CsvOutputFormat extends SopremoOutputFormat {
+	public static class CsvOutputFormat extends SopremoFileOutputFormat {
 		private char fieldDelimiter;
 
 		private String[] keyNames;
@@ -243,7 +258,7 @@ public class CsvFormat extends SopremoFileFormat {
 
 		/*
 		 * (non-Javadoc)
-		 * @see eu.stratosphere.sopremo.io.SopremoFileFormat.SopremoOutputFormat#open(eu.stratosphere.nephele.fs.
+		 * @see eu.stratosphere.sopremo.io.SopremoFormat.SopremoFileOutputFormat#open(eu.stratosphere.nephele.fs.
 		 * FSDataOutputStream, int)
 		 */
 		@Override
@@ -264,11 +279,11 @@ public class CsvFormat extends SopremoFileFormat {
 		/*
 		 * (non-Javadoc)
 		 * @see
-		 * eu.stratosphere.sopremo.io.SopremoFileFormat.SopremoOutputFormat#writeValue(eu.stratosphere.sopremo.type.
+		 * eu.stratosphere.sopremo.io.SopremoFormat.SopremoFileOutputFormat#writeValue(eu.stratosphere.sopremo.type.
 		 * IJsonNode)
 		 */
 		@Override
-		protected void writeValue(IJsonNode value) throws IOException {
+		public void writeValue(IJsonNode value) throws IOException {
 			if (this.keyNames.length == 0)
 				if (value instanceof IArrayNode<?>) {
 					this.writeArray(value);
@@ -371,13 +386,16 @@ public class CsvFormat extends SopremoFileFormat {
 			}
 			return string;
 		}
+	}
 
+	static char inferFieldDelimiter(Path path) {
+		return path.getName().endsWith("tsv") ? '\t' : ',';
 	}
 
 	/**
 	 * InputFormat that interpretes the input data as a csv representation.
 	 */
-	public static class CsvInputFormat extends SopremoInputFormat {
+	public static class CsvInputFormat extends SopremoFileInputFormat {
 		/**
 		 * The log.
 		 */
@@ -396,24 +414,6 @@ public class CsvFormat extends SopremoFileFormat {
 		private Deque<State> state = new LinkedList<State>();
 
 		private CountingReader reader;
-
-		// @Override
-		// public void configure(final Configuration parameters) {
-		// super.configure(parameters);
-		//
-		// this.context = (EvaluationContext) SopremoUtil.getObject(parameters,SopremoUtil.CONTEXT, null);
-		// this.targetSchema = this.context.getOutputSchema(0);
-		//
-		// final Boolean useQuotation = (Boolean) SopremoUtil.getObject(parameters,USE_QUOTATION, null);
-		// this.quotation = useQuotation == null ? Quotation.AUTO : useQuotation ? Quotation.ON : Quotation.OFF;
-		// this.keyNames = (String[]) SopremoUtil.getObject(parameters,COLUMN_NAMES, null);
-		// // this.targetSchema = SopremoUtil.deserialize(parameters, SCHEMA, Schema.class);
-		// this.encoding = Charset.forName(parameters.getString(ENCODING, "utf-8"));
-		// final Character delimiter = (Character) SopremoUtil.getObject(parameters,FIELD_DELIMITER, null);
-		// this.fieldDelimiter = delimiter != null ? delimiter : DEFAULT_DELIMITER;
-		//
-		// this.numLineSamples = parameters.getInteger(NUM_STATISTICS_SAMPLES, DEFAULT_NUM_SAMPLES);
-		// }
 
 		@Override
 		protected void open(FSDataInputStream stream, FileInputSplit split) throws IOException {
@@ -543,10 +543,10 @@ public class CsvFormat extends SopremoFileFormat {
 
 		/*
 		 * (non-Javadoc)
-		 * @see eu.stratosphere.sopremo.io.SopremoFileFormat.SopremoInputFormat#nextValue()
+		 * @see eu.stratosphere.sopremo.io.SopremoFormat.SopremoFileInputFormat#nextValue()
 		 */
 		@Override
-		protected IJsonNode nextValue() throws IOException {
+		public IJsonNode nextValue() throws IOException {
 			int lastCharacter, fieldIndex = 0;
 			do {
 				lastCharacter = this.fillBuilderWithNextField();
@@ -808,13 +808,13 @@ public class CsvFormat extends SopremoFileFormat {
 				} else {
 					final int read = this.stream.read(this.streamBuffer.array(), 0,
 						(int) Math.min(maxLen, this.limit - this.relativePos));
-					if (read == -1) 
+					if (read == -1)
 						this.reachedLimit = true;
 					else {
 						this.relativePos += read;
 						this.streamBuffer.limit(read);
 						this.reachedLimit = this.limit <= this.relativePos;
-					} 
+					}
 				}
 
 				this.charBuffer.clear();

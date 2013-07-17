@@ -13,7 +13,7 @@ import eu.stratosphere.nephele.configuration.Configuration;
 import eu.stratosphere.pact.generic.io.FormatUtil;
 import eu.stratosphere.sopremo.EvaluationContext;
 import eu.stratosphere.sopremo.io.JsonFormat.JsonInputFormat;
-import eu.stratosphere.sopremo.io.SopremoFileFormat.SopremoInputFormat;
+import eu.stratosphere.sopremo.io.SopremoFormat.SopremoFileInputFormat;
 import eu.stratosphere.sopremo.pact.SopremoUtil;
 import eu.stratosphere.sopremo.serialization.SopremoRecord;
 import eu.stratosphere.sopremo.serialization.SopremoRecordLayout;
@@ -81,9 +81,9 @@ public class JsonInputFormatTest {
 		SopremoUtil.setEvaluationContext(config, context);
 		SopremoUtil.setLayout(config, SopremoRecordLayout.EMPTY);
 		final JsonFormat format = new JsonFormat();
-		SopremoUtil.transferFieldsToConfiguration(format, SopremoFileFormat.class, config,
-			JsonInputFormat.class, SopremoInputFormat.class);
-		final SopremoInputFormat inputFormat =
+		SopremoUtil.transferFieldsToConfiguration(format, SopremoFormat.class, config,
+			JsonInputFormat.class, SopremoFileInputFormat.class);
+		final SopremoFileInputFormat inputFormat =
 			FormatUtil.openInput(JsonInputFormat.class, file.toURI().toString(), config);
 		final SopremoRecord record = new SopremoRecord(SopremoRecordLayout.EMPTY);
 		for (int index = 1; index <= 5; index++) {
@@ -114,9 +114,9 @@ public class JsonInputFormatTest {
 		final EvaluationContext context = new EvaluationContext();
 		SopremoUtil.setEvaluationContext(config, context);
 		SopremoUtil.setLayout(config, SopremoRecordLayout.EMPTY);
-		SopremoUtil.transferFieldsToConfiguration(new JsonFormat(), SopremoFileFormat.class, config,
-			JsonInputFormat.class, SopremoInputFormat.class);
-		final SopremoInputFormat inputFormat =
+		SopremoUtil.transferFieldsToConfiguration(new JsonFormat(), SopremoFormat.class, config,
+			JsonInputFormat.class, SopremoFileInputFormat.class);
+		final SopremoFileInputFormat inputFormat =
 			FormatUtil.openInput(JsonInputFormat.class, file.toURI().toString(), config);
 		final SopremoRecord record = new SopremoRecord(SopremoRecordLayout.EMPTY);
 

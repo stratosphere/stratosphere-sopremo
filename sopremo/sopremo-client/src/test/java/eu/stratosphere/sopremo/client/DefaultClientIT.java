@@ -14,13 +14,13 @@
  **********************************************************************************************************************/
 package eu.stratosphere.sopremo.client;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Deque;
 import java.util.LinkedList;
 
-import junit.framework.Assert;
-
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -83,6 +83,8 @@ public class DefaultClientIT {
 
 	private StateRecorder stateRecorder;
 
+	private File inputDir;
+
 	/**
 	 * Initializes DefaultClientIT.
 	 */
@@ -92,7 +94,7 @@ public class DefaultClientIT {
 	@Before
 	public void setup() throws Exception {
 		this.testServer = new SopremoTestServer(true);
-		this.testServer.createDir("input");
+		this.inputDir = this.testServer.createDir("input");
 
 		this.testServer.createFile("input/input1.json",
 			JsonUtil.createObjectNode("name", "Jon Doe", "income", 20000, "mgr", false),
@@ -161,7 +163,7 @@ public class DefaultClientIT {
 	@Test
 	public void testFailIfInvalidPlan() {
 		final SopremoPlan plan = new SopremoPlan();
-		plan.setSinks(new Sink("invalidSink"));
+		plan.setSinks(new Sink("file:///invalidSink"));
 
 		this.client.submit(plan, this.stateRecorder);
 		Assert.assertSame(ExecutionState.SETUP, this.stateRecorder.getStates().getFirst());
@@ -170,7 +172,7 @@ public class DefaultClientIT {
 	}
 
 	@Test
-	public void testFailIfRuntimeException() {
+	public void testFailIfRuntimeException() throws IOException {
 		final SopremoPlan plan = createPlan("output.json");
 		for (Operator<?> op : plan.getContainedOperators())
 			if (op instanceof Selection)
@@ -194,9 +196,9 @@ public class DefaultClientIT {
 		Assert.assertNotSame("", this.stateRecorder.getLastDetail());
 	}
 
-	private SopremoPlan createPlan(String outputName) {
+	private SopremoPlan createPlan(String outputName) throws IOException {
 		final SopremoPlan plan = new SopremoPlan();
-		final Source input = new Source("input");
+		final Source input = new Source(this.inputDir.toURI().toString());
 		final Selection selection = new Selection().
 			withCondition(
 				new OrExpression(
@@ -204,9 +206,8 @@ public class DefaultClientIT {
 					new ComparativeExpression(JsonUtil.createPath("0", "income"), BinaryOperator.GREATER,
 						new ConstantExpression(30000)))).
 			withInputs(input);
-		final Sink output = new Sink(outputName).withInputs(selection);
+		final Sink output = new Sink(this.testServer.createFile(outputName).toURI().toString()).withInputs(selection);
 		plan.setSinks(output);
-		this.testServer.correctPathsOfPlan(plan);
 		return plan;
 	}
 

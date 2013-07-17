@@ -31,8 +31,8 @@ import eu.stratosphere.sopremo.io.JsonFormat;
 import eu.stratosphere.sopremo.io.JsonFormat.JsonInputFormat;
 import eu.stratosphere.sopremo.io.JsonParser;
 import eu.stratosphere.sopremo.io.Sink;
-import eu.stratosphere.sopremo.io.SopremoFileFormat;
-import eu.stratosphere.sopremo.io.SopremoFileFormat.SopremoInputFormat;
+import eu.stratosphere.sopremo.io.SopremoFormat;
+import eu.stratosphere.sopremo.io.SopremoFormat.SopremoFileInputFormat;
 import eu.stratosphere.sopremo.io.Source;
 import eu.stratosphere.sopremo.operator.JsonStream;
 import eu.stratosphere.sopremo.operator.Operator;
@@ -117,6 +117,14 @@ public class SopremoTestPlan {
 			return new SopremoTestRecords(typeConfig);
 		}
 
+		/*
+		 * (non-Javadoc)
+		 * @see java.lang.Object#toString()
+		 */
+		@Override
+		public String toString() {
+			return PactModule.valueOf(getSinks()).toString();
+		}
 	}
 
 	private Input[] inputs;
@@ -485,8 +493,6 @@ public class SopremoTestPlan {
 	public static class ActualOutput extends InternalChannel<Sink, ActualOutput> {
 		private GenericTestRecords<SopremoRecord> actualRecords;
 
-		private SopremoRecordLayout layout;
-
 		/**
 		 * Initializes an ActualOutput with the given index.
 		 * 
@@ -512,9 +518,6 @@ public class SopremoTestPlan {
 		 */
 		void load(GenericTestPlan<SopremoRecord, SopremoTestRecords> testPlan) {
 			this.actualRecords = testPlan.getActualOutput(this.getIndex());
-
-			GenericDataSink sink = testPlan.getSinks().get(this.getIndex());
-			this.layout = SopremoUtil.getLayout(sink.getParameters());
 		}
 
 		@Override
@@ -604,8 +607,8 @@ public class SopremoTestPlan {
 					Configuration configuration = new Configuration();
 					SopremoUtil.setEvaluationContext(configuration, this.getContext().clone());
 					SopremoUtil.setLayout(configuration, layout);
-					SopremoUtil.transferFieldsToConfiguration(new JsonFormat(), SopremoFileFormat.class, configuration,
-						JsonInputFormat.class, SopremoInputFormat.class);
+					SopremoUtil.transferFieldsToConfiguration(new JsonFormat(), SopremoFormat.class, configuration,
+						JsonInputFormat.class, SopremoFileInputFormat.class);
 					this.testRecords.load(JsonFormat.JsonInputFormat.class, this.file, configuration);
 				}
 				else
@@ -796,26 +799,6 @@ public class SopremoTestPlan {
 			return sinkIndex == -1 ? this.getIndex() : sinkIndex;
 		}
 
-		@Override
-		void prepare(final SopremoRecordTestPlan testPlan, final SopremoRecordLayout layout) {
-			super.prepare(testPlan, layout);
-
-			final int sinkIndex = this.findSinkIndex(testPlan);
-			// if (this.doublePrecision > 0) {
-			// final IntSet fuzzySlots = CollectionUtil.setRangeFrom(0, layout.getPactSopremoRecordLayout().length);
-			// fuzzySlots.removeAll(layout.getKeyIndices());
-			// final IntIterator iterator = fuzzySlots.iterator();
-			//
-			// final TypeConfig<PactRecord> typeConfig =
-			// testPlan.getExpectedOutput(testPlan.getSinks().get(sinkIndex),
-			// layout.getPactSopremoRecordLayout()).getTypeConfig();
-			// PactRecordDistance pactRecordDistance = new PactRecordDistance();
-			// typeConfig.setFuzzyValueMatcher(new NaiveFuzzyValueMatcher<PactRecord>(pactRecordDistance));
-			// while (iterator.hasNext())
-			// pactRecordDistance.addSimilarity(iterator.nextInt(), new DoubleNodeSimilarity(this.doublePrecision));
-			// }
-		}
-
 		private double doublePrecision;
 
 		public double getDoublePrecision() {
@@ -905,7 +888,8 @@ public class SopremoTestPlan {
 		 *        the index
 		 */
 		public MockupSink(final int index) {
-			super("mockup-output" + index);
+			super("file:///" + index);
+			setName("Mockup Output" + index);
 			this.index = index;
 		}
 
@@ -913,7 +897,7 @@ public class SopremoTestPlan {
 		 * Initializes SopremoTestPlan.MockupSink.
 		 */
 		MockupSink() {
-			super("");
+			super("file:///");
 			this.index = 0;
 		}
 
@@ -968,7 +952,8 @@ public class SopremoTestPlan {
 		 *        the index
 		 */
 		public MockupSource(final int index) {
-			super("mockup-input" + index);
+			super("file:///" + index);
+			setName("Mockup-input " + index);
 			this.index = index;
 		}
 
@@ -976,7 +961,7 @@ public class SopremoTestPlan {
 		 * Initializes SopremoTestPlan.MockupSource.
 		 */
 		MockupSource() {
-			super("mockup-input");
+			super("file:///");
 			this.index = 0;
 		}
 

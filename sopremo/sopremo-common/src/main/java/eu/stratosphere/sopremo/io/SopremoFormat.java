@@ -15,17 +15,20 @@
 package eu.stratosphere.sopremo.io;
 
 import java.io.IOException;
+import java.lang.reflect.Modifier;
+import java.net.URI;
 import java.nio.charset.Charset;
 
 import eu.stratosphere.nephele.configuration.Configuration;
 import eu.stratosphere.nephele.fs.FSDataInputStream;
 import eu.stratosphere.nephele.fs.FSDataOutputStream;
 import eu.stratosphere.nephele.fs.FileInputSplit;
-import eu.stratosphere.nephele.fs.Path;
+import eu.stratosphere.nephele.template.InputSplit;
 import eu.stratosphere.pact.generic.io.FileInputFormat;
 import eu.stratosphere.pact.generic.io.FileOutputFormat;
+import eu.stratosphere.pact.generic.io.InputFormat;
+import eu.stratosphere.pact.generic.io.OutputFormat;
 import eu.stratosphere.sopremo.EvaluationContext;
-import eu.stratosphere.sopremo.Schema;
 import eu.stratosphere.sopremo.SopremoEnvironment;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
 import eu.stratosphere.sopremo.operator.ConfigurableSopremoType;
@@ -35,10 +38,22 @@ import eu.stratosphere.sopremo.pact.SopremoUtil;
 import eu.stratosphere.sopremo.serialization.SopremoRecord;
 import eu.stratosphere.sopremo.serialization.SopremoRecordLayout;
 import eu.stratosphere.sopremo.type.IJsonNode;
+import eu.stratosphere.util.reflect.BoundType;
+import eu.stratosphere.util.reflect.BoundTypeUtil;
 
 /**
+ * Base class for all file or stream formats. A format can be read-only or write-only and has a number of configuration
+ * parameters that are exposed through the {@link ConfigurableSopremoType} mechanism. <br />
+ * To implement a custom format, this base class should be subclassed and an input and/or output format must be provided
+ * either by:
+ * <ul>
+ * <li>Having an inner class extending the format.</li>
+ * <li>Overwriting {@link #getInputFormat()}, {@link #getOutputFormat()}.</li>
+ * </ul>
+ * For ease of development, {@link SopremoFileInputFormat} and {@link SopremoFileOutputFormat} may be used as a starting
+ * point.
  */
-public abstract class SopremoFileFormat extends ConfigurableSopremoType {
+public abstract class SopremoFormat extends ConfigurableSopremoType {
 	private String encoding = "utf-8";
 
 	private EvaluationExpression projection = EvaluationExpression.VALUE;
@@ -64,7 +79,7 @@ public abstract class SopremoFileFormat extends ConfigurableSopremoType {
 	 * @param encoding
 	 *        the encoding to set
 	 */
-	public SopremoFileFormat withEncoding(String encoding) {
+	public SopremoFormat withEncoding(String encoding) {
 		this.setEncoding(encoding);
 		return this;
 	}
@@ -74,8 +89,8 @@ public abstract class SopremoFileFormat extends ConfigurableSopremoType {
 	 * @see eu.stratosphere.sopremo.AbstractSopremoType#clone()
 	 */
 	@Override
-	public SopremoFileFormat clone() {
-		return (SopremoFileFormat) super.clone();
+	public SopremoFormat clone() {
+		return (SopremoFormat) super.clone();
 	}
 
 	/**
@@ -87,11 +102,27 @@ public abstract class SopremoFileFormat extends ConfigurableSopremoType {
 		return this.encoding;
 	}
 
-	public boolean canHandleFormat(Path path) {
-		final String preferredFilenameExtension = this.getPreferredFilenameExtension();
-		if (preferredFilenameExtension == null)
+	/**
+	 * Checks if the path specifies a file and whether the ending corresponds to one entry of
+	 * {@link #getPreferredFilenameExtensions()}.
+	 */
+	public boolean canHandleFormat(URI uri) {
+		final String[] preferredFilenameExtensions = this.getPreferredFilenameExtensions();
+		if (preferredFilenameExtensions.length == 0)
 			return false;
-		return path.toString().endsWith("." + preferredFilenameExtension);
+
+		final String uriPath = uri.toString();
+		if (uriPath == null)
+			return false;
+		final int separator = uriPath.lastIndexOf(".");
+		if (separator == -1)
+			return false;
+
+		String ending = uriPath.substring(separator + 1);
+		for (String extension : preferredFilenameExtensions)
+			if (ending.equalsIgnoreCase(extension))
+				return true;
+		return false;
 	}
 
 	// protected void configure(final Configuration parameters) {
@@ -114,11 +145,13 @@ public abstract class SopremoFileFormat extends ConfigurableSopremoType {
 			return false;
 		if (this.getClass() != obj.getClass())
 			return false;
-		SopremoFileFormat other = (SopremoFileFormat) obj;
+		SopremoFormat other = (SopremoFormat) obj;
 		return this.encoding.equals(other.encoding);
 	}
 
-	protected abstract String getPreferredFilenameExtension();
+	protected String[] getPreferredFilenameExtensions() {
+		return new String[0];
+	}
 
 	/*
 	 * (non-Javadoc)
@@ -134,7 +167,17 @@ public abstract class SopremoFileFormat extends ConfigurableSopremoType {
 	 * 
 	 * @return the implementation class
 	 */
-	public Class<? extends SopremoInputFormat> getInputFormat() {
+	@SuppressWarnings("unchecked")
+	public Class<? extends SopremoInputFormat<?>> getInputFormat() {
+		for (final Class<?> formatClass : this.getClass().getDeclaredClasses())
+			if ((formatClass.getModifiers() & Modifier.STATIC) != 0
+				&& InputFormat.class.isAssignableFrom(formatClass)) {
+				final BoundType bindings = BoundTypeUtil.getBindingOfSuperclass(formatClass, InputFormat.class);
+				if (bindings.getParameters()[0].getType() != SopremoRecord.class)
+					throw new IllegalStateException("Found input format but does not process " +
+						SopremoRecord.class.getSimpleName());
+				return (Class<? extends SopremoInputFormat<?>>) formatClass;
+			}
 		return null;
 	}
 
@@ -143,7 +186,17 @@ public abstract class SopremoFileFormat extends ConfigurableSopremoType {
 	 * 
 	 * @return the implementation class
 	 */
+	@SuppressWarnings("unchecked")
 	public Class<? extends SopremoOutputFormat> getOutputFormat() {
+		for (final Class<?> formatClass : this.getClass().getDeclaredClasses())
+			if ((formatClass.getModifiers() & Modifier.STATIC) != 0
+				&& OutputFormat.class.isAssignableFrom(formatClass)) {
+				final BoundType bindings = BoundTypeUtil.getBindingOfSuperclass(formatClass, OutputFormat.class);
+				if (bindings.getParameters()[0].getType() != SopremoRecord.class)
+					throw new IllegalStateException("Found output format but does not process " +
+						SopremoRecord.class.getSimpleName());
+				return (Class<? extends SopremoOutputFormat>) formatClass;
+			}
 		return null;
 	}
 
@@ -171,7 +224,15 @@ public abstract class SopremoFileFormat extends ConfigurableSopremoType {
 		return this.projection;
 	}
 
-	public static abstract class SopremoOutputFormat extends FileOutputFormat<SopremoRecord> {
+	/**
+	 * Base interface for Sopremo input formats.
+	 */
+	public static interface SopremoOutputFormat extends OutputFormat<SopremoRecord> {
+		abstract void writeValue(IJsonNode value) throws IOException;
+	}
+
+	public static abstract class SopremoFileOutputFormat extends FileOutputFormat<SopremoRecord> implements
+			SopremoOutputFormat {
 
 		private SopremoRecordLayout layout;
 
@@ -192,7 +253,7 @@ public abstract class SopremoFileFormat extends ConfigurableSopremoType {
 			this.context = SopremoUtil.getEvaluationContext(parameters);
 			this.layout = SopremoUtil.getLayout(parameters);
 			SopremoEnvironment.getInstance().setEvaluationContext(this.context);
-			SopremoUtil.configureWithTransferredState(this, SopremoInputFormat.class, parameters);
+			SopremoUtil.configureWithTransferredState(this, SopremoFileInputFormat.class, parameters);
 			if (this.layout == null)
 				throw new IllegalStateException("Could not deserialize input schema");
 		}
@@ -243,15 +304,101 @@ public abstract class SopremoFileFormat extends ConfigurableSopremoType {
 				SopremoUtil.LOG.trace(String.format("%s output %s", this.context.getOperatorDescription(), value));
 			this.writeValue(value);
 		}
-
-		/**
-		 * @param value
-		 */
-		protected abstract void writeValue(IJsonNode value) throws IOException;
-
 	}
 
-	public static abstract class SopremoInputFormat extends FileInputFormat<SopremoRecord> {
+	/**
+	 * Base interface for Sopremo input formats.
+	 */
+	public static interface SopremoInputFormat<T extends InputSplit> extends InputFormat<SopremoRecord, T> {
+		abstract IJsonNode nextValue() throws IOException;
+	}
+
+	/**
+	 * Base class for generic input formats.
+	 */
+	public static abstract class AbstractSopremoInputFormat<T extends InputSplit> implements
+			SopremoInputFormat<T> {
+
+		private boolean end;
+
+		private EvaluationContext context;
+
+		private String encoding;
+
+		private EvaluationExpression projection;
+
+		private SopremoRecordLayout layout;
+
+		/**
+		 * Returns the context.
+		 * 
+		 * @return the context
+		 */
+		protected EvaluationContext getContext() {
+			return this.context;
+		}
+
+		/**
+		 * Returns the encoding.
+		 * 
+		 * @return the encoding
+		 */
+		protected String getEncoding() {
+			return this.encoding;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see eu.stratosphere.pact.common.io.FileInputFormat#open(eu.stratosphere.nephele.fs.FileInputSplit)
+		 */
+		@Override
+		public void open(T split) throws IOException {
+			this.end = false;
+		}
+
+		@Override
+		public void configure(final Configuration parameters) {
+			SopremoEnvironment.getInstance().setClassLoader(getClass().getClassLoader());
+			this.context = SopremoUtil.getEvaluationContext(parameters);
+			this.layout = SopremoUtil.getLayout(parameters);
+			SopremoEnvironment.getInstance().setEvaluationContext(this.context);
+			SopremoUtil.configureWithTransferredState(this, SopremoFileInputFormat.class, parameters);
+			if (this.layout == null)
+				throw new IllegalStateException("Could not deserialize layout");
+		}
+
+		protected String getDefaultEncoding() {
+			return "utf-8";
+		}
+
+		@Override
+		public boolean nextRecord(final SopremoRecord record) throws IOException {
+			if (!this.end) {
+				final IJsonNode value = this.nextValue();
+				if (SopremoUtil.DEBUG && SopremoUtil.LOG.isTraceEnabled())
+					SopremoUtil.LOG.trace(String.format("%s input %s", this.context.getOperatorDescription(), value));
+				record.setNode(this.projection.evaluate(value));
+				return true;
+			}
+
+			return false;
+		}
+
+		protected void endReached() {
+			this.end = true;
+		}
+
+		@Override
+		public boolean reachedEnd() throws IOException {
+			return this.end;
+		}
+	}
+
+	/**
+	 * Base class for file-based input formats.
+	 */
+	public static abstract class SopremoFileInputFormat extends FileInputFormat<SopremoRecord> implements
+			SopremoInputFormat<FileInputSplit> {
 
 		private boolean end;
 
@@ -293,9 +440,6 @@ public abstract class SopremoFileFormat extends ConfigurableSopremoType {
 			this.open(this.stream, split);
 		}
 
-		/**
-		 * @param stream
-		 */
 		protected abstract void open(FSDataInputStream stream, FileInputSplit split) throws IOException;
 
 		@Override
@@ -306,7 +450,7 @@ public abstract class SopremoFileFormat extends ConfigurableSopremoType {
 			this.context = SopremoUtil.getEvaluationContext(parameters);
 			this.layout = SopremoUtil.getLayout(parameters);
 			SopremoEnvironment.getInstance().setEvaluationContext(this.context);
-			SopremoUtil.configureWithTransferredState(this, SopremoInputFormat.class, parameters);
+			SopremoUtil.configureWithTransferredState(this, SopremoFileInputFormat.class, parameters);
 			if (this.layout == null)
 				throw new IllegalStateException("Could not deserialize layout");
 		}
@@ -328,22 +472,36 @@ public abstract class SopremoFileFormat extends ConfigurableSopremoType {
 			return false;
 		}
 
-		/**
-		 * @return
-		 */
 		protected void endReached() {
 			this.end = true;
 		}
-
-		/**
-		 * @return
-		 */
-		protected abstract IJsonNode nextValue() throws IOException;
 
 		@Override
 		public boolean reachedEnd() {
 			return this.end;
 		}
+	}
+
+	public void configureForOutput(Configuration configuration, String outputPath) {
+		final Class<? extends SopremoOutputFormat> outputFormat = getOutputFormat();
+		if (outputPath != null)
+			configuration.setString(FileOutputFormat.FILE_PARAMETER_KEY, outputPath);
+		else if (FileOutputFormat.class.isAssignableFrom(outputFormat))
+			throw new IllegalStateException("No input path was given for the file input format");
+
+		SopremoUtil.transferFieldsToConfiguration(this, SopremoFormat.class, configuration,
+			outputFormat, OutputFormat.class);
+	}
+
+	public void configureForInput(Configuration configuration, String inputPath) {
+		final Class<? extends SopremoInputFormat<?>> inputFormat = getInputFormat();
+		if (inputPath != null)
+			configuration.setString(FileInputFormat.FILE_PARAMETER_KEY, inputPath);
+		else if (FileInputFormat.class.isAssignableFrom(inputFormat))
+			throw new IllegalStateException("No input path was given for the file input format");
+
+		SopremoUtil.transferFieldsToConfiguration(this, SopremoFormat.class, configuration,
+			inputFormat, InputFormat.class);
 
 	}
 }

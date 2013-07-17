@@ -69,7 +69,6 @@ public abstract class EqualVerifyTest<T> {
 		this.more = more;
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
 	public void testKryoSerialization() {
 		for (Object original : Iterables.concat(Arrays.asList(this.first, this.second), this.more)) {

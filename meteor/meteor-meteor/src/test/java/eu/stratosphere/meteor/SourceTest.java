@@ -78,7 +78,7 @@ public class SourceTest extends MeteorTest {
 
 		final SopremoPlan expectedPlan = new SopremoPlan();
 		final Source input = new Source(new JsonFormat(), "hdfs://cluster:1234/mydir/input.json");
-		final Sink output = new Sink("file://output.json").withInputs(input);
+		final Sink output = new Sink("hdfs://cluster:1234/mydir/output.json").withInputs(input);
 		expectedPlan.setSinks(output);
 
 		assertPlanEquals(expectedPlan, actualPlan);

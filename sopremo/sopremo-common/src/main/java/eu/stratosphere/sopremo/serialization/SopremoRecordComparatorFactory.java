@@ -20,7 +20,6 @@ import java.util.Arrays;
 import eu.stratosphere.nephele.configuration.Configuration;
 import eu.stratosphere.pact.generic.types.TypeComparator;
 import eu.stratosphere.pact.generic.types.TypeComparatorFactory;
-import eu.stratosphere.sopremo.expressions.EvaluationExpression;
 import eu.stratosphere.sopremo.pact.SopremoUtil;
 
 public class SopremoRecordComparatorFactory implements TypeComparatorFactory<SopremoRecord> {

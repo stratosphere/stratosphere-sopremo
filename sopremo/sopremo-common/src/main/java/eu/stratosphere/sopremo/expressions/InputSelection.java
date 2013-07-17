@@ -92,6 +92,6 @@ public class InputSelection extends PathSegmentExpression {
 	 * @return
 	 */
 	public ArrayAccess asArrayAccess() {
-		return new ArrayAccess(index);
+		return new ArrayAccess(this.index);
 	}
 }

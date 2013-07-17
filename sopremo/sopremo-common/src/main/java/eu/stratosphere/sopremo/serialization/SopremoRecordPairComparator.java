@@ -23,7 +23,7 @@ public class SopremoRecordPairComparator extends TypePairComparator<SopremoRecor
 {
 	private final int[] keyFields1, keyFields2;
 
-	private final IJsonNode[] keyHolders1, keyHolders2;
+	private final IJsonNode[] keyHolders1;
 
 	private final NodeCache[] nodeCache1, nodeCache2;
 
@@ -41,7 +41,6 @@ public class SopremoRecordPairComparator extends TypePairComparator<SopremoRecor
 
 		// instantiate fields to extract keys into
 		this.keyHolders1 = new IJsonNode[this.numKeys];
-		this.keyHolders2 = new IJsonNode[this.numKeys];
 		this.nodeCache1 = new NodeCache[this.numKeys];
 		this.nodeCache2 = new NodeCache[this.numKeys];
 

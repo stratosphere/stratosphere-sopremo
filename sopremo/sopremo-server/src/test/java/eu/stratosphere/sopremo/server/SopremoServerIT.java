@@ -14,6 +14,7 @@
  **********************************************************************************************************************/
 package eu.stratosphere.sopremo.server;
 
+import java.io.File;
 import java.io.IOException;
 
 import junit.framework.Assert;
@@ -44,6 +45,8 @@ import eu.stratosphere.sopremo.type.JsonUtil;
 public class SopremoServerIT {
 	private SopremoTestServer testServer;
 
+	private File inputDir;
+
 	/**
 	 * Initializes SopremoServerIT.
 	 */
@@ -53,7 +56,7 @@ public class SopremoServerIT {
 	@Before
 	public void setup() throws Exception {
 		this.testServer = new SopremoTestServer(false);
-		this.testServer.createDir("input");
+		this.inputDir = this.testServer.createDir("input");
 
 		this.testServer.createFile("input/input1.json",
 			JsonUtil.createObjectNode("name", "Jon Doe", "income", 20000, "mgr", false),
@@ -84,7 +87,8 @@ public class SopremoServerIT {
 			JsonUtil.createObjectNode("name", "Jane Dean", "income", 72000, "mgr", true));
 	}
 
-	private ExecutionResponse waitForStateToFinish(ExecutionResponse response, ExecutionState status) throws IOException, InterruptedException {
+	private ExecutionResponse waitForStateToFinish(ExecutionResponse response, ExecutionState status)
+			throws IOException, InterruptedException {
 		return SopremoTestServer.waitForStateToFinish(this.testServer, response, status);
 	}
 
@@ -112,7 +116,7 @@ public class SopremoServerIT {
 	@Test
 	public void testFailIfInvalidPlan() throws IOException, InterruptedException {
 		final SopremoPlan plan = new SopremoPlan();
-		plan.setSinks(new Sink("invalidSink"));
+		plan.setSinks(new Sink("file:///invalidSink"));
 
 		ExecutionResponse response = this.testServer.execute(new ExecutionRequest(plan));
 		response = waitForStateToFinish(response, ExecutionState.ENQUEUED);
@@ -150,9 +154,9 @@ public class SopremoServerIT {
 		Assert.assertNotSame("", response.getDetails());
 	}
 
-	private SopremoPlan createPlan(String outputName) {
+	private SopremoPlan createPlan(String outputName) throws IOException {
 		final SopremoPlan plan = new SopremoPlan();
-		final Source input = new Source("input");
+		final Source input = new Source(this.inputDir.toURI().toString());
 		final Selection selection = new Selection().
 			withCondition(
 				new OrExpression(
@@ -160,7 +164,7 @@ public class SopremoServerIT {
 					new ComparativeExpression(JsonUtil.createPath("0", "income"), BinaryOperator.GREATER,
 						new ConstantExpression(30000)))).
 			withInputs(input);
-		final Sink output = new Sink(outputName).withInputs(selection);
+		final Sink output = new Sink(this.testServer.createFile(outputName).toURI().toString()).withInputs(selection);
 		plan.setSinks(output);
 		return plan;
 	}

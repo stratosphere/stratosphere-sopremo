@@ -22,7 +22,7 @@ import eu.stratosphere.sopremo.expressions.EvaluationExpression;
 import eu.stratosphere.sopremo.expressions.JsonStreamExpression;
 import eu.stratosphere.sopremo.expressions.ObjectAccess;
 import eu.stratosphere.sopremo.io.JsonFormat;
-import eu.stratosphere.sopremo.io.SopremoFileFormat;
+import eu.stratosphere.sopremo.io.SopremoFormat;
 import eu.stratosphere.sopremo.packages.DefaultConstantRegistry;
 import eu.stratosphere.sopremo.packages.IConstantRegistry;
 import eu.stratosphere.sopremo.query.QueryWithVariablesParser;
@@ -73,7 +73,7 @@ public abstract class MeteorParserBase extends QueryWithVariablesParser<JsonStre
 	 * @see eu.stratosphere.sopremo.query.AbstractQueryParser#getDefaultFileFormat()
 	 */
 	@Override
-	protected Class<? extends SopremoFileFormat> getDefaultFileFormat() {
+	protected Class<? extends SopremoFormat> getDefaultFileFormat() {
 		return JsonFormat.class;
 	}
 

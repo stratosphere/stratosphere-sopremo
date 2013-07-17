@@ -18,13 +18,11 @@ import java.util.Arrays;
 
 import eu.stratosphere.pact.testing.DefaultEqualer;
 import eu.stratosphere.pact.testing.DefaultStringifier;
-import eu.stratosphere.pact.testing.DefaultStringifier;
 import eu.stratosphere.pact.testing.Equaler;
 import eu.stratosphere.pact.testing.GenericTestRecords;
 import eu.stratosphere.pact.testing.TypeConfig;
 import eu.stratosphere.pact.testing.TypeStringifier;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
-import eu.stratosphere.sopremo.pact.SopremoUtil;
 import eu.stratosphere.sopremo.serialization.SopremoRecord;
 import eu.stratosphere.sopremo.serialization.SopremoRecordComparatorFactory;
 import eu.stratosphere.sopremo.serialization.SopremoRecordLayout;

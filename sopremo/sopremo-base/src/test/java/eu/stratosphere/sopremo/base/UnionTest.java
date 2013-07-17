@@ -39,7 +39,6 @@ public class UnionTest extends SopremoOperatorTestBase<Union> {
 			addArray(5, 6).
 			addArray(7, 8);
 
-		sopremoPlan.trace();
 		sopremoPlan.run();
 	}
 

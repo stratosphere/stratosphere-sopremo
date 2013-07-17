@@ -24,8 +24,9 @@ import org.junit.Ignore;
 
 import eu.stratosphere.nephele.configuration.Configuration;
 import eu.stratosphere.pact.generic.io.FormatUtil;
+import eu.stratosphere.pact.generic.io.InputFormat;
 import eu.stratosphere.sopremo.EvaluationContext;
-import eu.stratosphere.sopremo.io.SopremoFileFormat.SopremoInputFormat;
+import eu.stratosphere.sopremo.io.SopremoFormat.SopremoFileInputFormat;
 import eu.stratosphere.sopremo.pact.SopremoUtil;
 import eu.stratosphere.sopremo.serialization.SopremoRecord;
 import eu.stratosphere.sopremo.serialization.SopremoRecordLayout;
@@ -36,16 +37,18 @@ import eu.stratosphere.sopremo.type.IJsonNode;
  */
 @Ignore
 public class InputFormatTest {
-	public static Collection<IJsonNode> readFromFile(final File file, final SopremoFileFormat format,
+	public static Collection<IJsonNode> readFromFile(final File file, final SopremoFormat format,
 			final SopremoRecordLayout layout) throws IOException {
+		
 		Configuration config = new Configuration();
 		final EvaluationContext context = new EvaluationContext();
 		SopremoUtil.setEvaluationContext(config, context);
 		SopremoUtil.setLayout(config, layout);
-		SopremoUtil.transferFieldsToConfiguration(format, SopremoFileFormat.class, config,
-			format.getInputFormat(), SopremoInputFormat.class);
-		final SopremoInputFormat inputFormat =
-			FormatUtil.openInput(format.getInputFormat(), file.toURI().toString(), config);
+		SopremoUtil.transferFieldsToConfiguration(format, SopremoFormat.class, config,
+			format.getInputFormat(), InputFormat.class);
+		@SuppressWarnings("unchecked")
+		final SopremoFileInputFormat inputFormat =
+			FormatUtil.openInput((Class<? extends SopremoFileInputFormat>) format.getInputFormat(), file.toURI().toString(), config);
 
 		List<IJsonNode> values = new ArrayList<IJsonNode>();
 		while (!inputFormat.reachedEnd()) {

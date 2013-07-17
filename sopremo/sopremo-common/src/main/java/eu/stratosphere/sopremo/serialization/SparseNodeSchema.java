@@ -19,14 +19,11 @@ import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 
-import eu.stratosphere.pact.common.type.Value;
 import eu.stratosphere.pact.compiler.postpass.AbstractSchema;
 import eu.stratosphere.pact.compiler.postpass.ConflictingFieldTypeInfoException;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
-import eu.stratosphere.sopremo.type.IJsonNode;
 import eu.stratosphere.util.CollectionUtil;
 
 /**
@@ -52,7 +49,8 @@ public class SparseNodeSchema extends AbstractSchema<EvaluationExpression> {
 
 			@Override
 			public Entry<Integer, EvaluationExpression> next() {
-				return new AbstractMap.SimpleEntry<Integer, EvaluationExpression>(this.pos, keyExpressions.get(pos++));
+				return new AbstractMap.SimpleEntry<Integer, EvaluationExpression>(this.pos,
+					SparseNodeSchema.this.keyExpressions.get(this.pos++));
 			}
 
 			@Override
@@ -68,7 +66,7 @@ public class SparseNodeSchema extends AbstractSchema<EvaluationExpression> {
 	 */
 	@Override
 	public void addType(int pos, EvaluationExpression expression) throws ConflictingFieldTypeInfoException {
-		CollectionUtil.ensureSize(keyExpressions, pos + 1, EvaluationExpression.VALUE);
+		CollectionUtil.ensureSize(this.keyExpressions, pos + 1, EvaluationExpression.VALUE);
 		this.keyExpressions.set(pos, expression);
 	}
 

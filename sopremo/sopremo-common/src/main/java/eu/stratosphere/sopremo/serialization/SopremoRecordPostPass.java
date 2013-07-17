@@ -19,34 +19,16 @@ import java.util.Iterator;
 import com.google.common.collect.Iterables;
 
 import eu.stratosphere.nephele.configuration.Configuration;
-import eu.stratosphere.pact.common.contract.GenericDataSink;
-import eu.stratosphere.pact.common.contract.Ordering;
-import eu.stratosphere.pact.common.type.Key;
 import eu.stratosphere.pact.common.util.FieldList;
 import eu.stratosphere.pact.common.util.Visitor;
-import eu.stratosphere.pact.compiler.CompilerException;
-import eu.stratosphere.pact.compiler.CompilerPostPassException;
 import eu.stratosphere.pact.compiler.plan.candidate.Channel;
 import eu.stratosphere.pact.compiler.plan.candidate.DualInputPlanNode;
 import eu.stratosphere.pact.compiler.plan.candidate.OptimizedPlan;
 import eu.stratosphere.pact.compiler.plan.candidate.PlanNode;
 import eu.stratosphere.pact.compiler.plan.candidate.SingleInputPlanNode;
-import eu.stratosphere.pact.compiler.plan.candidate.SinkPlanNode;
 import eu.stratosphere.pact.compiler.plan.candidate.SourcePlanNode;
-import eu.stratosphere.pact.compiler.plan.candidate.UnionPlanNode;
-import eu.stratosphere.pact.compiler.postpass.ConflictingFieldTypeInfoException;
-import eu.stratosphere.pact.compiler.postpass.GenericRecordPostPass;
-import eu.stratosphere.pact.compiler.postpass.MissingFieldTypeInfoException;
 import eu.stratosphere.pact.compiler.postpass.OptimizerPostPass;
-import eu.stratosphere.pact.compiler.postpass.PostPassUtils;
-import eu.stratosphere.pact.generic.contract.DualInputContract;
-import eu.stratosphere.pact.generic.contract.SingleInputContract;
-import eu.stratosphere.pact.runtime.plugable.pactrecord.PactRecordComparatorFactory;
-import eu.stratosphere.pact.runtime.plugable.pactrecord.PactRecordPairComparatorFactory;
-import eu.stratosphere.sopremo.EvaluationContext;
-import eu.stratosphere.sopremo.expressions.EvaluationExpression;
 import eu.stratosphere.sopremo.pact.SopremoUtil;
-import eu.stratosphere.sopremo.type.IJsonNode;
 
 /**
  * Post pass implementation for the PactRecord data model. Does only type inference and creates

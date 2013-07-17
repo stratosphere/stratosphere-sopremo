@@ -12,7 +12,7 @@
  * specific language governing permissions and limitations under the License.
  *
  **********************************************************************************************************************/
-package eu.stratosphere.sopremo;
+package eu.stratosphere.sopremo.operator;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -20,16 +20,10 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Tells Sopremo to run annotated operator implementations in
- * degree-of-parallelism of 1. <br>
- * Only usable for {@link SopremoMap} currently.
- * 
- * @author skruse
+ * Specifies a fixed degree of parallelism that cannot be changed by the end-user.
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 public @interface DegreeOfParallelism {
-
 	int value();
-
 }

@@ -1,12 +1,6 @@
 package eu.stratosphere.sopremo.type;
 
-import java.io.ByteArrayOutputStream;
-import java.util.Arrays;
-
-import com.esotericsoftware.kryo.io.Output;
-
 import eu.stratosphere.sopremo.AbstractSopremoType;
-import eu.stratosphere.sopremo.SopremoEnvironment;
 
 /**
  * Abstract class to provide basic implementations for all node types.
@@ -15,8 +9,6 @@ import eu.stratosphere.sopremo.SopremoEnvironment;
  * @author Tommy Neubert
  */
 public abstract class AbstractJsonNode extends AbstractSopremoType implements IJsonNode {
-
-	public abstract void clear();
 
 	/*
 	 * (non-Javadoc)

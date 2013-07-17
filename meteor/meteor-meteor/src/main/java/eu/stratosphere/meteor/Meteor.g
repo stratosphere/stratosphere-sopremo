@@ -299,35 +299,35 @@ scope {
 // read <format> from <path> options*
 readOperator returns [Source source]
 @init { 
-  ConfObjectInfo<? extends SopremoFileFormat> fileFormatInfo = null;
-  SopremoFileFormat fileFormat = null;
+  ConfObjectInfo<? extends SopremoFormat> formatInfo = null;
+  SopremoFormat fileFormat = null;
   String path = null;
 }
 	:	'read' ((packageName=ID ':')?format=ID)?
 	  'from' (protocol=ID? filePath=STRING | protocol=ID '(' filePath=STRING ')') 
 { 
   path = makeFilePath($protocol, $filePath.text);
-  fileFormatInfo = findFormat($packageName.text, format, path);
-  fileFormat = fileFormatInfo.newInstance(); 
+  formatInfo = findFormat($packageName.text, format, path);
+  fileFormat = formatInfo.newInstance(); 
 }
-	  confOption[fileFormatInfo, fileFormat]* 
+	  confOption[formatInfo, fileFormat]* 
 { $source = new Source(fileFormat, path); } ->;
 
 // write <format> <input> to <path> options*
 writeOperator returns [Sink sink]
 @init { 
-  ConfObjectInfo<? extends SopremoFileFormat> fileFormatInfo = null;
-  SopremoFileFormat fileFormat = null;
+  ConfObjectInfo<? extends SopremoFormat> formatInfo = null;
+  SopremoFormat fileFormat = null;
   String path = null;
 }
 	:	'write' ((packageName=ID ':')?format=ID)? from=VAR 
 	  'to' (protocol=ID? filePath=STRING | protocol=ID '(' filePath=STRING ')')
 { 
   path = makeFilePath($protocol, $filePath.text);
-  fileFormatInfo = findFormat($packageName.text, format, path);
-  fileFormat = fileFormatInfo.newInstance();
+  formatInfo = findFormat($packageName.text, format, path);
+  fileFormat = formatInfo.newInstance();
 }
-    confOption[fileFormatInfo, fileFormat]* 
+    confOption[formatInfo, fileFormat]* 
 { 
 	$sink = new Sink(fileFormat, makeFilePath($protocol, path));
   $sink.setInputs(getVariable(from).getStream());

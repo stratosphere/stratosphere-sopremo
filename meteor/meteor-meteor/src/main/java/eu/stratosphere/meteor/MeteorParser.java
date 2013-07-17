@@ -1,4 +1,4 @@
-// $ANTLR 3.4 /home/arv/workspace/ozone-meteor/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g 2013-07-03 15:16:37
+// $ANTLR 3.4 /home/arv/workspace/ozone-meteor/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g 2013-07-19 17:22:16
  
 package eu.stratosphere.meteor; 
 
@@ -1939,7 +1939,7 @@ public TreeAdaptor getTreeAdaptor() {
                     if ( state.backtracking==0 ) stream_orExpression.add(ifClause2.getTree());
 
                     // AST REWRITE
-                    // elements: ifExpr2, ifClause2
+                    // elements: ifClause2, ifExpr2
                     // token labels: 
                     // rule labels: retval, ifExpr2, ifClause2
                     // token list labels: 
@@ -2438,7 +2438,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
             // AST REWRITE
-            // elements: elem, elem, set
+            // elements: elem, set, elem
             // token labels: 
             // rule labels: elem, retval, set
             // token list labels: 
@@ -2672,7 +2672,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
             // AST REWRITE
-            // elements: e2, e2, e1, e1, e1, e2, e1
+            // elements: e1, e2, e1, e2, e1, e1, e2
             // token labels: 
             // rule labels: retval, e1, e2
             // token list labels: 
@@ -7705,7 +7705,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
     // $ANTLR start "readOperator"
-    // /home/arv/workspace/ozone-meteor/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:300:1: readOperator returns [Source source] : 'read' ( (packageName= ID ':' )? format= ID )? 'from' ( (protocol= ID )? filePath= STRING |protocol= ID '(' filePath= STRING ')' ) ( confOption[fileFormatInfo, fileFormat] )* ->;
+    // /home/arv/workspace/ozone-meteor/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:300:1: readOperator returns [Source source] : 'read' ( (packageName= ID ':' )? format= ID )? 'from' ( (protocol= ID )? filePath= STRING |protocol= ID '(' filePath= STRING ')' ) ( confOption[formatInfo, fileFormat] )* ->;
     public final MeteorParser.readOperator_return readOperator() throws RecognitionException {
         MeteorParser.readOperator_return retval = new MeteorParser.readOperator_return();
         retval.start = input.LT(1);
@@ -7743,13 +7743,13 @@ public TreeAdaptor getTreeAdaptor() {
         RewriteRuleTokenStream stream_STRING=new RewriteRuleTokenStream(adaptor,"token STRING");
         RewriteRuleSubtreeStream stream_confOption=new RewriteRuleSubtreeStream(adaptor,"rule confOption");
          
-          ConfObjectInfo<? extends SopremoFileFormat> fileFormatInfo = null;
-          SopremoFileFormat fileFormat = null;
+          ConfObjectInfo<? extends SopremoFormat> formatInfo = null;
+          SopremoFormat fileFormat = null;
           String path = null;
 
         try {
-            // /home/arv/workspace/ozone-meteor/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:306:2: ( 'read' ( (packageName= ID ':' )? format= ID )? 'from' ( (protocol= ID )? filePath= STRING |protocol= ID '(' filePath= STRING ')' ) ( confOption[fileFormatInfo, fileFormat] )* ->)
-            // /home/arv/workspace/ozone-meteor/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:306:4: 'read' ( (packageName= ID ':' )? format= ID )? 'from' ( (protocol= ID )? filePath= STRING |protocol= ID '(' filePath= STRING ')' ) ( confOption[fileFormatInfo, fileFormat] )*
+            // /home/arv/workspace/ozone-meteor/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:306:2: ( 'read' ( (packageName= ID ':' )? format= ID )? 'from' ( (protocol= ID )? filePath= STRING |protocol= ID '(' filePath= STRING ')' ) ( confOption[formatInfo, fileFormat] )* ->)
+            // /home/arv/workspace/ozone-meteor/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:306:4: 'read' ( (packageName= ID ':' )? format= ID )? 'from' ( (protocol= ID )? filePath= STRING |protocol= ID '(' filePath= STRING ')' ) ( confOption[formatInfo, fileFormat] )*
             {
             string_literal103=(Token)match(input,63,FOLLOW_63_in_readOperator2224); if (state.failed) return retval; 
             if ( state.backtracking==0 ) stream_63.add(string_literal103);
@@ -7900,11 +7900,11 @@ public TreeAdaptor getTreeAdaptor() {
 
             if ( state.backtracking==0 ) { 
               path = makeFilePath(protocol, (filePath!=null?filePath.getText():null));
-              fileFormatInfo = findFormat((packageName!=null?packageName.getText():null), format, path);
-              fileFormat = fileFormatInfo.newInstance(); 
+              formatInfo = findFormat((packageName!=null?packageName.getText():null), format, path);
+              fileFormat = formatInfo.newInstance(); 
             }
 
-            // /home/arv/workspace/ozone-meteor/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:313:4: ( confOption[fileFormatInfo, fileFormat] )*
+            // /home/arv/workspace/ozone-meteor/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:313:4: ( confOption[formatInfo, fileFormat] )*
             loop56:
             do {
                 int alt56=2;
@@ -7917,10 +7917,10 @@ public TreeAdaptor getTreeAdaptor() {
 
                 switch (alt56) {
             	case 1 :
-            	    // /home/arv/workspace/ozone-meteor/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:313:4: confOption[fileFormatInfo, fileFormat]
+            	    // /home/arv/workspace/ozone-meteor/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:313:4: confOption[formatInfo, fileFormat]
             	    {
             	    pushFollow(FOLLOW_confOption_in_readOperator2277);
-            	    confOption108=confOption(fileFormatInfo, fileFormat);
+            	    confOption108=confOption(formatInfo, fileFormat);
 
             	    state._fsp--;
             	    if (state.failed) return retval;
@@ -7991,7 +7991,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
     // $ANTLR start "writeOperator"
-    // /home/arv/workspace/ozone-meteor/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:317:1: writeOperator returns [Sink sink] : 'write' ( (packageName= ID ':' )? format= ID )? from= VAR 'to' ( (protocol= ID )? filePath= STRING |protocol= ID '(' filePath= STRING ')' ) ( confOption[fileFormatInfo, fileFormat] )* ->;
+    // /home/arv/workspace/ozone-meteor/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:317:1: writeOperator returns [Sink sink] : 'write' ( (packageName= ID ':' )? format= ID )? from= VAR 'to' ( (protocol= ID )? filePath= STRING |protocol= ID '(' filePath= STRING ')' ) ( confOption[formatInfo, fileFormat] )* ->;
     public final MeteorParser.writeOperator_return writeOperator() throws RecognitionException {
         MeteorParser.writeOperator_return retval = new MeteorParser.writeOperator_return();
         retval.start = input.LT(1);
@@ -8032,13 +8032,13 @@ public TreeAdaptor getTreeAdaptor() {
         RewriteRuleTokenStream stream_STRING=new RewriteRuleTokenStream(adaptor,"token STRING");
         RewriteRuleSubtreeStream stream_confOption=new RewriteRuleSubtreeStream(adaptor,"rule confOption");
          
-          ConfObjectInfo<? extends SopremoFileFormat> fileFormatInfo = null;
-          SopremoFileFormat fileFormat = null;
+          ConfObjectInfo<? extends SopremoFormat> formatInfo = null;
+          SopremoFormat fileFormat = null;
           String path = null;
 
         try {
-            // /home/arv/workspace/ozone-meteor/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:323:2: ( 'write' ( (packageName= ID ':' )? format= ID )? from= VAR 'to' ( (protocol= ID )? filePath= STRING |protocol= ID '(' filePath= STRING ')' ) ( confOption[fileFormatInfo, fileFormat] )* ->)
-            // /home/arv/workspace/ozone-meteor/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:323:4: 'write' ( (packageName= ID ':' )? format= ID )? from= VAR 'to' ( (protocol= ID )? filePath= STRING |protocol= ID '(' filePath= STRING ')' ) ( confOption[fileFormatInfo, fileFormat] )*
+            // /home/arv/workspace/ozone-meteor/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:323:2: ( 'write' ( (packageName= ID ':' )? format= ID )? from= VAR 'to' ( (protocol= ID )? filePath= STRING |protocol= ID '(' filePath= STRING ')' ) ( confOption[formatInfo, fileFormat] )* ->)
+            // /home/arv/workspace/ozone-meteor/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:323:4: 'write' ( (packageName= ID ':' )? format= ID )? from= VAR 'to' ( (protocol= ID )? filePath= STRING |protocol= ID '(' filePath= STRING ')' ) ( confOption[formatInfo, fileFormat] )*
             {
             string_literal109=(Token)match(input,67,FOLLOW_67_in_writeOperator2303); if (state.failed) return retval; 
             if ( state.backtracking==0 ) stream_67.add(string_literal109);
@@ -8193,11 +8193,11 @@ public TreeAdaptor getTreeAdaptor() {
 
             if ( state.backtracking==0 ) { 
               path = makeFilePath(protocol, (filePath!=null?filePath.getText():null));
-              fileFormatInfo = findFormat((packageName!=null?packageName.getText():null), format, path);
-              fileFormat = fileFormatInfo.newInstance();
+              formatInfo = findFormat((packageName!=null?packageName.getText():null), format, path);
+              fileFormat = formatInfo.newInstance();
             }
 
-            // /home/arv/workspace/ozone-meteor/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:330:5: ( confOption[fileFormatInfo, fileFormat] )*
+            // /home/arv/workspace/ozone-meteor/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:330:5: ( confOption[formatInfo, fileFormat] )*
             loop61:
             do {
                 int alt61=2;
@@ -8210,10 +8210,10 @@ public TreeAdaptor getTreeAdaptor() {
 
                 switch (alt61) {
             	case 1 :
-            	    // /home/arv/workspace/ozone-meteor/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:330:5: confOption[fileFormatInfo, fileFormat]
+            	    // /home/arv/workspace/ozone-meteor/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:330:5: confOption[formatInfo, fileFormat]
             	    {
             	    pushFollow(FOLLOW_confOption_in_writeOperator2361);
-            	    confOption114=confOption(fileFormatInfo, fileFormat);
+            	    confOption114=confOption(formatInfo, fileFormat);
 
             	    state._fsp--;
             	    if (state.failed) return retval;
@@ -9479,11 +9479,11 @@ public TreeAdaptor getTreeAdaptor() {
         state.failed=false;
         return success;
     }
-    public final boolean synpred8_Meteor() {
+    public final boolean synpred13_Meteor() {
         state.backtracking++;
         int start = input.mark();
         try {
-            synpred8_Meteor_fragment(); // can never throw exception
+            synpred13_Meteor_fragment(); // can never throw exception
         } catch (RecognitionException re) {
             System.err.println("impossible: "+re);
         }
@@ -9493,11 +9493,11 @@ public TreeAdaptor getTreeAdaptor() {
         state.failed=false;
         return success;
     }
-    public final boolean synpred13_Meteor() {
+    public final boolean synpred8_Meteor() {
         state.backtracking++;
         int start = input.mark();
         try {
-            synpred13_Meteor_fragment(); // can never throw exception
+            synpred8_Meteor_fragment(); // can never throw exception
         } catch (RecognitionException re) {
             System.err.println("impossible: "+re);
         }

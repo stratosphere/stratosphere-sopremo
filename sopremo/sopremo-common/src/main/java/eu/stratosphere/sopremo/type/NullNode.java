@@ -4,7 +4,6 @@ import java.io.IOException;
 
 import com.esotericsoftware.kryo.DefaultSerializer;
 
-import eu.stratosphere.pact.common.type.base.PactNull;
 import eu.stratosphere.sopremo.Singleton;
 import eu.stratosphere.sopremo.SingletonSerializer;
 

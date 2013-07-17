@@ -172,7 +172,6 @@ public class ReplaceTest extends SopremoOperatorTestBase<Replace> {
 			addObject("field1", 3, "fieldToReplace", new int[] { 22, 33 }, "field2", 2).
 			addObject("field1", 4, "fieldToReplace", new int[] {}, "field2", 2);
 
-		sopremoPlan.trace();
 		sopremoPlan.run();
 	}
 

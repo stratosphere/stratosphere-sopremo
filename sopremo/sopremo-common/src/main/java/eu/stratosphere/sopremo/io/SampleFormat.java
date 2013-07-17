@@ -15,12 +15,13 @@
 package eu.stratosphere.sopremo.io;
 
 import java.io.IOException;
+import java.net.URI;
 
 import eu.stratosphere.nephele.configuration.Configuration;
-import eu.stratosphere.nephele.fs.FSDataInputStream;
-import eu.stratosphere.nephele.fs.FileInputSplit;
-import eu.stratosphere.nephele.fs.Path;
+import eu.stratosphere.nephele.template.InputSplit;
 import eu.stratosphere.pact.common.io.statistics.BaseStatistics;
+import eu.stratosphere.pact.generic.io.FileInputFormat.FileBaseStatistics;
+import eu.stratosphere.pact.generic.io.InputFormat;
 import eu.stratosphere.sopremo.operator.Property;
 import eu.stratosphere.sopremo.pact.SopremoUtil;
 import eu.stratosphere.sopremo.type.IJsonNode;
@@ -29,8 +30,8 @@ import eu.stratosphere.util.reflect.ReflectUtil;
 /**
  * @author Arvid Heise
  */
-public class SampleFormat extends SopremoFileFormat {
-	private SopremoFileFormat originalFormat = new JsonFormat();
+public class SampleFormat extends SopremoFormat {
+	private SopremoFormat originalFormat = new JsonFormat();
 
 	public static final long DEFAULT_SAMPLE_SIZE = 10;
 
@@ -38,30 +39,21 @@ public class SampleFormat extends SopremoFileFormat {
 
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.io.SopremoFileFormat#canHandleFormat(eu.stratosphere.nephele.fs.FileSystem,
+	 * @see eu.stratosphere.sopremo.io.SopremoFormat#canHandleFormat(eu.stratosphere.nephele.fs.FileSystem,
 	 * eu.stratosphere.nephele.fs.Path)
 	 */
 	@Override
-	public boolean canHandleFormat(Path path) {
+	public boolean canHandleFormat(URI path) {
 		return this.originalFormat.canHandleFormat(path);
 	}
 
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.io.SopremoFileFormat#getPreferredFilenameExtension()
+	 * @see eu.stratosphere.sopremo.io.SopremoFormat#getPreferredFilenameExtensions()
 	 */
 	@Override
-	protected String getPreferredFilenameExtension() {
-		return this.originalFormat.getPreferredFilenameExtension();
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.io.SopremoFileFormat#getInputFormat()
-	 */
-	@Override
-	public Class<? extends SopremoInputFormat> getInputFormat() {
-		return SampleInputFormat.class;
+	protected String[] getPreferredFilenameExtensions() {
+		return this.originalFormat.getPreferredFilenameExtensions();
 	}
 
 	/**
@@ -105,11 +97,11 @@ public class SampleFormat extends SopremoFileFormat {
 		return this.sampleSize == other.sampleSize && this.originalFormat.equals(other.originalFormat);
 	}
 
-	public static class SampleInputFormat extends SopremoInputFormat {
+	public static class SampleInputFormat extends AbstractSopremoInputFormat<InputSplit> {
 
-		private SopremoFileFormat originalFormat;
+		private SopremoFormat originalFormat;
 
-		private SopremoInputFormat originalInputFormat;
+		private SopremoInputFormat<InputSplit> originalInputFormat;
 
 		private long currentSample, sampleSize;
 
@@ -118,25 +110,26 @@ public class SampleFormat extends SopremoFileFormat {
 		 * @see
 		 * eu.stratosphere.pact.common.io.FileInputFormat#configure(eu.stratosphere.nephele.configuration.Configuration)
 		 */
+		@SuppressWarnings("unchecked")
 		@Override
 		public void configure(Configuration parameters) {
 			super.configure(parameters);
 
-			this.originalInputFormat = ReflectUtil.newInstance(this.originalFormat.getInputFormat());
+			this.originalInputFormat =
+				(SopremoInputFormat<InputSplit>) ReflectUtil.newInstance(this.originalFormat.getInputFormat());
 			this.currentSample = 0;
 			Configuration originalConfiguration = new Configuration();
-			SopremoUtil.transferFieldsToConfiguration(this.originalFormat, SopremoFileFormat.class,
-				originalConfiguration, this.originalFormat.getInputFormat(), SopremoInputFormat.class);
+			SopremoUtil.transferFieldsToConfiguration(this.originalFormat, SopremoFormat.class,
+				originalConfiguration, this.originalFormat.getInputFormat(), InputFormat.class);
 			this.originalInputFormat.configure(originalConfiguration);
 		}
 
 		/*
 		 * (non-Javadoc)
-		 * @see eu.stratosphere.pact.common.io.FileInputFormat#open(eu.stratosphere.nephele.fs.FileInputSplit)
+		 * @see eu.stratosphere.pact.generic.io.InputFormat#open(eu.stratosphere.nephele.template.InputSplit)
 		 */
 		@Override
-		public void open(FileInputSplit split) throws IOException {
-			super.open(split);
+		public void open(InputSplit split) throws IOException {
 			this.originalInputFormat.open(split);
 		}
 
@@ -165,20 +158,10 @@ public class SampleFormat extends SopremoFileFormat {
 
 		/*
 		 * (non-Javadoc)
-		 * @see
-		 * eu.stratosphere.sopremo.io.SopremoFileFormat.SopremoInputFormat#open(eu.stratosphere.nephele.fs.FSDataInputStream
-		 * , eu.stratosphere.nephele.fs.FileInputSplit)
+		 * @see eu.stratosphere.sopremo.io.SopremoFormat.SopremoFileInputFormat#nextValue()
 		 */
 		@Override
-		protected void open(FSDataInputStream stream, FileInputSplit split) throws IOException {
-		}
-
-		/*
-		 * (non-Javadoc)
-		 * @see eu.stratosphere.sopremo.io.SopremoFileFormat.SopremoInputFormat#nextValue()
-		 */
-		@Override
-		protected IJsonNode nextValue() throws IOException {
+		public IJsonNode nextValue() throws IOException {
 			this.currentSample++;
 			final IJsonNode value = this.originalInputFormat.nextValue();
 			if (this.currentSample >= this.sampleSize || this.originalInputFormat.reachedEnd()) {
@@ -186,6 +169,34 @@ public class SampleFormat extends SopremoFileFormat {
 				return null;
 			}
 			return value;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see eu.stratosphere.pact.generic.io.InputFormat#createInputSplits(int)
+		 */
+		@Override
+		public InputSplit[] createInputSplits(int minNumSplits) throws IOException {
+			return this.originalInputFormat.createInputSplits(minNumSplits);
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see eu.stratosphere.pact.generic.io.InputFormat#getInputSplitType()
+		 */
+		@Override
+		public Class<? extends InputSplit> getInputSplitType() {
+			return this.originalInputFormat.getInputSplitType();
+		}
+
+
+		/*
+		 * (non-Javadoc)
+		 * @see eu.stratosphere.pact.generic.io.InputFormat#close()
+		 */
+		@Override
+		public void close() throws IOException {
+			this.originalInputFormat.close();
 		}
 
 	}

@@ -33,21 +33,15 @@ import eu.stratosphere.sopremo.type.IStreamNode;
  * 
  * @author Arvid Heise
  */
-@RunWith(PowerMockRunner.class)
 public class ElementaryOperatorTest {
 	/**
 	 * 
 	 */
 	private static final SopremoRecordLayout LAYOUT = SopremoRecordLayout.create();
 
-	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Test(expected = IllegalStateException.class)
-	@PrepareForTest(ContractUtil.class)
 	public void getContractShouldFailIfContractNotInstancable() {
-		PowerMockito.mockStatic(ContractUtil.class);
-		Mockito.when(ContractUtil.getContractClass(OperatorWithOneStub.Implementation.class)).thenReturn(
-			(Class) UninstanceableContract.class);
-		new OperatorWithOneStub().getContract(LAYOUT);
+		new OperatorWithUninstantiableStub().getContract(LAYOUT);
 	}
 
 	@Test(expected = IllegalStateException.class)
@@ -196,12 +190,16 @@ public class ElementaryOperatorTest {
 	}
 
 	@InputCardinality(1)
-	static class UninstanceableContract extends SingleInputContract<Stub> {
+	static class OperatorWithUninstantiableStub extends ElementaryOperator<OperatorWithUnknownStub> {
+		@InputCardinality(1)
+		static class UninstanceableContract extends SingleInputContract<Stub> {
 
-		public UninstanceableContract(final Class<? extends Stub> clazz, final String name) {
-			super(clazz, name);
-			throw new IllegalStateException("not instanceable");
+			public UninstanceableContract(final Class<? extends Stub> clazz, final String name) {
+				super(clazz, name);
+				throw new IllegalStateException("not instanceable");
+			}
+
 		}
-
 	}
+	
 }

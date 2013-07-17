@@ -112,7 +112,6 @@ public class JoinTest extends SopremoOperatorTestBase<Join> {
 			.addObject("name", "Jane Doe", "url", "www.oracle.com", "company", "oracle")
 			.addObject("name", "Max Mustermann", "url", "www.oracle.com", "company", "oracle");
 
-		sopremoPlan.trace();
 		sopremoPlan.run();
 	}
 

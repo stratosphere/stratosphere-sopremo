@@ -12,6 +12,8 @@ import com.google.common.collect.Lists;
 
 import eu.stratosphere.pact.common.contract.FileDataSink;
 import eu.stratosphere.pact.common.contract.FileDataSource;
+import eu.stratosphere.pact.common.contract.GenericDataSink;
+import eu.stratosphere.pact.common.contract.GenericDataSource;
 import eu.stratosphere.pact.common.plan.PactModule;
 import eu.stratosphere.pact.common.plan.Plan;
 import eu.stratosphere.pact.common.stubs.Stub;
@@ -31,7 +33,7 @@ public class SopremoPlanTest extends EqualCloneTest<SopremoPlan> {
 	protected SopremoPlan createDefaultInstance(int index) {
 		final SopremoPlan plan = new SopremoPlan();
 		final Source source = new Source();
-		plan.setSinks(new Sink(String.valueOf(index)).withInputs(source));
+		plan.setSinks(new Sink("file:///" + String.valueOf(index)).withInputs(source));
 		return plan;
 	}
 
@@ -55,8 +57,8 @@ public class SopremoPlanTest extends EqualCloneTest<SopremoPlan> {
 
 		Assert.assertEquals(3, pacts.size());
 
-		Assert.assertTrue(Iterables.removeIf(pacts, Predicates.instanceOf(FileDataSource.class)));
-		Assert.assertTrue(Iterables.removeIf(pacts, Predicates.instanceOf(FileDataSink.class)));
+		Assert.assertTrue(Iterables.removeIf(pacts, Predicates.instanceOf(GenericDataSource.class)));
+		Assert.assertTrue(Iterables.removeIf(pacts, Predicates.instanceOf(GenericDataSink.class)));
 		final Contract contract = Iterables.find(pacts, Predicates.instanceOf(Contract.class));
 		Assert.assertNotNull(contract);
 		Assert.assertSame(pactStub, contract.getUserCodeClass());

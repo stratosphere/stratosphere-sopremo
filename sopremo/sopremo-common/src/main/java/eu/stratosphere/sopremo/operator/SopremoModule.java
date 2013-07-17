@@ -43,9 +43,9 @@ public class SopremoModule extends GraphModule<Operator<?>, Source, Sink> implem
 	public SopremoModule(final int numberOfInputs, final int numberOfOutputs) {
 		super(numberOfInputs, numberOfOutputs, OperatorNavigator.INSTANCE);
 		for (int index = 0; index < numberOfInputs; index++)
-			this.setInput(index, new Source(String.format("Source %d", index)));
+			this.setInput(index, new Source(String.format("file:///%d", index)).withName("Source " + index));
 		for (int index = 0; index < numberOfOutputs; index++)
-			this.setOutput(index, new Sink(String.format("Sink %d", index)));
+			this.setOutput(index, new Sink(String.format("file:///%d", index)).withName("Sink " + index));
 	}
 
 	/**

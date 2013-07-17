@@ -23,9 +23,10 @@ import org.junit.Ignore;
 
 import eu.stratosphere.nephele.configuration.Configuration;
 import eu.stratosphere.pact.generic.io.FormatUtil;
+import eu.stratosphere.pact.generic.io.OutputFormat;
 import eu.stratosphere.pact.testing.AssertUtil;
 import eu.stratosphere.sopremo.EvaluationContext;
-import eu.stratosphere.sopremo.io.SopremoFileFormat.SopremoOutputFormat;
+import eu.stratosphere.sopremo.io.SopremoFormat.SopremoFileOutputFormat;
 import eu.stratosphere.sopremo.pact.SopremoUtil;
 import eu.stratosphere.sopremo.serialization.SopremoRecord;
 import eu.stratosphere.sopremo.serialization.SopremoRecordLayout;
@@ -38,17 +39,19 @@ import eu.stratosphere.sopremo.type.IJsonNode;
 public class OutputFormatTest {
 	public static final SopremoRecordLayout NULL_LAYOUT = SopremoRecordLayout.create();
 
-	public static void writeToFile(final File file, final SopremoFileFormat format, final SopremoRecordLayout layout,
+	public static void writeToFile(final File file, final SopremoFormat format, final SopremoRecordLayout layout,
 			IJsonNode... values)
 			throws IOException {
 		Configuration config = new Configuration();
 		final EvaluationContext context = new EvaluationContext();
 		SopremoUtil.setEvaluationContext(config, context);
 		SopremoUtil.setLayout(config, layout);
-		SopremoUtil.transferFieldsToConfiguration(format, SopremoFileFormat.class, config,
-			format.getOutputFormat(), SopremoOutputFormat.class);
-		final SopremoOutputFormat outputFormat =
-			FormatUtil.openOutput(format.getOutputFormat(), file.toURI().toString(), config);
+		SopremoUtil.transferFieldsToConfiguration(format, SopremoFormat.class, config,
+			format.getOutputFormat(), OutputFormat.class);
+		@SuppressWarnings("unchecked")
+		final SopremoFileOutputFormat outputFormat =
+			FormatUtil.openOutput((Class<? extends SopremoFileOutputFormat>) format.getOutputFormat(),
+				file.toURI().toString(), config);
 
 		for (IJsonNode value : values) {
 			final SopremoRecord record = new SopremoRecord(layout);
@@ -64,7 +67,7 @@ public class OutputFormatTest {
 	 * @param schema2
 	 * @param values
 	 */
-	public static void writeAndRead(SopremoFileFormat format, SopremoRecordLayout layout, IJsonNode... values)
+	public static void writeAndRead(SopremoFormat format, SopremoRecordLayout layout, IJsonNode... values)
 			throws IOException {
 
 		final File file = File.createTempFile("csvTest.csv", null);

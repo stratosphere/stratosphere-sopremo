@@ -23,16 +23,10 @@ import java.io.IOException;
 import java.util.Deque;
 import java.util.HashSet;
 import java.util.LinkedList;
-import java.util.Map.Entry;
 import java.util.Set;
 
 import javolution.text.TypeFormat;
 
-import com.esotericsoftware.kryo.DefaultSerializer;
-import com.esotericsoftware.kryo.Kryo;
-import com.esotericsoftware.kryo.Serializer;
-import com.esotericsoftware.kryo.io.Input;
-import com.esotericsoftware.kryo.io.Output;
 import com.google.common.base.Predicate;
 
 import eu.stratosphere.sopremo.AbstractSopremoType;

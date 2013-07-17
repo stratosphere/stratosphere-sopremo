@@ -122,16 +122,13 @@ public class TwoSourceJoinTest extends SopremoOperatorTestBase<TwoSourceJoin> {
 			addObject("userid", 1, "url", "code.google.com/p/jaql/").
 			addObject("userid", 2, "url", "www.cnn.com").
 			addObject("userid", 1, "url", "java.sun.com/javase/6/docs/api/");
-		sopremoPlan
-			.getExpectedOutput(0)
-			.
-			addObject("name", "Jon Doe", "password", "asdf1234", "id", 1, "userid", 1, "url", "code.google.com/p/jaql/")
-			.
+		sopremoPlan.
+			getExpectedOutput(0).
+			addObject("name", "Jon Doe", "password", "asdf1234", "id", 1, "userid", 1, "url", "code.google.com/p/jaql/").
 			addObject("name", "Jon Doe", "password", "asdf1234", "id", 1, "userid", 1, "url",
 				"java.sun.com/javase/6/docs/api/").
 			addObject("name", "Jane Doe", "password", "qwertyui", "id", 2, "userid", 2, "url", "www.cnn.com");
 
-		sopremoPlan.trace();
 		sopremoPlan.run();
 	}
 

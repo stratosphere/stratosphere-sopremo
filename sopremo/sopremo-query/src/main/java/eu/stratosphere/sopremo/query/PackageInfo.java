@@ -26,7 +26,7 @@ import java.util.jar.JarFile;
 import eu.stratosphere.nephele.util.StringUtils;
 import eu.stratosphere.sopremo.AbstractSopremoType;
 import eu.stratosphere.sopremo.ISopremoType;
-import eu.stratosphere.sopremo.io.SopremoFileFormat;
+import eu.stratosphere.sopremo.io.SopremoFormat;
 import eu.stratosphere.sopremo.operator.Operator;
 import eu.stratosphere.sopremo.packages.BuiltinProvider;
 import eu.stratosphere.sopremo.packages.ConstantRegistryCallback;
@@ -58,8 +58,8 @@ public class PackageInfo extends AbstractSopremoType implements ISopremoType, Pa
 
 	private IConfObjectRegistry<Operator<?>> operatorRegistry = new DefaultConfObjectRegistry<Operator<?>>();
 
-	private IConfObjectRegistry<SopremoFileFormat> fileFormatRegistry =
-		new DefaultConfObjectRegistry<SopremoFileFormat>();
+	private IConfObjectRegistry<SopremoFormat> fileFormatRegistry =
+		new DefaultConfObjectRegistry<SopremoFormat>();
 
 	private IConstantRegistry constantRegistry = new DefaultConstantRegistry();
 
@@ -94,7 +94,7 @@ public class PackageInfo extends AbstractSopremoType implements ISopremoType, Pa
 	 * @return the fileFormatRegistry
 	 */
 	@Override
-	public IConfObjectRegistry<SopremoFileFormat> getFileFormatRegistry() {
+	public IConfObjectRegistry<SopremoFormat> getFileFormatRegistry() {
 		return this.fileFormatRegistry;
 	}
 
@@ -107,11 +107,11 @@ public class PackageInfo extends AbstractSopremoType implements ISopremoType, Pa
 				clazz = Class.forName(className, true, this.classLoader);
 				QueryUtil.LOG.trace("adding operator " + clazz);
 				this.getOperatorRegistry().put((Class<? extends Operator<?>>) clazz);
-			} else if (SopremoFileFormat.class.isAssignableFrom(clazz)
+			} else if (SopremoFormat.class.isAssignableFrom(clazz)
 				&& (clazz.getModifiers() & Modifier.ABSTRACT) == 0) {
 				clazz = Class.forName(className, true, this.classLoader);
 				QueryUtil.LOG.trace("adding operator " + clazz);
-				this.getFileFormatRegistry().put((Class<? extends SopremoFileFormat>) clazz);
+				this.getFileFormatRegistry().put((Class<? extends SopremoFormat>) clazz);
 			} else if (BuiltinProvider.class.isAssignableFrom(clazz)) {
 				clazz = Class.forName(className, true, this.classLoader);
 				this.addFunctionsAndConstants(clazz);
