@@ -14,3 +14,4 @@ tmp/*
 pact/pact-tests/tmp/*
 *.iml
 .idea/*
+meteor/meteor-example/resources/*
