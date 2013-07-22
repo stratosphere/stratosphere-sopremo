@@ -59,6 +59,22 @@ public class ReflectUtil {
 			annotation = t.getAnnotation(annotationType);
 		return annotation;
 	}
+	
+	/**
+	 * Returns the first annotation of the specified annotation type for the given field.<br>
+	 * If no annotation is found for the type, the hierarchical ancestors are examined.
+	 * 
+	 * @param field
+	 *        the field which might be annotated
+	 * @param annotationType
+	 *        the annotation type
+	 * @return the annotation or null
+	 */
+	public static <A extends Annotation> A getAnnotation(final Field field, final Class<A> annotationType) {
+		A annotation = null;
+		annotation = field.getAnnotation(annotationType);
+		return annotation;
+	}
 
 	/**
 	 * Returns the hierarchical distance between a class and a derived class. <br>

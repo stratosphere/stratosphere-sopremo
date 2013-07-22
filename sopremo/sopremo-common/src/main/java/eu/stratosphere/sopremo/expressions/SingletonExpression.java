@@ -16,12 +16,12 @@ package eu.stratosphere.sopremo.expressions;
 
 import java.io.IOException;
 
-import eu.stratosphere.sopremo.Singleton;
+import eu.stratosphere.sopremo.Immutable;
 
 /**
  * This expression represents a Singleton.
  */
-@Singleton
+@Immutable
 public abstract class SingletonExpression extends EvaluationExpression {
 
 	private final String textualRepresentation;

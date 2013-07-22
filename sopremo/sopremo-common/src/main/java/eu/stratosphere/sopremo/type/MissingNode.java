@@ -4,7 +4,7 @@ import java.io.IOException;
 
 import com.esotericsoftware.kryo.DefaultSerializer;
 
-import eu.stratosphere.sopremo.Singleton;
+import eu.stratosphere.sopremo.Immutable;
 import eu.stratosphere.sopremo.SingletonSerializer;
 
 /**
@@ -13,7 +13,7 @@ import eu.stratosphere.sopremo.SingletonSerializer;
  * @author Michael Hopstock
  * @author Tommy Neubert
  */
-@Singleton
+@Immutable
 @DefaultSerializer(MissingNode.MissingSerializer.class)
 public class MissingNode extends AbstractJsonNode implements IPrimitiveNode {
 

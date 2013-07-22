@@ -27,7 +27,7 @@ import com.google.common.base.Predicates;
 import eu.stratosphere.sopremo.AbstractSopremoType;
 import eu.stratosphere.sopremo.ICloneable;
 import eu.stratosphere.sopremo.ISopremoType;
-import eu.stratosphere.sopremo.Singleton;
+import eu.stratosphere.sopremo.Immutable;
 import eu.stratosphere.sopremo.SingletonSerializer;
 import eu.stratosphere.sopremo.expressions.tree.ChildIterator;
 import eu.stratosphere.sopremo.expressions.tree.ListChildIterator;
@@ -41,7 +41,7 @@ public abstract class EvaluationExpression extends AbstractSopremoType implement
 		Iterable<EvaluationExpression>, ICloneable {
 
 	@DefaultSerializer(ValueSerializer.class)
-	@Singleton
+	@Immutable
 	public static final class ValueExpression extends PathSegmentExpression  {
 		/**
 		 * Initializes ValueExpression.

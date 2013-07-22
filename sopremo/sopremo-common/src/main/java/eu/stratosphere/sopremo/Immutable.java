@@ -23,7 +23,7 @@ import java.lang.annotation.Target;
  * @author Arvid Heise
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
-public @interface Singleton {
+@Target({ElementType.TYPE, ElementType.FIELD})
+public @interface Immutable {
 
 }

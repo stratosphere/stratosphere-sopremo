@@ -35,7 +35,8 @@ public abstract class EqualCloneTest<T extends ICloneable> extends EqualVerifyTe
 			final Object originalValue = field.get(original);
 			final Object clonedValue = field.get(clone);
 			if (immutable || originalValue == null
-				|| ReflectUtil.getAnnotation(originalValue.getClass(), Singleton.class) != null)
+				|| ReflectUtil.getAnnotation(originalValue.getClass(), Immutable.class) != null
+				|| ReflectUtil.getAnnotation(field, Immutable.class) != null)
 				Assert.assertSame(String.format("Singleton field %s is cloned improperly", field.getName()),
 					clonedValue, originalValue);
 			else

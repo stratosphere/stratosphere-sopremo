@@ -14,12 +14,12 @@
  **********************************************************************************************************************/
 package eu.stratosphere.sopremo.expressions;
 
-import eu.stratosphere.sopremo.Singleton;
+import eu.stratosphere.sopremo.Immutable;
 
 /**
  * This expression represents a Singleton.
  */
-@Singleton
+@Immutable
 public class UnevaluableSingletonExpression extends UnevaluableExpression {
 
 	/**
