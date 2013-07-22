@@ -147,19 +147,6 @@ public class IntNode extends AbstractNumericNode implements INumericNode {
 			this.value = 0;
 	}
 
-	@Override
-	public int getMaxNormalizedKeyLen() {
-		return 4;
-	}
-
-	@Override
-	public void copyNormalizedKey(final byte[] target, final int offset, final int len) {
-		int value = this.value;
-		for (int index = 0; index < len; index++, value <<= 8)
-			target[index + offset] = (byte) (value >>> 24);
-		this.fillWithZero(target, 4, len);
-	}
-
 	public void increment() {
 		this.value++;
 	}

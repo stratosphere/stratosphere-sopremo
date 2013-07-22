@@ -42,15 +42,6 @@ public abstract class AbstractNumericNode extends AbstractJsonNode implements IN
 
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.type.AbstractJsonNode#isCopyable(eu.stratosphere.sopremo.type.IJsonNode)
-	 */
-	@Override
-	public boolean isCopyable(IJsonNode otherNode) {
-		return otherNode instanceof INumericNode;
-	}
-
-	/*
-	 * (non-Javadoc)
 	 * @see eu.stratosphere.sopremo.type.AbstractJsonNode#compareToOtherType(eu.stratosphere.pact.common.type.Key)
 	 */
 	@Override

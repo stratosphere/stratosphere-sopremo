@@ -29,7 +29,7 @@ import eu.stratosphere.sopremo.expressions.tree.ChildIterator;
 import eu.stratosphere.sopremo.type.IArrayNode;
 import eu.stratosphere.sopremo.type.IJsonNode;
 import eu.stratosphere.sopremo.type.IObjectNode;
-import eu.stratosphere.sopremo.type.NullNode;
+import eu.stratosphere.sopremo.type.MissingNode;
 import eu.stratosphere.sopremo.type.ObjectNode;
 
 /**
@@ -201,7 +201,7 @@ public class ObjectCreation extends EvaluationExpression {
 		public IJsonNode evaluate(final IJsonNode node) {
 			this.result.clear();
 			for (final IJsonNode jsonNode : (IArrayNode<?>) node)
-				if (!(jsonNode != NullNode.getInstance()))
+				if (jsonNode != MissingNode.getInstance())
 					this.result.putAll((IObjectNode) jsonNode);
 			return this.result;
 		}

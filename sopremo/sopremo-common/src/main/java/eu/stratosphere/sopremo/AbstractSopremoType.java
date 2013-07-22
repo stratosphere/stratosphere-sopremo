@@ -15,8 +15,7 @@
 package eu.stratosphere.sopremo;
 
 import java.io.IOException;
-
-import com.esotericsoftware.kryo.Kryo;
+import java.util.Iterator;
 
 /**
  * Provides basic implementations of the required methods of {@link SopremoType}
@@ -33,36 +32,18 @@ public abstract class AbstractSopremoType implements ISopremoType {
 		return toString(this);
 	}
 
-	private final static ThreadLocal<Kryo> CloneHelper = new ThreadLocal<Kryo>() {
-		/* (non-Javadoc)
-		 * @see java.lang.ThreadLocal#initialValue()
-		 */
-		@Override
-		protected Kryo initialValue() {
-			Kryo kryo = new Kryo();kryo.setReferences(false);
-			return kryo;
-		}
-	};
-
 	/*
 	 * (non-Javadoc)
 	 * @see java.lang.Object#clone()
 	 */
 	@Override
 	public AbstractSopremoType clone() {
-		return getKryo().copy(this);
+		return SopremoEnvironment.getInstance().getEvaluationContext().getKryo().copy(this);
 		// kryo 2.20 makes fancy stuff such as caching of clones - we need more control
 		// if (this instanceof KryoCopyable<?>)
 		// return ((KryoCopyable<AbstractSopremoType>) this).copy(CloneHelper);
 		// final Serializer<AbstractSopremoType> serializer = CloneHelper.getSerializer(getClass());
 		// return serializer.copy(CloneHelper, this);
-	}
-
-	/**
-	 * Unreliable API - subject to change
-	 */
-	protected Kryo getKryo() {
-		return CloneHelper.get();
 	}
 
 	protected void checkCopyType(AbstractSopremoType copy) {
@@ -71,12 +52,26 @@ public abstract class AbstractSopremoType implements ISopremoType {
 				this.getClass(), copy.getClass()));
 	}
 
+	protected void append(final Appendable appendable, final Iterable<? extends ISopremoType> children, final String separator)
+			throws IOException {
+		Iterator<? extends ISopremoType> iterator = children.iterator();
+		for (int index = 0; iterator.hasNext(); index++) {
+			if (index > 0)
+				appendable.append(separator);
+			ISopremoType child = iterator.next();
+			if (child == null)
+				appendable.append("!null!");
+			else
+				child.appendAsString(appendable);
+		}
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * @see java.lang.Object#clone()
 	 */
 	public AbstractSopremoType shallowClone() {
-		return getKryo().copyShallow(this);
+		return SopremoEnvironment.getInstance().getEvaluationContext().getKryo().copyShallow(this);
 	}
 
 	@SuppressWarnings("unchecked")

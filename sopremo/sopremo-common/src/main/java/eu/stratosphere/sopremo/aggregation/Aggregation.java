@@ -9,7 +9,7 @@ import eu.stratosphere.sopremo.expressions.AggregationExpression;
 import eu.stratosphere.sopremo.type.IJsonNode;
 
 public abstract class Aggregation extends AbstractSopremoType implements ISopremoType, ICloneable {
-	private final String name;
+	private final transient String name;
 
 	public Aggregation(final String name) {
 		this.name = name;
@@ -28,10 +28,7 @@ public abstract class Aggregation extends AbstractSopremoType implements ISoprem
 
 	@Override
 	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + this.name.hashCode();
-		return result;
+		return 1;
 	}
 
 	/*
@@ -60,8 +57,7 @@ public abstract class Aggregation extends AbstractSopremoType implements ISoprem
 			return false;
 		if (this.getClass() != obj.getClass())
 			return false;
-		final Aggregation other = (Aggregation) obj;
-		return this.name.equals(other.name);
+		return true;
 	}
 
 	public abstract IJsonNode getFinalAggregate();

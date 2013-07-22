@@ -11,7 +11,7 @@ import eu.stratosphere.sopremo.operator.SopremoPlan;
 public class IntersectionTest extends MeteorTest {
 
 	@Test
-	public void testIntersectio1() {
+	public void testIntersection1() {
 		final SopremoPlan actualPlan = this.parseScript("$users1 = read from 'file://users1.json';\n" +
 			"$users2 = read from 'file://users2.json';\n" +
 			"$commonUsers = intersect $users1, $users2;\n" +
@@ -21,7 +21,7 @@ public class IntersectionTest extends MeteorTest {
 		final Source users1 = new Source("file://users1.json");
 		final Source users2 = new Source("file://users2.json");
 		final Intersection intersection = new Intersection().withInputs(users1, users2);
-		final Sink output = new Sink("file://newUsers.json").withInputs(intersection);
+		final Sink output = new Sink("file://commonUsers.json").withInputs(intersection);
 		expectedPlan.setSinks(output);
 
 		assertPlanEquals(expectedPlan, actualPlan);

@@ -24,17 +24,18 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import eu.stratosphere.pact.common.contract.FileDataSink;
 import eu.stratosphere.pact.common.contract.FileDataSource;
+import eu.stratosphere.pact.common.contract.GenericDataSink;
+import eu.stratosphere.pact.common.contract.GenericDataSource;
 import eu.stratosphere.pact.common.plan.ContractUtil;
 import eu.stratosphere.pact.common.plan.PactModule;
 import eu.stratosphere.pact.generic.contract.Contract;
 import eu.stratosphere.sopremo.EvaluationContext;
+import eu.stratosphere.sopremo.Schema;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
 import eu.stratosphere.sopremo.io.Sink;
 import eu.stratosphere.sopremo.io.Source;
-import eu.stratosphere.sopremo.serialization.Schema;
-import eu.stratosphere.sopremo.serialization.SchemaFactory;
+import eu.stratosphere.sopremo.serialization.SopremoRecordLayout;
 import eu.stratosphere.util.IdentityList;
 import eu.stratosphere.util.dag.GraphTraverseListener;
 import eu.stratosphere.util.dag.OneTimeTraverser;
@@ -148,8 +149,8 @@ public class ElementarySopremoModule extends SopremoModule {
 			this.context = context.clone();
 		}
 
-		public Collection<Contract> assemble() {
-			this.convertDAGToModules();
+		public Collection<Contract> assemble(SopremoRecordLayout layout) {
+			this.convertDAGToModules(layout);
 
 			this.connectModules();
 
@@ -177,7 +178,7 @@ public class ElementarySopremoModule extends SopremoModule {
 			}
 		}
 
-		private void convertDAGToModules() {
+		private void convertDAGToModules(final SopremoRecordLayout layout) {
 			// final Schema schema = getSchema();
 			OneTimeTraverser.INSTANCE.traverse(ElementarySopremoModule.this.getAllOutputs(),
 				OperatorNavigator.INSTANCE, new GraphTraverseListener<Operator<?>>() {
@@ -188,13 +189,13 @@ public class ElementarySopremoModule extends SopremoModule {
 							context.setOperatorDescription(ElementarySopremoModule.this.getName());
 						else
 							context.setOperatorDescription(node.toString());
-						final PactModule module = node.asPactModule(context);
+						final PactModule module = node.asPactModule(context, layout);
 
 						PactAssembler.this.modules.put(node, module);
-						final List<FileDataSink> outputStubs = module.getOutputs();
+						final List<GenericDataSink> outputStubs = module.getOutputs();
 						final List<List<Contract>> outputContracts = new ArrayList<List<Contract>>();
-						for (FileDataSink fileDataSink : outputStubs)
-							outputContracts.add(fileDataSink.getInputs());
+						for (GenericDataSink sink : outputStubs)
+							outputContracts.add(sink.getInputs());
 						PactAssembler.this.operatorOutputs.put(node, outputContracts);
 					}
 				});
@@ -205,7 +206,7 @@ public class ElementarySopremoModule extends SopremoModule {
 
 		private void addOutputtingPactInOperator(final Operator<?> operator, final Contract o,
 				final List<Contract> connectedInputs) {
-			int inputIndex = new IdentityList<FileDataSource>(this.modules.get(operator).getInputs()).indexOf(o);
+			int inputIndex = new IdentityList<GenericDataSource<?>>(this.modules.get(operator).getInputs()).indexOf(o);
 			// final List<FileDataSource> inputPacts =
 			// this.modules.get(operator).getInputs();
 			// for (int index = 0; index < inputPacts.size(); index++)
@@ -232,7 +233,7 @@ public class ElementarySopremoModule extends SopremoModule {
 		private List<Contract> findPACTSinks() {
 			final List<Contract> pactSinks = new ArrayList<Contract>();
 			for (final Operator<?> sink : ElementarySopremoModule.this.getAllOutputs())
-				for (final FileDataSink outputStub : this.modules.get(sink).getAllOutputs())
+				for (final GenericDataSink outputStub : this.modules.get(sink).getAllOutputs())
 					if (sink instanceof Sink)
 						pactSinks.add(outputStub);
 					else
@@ -250,27 +251,20 @@ public class ElementarySopremoModule extends SopremoModule {
 	 * @return a list of Pact sinks
 	 */
 	public Collection<Contract> assemblePact(final EvaluationContext context) {
-		return new PactAssembler(context).assemble();
+		return new PactAssembler(context).assemble(SopremoRecordLayout.create(this.schema.getKeyExpressions()));
 	}
 
 	/**
 	 * @param schemaFactory
 	 */
-	public void inferSchema(final SchemaFactory schemaFactory) {
+	public void inferSchema() {
 		final Set<EvaluationExpression> keyExpressions = new HashSet<EvaluationExpression>();
-		final Set<EvaluationExpression> resultExpressions = new HashSet<EvaluationExpression>();
 		for (final ElementaryOperator<?> operator : this.getReachableNodes()) {
 			for (final List<? extends EvaluationExpression> expressions : operator.getAllKeyExpressions())
 				keyExpressions.addAll(expressions);
-
-			if (operator.getNumInputs() != 1 && operator.getResultProjection() == EvaluationExpression.VALUE)
-				resultExpressions.add(SchemaFactory.UNKNOWN);
-			else
-				resultExpressions.add(operator.getResultProjection());
 		}
 
-		resultExpressions.remove(EvaluationExpression.VALUE);
-		this.schema = schemaFactory.create(keyExpressions, resultExpressions);
+		this.schema = new Schema(new ArrayList<EvaluationExpression>(keyExpressions));
 	}
 
 	/**

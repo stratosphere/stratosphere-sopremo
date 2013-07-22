@@ -2,21 +2,20 @@ package eu.stratosphere.sopremo.pact;
 
 import eu.stratosphere.nephele.configuration.Configuration;
 import eu.stratosphere.pact.common.stubs.Collector;
-import eu.stratosphere.pact.common.stubs.MapStub;
-import eu.stratosphere.pact.common.type.PactRecord;
+import eu.stratosphere.pact.generic.stub.AbstractStub;
+import eu.stratosphere.pact.generic.stub.GenericMapper;
 import eu.stratosphere.sopremo.EvaluationContext;
-import eu.stratosphere.sopremo.SopremoRuntime;
-import eu.stratosphere.sopremo.serialization.Schema;
+import eu.stratosphere.sopremo.SopremoEnvironment;
+import eu.stratosphere.sopremo.serialization.SopremoRecord;
 import eu.stratosphere.sopremo.type.IJsonNode;
 
 /**
  * An abstract implementation of the {@link MapStub}. SopremoMap provides the functionality to convert the
  * standard input of the MapStub to a more manageable representation (the input is converted to an {@link IJsonNode}).
  */
-public abstract class TypedSopremoMap<T extends IJsonNode> extends MapStub implements SopremoStub {
+public abstract class TypedSopremoMap<T extends IJsonNode> extends AbstractStub implements
+		GenericMapper<SopremoRecord, SopremoRecord>, SopremoStub {
 	private EvaluationContext context;
-
-	private Schema inputSchema;
 
 	private JsonCollector collector;
 
@@ -24,20 +23,11 @@ public abstract class TypedSopremoMap<T extends IJsonNode> extends MapStub imple
 	public void open(final Configuration parameters) {
 		// We need to pass our class loader since the default class loader is
 		// not able to resolve classes coming from the Sopremo user jar file.
-		SopremoRuntime.getInstance().setClassLoader(getClass().getClassLoader());
-		this.context = (EvaluationContext) SopremoUtil.getObject(parameters, SopremoUtil.CONTEXT, null);
-		this.inputSchema = this.context.getInputSchema(0);
-		if (this.inputSchema == null)
-
-			throw new IllegalStateException(
-				"Could not deserialize input schema");
-		final Schema outputSchema = this.context.getOutputSchema(0);
-		if (outputSchema == null)
-			throw new IllegalStateException(
-				"Could not deserialize output schema");
-		this.collector = new JsonCollector(outputSchema);
+		SopremoEnvironment.getInstance().setClassLoader(getClass().getClassLoader());
+		this.context = SopremoUtil.getEvaluationContext(parameters);
+		this.collector = new JsonCollector(SopremoUtil.getLayout(parameters));
 		SopremoUtil.configureWithTransferredState(this, TypedSopremoMap.class, parameters);
-		SopremoRuntime.getInstance().setCurrentEvaluationContext(this.getContext());
+		SopremoEnvironment.getInstance().setEvaluationContext(this.getContext());
 	}
 
 	@Override
@@ -63,10 +53,9 @@ public abstract class TypedSopremoMap<T extends IJsonNode> extends MapStub imple
 	 */
 	@SuppressWarnings("unchecked")
 	@Override
-	public void map(final PactRecord record, final Collector<PactRecord> out) {
-		this.context.incrementInputCount();
+	public void map(final SopremoRecord record, final Collector<SopremoRecord> out) {
 		this.collector.configure(out, this.context);
-		final T input = (T) this.inputSchema.recordToJson(record);
+		final T input = (T) record.getNode();
 		if (SopremoUtil.LOG.isTraceEnabled())
 			SopremoUtil.LOG.trace(String.format("%s %s", this.getContext().getOperatorDescription(), input));
 		try {

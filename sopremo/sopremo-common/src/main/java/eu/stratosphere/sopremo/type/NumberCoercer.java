@@ -14,10 +14,6 @@ public final class NumberCoercer {
 	private final Map<Class<? extends INumericNode>, Coercer<? extends INumericNode, ? extends INumericNode>> coercers =
 		new IdentityHashMap<Class<? extends INumericNode>, Coercer<? extends INumericNode, ? extends INumericNode>>();
 
-	private final Map<Class<? extends INumericNode>, Map<Class<? extends INumericNode>, Class<? extends INumericNode>>> widerClass =
-		new IdentityHashMap<Class<? extends INumericNode>, Map<Class<? extends INumericNode>, Class<? extends
-		INumericNode>>>();
-
 	public NumberCoercer() {
 		this.coercers.put(IntNode.class, new Coercer<INumericNode, IntNode>(IntNode.class) {
 			@Override

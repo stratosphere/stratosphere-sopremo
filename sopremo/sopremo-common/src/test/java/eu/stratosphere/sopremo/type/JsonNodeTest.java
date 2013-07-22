@@ -36,37 +36,6 @@ public abstract class JsonNodeTest<T extends IJsonNode> extends EqualCloneTest<T
 
 	@Test
 	public void testTypeNumber() {
-		Assert.assertNotNull("every JsonNode must have a TypeNumber", this.node.getType());
-	}
-
-	@Test
-	public abstract void testValue();
-
-	protected abstract IJsonNode lowerNode();
-
-	protected abstract IJsonNode higherNode();
-
-	@Test
-	public void shouldNormalizeKeys() {
-		final IJsonNode lower = this.lowerNode();
-		final IJsonNode higher = this.higherNode();
-		
-		int length = Math.min(100, higher.getMaxNormalizedKeyLen());
-
-		final byte[] lowerTarget = new byte[length];
-		final byte[] higherTarget = new byte[length];
-
-		lower.copyNormalizedKey(lowerTarget, 0, length);
-		higher.copyNormalizedKey(higherTarget, 0, length);
-
-		for (int i = 0; i < length; i++) {
-			final byte lowerByte = lowerTarget[i];
-			final byte higherByte = higherTarget[i];
-
-			if (lowerByte < higherByte)
-				break;
-
-			Assert.assertTrue(lowerByte == higherByte);
-		}
+		Assert.assertNotNull("every JsonNode must have a Type", this.node.getType());
 	}
 }

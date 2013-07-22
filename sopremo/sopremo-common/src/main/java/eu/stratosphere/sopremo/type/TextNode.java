@@ -3,9 +3,13 @@ package eu.stratosphere.sopremo.type;
 import it.unimi.dsi.fastutil.chars.CharArrayList;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Formatter;
 import java.util.Locale;
+
+import com.esotericsoftware.kryo.DefaultSerializer;
+import com.esotericsoftware.kryo.Kryo;
+import com.esotericsoftware.kryo.io.Input;
+import com.esotericsoftware.kryo.io.Output;
 
 /**
  * This node represents a string value.
@@ -13,7 +17,44 @@ import java.util.Locale;
  * @author Michael Hopstock
  * @author Tommy Neubert
  */
+@DefaultSerializer(TextNode.TextNodeSerializer.class)
 public class TextNode extends AbstractJsonNode implements IPrimitiveNode, CharSequence, Appendable {
+
+	public static class TextNodeSerializer extends ReusingSerializer<TextNode> {
+		/*
+		 * (non-Javadoc)
+		 * @see eu.stratosphere.sopremo.type.ReusingSerializer#read(com.esotericsoftware.kryo.Kryo,
+		 * com.esotericsoftware.kryo.io.Input, java.lang.Object, java.lang.Class)
+		 */
+		@Override
+		public TextNode read(Kryo kryo, Input input, TextNode oldInstance, Class<TextNode> type) {
+			final String string = input.readString();
+			if (oldInstance == null)
+				return new TextNode(string);
+			oldInstance.value.clear();
+			oldInstance.value.addElements(0, string.toCharArray());
+			return oldInstance;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see com.esotericsoftware.kryo.Serializer#write(com.esotericsoftware.kryo.Kryo,
+		 * com.esotericsoftware.kryo.io.Output, java.lang.Object)
+		 */
+		@Override
+		public void write(Kryo kryo, Output output, TextNode object) {
+			output.writeString(object);
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see com.esotericsoftware.kryo.Serializer#copy(com.esotericsoftware.kryo.Kryo, java.lang.Object)
+		 */
+		@Override
+		public TextNode copy(Kryo kryo, TextNode original) {
+			return new TextNode(original);
+		}
+	}
 
 	public final static TextNode EMPTY_STRING = new TextNode("");
 
@@ -109,7 +150,7 @@ public class TextNode extends AbstractJsonNode implements IPrimitiveNode, CharSe
 	}
 
 	public void setLength(int newLength) {
-		value.size(newLength);
+		this.value.size(newLength);
 	}
 
 	@Override
@@ -135,30 +176,11 @@ public class TextNode extends AbstractJsonNode implements IPrimitiveNode, CharSe
 
 	@Override
 	public void copyValueFrom(final IJsonNode otherNode) {
+		if (this == otherNode)
+			return;
 		this.checkForSameType(otherNode);
 		this.value.clear();
 		this.value.addAll(((TextNode) otherNode).value);
-	}
-
-	@Override
-	public int getMaxNormalizedKeyLen() {
-		return Integer.MAX_VALUE;
-	}
-
-	@Override
-	public void copyNormalizedKey(final byte[] target, final int offset, final int len) {
-		final int strLen = value.size();
-		for (int index = 0, count = Math.min(strLen, len / 2); index < count; index++) {
-			final char ch = value.getChar(index);
-			final int targetIndex = offset + 2 * index;
-			target[targetIndex] = (byte) (ch >>> 8);
-			target[targetIndex + 1] = (byte) ch;
-		}
-
-		if (strLen * 2 < len)
-			Arrays.fill(target, strLen * 2, len, (byte) 0);
-		else if (len % 2 == 1)
-			target[offset + len - 1] = (byte) (value.getChar(strLen) >>> 8);
 	}
 
 	public void setValue(TextNode text, int start, int end) {
@@ -198,7 +220,16 @@ public class TextNode extends AbstractJsonNode implements IPrimitiveNode, CharSe
 
 			@Override
 			public char charAt(int index) {
-				return charAt(start + index);
+				return TextNode.this.charAt(start + index);
+			}
+
+			/*
+			 * (non-Javadoc)
+			 * @see java.lang.Object#toString()
+			 */
+			@Override
+			public String toString() {
+				return new StringBuilder(this).toString();
 			}
 		};
 	}

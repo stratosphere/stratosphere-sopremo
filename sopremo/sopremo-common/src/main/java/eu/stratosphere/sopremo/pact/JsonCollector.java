@@ -1,10 +1,10 @@
 package eu.stratosphere.sopremo.pact;
 
 import eu.stratosphere.pact.common.stubs.Collector;
-import eu.stratosphere.pact.common.type.PactRecord;
 import eu.stratosphere.sopremo.EvaluationContext;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
-import eu.stratosphere.sopremo.serialization.Schema;
+import eu.stratosphere.sopremo.serialization.SopremoRecord;
+import eu.stratosphere.sopremo.serialization.SopremoRecordLayout;
 import eu.stratosphere.sopremo.type.IJsonNode;
 
 /**
@@ -13,15 +13,13 @@ import eu.stratosphere.sopremo.type.IJsonNode;
  */
 public class JsonCollector {
 
-	private Collector<PactRecord> collector;
+	private Collector<SopremoRecord> collector;
 
 	private EvaluationContext context;
 
-	private final Schema schema;
-
-	private PactRecord record = new PactRecord();
-
 	private EvaluationExpression resultProjection = EvaluationExpression.VALUE;
+	
+	private final SopremoRecord sopremoRecord;
 
 	/**
 	 * Initializes a JsonCollector with the given {@link Schema}.
@@ -29,8 +27,8 @@ public class JsonCollector {
 	 * @param schema
 	 *        the schema that should be used for the IJsonNode - PactRecord conversion.
 	 */
-	public JsonCollector(final Schema schema) {
-		this.schema = schema;
+	public JsonCollector(final SopremoRecordLayout sopremoRecordLayout) {
+		this.sopremoRecord = new SopremoRecord(sopremoRecordLayout);
 	}
 
 	/**
@@ -39,7 +37,7 @@ public class JsonCollector {
 	 * @param collector
 	 *        the collector to set
 	 */
-	public void configure(final Collector<PactRecord> collector, final EvaluationContext context) {
+	public void configure(final Collector<SopremoRecord> collector, final EvaluationContext context) {
 		this.collector = collector;
 		this.context = context;
 		this.resultProjection = context.getResultProjection();
@@ -64,7 +62,7 @@ public class JsonCollector {
 		final IJsonNode resultValue = this.resultProjection.evaluate(value);
 		if (SopremoUtil.LOG.isTraceEnabled())
 			SopremoUtil.LOG.trace(String.format(" to %s", resultValue));
-		this.schema.jsonToRecord(resultValue, this.record);
-		this.collector.collect(this.record);
+		this.sopremoRecord.setNode(resultValue);
+		this.collector.collect(this.sopremoRecord);
 	}
 }

@@ -21,12 +21,10 @@ import java.util.Iterator;
 
 import eu.stratosphere.nephele.configuration.Configuration;
 import eu.stratosphere.nephele.template.GenericInputSplit;
-import eu.stratosphere.pact.common.io.GenericInputFormat;
-import eu.stratosphere.pact.common.type.PactRecord;
-import eu.stratosphere.sopremo.EvaluationContext;
+import eu.stratosphere.pact.generic.io.GenericInputFormat;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
 import eu.stratosphere.sopremo.pact.SopremoUtil;
-import eu.stratosphere.sopremo.serialization.Schema;
+import eu.stratosphere.sopremo.serialization.SopremoRecord;
 import eu.stratosphere.sopremo.type.ArrayNode;
 import eu.stratosphere.sopremo.type.IArrayNode;
 import eu.stratosphere.sopremo.type.IJsonNode;
@@ -38,13 +36,7 @@ import eu.stratosphere.sopremo.type.NullNode;
  * @author skruse
  * @author Arvid Heise
  */
-public class GeneratorInputFormat extends GenericInputFormat {
-
-	/**
-	 * 
-	 */
-	private EvaluationContext context;
-
+public class GeneratorInputFormat extends GenericInputFormat<SopremoRecord> {
 	/**
 	 * Config key which describes the adhoc expression.
 	 */
@@ -57,18 +49,11 @@ public class GeneratorInputFormat extends GenericInputFormat {
 
 	private int numValues = 1;
 
-	/**
-	 * Schema loaded from config.
-	 */
-	private Schema schema;
-
 	@SuppressWarnings("unchecked")
 	@Override
 	public void configure(final Configuration parameters) {
 		super.configure(parameters);
 
-		this.context = (EvaluationContext) SopremoUtil.getObject(parameters, SopremoUtil.CONTEXT, null);
-		this.schema = this.context.getOutputSchema(0);
 		final EvaluationExpression expression =
 			(EvaluationExpression) SopremoUtil.getObject(parameters, ADHOC_EXPRESSION_PARAMETER_KEY, null);
 		final IJsonNode value = expression.evaluate(NullNode.getInstance());
@@ -133,12 +118,12 @@ public class GeneratorInputFormat extends GenericInputFormat {
 	}
 
 	@Override
-	public boolean nextRecord(final PactRecord record) throws IOException {
+	public boolean nextRecord(final SopremoRecord record) throws IOException {
 		if (this.reachedEnd())
 			throw new IOException("End of input split is reached");
 
 		final IJsonNode value = this.valueIterator.next();
-		this.schema.jsonToRecord(value, record);
+		record.setNode(value);
 		return true;
 	}
 

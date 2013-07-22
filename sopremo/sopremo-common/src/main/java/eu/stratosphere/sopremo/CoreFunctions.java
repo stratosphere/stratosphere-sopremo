@@ -23,11 +23,11 @@ import eu.stratosphere.sopremo.cache.ArrayCache;
 import eu.stratosphere.sopremo.cache.NodeCache;
 import eu.stratosphere.sopremo.cache.PatternCache;
 import eu.stratosphere.sopremo.expressions.ArithmeticExpression;
+import eu.stratosphere.sopremo.expressions.ArithmeticExpression.ArithmeticOperator;
+import eu.stratosphere.sopremo.expressions.ComparativeExpression;
 import eu.stratosphere.sopremo.expressions.ConstantExpression;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
 import eu.stratosphere.sopremo.expressions.TernaryExpression;
-import eu.stratosphere.sopremo.expressions.ArithmeticExpression.ArithmeticOperator;
-import eu.stratosphere.sopremo.expressions.ComparativeExpression;
 import eu.stratosphere.sopremo.function.ExpressionFunction;
 import eu.stratosphere.sopremo.function.SopremoFunction;
 import eu.stratosphere.sopremo.function.SopremoFunction1;
@@ -620,7 +620,7 @@ public class CoreFunctions implements BuiltinProvider {
 		String path = node.toString();
 		if (!path.startsWith("hdfs://"))
 			path = new File(path).toURI().toString();
-		SopremoRuntime.getInstance().getCurrentEvaluationContext().setWorkingPath(new Path(path));
+		SopremoEnvironment.getInstance().getEvaluationContext().setWorkingPath(new Path(path));
 		return MissingNode.getInstance();
 	}
 

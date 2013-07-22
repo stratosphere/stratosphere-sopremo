@@ -4,18 +4,17 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import eu.stratosphere.nephele.fs.Path;
-import eu.stratosphere.pact.common.contract.FileDataSource;
 import eu.stratosphere.pact.common.contract.GenericDataSource;
 import eu.stratosphere.pact.common.plan.PactModule;
+import eu.stratosphere.pact.generic.io.InputFormat;
 import eu.stratosphere.sopremo.EvaluationContext;
 import eu.stratosphere.sopremo.expressions.ArrayCreation;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
-import eu.stratosphere.sopremo.io.SopremoFileFormat.SopremoInputFormat;
 import eu.stratosphere.sopremo.operator.ElementaryOperator;
 import eu.stratosphere.sopremo.operator.InputCardinality;
 import eu.stratosphere.sopremo.operator.Property;
 import eu.stratosphere.sopremo.pact.SopremoUtil;
+import eu.stratosphere.sopremo.serialization.SopremoRecordLayout;
 import eu.stratosphere.sopremo.type.IJsonNode;
 import eu.stratosphere.sopremo.type.NullNode;
 import eu.stratosphere.sopremo.util.Equaler;
@@ -29,7 +28,7 @@ public class Source extends ElementaryOperator<Source> {
 
 	private EvaluationExpression adhocExpression;
 
-	private SopremoFileFormat format;
+	private SopremoFormat format;
 
 	/**
 	 * Initializes a Source with the given {@link EvaluationExpression}. This expression serves as the data provider.
@@ -50,13 +49,26 @@ public class Source extends ElementaryOperator<Source> {
 	 * @param inputPath
 	 *        the path to the input file
 	 */
-	public Source(final SopremoFileFormat format, final String inputPath) {
+	public Source(final SopremoFormat format, final String inputPath) {
 		// check and normalize
-		this.inputPath = new Path(inputPath).toString();
+		this.inputPath = inputPath;
 		this.format = format;
 
 		if (format.getInputFormat() == null)
 			throw new IllegalArgumentException("given format does not support reading");
+
+		if (this.inputPath != null)
+			checkPath();
+	}
+
+	/**
+	 * Initializes a Source with the given {@link FileInputFormat}.
+	 * 
+	 * @param inputFormat
+	 *        the InputFormat that should be used
+	 */
+	public Source(final SopremoFormat format) {
+		this(format, null);
 	}
 
 	/**
@@ -99,6 +111,21 @@ public class Source extends ElementaryOperator<Source> {
 
 		this.adhocExpression = null;
 		this.inputPath = inputPath;
+		checkPath();
+	}
+
+	/**
+	 * 
+	 */
+	private void checkPath() {
+		try {
+			URI uri = new URI(this.inputPath);
+			if (uri.getScheme() == null)
+				throw new IllegalStateException(
+					"File name of source does not have a valid schema (such as hdfs or file): " + this.inputPath);
+		} catch (URISyntaxException e) {
+			throw new IllegalArgumentException("Invalid path", e);
+		}
 	}
 
 	/**
@@ -106,7 +133,7 @@ public class Source extends ElementaryOperator<Source> {
 	 * 
 	 * @return the format
 	 */
-	public SopremoFileFormat getFormat() {
+	public SopremoFormat getFormat() {
 		return this.format;
 	}
 
@@ -117,7 +144,7 @@ public class Source extends ElementaryOperator<Source> {
 	 *        the format to set
 	 */
 	@Property(preferred = true)
-	public void setFormat(SopremoFileFormat format) {
+	public void setFormat(SopremoFormat format) {
 		if (format == null)
 			throw new NullPointerException("format must not be null");
 		if (format.getInputFormat() == null)
@@ -141,9 +168,8 @@ public class Source extends ElementaryOperator<Source> {
 	}
 
 	@Override
-	public PactModule asPactModule(final EvaluationContext context) {
-		context.setInputsAndOutputs(0, 1);
-		final String inputPath = this.inputPath, name = this.getName();
+	public PactModule asPactModule(final EvaluationContext context, SopremoRecordLayout layout) {
+		final String name = this.getName();
 		GenericDataSource<?> contract;
 		if (this.isAdhoc()) {
 			contract = new GenericDataSource<GeneratorInputFormat>(
@@ -151,21 +177,13 @@ public class Source extends ElementaryOperator<Source> {
 			SopremoUtil.setObject(contract.getParameters(), GeneratorInputFormat.ADHOC_EXPRESSION_PARAMETER_KEY,
 				this.adhocExpression);
 		} else {
-			try {
-				final URI validURI = new URI(inputPath);
-				if (validURI.getScheme() == null)
-					throw new IllegalStateException(
-						"File name of source does not have a valid schema (such as hdfs or file): " + inputPath);
-			} catch (final URISyntaxException e) {
-				throw new IllegalStateException("Source does not have a valid path: " + inputPath, e);
-			}
-
-			contract = new FileDataSource(this.format.getInputFormat(), inputPath, name);
-			SopremoUtil.transferFieldsToConfiguration(this.format, SopremoFileFormat.class,
-				contract.getParameters(), this.format.getInputFormat(), SopremoInputFormat.class);
+			contract = new GenericDataSource<InputFormat<?, ?>>(this.format.getInputFormat(), name);
+			this.format.configureForInput(contract.getParameters(), this.inputPath);
 		}
 		final PactModule pactModule = new PactModule(0, 1);
-		SopremoUtil.setObject(contract.getParameters(), SopremoUtil.CONTEXT, context);
+		SopremoUtil.setEvaluationContext(contract.getParameters(), context);
+		SopremoUtil.setLayout(contract.getParameters(), layout);
+		contract.setDegreeOfParallelism(getDegreeOfParallelism());
 		pactModule.getOutput(0).setInput(contract);
 		// pactModule.setInput(0, contract);
 		return pactModule;
@@ -190,7 +208,7 @@ public class Source extends ElementaryOperator<Source> {
 		if (this.getClass() != obj.getClass())
 			return false;
 		final Source other = (Source) obj;
-		return Equaler.SafeEquals.equal(this.inputPath, other.inputPath)
+		return Equaler.SafeEquals.equal(this.inputPath,	other.inputPath)
 			&& Equaler.SafeEquals.equal(this.format, other.format)
 			&& Equaler.SafeEquals.equal(this.adhocExpression, other.adhocExpression);
 	}
@@ -236,7 +254,8 @@ public class Source extends ElementaryOperator<Source> {
 		if (this.isAdhoc()) {
 			this.adhocExpression.appendAsString(appendable);
 		} else {
-			appendable.append(this.inputPath).append(", ");
+			if (this.inputPath != null)
+				appendable.append(this.inputPath).append(", ");
 			this.format.appendAsString(appendable);
 		}
 		appendable.append("]");

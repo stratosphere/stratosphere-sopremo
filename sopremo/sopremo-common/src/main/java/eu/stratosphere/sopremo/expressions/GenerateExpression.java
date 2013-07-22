@@ -19,7 +19,7 @@ import java.io.ObjectInputStream;
 import java.util.Formatter;
 
 import eu.stratosphere.sopremo.EvaluationContext;
-import eu.stratosphere.sopremo.SopremoRuntime;
+import eu.stratosphere.sopremo.SopremoEnvironment;
 import eu.stratosphere.sopremo.type.IJsonNode;
 import eu.stratosphere.sopremo.type.TextNode;
 
@@ -48,12 +48,12 @@ public class GenerateExpression extends EvaluationExpression {
 		else if (patternString.indexOf("%", patternPos + 1) == -1)
 			patternString = patternString.replaceAll("%", "%s_%");
 		this.pattern = patternString;
-		this.context = SopremoRuntime.getInstance().getCurrentEvaluationContext();
+		this.context = SopremoEnvironment.getInstance().getEvaluationContext();
 	}
 
 	private void readObject(ObjectInputStream ois) throws IOException, ClassNotFoundException {
 		ois.defaultReadObject();
-		this.context = SopremoRuntime.getInstance().getCurrentEvaluationContext();
+		this.context = SopremoEnvironment.getInstance().getEvaluationContext();
 	}
 
 	private transient final TextNode result = new TextNode();

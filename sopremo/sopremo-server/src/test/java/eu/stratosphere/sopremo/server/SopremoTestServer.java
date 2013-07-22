@@ -175,40 +175,28 @@ public class SopremoTestServer implements Closeable, SopremoExecutionProtocol {
 		FileSystem.closeAll();
 	}
 
-	public void correctPathsOfPlan(SopremoPlan plan) {
-		for (ConfigurableSopremoType op : plan.getContainedOperators())
-			if (op instanceof Source) {
-				final String fileName = ((Source) op).getInputPath();
-				this.filesToCleanup.add(getTempName(fileName));
-				((Source) op).setInputPath(this.protocol + getTempName(fileName));
-			} else if (op instanceof Sink) {
-				final String fileName = ((Sink) op).getOutputPath();
-				this.filesToCleanup.add(getTempName(fileName));
-				((Sink) op).setOutputPath(this.protocol + getTempName(fileName));
-			}
-	}
-
-	public boolean createDir(String dirName) {
+	public File createDir(String dirName) {
 		this.filesToCleanup.add(getTempName(dirName));
-		return new File(getTempName(dirName)).mkdirs();
+		final File file = new File(getTempName(dirName));
+		file.mkdirs();
+		return file;
 	}
 
-	public void createFile(String fileName, IJsonNode... nodes) throws IOException {
+	public File createFile(String fileName, IJsonNode... nodes) throws IOException {
 		this.filesToCleanup.add(getTempName(fileName));
-		createFile(getTempName(fileName), getJsonString(nodes));
+		return createFile(getTempName(fileName), getJsonString(nodes));
 	}
 
-	private boolean createFile(String fileName, String fileContent) throws IOException {
+	private File createFile(String fileName, String fileContent) throws IOException {
 		File f = new File(fileName);
-		if (f.exists()) {
-			return false;
-		}
+		if(this.filesToCleanup.contains(fileContent))
+			throw new IllegalArgumentException("file already exists");
 
 		FileWriter fw = new FileWriter(f);
 		fw.write(fileContent);
 		fw.close();
 
-		return true;
+		return f;
 	}
 
 	public boolean delete(String path, boolean recursive) throws IOException {
@@ -221,8 +209,6 @@ public class SopremoTestServer implements Closeable, SopremoExecutionProtocol {
 
 	@Override
 	public ExecutionResponse execute(ExecutionRequest request) throws IOException, InterruptedException {
-		correctPathsOfPlan(request.getQuery());
-
 		return this.executor.execute(request);
 	}
 

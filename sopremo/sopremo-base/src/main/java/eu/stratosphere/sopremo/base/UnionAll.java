@@ -5,12 +5,23 @@ import java.util.List;
 import eu.stratosphere.pact.common.IdentityMap;
 import eu.stratosphere.pact.common.contract.MapContract;
 import eu.stratosphere.pact.common.plan.PactModule;
+import eu.stratosphere.pact.common.stubs.Collector;
+import eu.stratosphere.pact.common.stubs.MapStub;
+import eu.stratosphere.pact.common.type.PactRecord;
 import eu.stratosphere.pact.generic.contract.Contract;
+import eu.stratosphere.pact.generic.contract.GenericMapContract;
+import eu.stratosphere.pact.generic.stub.GenericMapper;
 import eu.stratosphere.sopremo.EvaluationContext;
 import eu.stratosphere.sopremo.operator.ElementaryOperator;
 import eu.stratosphere.sopremo.operator.InputCardinality;
 import eu.stratosphere.sopremo.operator.JsonStream;
 import eu.stratosphere.sopremo.operator.Name;
+import eu.stratosphere.sopremo.pact.JsonCollector;
+import eu.stratosphere.sopremo.pact.SopremoMap;
+import eu.stratosphere.sopremo.pact.SopremoNop;
+import eu.stratosphere.sopremo.serialization.SopremoRecord;
+import eu.stratosphere.sopremo.serialization.SopremoRecordLayout;
+import eu.stratosphere.sopremo.type.IJsonNode;
 
 /**
  * Unifies the input json streams in a bag semantic.
@@ -26,18 +37,19 @@ public class UnionAll extends ElementaryOperator<UnionAll> {
 	 * @see eu.stratosphere.sopremo.ElementaryOperator#asPactModule(eu.stratosphere.sopremo.EvaluationContext)
 	 */
 	@Override
-	public PactModule asPactModule(EvaluationContext context) {
+	public PactModule asPactModule(EvaluationContext context, SopremoRecordLayout layout) {
 		final List<JsonStream> inputs = this.getInputs();
 		final PactModule module = new PactModule(inputs.size(), 1);
-		// TODO: remove identity map, when Pact/Nephele can deal with direct source->sink connections
-		MapContract identityContract = MapContract.builder(IdentityMap.class).build();
+		// // TODO: remove identity map, when Pact/Nephele can deal with direct source->sink connections
+		GenericMapContract<SopremoNop> contract = new GenericMapContract<SopremoNop>(SopremoNop.class, "union-nop");
 		for (Contract input : module.getInputs())
-			identityContract.addInput(input);
-		module.getOutput(0).setInput(identityContract);
-		// without identity mapper
+			contract.addInput(input);
+		module.getOutput(0).setInput(contract);
+		// // without identity mapper
 		// module.getOutput(0).setInputs(module.getInputs());
 		return module;
 	}
+
 }
 
 // slow implementation using cogroups

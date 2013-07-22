@@ -2,8 +2,7 @@ package eu.stratosphere.sopremo.pact;
 
 import java.util.Iterator;
 
-import eu.stratosphere.pact.common.type.PactRecord;
-import eu.stratosphere.sopremo.serialization.Schema;
+import eu.stratosphere.sopremo.serialization.SopremoRecord;
 import eu.stratosphere.sopremo.type.IJsonNode;
 
 /**
@@ -12,13 +11,7 @@ import eu.stratosphere.sopremo.type.IJsonNode;
  */
 public class RecordToJsonIterator implements Iterator<IJsonNode> {
 
-	private final Schema schema;
-
-	private Iterator<PactRecord> iterator;
-
-	public RecordToJsonIterator(final Schema schema) {
-		this.schema = schema;
-	}
+	private Iterator<SopremoRecord> iterator;
 
 	/**
 	 * Sets the iterator to the specified value.
@@ -26,7 +19,7 @@ public class RecordToJsonIterator implements Iterator<IJsonNode> {
 	 * @param iterator
 	 *        the iterator to set
 	 */
-	public void setIterator(final Iterator<PactRecord> iterator) {
+	public void setIterator(final Iterator<SopremoRecord> iterator) {
 		this.iterator = iterator;
 	}
 
@@ -45,7 +38,7 @@ public class RecordToJsonIterator implements Iterator<IJsonNode> {
 	 */
 	@Override
 	public IJsonNode next() {
-		return this.schema.recordToJson(this.iterator.next());
+		return this.iterator.next().getNode();
 	}
 
 	/*

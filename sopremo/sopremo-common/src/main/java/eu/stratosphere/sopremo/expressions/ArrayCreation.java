@@ -106,6 +106,6 @@ public class ArrayCreation extends EvaluationExpression {
 
 	@Override
 	public void appendAsString(final Appendable appendable) throws IOException {
-		this.appendChildExpressions(appendable, this.elements, ", ");
+		this.append(appendable, this.elements, ", ");
 	}
 }

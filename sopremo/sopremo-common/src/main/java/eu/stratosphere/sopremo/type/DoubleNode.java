@@ -158,19 +158,6 @@ public class DoubleNode extends AbstractNumericNode implements INumericNode {
 			this.value = 0;
 	}
 
-	@Override
-	public int getMaxNormalizedKeyLen() {
-		return Integer.MAX_VALUE;
-	}
-
-	@Override
-	public void copyNormalizedKey(final byte[] target, final int offset, final int len) {
-		long value = Double.doubleToLongBits(this.value);
-		for (int index = 0; index < len; index++, value <<= 8)
-			target[index + offset] = (byte) (value >>> 56);
-		this.fillWithZero(target, offset, offset + len);
-	}
-
 	/*
 	 * (non-Javadoc)
 	 * @see eu.stratosphere.sopremo.ISopremoType#toString(java.lang.StringBuilder)

@@ -21,6 +21,8 @@ import java.util.List;
 
 import eu.stratosphere.pact.common.contract.FileDataSink;
 import eu.stratosphere.pact.common.contract.FileDataSource;
+import eu.stratosphere.pact.common.contract.GenericDataSink;
+import eu.stratosphere.pact.common.contract.GenericDataSource;
 import eu.stratosphere.pact.common.util.Visitable;
 import eu.stratosphere.pact.common.util.Visitor;
 import eu.stratosphere.pact.generic.contract.Contract;
@@ -41,7 +43,8 @@ import eu.stratosphere.util.dag.OneTimeTraverser;
  * inputs and outputs of the
  * PactModule.
  */
-public class PactModule extends GraphModule<Contract, FileDataSource, FileDataSink> implements Visitable<Contract> {
+public class PactModule extends GraphModule<Contract, GenericDataSource<?>, GenericDataSink> implements
+		Visitable<Contract> {
 	/**
 	 * Initializes a PactModule having the given name, number of inputs, and
 	 * number of outputs.
@@ -55,9 +58,12 @@ public class PactModule extends GraphModule<Contract, FileDataSource, FileDataSi
 	public PactModule(final int numberOfInputs, final int numberOfOutputs) {
 		super(numberOfInputs, numberOfOutputs, ContractNavigator.INSTANCE);
 		for (int index = 0; index < numberOfInputs; index++)
-			this.setInput(index, new FileDataSource((Class) SequentialInputFormat.class, String.format("Source %d", index)));
+			this.setInput(index,
+				new FileDataSource((Class) SequentialInputFormat.class, String.format("file:///%d", index),
+					"Source " + index));
 		for (int index = 0; index < numberOfOutputs; index++)
-			this.setOutput(index, new FileDataSink(SequentialOutputFormat.class, String.format("Sink %d", index)));
+			this.setOutput(index, new FileDataSink(SequentialOutputFormat.class, String.format("file:///%d", index),
+				"Sink " + index));
 	}
 
 	/**
@@ -122,8 +128,8 @@ public class PactModule extends GraphModule<Contract, FileDataSource, FileDataSi
 		final PactModule module = new PactModule(inputs.size(), sinks.size());
 		int sinkIndex = 0;
 		for (final Contract sink : sinks) {
-			if (sink instanceof FileDataSink)
-				module.setOutput(sinkIndex, (FileDataSink) sink);
+			if (sink instanceof GenericDataSink)
+				module.setOutput(sinkIndex, (GenericDataSink) sink);
 			else
 				module.getOutput(sinkIndex).addInput(sink);
 			sinkIndex++;
@@ -133,7 +139,7 @@ public class PactModule extends GraphModule<Contract, FileDataSource, FileDataSi
 			final Contract node = inputs.get(index);
 			final List<List<Contract>> contractInputs = ContractUtil.getInputs(node);
 			if (contractInputs.isEmpty())
-				module.setInput(index++, (FileDataSource) node);
+				module.setInput(index++, (GenericDataSource<?>) node);
 			else {
 				for (int unconnectedIndex = 0; unconnectedIndex < contractInputs.size(); unconnectedIndex++)
 					if (contractInputs.get(unconnectedIndex).isEmpty())

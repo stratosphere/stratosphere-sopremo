@@ -31,7 +31,7 @@ import java.util.regex.Pattern;
 import eu.stratosphere.sopremo.io.CsvFormat;
 import eu.stratosphere.sopremo.io.JsonFormat;
 import eu.stratosphere.sopremo.io.Sink;
-import eu.stratosphere.sopremo.io.SopremoFileFormat;
+import eu.stratosphere.sopremo.io.SopremoFormat;
 import eu.stratosphere.sopremo.io.Source;
 import eu.stratosphere.sopremo.operator.Operator;
 import eu.stratosphere.sopremo.packages.IConstantRegistry;
@@ -47,7 +47,7 @@ public class PackageManager implements ParsingScope {
 
 	public final static IConfObjectRegistry<Operator<?>> IORegistry = new DefaultConfObjectRegistry<Operator<?>>();
 
-	public final static IConfObjectRegistry<SopremoFileFormat> DefaultFormatRegistry = new DefaultConfObjectRegistry<SopremoFileFormat>();
+	public final static IConfObjectRegistry<SopremoFormat> DefaultFormatRegistry = new DefaultConfObjectRegistry<SopremoFormat>();
 
 	static {
 		IORegistry.put(Sink.class);
@@ -66,9 +66,11 @@ public class PackageManager implements ParsingScope {
 
 	private StackedFunctionRegistry functionRegistries = new StackedFunctionRegistry();
 
+	private StackedTypeRegistry typeRegistries = new StackedTypeRegistry();
+
 	private StackedConfObjectRegistry<Operator<?>> operatorRegistries = new StackedConfObjectRegistry<Operator<?>>();
 
-	private StackedConfObjectRegistry<SopremoFileFormat> fileFormatRegistries = new StackedConfObjectRegistry<SopremoFileFormat>();
+	private StackedConfObjectRegistry<SopremoFormat> fileFormatRegistries = new StackedConfObjectRegistry<SopremoFormat>();
 
 	/**
 	 * Imports sopremo-&lt;packageName&gt;.jar or returns a cached package
@@ -128,7 +130,7 @@ public class PackageManager implements ParsingScope {
 	 * @return the fileFormatRegistries
 	 */
 	@Override
-	public StackedConfObjectRegistry<SopremoFileFormat> getFileFormatRegistry() {
+	public IConfObjectRegistry<SopremoFormat> getFileFormatRegistry() {
 		return this.fileFormatRegistries;
 	}
 
@@ -141,7 +143,7 @@ public class PackageManager implements ParsingScope {
 	public IConfObjectRegistry<Operator<?>> getOperatorRegistry() {
 		return this.operatorRegistries;
 	}
-
+	
 	@Override
 	public IConstantRegistry getConstantRegistry() {
 		return this.constantRegistries;
@@ -150,6 +152,16 @@ public class PackageManager implements ParsingScope {
 	@Override
 	public IFunctionRegistry getFunctionRegistry() {
 		return this.functionRegistries;
+	}
+	
+	/**
+	 * Returns the typeRegistries.
+	 * 
+	 * @return the typeRegistries
+	 */
+	@Override
+	public StackedTypeRegistry getTypeRegistry() {
+		return this.typeRegistries;
 	}
 
 	protected List<File> findPackageInClassPath(String packageName) {
@@ -223,6 +235,7 @@ public class PackageManager implements ParsingScope {
 		this.functionRegistries.push(packageInfo.getFunctionRegistry());
 		this.operatorRegistries.push(packageInfo.getOperatorRegistry());
 		this.fileFormatRegistries.push(packageInfo.getFileFormatRegistry());
+		this.typeRegistries.push(packageInfo.getTypeRegistry());
 	}
 
 	/*

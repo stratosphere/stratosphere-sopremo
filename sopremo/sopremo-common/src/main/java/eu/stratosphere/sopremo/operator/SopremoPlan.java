@@ -18,9 +18,8 @@ import eu.stratosphere.sopremo.io.Sink;
 import eu.stratosphere.sopremo.packages.EvaluationScope;
 import eu.stratosphere.sopremo.packages.IConstantRegistry;
 import eu.stratosphere.sopremo.packages.IFunctionRegistry;
-import eu.stratosphere.sopremo.serialization.NaiveSchemaFactory;
-import eu.stratosphere.sopremo.serialization.Schema;
-import eu.stratosphere.sopremo.serialization.SchemaFactory;
+import eu.stratosphere.sopremo.packages.ITypeRegistry;
+import eu.stratosphere.sopremo.serialization.SopremoRecordLayout;
 
 /**
  * Encapsulate a complete query in Sopremo and translates it to a Pact {@link Plan}.
@@ -28,16 +27,16 @@ import eu.stratosphere.sopremo.serialization.SchemaFactory;
  * @author Arvid Heise
  */
 public class SopremoPlan extends AbstractSopremoType implements ICloneable, Serializable, EvaluationScope {
-	
+
 	private static final long serialVersionUID = 5702832506916907827L;
 
 	private final SopremoModule module;
 
 	private EvaluationContext context = new EvaluationContext();
 
-	private SchemaFactory schemaFactory = new NaiveSchemaFactory();
-
 	private List<String> requiredPackages = new ArrayList<String>();
+
+	private SopremoRecordLayout layout;
 
 	public SopremoPlan() {
 		this.module = new SopremoModule(0, 0);
@@ -50,7 +49,8 @@ public class SopremoPlan extends AbstractSopremoType implements ICloneable, Seri
 	 * @return the converted Pact plan
 	 */
 	public Plan asPactPlan() {
-		return new Plan(this.checkForSinks(this.assemblePact()));
+		final Plan plan = new PlanWithSopremoPostPass(this.checkForSinks(this.assemblePact()));
+		return plan;
 	}
 
 	/**
@@ -60,6 +60,11 @@ public class SopremoPlan extends AbstractSopremoType implements ICloneable, Seri
 	 */
 	public List<String> getRequiredPackages() {
 		return this.requiredPackages;
+	}
+
+	@Override
+	public ITypeRegistry getTypeRegistry() {
+		return this.context.getTypeRegistry();
 	}
 
 	/**
@@ -99,8 +104,8 @@ public class SopremoPlan extends AbstractSopremoType implements ICloneable, Seri
 			this.module.addInternalOutput(sink);
 	}
 
-	public Schema getSchema() {
-		return this.context.getSchema();
+	public SopremoRecordLayout getLayout() {
+		return this.layout;
 	}
 
 	/*
@@ -121,8 +126,8 @@ public class SopremoPlan extends AbstractSopremoType implements ICloneable, Seri
 	 */
 	public Collection<Contract> assemblePact() {
 		final ElementarySopremoModule elementaryModule = this.module.asElementary(this.context);
-		elementaryModule.inferSchema(this.schemaFactory);
-		this.context.setSchema(elementaryModule.getSchema());
+		elementaryModule.inferSchema();
+		this.layout = SopremoRecordLayout.create(elementaryModule.getSchema().getKeyExpressions());
 		return elementaryModule.assemblePact(this.context);
 	}
 
@@ -182,7 +187,8 @@ public class SopremoPlan extends AbstractSopremoType implements ICloneable, Seri
 		return this.module.getUnmatchingNodes(other.module);
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
 	 * @see eu.stratosphere.sopremo.packages.EvaluationScope#getConstantRegistry()
 	 */
 	@Override
@@ -190,7 +196,8 @@ public class SopremoPlan extends AbstractSopremoType implements ICloneable, Seri
 		return this.context.getConstantRegistry();
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
 	 * @see eu.stratosphere.sopremo.packages.EvaluationScope#getFunctionRegistry()
 	 */
 	@Override

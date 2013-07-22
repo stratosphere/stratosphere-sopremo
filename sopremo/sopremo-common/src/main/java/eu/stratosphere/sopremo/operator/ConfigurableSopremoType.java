@@ -34,8 +34,10 @@ import java.util.Map;
 import eu.stratosphere.sopremo.AbstractSopremoType;
 
 /**
- * @author arv
- * @param <Self>
+ * Provides the basic mechanism for exposing configuration parameters of objects through the Java Bean specification.<br />
+ * Subclasses must provide a no-arg ctor and can add an arbitrary number of properties by adding the {@link Property}
+ * annotation to the respective setter and/or getter.<br />
+ * It is recommended to add {@link Name} annotation to the type and the properties.
  */
 public abstract class ConfigurableSopremoType extends AbstractSopremoType implements BeanInfo {
 

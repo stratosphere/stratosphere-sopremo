@@ -132,18 +132,6 @@ public class BigIntegerNode extends AbstractNumericNode implements INumericNode 
 	}
 	
 	/* (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.type.AbstractJsonNode#copyNormalizedKey(byte[], int, int)
-	 */
-	@Override
-	public void copyNormalizedKey(byte[] target, int offset, int len) {
-		final byte[] byteArray = value.toByteArray();
-		final int keyLen = Math.min(len, byteArray.length);
-		System.arraycopy(byteArray, 0, target, offset, keyLen);
-		if(keyLen < len)
-			fillWithZero(target, keyLen, len);
-	}
-	
-	/* (non-Javadoc)
 	 * @see eu.stratosphere.sopremo.type.INumericNode#getGeneralilty()
 	 */
 	@Override

@@ -101,7 +101,7 @@ public class AndExpression extends BooleanExpression {
 	@Override
 	public void appendAsString(final Appendable appendable) throws IOException {
 		appendable.append("(");
-		this.appendChildExpressions(appendable, this.expressions, " AND ");
+		this.append(appendable, this.expressions, " AND ");
 		appendable.append(")");
 	}
 

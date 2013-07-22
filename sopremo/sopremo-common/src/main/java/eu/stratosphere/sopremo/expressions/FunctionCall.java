@@ -223,7 +223,7 @@ public class FunctionCall extends EvaluationExpression {
 	public void appendAsString(final Appendable appendable) throws IOException {
 		this.function.appendAsString(appendable);
 		appendable.append('(');
-		this.appendChildExpressions(appendable, this.paramExprs, ", ");
+		this.append(appendable, this.paramExprs, ", ");
 		appendable.append(')');
 	}
 

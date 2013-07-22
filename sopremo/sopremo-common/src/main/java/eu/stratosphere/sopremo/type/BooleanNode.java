@@ -122,7 +122,7 @@ public class BooleanNode extends AbstractJsonNode implements IPrimitiveNode {
 			return true;
 		if (obj == null)
 			return false;
-		if (this.getClass() != obj.getClass())
+		if (!(obj instanceof BooleanNode))
 			return false;
 
 		final BooleanNode other = (BooleanNode) obj;
@@ -149,17 +149,6 @@ public class BooleanNode extends AbstractJsonNode implements IPrimitiveNode {
 
 	@Override
 	public void clear() {
-	}
-
-	@Override
-	public int getMaxNormalizedKeyLen() {
-		return 1;
-	}
-
-	@Override
-	public void copyNormalizedKey(final byte[] target, final int offset, final int len) {
-		target[offset] = (byte) (value ? 1 : 0);
-		this.fillWithZero(target, offset + 1, offset + len);
 	}
 
 	/*

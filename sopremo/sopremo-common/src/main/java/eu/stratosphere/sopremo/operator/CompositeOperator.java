@@ -5,6 +5,7 @@ import org.apache.commons.logging.LogFactory;
 
 import eu.stratosphere.pact.common.plan.PactModule;
 import eu.stratosphere.sopremo.EvaluationContext;
+import eu.stratosphere.sopremo.serialization.SopremoRecordLayout;
 
 /**
  * A composite operator may be composed of several {@link ElementaryOperator}s and other CompositeOperators.<br>
@@ -75,7 +76,7 @@ public abstract class CompositeOperator<Self extends CompositeOperator<Self>> ex
 	public abstract void addImplementation(SopremoModule module, EvaluationContext context);
 
 	@Override
-	public PactModule asPactModule(final EvaluationContext context) {
+	public PactModule asPactModule(final EvaluationContext context, SopremoRecordLayout layout) {
 		if (LOG.isTraceEnabled())
 			LOG.trace("Transforming\n" + this);
 		final ElementarySopremoModule elementaryPlan = this.asElementaryOperators(context);

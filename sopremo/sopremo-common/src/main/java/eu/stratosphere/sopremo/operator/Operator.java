@@ -15,6 +15,7 @@ import eu.stratosphere.sopremo.AbstractSopremoType;
 import eu.stratosphere.sopremo.EvaluationContext;
 import eu.stratosphere.sopremo.ISopremoType;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
+import eu.stratosphere.sopremo.serialization.SopremoRecordLayout;
 import eu.stratosphere.util.CollectionUtil;
 import eu.stratosphere.util.reflect.ReflectUtil;
 
@@ -31,8 +32,9 @@ import eu.stratosphere.util.reflect.ReflectUtil;
 public abstract class Operator<Self extends Operator<Self>> extends ConfigurableSopremoType implements
 		ISopremoType, JsonStream, Cloneable {
 
-	public final static List<? extends EvaluationExpression> ALL_KEYS = Collections.singletonList(EvaluationExpression.VALUE);
-	
+	public final static List<? extends EvaluationExpression> ALL_KEYS =
+		Collections.singletonList(EvaluationExpression.VALUE);
+
 	public final static int STANDARD_DEGREE_OF_PARALLELISM = 1;
 
 	private List<JsonStream> inputs = new ArrayList<JsonStream>();
@@ -44,6 +46,8 @@ public abstract class Operator<Self extends Operator<Self>> extends Configurable
 	private int minInputs, maxInputs, minOutputs, maxOutputs;
 
 	private int degreeOfParallelism = STANDARD_DEGREE_OF_PARALLELISM;
+
+	private final boolean fixedDegreeOfParallelism;
 
 	/**
 	 * Initializes the Operator with the annotations.
@@ -59,6 +63,15 @@ public abstract class Operator<Self extends Operator<Self>> extends Configurable
 			inputs.value() != -1 ? inputs.value() : inputs.max());
 		this.setNumberOfOutputs(outputs.value() != -1 ? outputs.value() : outputs.min(),
 			outputs.value() != -1 ? outputs.value() : outputs.max());
+
+		final DegreeOfParallelism degreeOfParallelism =
+			ReflectUtil.getAnnotation(this.getClass(), DegreeOfParallelism.class);
+		if (degreeOfParallelism == null)
+			this.fixedDegreeOfParallelism = false;
+		else {
+			this.fixedDegreeOfParallelism = true;
+			this.degreeOfParallelism = degreeOfParallelism.value();
+		}
 	}
 
 	/**
@@ -76,6 +89,15 @@ public abstract class Operator<Self extends Operator<Self>> extends Configurable
 	public Operator(final int minInputs, final int maxInputs, final int minOutputs, final int maxOutputs) {
 		this.setNumberOfInputs(minInputs, maxInputs);
 		this.setNumberOfOutputs(minOutputs, maxOutputs);
+		
+		final DegreeOfParallelism degreeOfParallelism =
+			ReflectUtil.getAnnotation(this.getClass(), DegreeOfParallelism.class);
+		if (degreeOfParallelism == null)
+			this.fixedDegreeOfParallelism = false;
+		else {
+			this.fixedDegreeOfParallelism = true;
+			this.degreeOfParallelism = degreeOfParallelism.value();
+		}
 	}
 
 	public abstract ElementarySopremoModule asElementaryOperators(EvaluationContext context);
@@ -87,7 +109,7 @@ public abstract class Operator<Self extends Operator<Self>> extends Configurable
 	 *        the context in which the evaluation should be conducted
 	 * @return the {@link PactModule} representing this operator
 	 */
-	public abstract PactModule asPactModule(EvaluationContext context);
+	public abstract PactModule asPactModule(EvaluationContext context, SopremoRecordLayout layout);
 
 	@SuppressWarnings("unchecked")
 	@Override
@@ -512,6 +534,8 @@ public abstract class Operator<Self extends Operator<Self>> extends Configurable
 	public void setDegreeOfParallelism(int degree) {
 		if (degree < 1)
 			throw new RuntimeException("Degree of Parallelism cannot be set below 1");
+		if (this.fixedDegreeOfParallelism)
+			throw new RuntimeException("This operator has a fixed degree of parallelism of " + this.degreeOfParallelism);
 		this.degreeOfParallelism = degree;
 	}
 

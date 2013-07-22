@@ -14,7 +14,7 @@
  **********************************************************************************************************************/
 package eu.stratosphere.sopremo.query;
 
-import eu.stratosphere.sopremo.io.SopremoFileFormat;
+import eu.stratosphere.sopremo.io.SopremoFormat;
 import eu.stratosphere.sopremo.operator.Operator;
 import eu.stratosphere.sopremo.packages.EvaluationScope;
 
@@ -24,5 +24,5 @@ import eu.stratosphere.sopremo.packages.EvaluationScope;
 public interface ParsingScope extends EvaluationScope {
 	public IConfObjectRegistry<Operator<?>> getOperatorRegistry();
 
-	public IConfObjectRegistry<SopremoFileFormat> getFileFormatRegistry();
+	public IConfObjectRegistry<SopremoFormat> getFileFormatRegistry();
 }

@@ -39,8 +39,9 @@ public abstract class TransitiveAggregation<ElementType extends IJsonNode> exten
 	@Override
 	public void initialize() {
 		if (this.aggregator.getType() != this.initialAggregate.getType())
-			this.aggregator = (ElementType) ReflectUtil.newInstance(this.initialAggregate.getClass());
-		this.aggregator.copyValueFrom(this.initialAggregate);
+			this.aggregator = (ElementType) this.initialAggregate.clone();
+		else
+			this.aggregator.copyValueFrom(this.initialAggregate);
 	}
 
 	@Override

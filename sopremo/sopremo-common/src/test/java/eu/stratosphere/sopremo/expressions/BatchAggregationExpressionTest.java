@@ -1,5 +1,6 @@
 package eu.stratosphere.sopremo.expressions;
 
+import static eu.stratosphere.sopremo.expressions.ExpressionUtil.makePath;
 import static eu.stratosphere.sopremo.type.JsonUtil.createArrayNode;
 
 import java.util.Arrays;
@@ -116,5 +117,29 @@ public class BatchAggregationExpressionTest extends EvaluableExpressionTest<Batc
 		this.testPropertyClone(BatchAggregationExpression.class, partial1Clone.getBatch(), partial1Clone2.getBatch());
 		Assert.assertSame(partial1Clone.getBatch(), partial2Clone.getBatch());
 		Assert.assertSame(partial1Clone2.getBatch(), partial2Clone2.getBatch());
+	}
+	
+	@Override
+	@Before
+	public void initContext() {
+		super.initContext();
+		this.context.getFunctionRegistry().put(CoreFunctions.class);
+	}
+	
+	@Test
+	public void shouldSerializeComplexAggregation() {
+		final ObjectCreation transformation = new ObjectCreation();
+		transformation.addMapping("dept",
+			makePath(new InputSelection(0), new ArrayAccess(0), new ObjectAccess("dept")));
+		transformation.addMapping("deptName",
+			makePath(new InputSelection(1), new ArrayAccess(0), new ObjectAccess("name")));
+		transformation.addMapping("emps", new FunctionCall("sort", this.context,
+			makePath(new InputSelection(0), new ArrayProjection(new ObjectAccess("id")))));
+		transformation.addMapping("numEmps", new FunctionCall("count", this.context, new InputSelection(0)));
+
+		final EvaluationExpression aggregation = ExpressionUtil.replaceAggregationWithBatchAggregation(
+			ExpressionUtil.replaceIndexAccessWithAggregation(transformation));
+		
+		testKryoSerialization(aggregation);
 	}
 }

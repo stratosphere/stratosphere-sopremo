@@ -4,7 +4,6 @@ import java.io.IOException;
 
 import com.esotericsoftware.kryo.DefaultSerializer;
 
-import eu.stratosphere.pact.common.type.base.PactNull;
 import eu.stratosphere.sopremo.Singleton;
 import eu.stratosphere.sopremo.SingletonSerializer;
 
@@ -46,7 +45,7 @@ public class NullNode extends AbstractJsonNode implements IPrimitiveNode {
 		return o == Instance;
 		// return o instanceof NullNode ? true : false;
 	}
-	
+
 	@Override
 	public Class<NullNode> getType() {
 		return NullNode.class;
@@ -74,16 +73,6 @@ public class NullNode extends AbstractJsonNode implements IPrimitiveNode {
 
 	@Override
 	public void clear() {
-	}
-
-	@Override
-	public int getMaxNormalizedKeyLen() {
-		return PactNull.getInstance().getMaxNormalizedKeyLen();
-	}
-
-	@Override
-	public void copyNormalizedKey(final byte[] target, final int offset, final int len) {
-		PactNull.getInstance().copyNormalizedKey(target, offset, len);
 	}
 
 	public static class NullSerializer extends SingletonSerializer {

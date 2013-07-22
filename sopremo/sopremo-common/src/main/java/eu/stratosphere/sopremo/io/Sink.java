@@ -1,15 +1,22 @@
 package eu.stratosphere.sopremo.io;
 
-import eu.stratosphere.pact.common.contract.FileDataSink;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+
+import eu.stratosphere.pact.common.contract.GenericDataSink;
 import eu.stratosphere.pact.common.plan.PactModule;
+import eu.stratosphere.pact.generic.io.OutputFormat;
 import eu.stratosphere.sopremo.EvaluationContext;
-import eu.stratosphere.sopremo.io.SopremoFileFormat.SopremoOutputFormat;
 import eu.stratosphere.sopremo.operator.ElementaryOperator;
 import eu.stratosphere.sopremo.operator.ElementarySopremoModule;
 import eu.stratosphere.sopremo.operator.InputCardinality;
 import eu.stratosphere.sopremo.operator.OutputCardinality;
 import eu.stratosphere.sopremo.operator.Property;
 import eu.stratosphere.sopremo.pact.SopremoUtil;
+import eu.stratosphere.sopremo.serialization.SopremoRecord;
+import eu.stratosphere.sopremo.serialization.SopremoRecordLayout;
+import eu.stratosphere.sopremo.util.Equaler;
 
 /**
  * Represents a data sink in a PactPlan.
@@ -19,22 +26,33 @@ import eu.stratosphere.sopremo.pact.SopremoUtil;
 public class Sink extends ElementaryOperator<Sink> {
 	private String outputPath;
 
-	private SopremoFileFormat format;
+	private SopremoFormat format;
 
 	/**
-	 * Initializes a Sink with the given {@link FileOutputFormat} and the given name.
+	 * Initializes a Sink with the given {@link FileOutputFormat} and the given path.
 	 * 
 	 * @param outputFormat
 	 *        the FileOutputFormat that should be used
 	 * @param outputPath
 	 *        the path of this Sink
 	 */
-	public Sink(final SopremoFileFormat format, final String outputPath) {
+	public Sink(final SopremoFormat format, final String outputPath) {
 		this.format = format;
 		this.outputPath = outputPath;
 
 		if (format.getOutputFormat() == null)
 			throw new IllegalArgumentException("given format does not support writing");
+		checkPath();
+	}
+
+	/**
+	 * Initializes a Sink with the given {@link FileOutputFormat}.
+	 * 
+	 * @param outputFormat
+	 *        the FileOutputFormat that should be used
+	 */
+	public Sink(final SopremoFormat format) {
+		this(format, null);
 	}
 
 	/**
@@ -52,7 +70,7 @@ public class Sink extends ElementaryOperator<Sink> {
 	 * Initializes a Sink. This constructor uses {@link Sink#Sink(String)} with an empty string.
 	 */
 	Sink() {
-		this("");
+		this("file:///");
 	}
 
 	/**
@@ -60,7 +78,7 @@ public class Sink extends ElementaryOperator<Sink> {
 	 * 
 	 * @return the format
 	 */
-	public SopremoFileFormat getFormat() {
+	public SopremoFormat getFormat() {
 		return this.format;
 	}
 
@@ -71,7 +89,7 @@ public class Sink extends ElementaryOperator<Sink> {
 	 *        the format to set
 	 */
 	@Property(preferred = true)
-	public void setFormat(SopremoFileFormat format) {
+	public void setFormat(SopremoFormat format) {
 		if (format == null)
 			throw new NullPointerException("format must not be null");
 		if (format.getOutputFormat() == null)
@@ -86,16 +104,17 @@ public class Sink extends ElementaryOperator<Sink> {
 	}
 
 	@Override
-	public PactModule asPactModule(final EvaluationContext context) {
-		context.setInputsAndOutputs(1, 0);
+	public PactModule asPactModule(final EvaluationContext context, SopremoRecordLayout layout) {
 		final PactModule pactModule = new PactModule(1, 0);
-		final FileDataSink contract = new FileDataSink(this.format.getOutputFormat(), this.outputPath, this.outputPath);
-		SopremoUtil.transferFieldsToConfiguration(this.format, SopremoFileFormat.class, contract.getParameters(),
-			this.format.getOutputFormat(), SopremoOutputFormat.class);
+
+		final Class<? extends OutputFormat<SopremoRecord>> outputFormat = this.format.getOutputFormat();
+		final GenericDataSink contract = new GenericDataSink(outputFormat, this.getName());
+		this.format.configureForOutput(contract.getParameters(), this.outputPath);
+		SopremoUtil.setEvaluationContext(contract.getParameters(), context);
+		SopremoUtil.setLayout(contract.getParameters(), layout);
+		contract.setDegreeOfParallelism(getDegreeOfParallelism());
+
 		contract.setInput(pactModule.getInput(0));
-		SopremoUtil.setObject(contract.getParameters(), SopremoUtil.CONTEXT, context);
-		// if(this.outputFormat == JsonOutputFormat.class)
-		contract.setDegreeOfParallelism(1);
 		pactModule.addInternalOutput(contract);
 		return pactModule;
 	}
@@ -129,6 +148,21 @@ public class Sink extends ElementaryOperator<Sink> {
 			throw new NullPointerException("outputPath must not be null");
 
 		this.outputPath = outputPath;
+		checkPath();
+	}
+
+	/**
+	 * 
+	 */
+	private void checkPath() {
+		try {
+			final URI uri = new URI(this.outputPath);
+			if (uri.getScheme() == null)
+				throw new IllegalStateException(
+					"File name of source does not have a valid schema (such as hdfs or file): " + this.outputPath);
+		} catch (URISyntaxException e) {
+			throw new IllegalArgumentException("Invalid path", e);
+		}
 	}
 
 	/**
@@ -144,8 +178,37 @@ public class Sink extends ElementaryOperator<Sink> {
 	}
 
 	@Override
-	public String toString() {
-		return "Sink [" + this.outputPath + "]";
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result + (this.format == null ? 0 : this.format.hashCode());
+		result = prime * result + (this.outputPath == null ? 0 : this.outputPath.hashCode());
+		return result;
 	}
 
+	@Override
+	public boolean equals(final Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (this.getClass() != obj.getClass())
+			return false;
+		final Sink other = (Sink) obj;
+		return Equaler.SafeEquals.equal(this.outputPath, other.outputPath)
+			&& Equaler.SafeEquals.equal(this.format, other.format);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.operator.ElementaryOperator#appendAsString(java.lang.Appendable)
+	 */
+	@Override
+	public void appendAsString(Appendable appendable) throws IOException {
+		appendable.append("Sink [");
+		if (this.outputPath != null)
+			appendable.append(this.outputPath).append(", ");
+		this.format.appendAsString(appendable);
+		appendable.append("]");
+	}
 }

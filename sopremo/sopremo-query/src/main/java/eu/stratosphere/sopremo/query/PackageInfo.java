@@ -26,14 +26,17 @@ import java.util.jar.JarFile;
 import eu.stratosphere.nephele.util.StringUtils;
 import eu.stratosphere.sopremo.AbstractSopremoType;
 import eu.stratosphere.sopremo.ISopremoType;
-import eu.stratosphere.sopremo.io.SopremoFileFormat;
+import eu.stratosphere.sopremo.io.SopremoFormat;
 import eu.stratosphere.sopremo.operator.Operator;
 import eu.stratosphere.sopremo.packages.BuiltinProvider;
 import eu.stratosphere.sopremo.packages.ConstantRegistryCallback;
 import eu.stratosphere.sopremo.packages.DefaultConstantRegistry;
 import eu.stratosphere.sopremo.packages.DefaultFunctionRegistry;
+import eu.stratosphere.sopremo.packages.DefaultTypeRegistry;
 import eu.stratosphere.sopremo.packages.IConstantRegistry;
 import eu.stratosphere.sopremo.packages.IFunctionRegistry;
+import eu.stratosphere.sopremo.packages.ITypeRegistry;
+import eu.stratosphere.sopremo.type.IJsonNode;
 import eu.stratosphere.util.reflect.ReflectUtil;
 
 /**
@@ -55,11 +58,14 @@ public class PackageInfo extends AbstractSopremoType implements ISopremoType, Pa
 
 	private IConfObjectRegistry<Operator<?>> operatorRegistry = new DefaultConfObjectRegistry<Operator<?>>();
 
-	private IConfObjectRegistry<SopremoFileFormat> fileFormatRegistry = new DefaultConfObjectRegistry<SopremoFileFormat>();
+	private IConfObjectRegistry<SopremoFormat> fileFormatRegistry =
+		new DefaultConfObjectRegistry<SopremoFormat>();
 
 	private IConstantRegistry constantRegistry = new DefaultConstantRegistry();
 
 	private IFunctionRegistry functionRegistry = new DefaultFunctionRegistry();
+
+	private ITypeRegistry typeRegistry = new DefaultTypeRegistry();
 
 	private String packageName;
 
@@ -74,12 +80,21 @@ public class PackageInfo extends AbstractSopremoType implements ISopremoType, Pa
 	}
 
 	/**
+	 * Returns the typeRegistry.
+	 * 
+	 * @return the typeRegistry
+	 */
+	public ITypeRegistry getTypeRegistry() {
+		return this.typeRegistry;
+	}
+	
+	/**
 	 * Returns the fileFormatRegistry.
 	 * 
 	 * @return the fileFormatRegistry
 	 */
 	@Override
-	public IConfObjectRegistry<SopremoFileFormat> getFileFormatRegistry() {
+	public IConfObjectRegistry<SopremoFormat> getFileFormatRegistry() {
 		return this.fileFormatRegistry;
 	}
 
@@ -92,15 +107,16 @@ public class PackageInfo extends AbstractSopremoType implements ISopremoType, Pa
 				clazz = Class.forName(className, true, this.classLoader);
 				QueryUtil.LOG.trace("adding operator " + clazz);
 				this.getOperatorRegistry().put((Class<? extends Operator<?>>) clazz);
-			} else if (SopremoFileFormat.class.isAssignableFrom(clazz)
+			} else if (SopremoFormat.class.isAssignableFrom(clazz)
 				&& (clazz.getModifiers() & Modifier.ABSTRACT) == 0) {
 				clazz = Class.forName(className, true, this.classLoader);
 				QueryUtil.LOG.trace("adding operator " + clazz);
-				this.getFileFormatRegistry().put((Class<? extends SopremoFileFormat>) clazz);
+				this.getFileFormatRegistry().put((Class<? extends SopremoFormat>) clazz);
 			} else if (BuiltinProvider.class.isAssignableFrom(clazz)) {
 				clazz = Class.forName(className, true, this.classLoader);
 				this.addFunctionsAndConstants(clazz);
-			}
+			} else if (IJsonNode.class.isAssignableFrom(clazz))
+				this.getTypeRegistry().put((Class<? extends IJsonNode>) clazz);
 		} catch (ClassNotFoundException e) {
 			QueryUtil.LOG.warn("could not load operator " + className + ": " + StringUtils.stringifyException(e));
 		}

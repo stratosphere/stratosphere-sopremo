@@ -15,6 +15,9 @@
 package eu.stratosphere.sopremo.expressions;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 
 import javolution.text.TypeFormat;
 import eu.stratosphere.sopremo.pact.SopremoUtil;
@@ -77,9 +80,12 @@ public class ArrayAccess extends PathSegmentExpression {
 		this.startIndex = startIndex;
 		this.endIndex = endIndex;
 	}
-	
-	/* (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.expressions.PathSegmentExpression#equalsSameClass(eu.stratosphere.sopremo.expressions.PathSegmentExpression)
+
+	/*
+	 * (non-Javadoc)
+	 * @see
+	 * eu.stratosphere.sopremo.expressions.PathSegmentExpression#equalsSameClass(eu.stratosphere.sopremo.expressions
+	 * .PathSegmentExpression)
 	 */
 	@Override
 	public boolean equalsSameClass(PathSegmentExpression obj) {
@@ -136,7 +142,8 @@ public class ArrayAccess extends PathSegmentExpression {
 		return this.startIndex;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
 	 * @see eu.stratosphere.sopremo.expressions.PathSegmentExpression#segmentHashCode()
 	 */
 	@Override
@@ -166,8 +173,39 @@ public class ArrayAccess extends PathSegmentExpression {
 		return this.startIndex >= 0 == this.endIndex >= 0;
 	}
 
-	/* (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.expressions.PathSegmentExpression#setSegment(eu.stratosphere.sopremo.type.IJsonNode, eu.stratosphere.sopremo.type.IJsonNode)
+	public int[] getIndices() {
+		if (!isFixedSize())
+			return null;
+		if (this.startIndex >= 0) { // normal access
+			int[] indices = new int[this.endIndex - this.startIndex + 1];
+			for (int index = this.startIndex; index <= this.endIndex; index++)
+				indices[index - this.startIndex] = index;
+			return indices;
+		}
+		// backward array
+		int[] indices = new int[-this.startIndex - this.endIndex + 1];
+		for (int index = this.startIndex; index <= this.endIndex; index++)
+			indices[this.startIndex - index] = index;
+		return indices;
+	}
+
+	public Collection<ArrayAccess> decompose() {
+		if (!isFixedSize())
+			throw new IllegalStateException("Not decomposable");
+
+		if (!isSelectingRange())
+			return Arrays.asList(this);
+
+		final ArrayList<ArrayAccess> accesses = new ArrayList<ArrayAccess>();
+		for (int index = this.startIndex; index <= this.endIndex; index++)
+			accesses.add(new ArrayAccess(index));
+		return accesses;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.expressions.PathSegmentExpression#setSegment(eu.stratosphere.sopremo.type.IJsonNode,
+	 * eu.stratosphere.sopremo.type.IJsonNode)
 	 */
 	@SuppressWarnings("unchecked")
 	@Override

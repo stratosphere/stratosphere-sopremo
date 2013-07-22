@@ -15,32 +15,24 @@ import org.apache.commons.logging.LogFactory;
 
 import eu.stratosphere.nephele.configuration.Configuration;
 import eu.stratosphere.pact.common.IdentityMap;
-import eu.stratosphere.pact.common.contract.CoGroupContract;
-import eu.stratosphere.pact.common.contract.CrossContract;
 import eu.stratosphere.pact.common.contract.MapContract;
-import eu.stratosphere.pact.common.contract.MatchContract;
-import eu.stratosphere.pact.common.contract.ReduceContract;
 import eu.stratosphere.pact.common.plan.ContractUtil;
 import eu.stratosphere.pact.common.plan.PactModule;
-import eu.stratosphere.pact.common.stubs.CoGroupStub;
-import eu.stratosphere.pact.common.stubs.CrossStub;
-import eu.stratosphere.pact.common.stubs.MapStub;
-import eu.stratosphere.pact.common.stubs.MatchStub;
-import eu.stratosphere.pact.common.stubs.ReduceStub;
 import eu.stratosphere.pact.common.stubs.Stub;
-import eu.stratosphere.pact.common.type.Key;
-import eu.stratosphere.pact.common.type.Value;
 import eu.stratosphere.pact.generic.contract.Contract;
-import eu.stratosphere.sopremo.DegreeOfParallelism;
+import eu.stratosphere.pact.generic.contract.GenericCoGroupContract;
+import eu.stratosphere.pact.generic.contract.GenericCrossContract;
+import eu.stratosphere.pact.generic.contract.GenericMapContract;
+import eu.stratosphere.pact.generic.contract.GenericMatchContract;
+import eu.stratosphere.pact.generic.contract.GenericReduceContract;
 import eu.stratosphere.sopremo.EvaluationContext;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
 import eu.stratosphere.sopremo.expressions.InputSelection;
 import eu.stratosphere.sopremo.expressions.UnevaluableExpression;
 import eu.stratosphere.sopremo.pact.SopremoUtil;
-import eu.stratosphere.sopremo.serialization.Schema;
+import eu.stratosphere.sopremo.serialization.SopremoRecordLayout;
 import eu.stratosphere.util.CollectionUtil;
 import eu.stratosphere.util.IdentityList;
-import eu.stratosphere.util.reflect.ReflectUtil;
 
 /**
  * An ElementaryOperator is an {@link Operator} that directly translates to a
@@ -157,12 +149,10 @@ public abstract class ElementaryOperator<Self extends ElementaryOperator<Self>>
 	 * @return the key expressions of the given input
 	 */
 	@SuppressWarnings("unchecked")
-	public List<? extends EvaluationExpression> getKeyExpressions(
-			final int inputIndex) {
+	public List<? extends EvaluationExpression> getKeyExpressions(final int inputIndex) {
 		if (inputIndex >= this.keyExpressions.size())
 			return Collections.EMPTY_LIST;
-		final List<? extends EvaluationExpression> expressions = this.keyExpressions
-			.get(inputIndex);
+		final List<? extends EvaluationExpression> expressions = this.keyExpressions.get(inputIndex);
 		if (expressions == null)
 			return Collections.EMPTY_LIST;
 		return expressions;
@@ -228,11 +218,10 @@ public abstract class ElementaryOperator<Self extends ElementaryOperator<Self>>
 	}
 
 	@Override
-	public PactModule asPactModule(final EvaluationContext context) {
-		context.setInputsAndOutputs(this.getNumInputs(), this.getNumOutputs());
-		final Contract contract = this.getContract(context.getSchema());
+	public PactModule asPactModule(final EvaluationContext context, SopremoRecordLayout layout) {
+		final Contract contract = this.getContract(layout);
 		context.setResultProjection(this.resultProjection);
-		this.configureContract(contract, contract.getParameters(), context);
+		this.configureContract(contract, contract.getParameters(), context, layout);
 
 		final List<List<Contract>> inputLists = ContractUtil
 			.getInputs(contract);
@@ -248,8 +237,7 @@ public abstract class ElementaryOperator<Self extends ElementaryOperator<Self>>
 		final PactModule module = new PactModule(distinctInputs.size(), 1);
 		for (final List<Contract> inputs : inputLists)
 			for (int index = 0; index < inputs.size(); index++)
-				inputs.set(index, module.getInput(distinctInputs.indexOf(inputs
-					.get(index))));
+				inputs.set(index, module.getInput(distinctInputs.indexOf(inputs.get(index))));
 		ContractUtil.setInputs(contract, inputLists);
 
 		module.getOutput(0).addInput(contract);
@@ -281,11 +269,10 @@ public abstract class ElementaryOperator<Self extends ElementaryOperator<Self>>
 	 *        evaluated
 	 */
 	protected void configureContract(final Contract contract, final Configuration stubConfiguration,
-			final EvaluationContext context) {
+			final EvaluationContext context, SopremoRecordLayout layout) {
 		for (final Field stubField : contract.getUserCodeClass()
 			.getDeclaredFields())
-			if ((stubField.getModifiers() & (Modifier.TRANSIENT
-				| Modifier.FINAL | Modifier.STATIC)) == 0) {
+			if ((stubField.getModifiers() & (Modifier.TRANSIENT | Modifier.FINAL | Modifier.STATIC)) == 0) {
 				Class<?> clazz = this.getClass();
 				do {
 					Field thisField;
@@ -313,13 +300,9 @@ public abstract class ElementaryOperator<Self extends ElementaryOperator<Self>>
 				} while ((clazz = clazz.getSuperclass()) != ElementaryOperator.class);
 			}
 
-		final DegreeOfParallelism degreeOfParallelism = ReflectUtil
-			.getAnnotation(this.getClass(), DegreeOfParallelism.class);
-		if (degreeOfParallelism != null)
-			contract.setDegreeOfParallelism(degreeOfParallelism.value());
-		else
-			contract.setDegreeOfParallelism(this.getDegreeOfParallelism());
-		SopremoUtil.setObject(stubConfiguration, SopremoUtil.CONTEXT, context);
+		contract.setDegreeOfParallelism(this.getDegreeOfParallelism());
+		SopremoUtil.setEvaluationContext(stubConfiguration, context);
+		SopremoUtil.setLayout(contract.getParameters(), layout);
 	}
 
 	@Override
@@ -341,8 +324,8 @@ public abstract class ElementaryOperator<Self extends ElementaryOperator<Self>>
 	 * 
 	 * @return the contract representing this operator
 	 */
-	@SuppressWarnings("unchecked")
-	protected Contract getContract(final Schema globalSchema) {
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	protected Contract getContract(final SopremoRecordLayout layout) {
 		final Class<? extends Stub> stubClass = this.getStubClass();
 		if (stubClass == null)
 			throw new IllegalStateException("no implementing stub found");
@@ -350,41 +333,26 @@ public abstract class ElementaryOperator<Self extends ElementaryOperator<Self>>
 		if (contractClass == null)
 			throw new IllegalStateException("no associated contract found");
 
+		final String name = this.toString();
 		try {
-			if (contractClass == ReduceContract.class) {
-				int[] keyIndices = this.getKeyIndices(globalSchema, this.getKeyExpressions(0));
-				ReduceContract.Builder builder = ReduceContract.builder((Class<? extends ReduceStub>) stubClass);
-				builder.name(this.toString());
-				PactBuilderUtil.addKeys(builder, this.getKeyClasses(globalSchema, keyIndices), keyIndices);
-				return builder.build();
+			if (contractClass == GenericReduceContract.class) {
+				int[] keyIndices = this.getKeyIndices(layout, this.getKeyExpressions(0));
+				return new GenericReduceContract(stubClass, keyIndices, name);
 			}
-			else if (contractClass == CoGroupContract.class) {
-				int[] keyIndices1 = this.getKeyIndices(globalSchema, this.getKeyExpressions(0));
-				int[] keyIndices2 = this.getKeyIndices(globalSchema, this.getKeyExpressions(1));
-				Class<? extends Key>[] keyTypes = this.getCommonKeyClasses(globalSchema, keyIndices1, keyIndices2);
-
-				CoGroupContract.Builder builder = CoGroupContract.builder((Class<? extends CoGroupStub>) stubClass,
-					keyTypes[0], keyIndices1[0], keyIndices2[0]);
-				builder.name(this.toString());
-				PactBuilderUtil.addKeysExceptFirst(builder, keyTypes, keyIndices1, keyIndices2);
-				return builder.build();
+			else if (contractClass == GenericCoGroupContract.class) {
+				int[] keyIndices1 = this.getKeyIndices(layout, this.getKeyExpressions(0));
+				int[] keyIndices2 = this.getKeyIndices(layout, this.getKeyExpressions(1));
+				return new GenericCoGroupContract(stubClass, keyIndices1, keyIndices2, name);
 			}
-			else if (contractClass == MatchContract.class) {
-				int[] keyIndices1 = this.getKeyIndices(globalSchema, this.getKeyExpressions(0));
-				int[] keyIndices2 = this.getKeyIndices(globalSchema, this.getKeyExpressions(1));
-				Class<? extends Key>[] keyTypes = this.getCommonKeyClasses(globalSchema, keyIndices1, keyIndices2);
+			else if (contractClass == GenericMatchContract.class) {
+				int[] keyIndices1 = this.getKeyIndices(layout, this.getKeyExpressions(0));
+				int[] keyIndices2 = this.getKeyIndices(layout, this.getKeyExpressions(1));
 
-				MatchContract.Builder builder = MatchContract.builder((Class<? extends MatchStub>) stubClass,
-					keyTypes[0], keyIndices1[0], keyIndices2[0]);
-				builder.name(this.toString());
-				PactBuilderUtil.addKeysExceptFirst(builder, keyTypes, keyIndices1, keyIndices2);
-				return builder.build();
-			} else if (contractClass == MapContract.class)
-				return MapContract.builder((Class<? extends MapStub>) stubClass).
-					name(this.toString()).build();
-			else if (contractClass == CrossContract.class)
-				return CrossContract.builder((Class<? extends CrossStub>) stubClass).
-					name(this.toString()).build();
+				return new GenericMatchContract(stubClass, keyIndices1, keyIndices2, name);
+			} else if (contractClass == GenericMapContract.class)
+				return new GenericMapContract(stubClass, name);
+			else if (contractClass == GenericCrossContract.class)
+				return new GenericCrossContract(stubClass, name);
 			else
 				throw new UnsupportedOperationException("Unknown contract type");
 
@@ -394,37 +362,6 @@ public abstract class ElementaryOperator<Self extends ElementaryOperator<Self>>
 		}
 	}
 
-	private Class<? extends Key>[] getCommonKeyClasses(
-			final Schema globalSchema, final int[] keyIndices1,
-			final int[] keyIndices2) {
-		final Class<? extends Key>[] keyClasses1 = this.getKeyClasses(
-			globalSchema, keyIndices1);
-		final Class<? extends Key>[] keyClasses2 = this.getKeyClasses(
-			globalSchema, keyIndices2);
-		if (!Arrays.equals(keyClasses1, keyClasses2))
-			throw new IllegalStateException(
-				String.format(
-					"The key classes are not compatible (schema %s; indices %s %s; key classes: %s %s)",
-					globalSchema, keyIndices1, keyIndices2,
-					keyClasses1, keyClasses2));
-		return keyClasses1;
-	}
-
-	// protected Iterable<? extends EvaluationExpression>
-	// getKeyExpressionsForInput(final int index) {
-	// final Iterable<? extends EvaluationExpression> keyExpressions =
-	// this.getKeyExpressions();
-	// if (keyExpressions == ALL_KEYS)
-	// return keyExpressions;
-	// return new FilteringIterable<EvaluationExpression>(keyExpressions, new
-	// Predicate<EvaluationExpression>() {
-	// @Override
-	// public boolean isTrue(EvaluationExpression expression) {
-	// return SopremoUtil.getInputIndex(expression) == index;
-	// };
-	// });
-	// }
-	//
 	public List<List<? extends EvaluationExpression>> getAllKeyExpressions() {
 		final ArrayList<List<? extends EvaluationExpression>> allKeys =
 			new ArrayList<List<? extends EvaluationExpression>>();
@@ -432,20 +369,6 @@ public abstract class ElementaryOperator<Self extends ElementaryOperator<Self>>
 		for (int index = 0; index < inputs.size(); index++)
 			allKeys.add(this.getKeyExpressions(index));
 		return allKeys;
-	}
-
-	@SuppressWarnings("unchecked")
-	protected Class<? extends Key>[] getKeyClasses(final Schema globalSchema, final int[] keyIndices) {
-		final Class<? extends Value>[] pactSchema = globalSchema.getPactSchema();
-		final Class<? extends Key>[] keyClasses = new Class[keyIndices.length];
-		for (int index = 0; index < keyIndices.length; index++) {
-			final Class<? extends Value> schemaClass = pactSchema[keyIndices[index]];
-			if (!Key.class.isAssignableFrom(schemaClass))
-				throw new IllegalStateException(
-					"Schema wrapped a key value with a class that does not implement Key");
-			keyClasses[index] = (Class<? extends Key>) schemaClass;
-		}
-		return keyClasses;
 	}
 
 	@Override
@@ -482,26 +405,18 @@ public abstract class ElementaryOperator<Self extends ElementaryOperator<Self>>
 		}
 	}
 
-	protected int[] getKeyIndices(final Schema globalSchema,
+	protected int[] getKeyIndices(final SopremoRecordLayout sopremoRecordLayout,
 			final Iterable<? extends EvaluationExpression> keyExpressions) {
-		if (keyExpressions.equals(ALL_KEYS)) {
-			final int[] allSchema = new int[globalSchema.getPactSchema().length];
-			for (int index = 0; index < allSchema.length; index++)
-				allSchema[index] = index;
-			return allSchema;
-		}
 		final IntSet keyIndices = new IntOpenHashSet();
 		for (final EvaluationExpression expression : keyExpressions)
-			keyIndices.addAll(globalSchema.indicesOf(expression));
+			keyIndices.addAll(sopremoRecordLayout.indicesOf(expression));
 		if (keyIndices.isEmpty()) {
 			if (keyExpressions.iterator().hasNext())
 				throw new IllegalStateException(
-					String.format(
-						"Operator %s did not specify key expression that it now requires",
+					String.format("Operator %s did not specify key expression that it now requires",
 						this.getClass()));
 
-			throw new IllegalStateException(String.format(
-				"Needs to specify key expressions: %s", this.getClass()));
+			throw new IllegalStateException(String.format("Needs to specify key expressions: %s", this.getClass()));
 		}
 		return keyIndices.toIntArray();
 	}

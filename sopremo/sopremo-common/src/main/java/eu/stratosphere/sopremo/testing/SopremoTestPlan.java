@@ -1,8 +1,5 @@
 package eu.stratosphere.sopremo.testing;
 
-import it.unimi.dsi.fastutil.ints.IntIterator;
-import it.unimi.dsi.fastutil.ints.IntSet;
-
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
@@ -23,35 +20,33 @@ import eu.stratosphere.pact.common.contract.FileDataSource;
 import eu.stratosphere.pact.common.contract.GenericDataSink;
 import eu.stratosphere.pact.common.contract.GenericDataSource;
 import eu.stratosphere.pact.common.plan.PactModule;
-import eu.stratosphere.pact.common.type.PactRecord;
+import eu.stratosphere.pact.common.plan.Plan;
 import eu.stratosphere.pact.generic.contract.Contract;
 import eu.stratosphere.pact.testing.AssertUtil;
 import eu.stratosphere.pact.testing.GenericTestPlan;
-import eu.stratosphere.pact.testing.TestPlan;
-import eu.stratosphere.pact.testing.TestRecords;
+import eu.stratosphere.pact.testing.GenericTestRecords;
 import eu.stratosphere.pact.testing.TypeConfig;
-import eu.stratosphere.pact.testing.fuzzy.NaiveFuzzyValueMatcher;
-import eu.stratosphere.pact.testing.fuzzy.PactRecordDistance;
 import eu.stratosphere.sopremo.EvaluationContext;
 import eu.stratosphere.sopremo.io.JsonFormat;
 import eu.stratosphere.sopremo.io.JsonFormat.JsonInputFormat;
 import eu.stratosphere.sopremo.io.JsonParser;
 import eu.stratosphere.sopremo.io.Sink;
-import eu.stratosphere.sopremo.io.SopremoFileFormat;
-import eu.stratosphere.sopremo.io.SopremoFileFormat.SopremoInputFormat;
+import eu.stratosphere.sopremo.io.SopremoFormat;
+import eu.stratosphere.sopremo.io.SopremoFormat.SopremoFileInputFormat;
 import eu.stratosphere.sopremo.io.Source;
 import eu.stratosphere.sopremo.operator.JsonStream;
 import eu.stratosphere.sopremo.operator.Operator;
 import eu.stratosphere.sopremo.operator.OperatorNavigator;
+import eu.stratosphere.sopremo.operator.PlanWithSopremoPostPass;
 import eu.stratosphere.sopremo.operator.SopremoModule;
 import eu.stratosphere.sopremo.operator.SopremoPlan;
 import eu.stratosphere.sopremo.pact.RecordToJsonIterator;
 import eu.stratosphere.sopremo.pact.SopremoUtil;
-import eu.stratosphere.sopremo.serialization.Schema;
+import eu.stratosphere.sopremo.serialization.SopremoRecord;
+import eu.stratosphere.sopremo.serialization.SopremoRecordLayout;
 import eu.stratosphere.sopremo.type.IJsonNode;
 import eu.stratosphere.sopremo.type.JsonUtil;
 import eu.stratosphere.util.AbstractIterator;
-import eu.stratosphere.util.CollectionUtil;
 import eu.stratosphere.util.IteratorUtil;
 import eu.stratosphere.util.dag.OneTimeTraverser;
 
@@ -91,13 +86,54 @@ import eu.stratosphere.util.dag.OneTimeTraverser;
  * </pre></code>
  */
 public class SopremoTestPlan {
+	/**
+	 * @author arv
+	 */
+	public class SopremoRecordTestPlan extends GenericTestPlan<SopremoRecord, SopremoTestRecords> {
+
+		protected SopremoRecordTestPlan(Collection<? extends Contract> contracts) {
+			super(contracts);
+		}
+
+		protected SopremoRecordTestPlan(Contract... contracts) {
+			super(contracts);
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see eu.stratosphere.pact.testing.GenericTestPlan#createPlan(java.util.Collection)
+		 */
+		@Override
+		protected Plan createPlan(Collection<GenericDataSink> wrappedSinks) {
+			return new PlanWithSopremoPostPass(wrappedSinks);
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see eu.stratosphere.pact.testing.GenericTestPlan#createTestRecords(eu.stratosphere.pact.testing.TypeConfig)
+		 */
+		@Override
+		protected SopremoTestRecords createTestRecords(TypeConfig<SopremoRecord> typeConfig) {
+			return new SopremoTestRecords(typeConfig);
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see java.lang.Object#toString()
+		 */
+		@Override
+		public String toString() {
+			return PactModule.valueOf(getSinks()).toString();
+		}
+	}
+
 	private Input[] inputs;
 
 	private ActualOutput[] actualOutputs;
 
 	private ExpectedOutput[] expectedOutputs;
 
-	private TestPlan testPlan;
+	private SopremoRecordTestPlan testPlan;
 
 	private final EvaluationContext evaluationContext = new EvaluationContext();
 
@@ -383,13 +419,12 @@ public class SopremoTestPlan {
 	public void run() {
 		final SopremoPlan sopremoPlan = this.getSopremoPlan();
 		final Collection<Contract> sinks = sopremoPlan.assemblePact();
-		this.testPlan = new TestPlan(sinks);
-		Schema schema = sopremoPlan.getSchema();
-		this.testPlan.setSchema(schema.getPactSchema());
+		this.testPlan = new SopremoRecordTestPlan(sinks);
+		SopremoRecordLayout layout = sopremoPlan.getLayout();
 		for (final Input input : this.inputs)
-			input.prepare(this.testPlan, schema);
+			input.prepare(this.testPlan, layout);
 		for (final ExpectedOutput output : this.expectedOutputs)
-			output.prepare(this.testPlan, schema);
+			output.prepare(this.testPlan, layout);
 		if (this.dop > 0)
 			this.testPlan.setDegreeOfParallelism(this.dop);
 		if (this.trace)
@@ -456,9 +491,7 @@ public class SopremoTestPlan {
 	 * Represents the actual output of a {@link SopremoTestPlan}.
 	 */
 	public static class ActualOutput extends InternalChannel<Sink, ActualOutput> {
-		private TestRecords actualRecords;
-
-		private Schema schema;
+		private GenericTestRecords<SopremoRecord> actualRecords;
 
 		/**
 		 * Initializes an ActualOutput with the given index.
@@ -480,22 +513,18 @@ public class SopremoTestPlan {
 		 * Loads the actual output values into this ActualOutput.
 		 * 
 		 * @param testPlan
-		 *        the {@link TestPlan} where the actual output values should be loaded from
+		 *        the {@link GenericTestPlan<SopremoRecord, SopremoTestRecords>} where the actual output values should
+		 *        be loaded from
 		 */
-		void load(TestPlan testPlan) {
+		void load(GenericTestPlan<SopremoRecord, SopremoTestRecords> testPlan) {
 			this.actualRecords = testPlan.getActualOutput(this.getIndex());
-
-			GenericDataSink sink = testPlan.getSinks().get(this.getIndex());
-			this.schema =
-				SopremoUtil.getObject(sink.getParameters(), SopremoUtil.CONTEXT, (EvaluationContext) null).
-					getInputSchema(0);
 		}
 
 		@Override
 		public Iterator<IJsonNode> iterator() {
 			if (this.actualRecords == null)
 				throw new IllegalStateException("Can only access actual output after a complete test run");
-			final RecordToJsonIterator iterator = new RecordToJsonIterator(this.schema);
+			final RecordToJsonIterator iterator = new RecordToJsonIterator();
 			iterator.setIterator(this.actualRecords.iterator());
 			return iterator;
 		}
@@ -505,18 +534,23 @@ public class SopremoTestPlan {
 			InternalChannel<O, C> implements Iterable<IJsonNode> {
 		private final List<IJsonNode> values = new ArrayList<IJsonNode>();
 
-		protected TestRecords testRecords;
+		protected SopremoTestRecords testRecords;
 
 		private boolean empty = false;
 
-		private final SopremoTestPlan testPlan;
-
-		private Schema schema;
+		private final transient SopremoTestPlan testPlan;
 
 		public ModifiableChannel(final SopremoTestPlan testPlan, final O operator, final int index) {
 			super(operator, index);
 			this.testPlan = testPlan;
 		}
+
+		/**
+		 * @param testPlan
+		 * @param layout
+		 * @return
+		 */
+		abstract SopremoTestRecords getTestRecords(SopremoRecordTestPlan testPlan, SopremoRecordLayout layout);
 
 		/**
 		 * Initializes SopremoTestPlan.ModifiableChannel.
@@ -563,34 +597,28 @@ public class SopremoTestPlan {
 			return this.add(JsonUtil.createArrayNode(values));
 		}
 
-		void prepare(final TestPlan testPlan, final Schema schema) {
-			this.schema = schema;
-			this.testRecords = this.getTestRecords(testPlan, schema);
+		void prepare(final SopremoRecordTestPlan testPlan, final SopremoRecordLayout layout) {
+			this.testRecords = this.getTestRecords(testPlan, layout);
 			if (this.operator instanceof MockupSource) {
-				// testRecords.setSchema(schema.getPactSchema());
+				// testRecords.setSopremoRecordLayout(layout.getPactSopremoRecordLayout());
 				if (this.isEmpty())
 					this.testRecords.setEmpty();
 				else if (this.file != null) {
 					Configuration configuration = new Configuration();
-					final EvaluationContext context = this.getContext().clone();
-					context.setSchema(schema);
-					context.setInputsAndOutputs(0, 1);
-					SopremoUtil.setObject(configuration, SopremoUtil.CONTEXT, context);
-					SopremoUtil.transferFieldsToConfiguration(new JsonFormat(), SopremoFileFormat.class, configuration,
-						JsonInputFormat.class, SopremoInputFormat.class);
+					SopremoUtil.setEvaluationContext(configuration, this.getContext().clone());
+					SopremoUtil.setLayout(configuration, layout);
+					SopremoUtil.transferFieldsToConfiguration(new JsonFormat(), SopremoFormat.class, configuration,
+						JsonInputFormat.class, SopremoFileInputFormat.class);
 					this.testRecords.load(JsonFormat.JsonInputFormat.class, this.file, configuration);
 				}
 				else
 					for (final IJsonNode node : this.values) {
-						final PactRecord record = new PactRecord();
-						schema.jsonToRecord(node, record);
-						record.updateBinaryRepresenation();
+						final SopremoRecord record = new SopremoRecord(layout);
+						record.setNode(node);
 						this.testRecords.add(record);
 					}
 			}
 		}
-
-		abstract TestRecords getTestRecords(TestPlan testPlan, Schema schema);
 
 		@SuppressWarnings("unchecked")
 		public C setEmpty() {
@@ -614,7 +642,7 @@ public class SopremoTestPlan {
 			if (this.isEmpty())
 				return Collections.EMPTY_LIST.iterator();
 			if (this.testRecords != null) {
-				final RecordToJsonIterator recordToJsonIterator = new RecordToJsonIterator(this.schema);
+				final RecordToJsonIterator recordToJsonIterator = new RecordToJsonIterator();
 				recordToJsonIterator.setIterator(this.testRecords.iterator());
 				return recordToJsonIterator;
 			}
@@ -752,15 +780,15 @@ public class SopremoTestPlan {
 		 * (non-Javadoc)
 		 * @see
 		 * eu.stratosphere.sopremo.testing.SopremoTestPlan.ModifiableChannel#getTestRecords(eu.stratosphere.pact.testing
-		 * .TestPlan)
+		 * .GenericTestPlan<SopremoRecord, SopremoTestRecords>)
 		 */
 		@Override
-		TestRecords getTestRecords(final TestPlan testPlan, final Schema schema) {
+		SopremoTestRecords getTestRecords(final SopremoRecordTestPlan testPlan, final SopremoRecordLayout layout) {
 			final int sinkIndex = this.findSinkIndex(testPlan);
-			return testPlan.getExpectedOutput(sinkIndex, schema.getPactSchema());
+			return testPlan.getExpectedOutput(sinkIndex, SopremoTestRecords.getTypeConfig(layout));
 		}
 
-		private int findSinkIndex(final TestPlan testPlan) {
+		private int findSinkIndex(final GenericTestPlan<SopremoRecord, SopremoTestRecords> testPlan) {
 			int sinkIndex = -1;
 			final List<GenericDataSink> sinks = testPlan.getSinks();
 			for (int index = 0; index < sinks.size(); index++)
@@ -771,25 +799,6 @@ public class SopremoTestPlan {
 			return sinkIndex == -1 ? this.getIndex() : sinkIndex;
 		}
 
-		@Override
-		void prepare(final TestPlan testPlan, final Schema schema) {
-			super.prepare(testPlan, schema);
-
-			final int sinkIndex = this.findSinkIndex(testPlan);
-			if (this.doublePrecision > 0) {
-				final IntSet fuzzySlots = CollectionUtil.setRangeFrom(0, schema.getPactSchema().length);
-				fuzzySlots.removeAll(schema.getKeyIndices());
-				final IntIterator iterator = fuzzySlots.iterator();
-
-				final TypeConfig<PactRecord> typeConfig =
-					testPlan.getExpectedOutput(testPlan.getSinks().get(sinkIndex), schema.getPactSchema()).getTypeConfig();
-				PactRecordDistance pactRecordDistance = new PactRecordDistance();
-				typeConfig.setFuzzyValueMatcher(new NaiveFuzzyValueMatcher<PactRecord>(pactRecordDistance));
-				while (iterator.hasNext())
-					pactRecordDistance.addSimilarity(iterator.nextInt(), new DoubleNodeSimilarity(this.doublePrecision));
-			}
-		}
-
 		private double doublePrecision;
 
 		public double getDoublePrecision() {
@@ -798,7 +807,8 @@ public class SopremoTestPlan {
 
 		public ExpectedOutput setDoublePrecision(final double doublePrecision) {
 			this.doublePrecision = doublePrecision;
-			return this;
+			throw new UnsupportedOperationException("Currently unsupported; please add ticket when needed");
+			// return this;
 		}
 	}
 
@@ -827,15 +837,17 @@ public class SopremoTestPlan {
 		 * (non-Javadoc)
 		 * @see
 		 * eu.stratosphere.sopremo.testing.SopremoTestPlan.ModifiableChannel#getTestRecords(eu.stratosphere.pact.testing
-		 * .TestPlan, eu.stratosphere.sopremo.serialization.Schema)
+		 * .GenericTestPlan<SopremoRecord, SopremoTestRecords>,
+		 * eu.stratosphere.sopremo.serialization.SopremoRecordLayout)
 		 */
 		@Override
-		TestRecords getTestRecords(final TestPlan testPlan, final Schema schema) {
+		SopremoTestRecords getTestRecords(final SopremoRecordTestPlan testPlan, final SopremoRecordLayout layout) {
 			int sourceIndex = getSourceIndex(testPlan);
-			return testPlan.getInput(sourceIndex == -1 ? this.getIndex() : sourceIndex);
+			return testPlan.getInput(sourceIndex == -1 ? this.getIndex() : sourceIndex,
+				SopremoTestRecords.getTypeConfig(layout));
 		}
 
-		public int getSourceIndex(final TestPlan testPlan) {
+		public int getSourceIndex(final GenericTestPlan<SopremoRecord, SopremoTestRecords> testPlan) {
 			int sourceIndex = -1;
 			final List<GenericDataSource<?>> sources = testPlan.getSources();
 			for (int index = 0; index < sources.size(); index++)
@@ -876,7 +888,8 @@ public class SopremoTestPlan {
 		 *        the index
 		 */
 		public MockupSink(final int index) {
-			super("mockup-output" + index);
+			super("file:///" + index);
+			setName("Mockup Output" + index);
 			this.index = index;
 		}
 
@@ -884,18 +897,18 @@ public class SopremoTestPlan {
 		 * Initializes SopremoTestPlan.MockupSink.
 		 */
 		MockupSink() {
-			super("");
+			super("file:///");
 			this.index = 0;
 		}
 
 		@Override
-		public PactModule asPactModule(final EvaluationContext context) {
-			context.setInputsAndOutputs(1, 0);
+		public PactModule asPactModule(final EvaluationContext context, SopremoRecordLayout layout) {
 			final PactModule pactModule = new PactModule(1, 0);
 			final FileDataSink contract = GenericTestPlan.createDefaultSink(this.getOutputPath());
 			contract.setInput(pactModule.getInput(0));
 			pactModule.addInternalOutput(contract);
-			SopremoUtil.setObject(contract.getParameters(), SopremoUtil.CONTEXT, context);
+			SopremoUtil.setEvaluationContext(contract.getParameters(), context);
+			SopremoUtil.setLayout(contract.getParameters(), layout);
 			return pactModule;
 		}
 
@@ -939,7 +952,8 @@ public class SopremoTestPlan {
 		 *        the index
 		 */
 		public MockupSource(final int index) {
-			super("mockup-input" + index);
+			super("file:///" + index);
+			setName("Mockup-input " + index);
 			this.index = index;
 		}
 
@@ -947,17 +961,17 @@ public class SopremoTestPlan {
 		 * Initializes SopremoTestPlan.MockupSource.
 		 */
 		MockupSource() {
-			super("mockup-input");
+			super("file:///");
 			this.index = 0;
 		}
 
 		@Override
-		public PactModule asPactModule(final EvaluationContext context) {
-			context.setInputsAndOutputs(1, 0);
+		public PactModule asPactModule(final EvaluationContext context, SopremoRecordLayout layout) {
 			final PactModule pactModule = new PactModule(0, 1);
 			final FileDataSource contract = GenericTestPlan.createDefaultSource(this.getInputPath());
 			pactModule.getOutput(0).setInput(contract);
-			SopremoUtil.setObject(contract.getParameters(), SopremoUtil.CONTEXT, context);
+			SopremoUtil.setEvaluationContext(contract.getParameters(), context);
+			SopremoUtil.setLayout(contract.getParameters(), layout);
 			return pactModule;
 		}
 

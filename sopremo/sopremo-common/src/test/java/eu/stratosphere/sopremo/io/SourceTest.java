@@ -17,14 +17,14 @@ public class SourceTest extends EqualCloneTest<Source> {
 	 */
 	@Override
 	protected Source createDefaultInstance(int index) {
-		return new Source(String.valueOf(index));
+		return new Source("file:///" + String.valueOf(index));
 	}
 
 	@Override
 	@Test
 	public void shouldComplyEqualsContract() {
 		super.shouldComplyEqualsContract(new Source(new ConstantExpression(0)), new Source(new ConstantExpression(1)),
-			new Source("2"), new Source("3"));
+			new Source("file:///2"), new Source("file:///3"));
 	}
 
 	@Test

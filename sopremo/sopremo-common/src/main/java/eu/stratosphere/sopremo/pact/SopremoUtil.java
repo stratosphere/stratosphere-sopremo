@@ -30,12 +30,15 @@ import com.esotericsoftware.kryo.io.Output;
 
 import eu.stratosphere.nephele.configuration.Configuration;
 import eu.stratosphere.nephele.util.StringUtils;
+import eu.stratosphere.sopremo.EvaluationContext;
 import eu.stratosphere.sopremo.ICloneable;
 import eu.stratosphere.sopremo.ISopremoType;
-import eu.stratosphere.sopremo.SopremoRuntime;
+import eu.stratosphere.sopremo.SopremoEnvironment;
+import eu.stratosphere.sopremo.cache.NodeCache;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
 import eu.stratosphere.sopremo.expressions.UnevaluableExpression;
 import eu.stratosphere.sopremo.function.SopremoFunction;
+import eu.stratosphere.sopremo.serialization.SopremoRecordLayout;
 import eu.stratosphere.sopremo.type.IArrayNode;
 import eu.stratosphere.sopremo.type.IJsonNode;
 import eu.stratosphere.sopremo.type.IObjectNode;
@@ -57,7 +60,7 @@ public class SopremoUtil {
 
 	public static Log LOG = NORMAL_LOG;
 
-	public static final String CONTEXT = "context";
+	private static final String CONTEXT = "sopremo.context", LAYOUT = "sopremo.layout";
 
 	/**
 	 * Configures an object with the given {@link Configuration} that has been initialized with
@@ -283,7 +286,6 @@ public class SopremoUtil {
 		protected Kryo initialValue() {
 			final Kryo kryo = new Kryo();
 			kryo.setReferences(false);
-			kryo.setAutoReset(true);
 			return kryo;
 		};
 	};
@@ -303,10 +305,36 @@ public class SopremoUtil {
 		if (stringRepresentation == null)
 			return defaultValue;
 		Input input = new Input(stringRepresentation.getBytes(BINARY_CHARSET));
-		final Kryo kryo = Serialization.get();
-		kryo.setClassLoader(SopremoRuntime.getInstance().getClassLoader());
+		final Kryo kryo = getKryo();
+		kryo.setClassLoader(SopremoEnvironment.getInstance().getClassLoader());
 		return (T) kryo.readClassAndObject(input);
 	}
+
+	public static Kryo getKryo() {
+		final Kryo kryo = Serialization.get();
+		return kryo;
+	}
+
+	public static EvaluationContext getEvaluationContext(Configuration config) {
+		return getObject(config, CONTEXT, null);
+	}
+	
+	public static SopremoRecordLayout getLayout(Configuration config) {
+		return getObject(config, LAYOUT, null);
+	}
+
+	public static void setEvaluationContext(Configuration config, EvaluationContext context) {
+		if(context == null)
+			throw new NullPointerException();
+		setObject(config, CONTEXT, context);
+	}
+	
+	public static void setLayout(Configuration config, SopremoRecordLayout layout) {
+		if(layout == null)
+			throw new NullPointerException();
+		setObject(config, LAYOUT, layout);
+	}
+	
 
 	/**
 	 * @param config
@@ -316,7 +344,7 @@ public class SopremoUtil {
 	public static void setObject(Configuration config, String keyName, Object object) {
 		final ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		final Output output = new Output(baos);
-		final Kryo kryo = Serialization.get();
+		final Kryo kryo = getKryo();
 		kryo.reset();
 		kryo.writeClassAndObject(output, object);
 		output.close();
@@ -330,6 +358,21 @@ public class SopremoUtil {
 			oldValue.copyValueFrom(element);
 		else
 			arrayNode.set(index, (T) element.clone());
+	}
+
+	@SuppressWarnings("unchecked")
+	public static <T extends IJsonNode> T copyInto(T node, IJsonNode possibleTarget) {
+		if(possibleTarget == null || possibleTarget.getType() != node.getType())
+			return (T) node.clone();
+		possibleTarget.copyValueFrom(node);
+		return (T) possibleTarget;
+	}
+
+	@SuppressWarnings("unchecked")
+	public static <T extends IJsonNode> T copyInto(T node, NodeCache nodeCache) {
+		final IJsonNode target = nodeCache.getNode(node.getType());
+		target.copyValueFrom(node);
+		return (T) target;
 	}
 
 	/**

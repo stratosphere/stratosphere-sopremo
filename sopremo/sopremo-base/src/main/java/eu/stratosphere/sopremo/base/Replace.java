@@ -69,7 +69,7 @@ public class Replace extends CompositeOperator<Replace> {
 
 			EvaluationExpression defaultExpression;
 			if (this.defaultExpression == EvaluationExpression.VALUE)
-				defaultExpression = new ArrayAccess(0);
+				defaultExpression = EvaluationExpression.VALUE;
 			else if (this.defaultExpression.equals(FILTER_RECORDS))
 				defaultExpression = this.defaultExpression;
 			else

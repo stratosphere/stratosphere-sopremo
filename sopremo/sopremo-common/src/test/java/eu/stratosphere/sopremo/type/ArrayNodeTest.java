@@ -48,19 +48,4 @@ public class ArrayNodeTest extends ArrayNodeBaseTest<ArrayNode<IJsonNode>> {
 
 		Assert.assertEquals(this.node, newArray);
 	}
-
-	@Override
-	public void testValue() {
-	}
-
-	@Override
-	protected IJsonNode lowerNode() {
-		return new ArrayNode<IJsonNode>(IntNode.valueOf(42), TextNode.valueOf("1 lower Node"));
-	}
-
-	@Override
-	protected IJsonNode higherNode() {
-		return new ArrayNode<IJsonNode>(IntNode.valueOf(42), TextNode.valueOf("2 higher Node"));
-	}
-
 }

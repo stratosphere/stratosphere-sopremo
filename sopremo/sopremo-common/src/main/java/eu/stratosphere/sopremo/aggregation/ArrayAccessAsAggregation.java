@@ -24,7 +24,9 @@ import eu.stratosphere.sopremo.type.IJsonNode;
  * @author Arvid Heise
  */
 public class ArrayAccessAsAggregation extends Aggregation {
-	private int startIndex, endIndex, elementsToSkip, remainingElements;
+	private int startIndex, endIndex;
+
+	private transient int elementsToSkip, remainingElements;
 
 	private boolean range;
 

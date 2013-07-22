@@ -32,8 +32,6 @@ import org.junit.Test;
 import org.junit.internal.ArrayComparisonFailure;
 
 import eu.stratosphere.pact.common.contract.ReduceContract.Combinable;
-import eu.stratosphere.pact.common.type.PactRecord;
-import eu.stratosphere.pact.testing.TestRecords;
 import eu.stratosphere.sopremo.EqualVerifyTest;
 import eu.stratosphere.sopremo.SopremoTestUtil;
 import eu.stratosphere.sopremo.expressions.ObjectAccess;
@@ -45,8 +43,8 @@ import eu.stratosphere.sopremo.pact.JsonCollector;
 import eu.stratosphere.sopremo.pact.SopremoCross;
 import eu.stratosphere.sopremo.pact.SopremoMap;
 import eu.stratosphere.sopremo.pact.SopremoReduce;
-import eu.stratosphere.sopremo.serialization.ObjectSchema;
-import eu.stratosphere.sopremo.serialization.Schema;
+import eu.stratosphere.sopremo.serialization.SopremoRecord;
+import eu.stratosphere.sopremo.serialization.SopremoRecordLayout;
 import eu.stratosphere.sopremo.type.IJsonNode;
 import eu.stratosphere.sopremo.type.IObjectNode;
 import eu.stratosphere.sopremo.type.IStreamNode;
@@ -54,6 +52,7 @@ import eu.stratosphere.sopremo.type.IntNode;
 import eu.stratosphere.sopremo.type.JsonUtil;
 import eu.stratosphere.sopremo.type.MissingNode;
 import eu.stratosphere.sopremo.type.TextNode;
+
 //import eu.stratosphere.pact.testing.TestRecords;
 
 /**
@@ -150,17 +149,18 @@ public class SopremoTestPlanTest extends EqualVerifyTest<SopremoTestPlan> {
 	@Override
 	protected void initVerifier(final EqualsVerifier<SopremoTestPlan> equalVerifier) {
 		super.initVerifier(equalVerifier);
-		final ObjectSchema redSchema = new ObjectSchema("redField");
-		PactRecord redRecord = new PactRecord();
-		redSchema.jsonToRecord(JsonUtil.createObjectNode("color", "red"), redRecord);
-		PactRecord blackRecord = new PactRecord();
-		redSchema.jsonToRecord(JsonUtil.createObjectNode("color", "black"), blackRecord);
+		final SopremoRecordLayout redSchema = SopremoRecordLayout.create(new ObjectAccess("redField"));
+		final SopremoRecordLayout blackSchema = SopremoRecordLayout.create(new ObjectAccess("blackField"));
+		SopremoRecord redRecord = new SopremoRecord(redSchema);
+		redRecord.setNode(JsonUtil.createObjectNode("color", "red"));
+		SopremoRecord blackRecord = new SopremoRecord(redSchema);
+		blackRecord.setNode(JsonUtil.createObjectNode("color", "black"));
 
 		equalVerifier.
-			withPrefabValues(TestRecords.class,
-				new TestRecords(redSchema.getPactSchema()).add(redRecord),
-				new TestRecords(redSchema.getPactSchema()).add(blackRecord)).
-			withPrefabValues(Schema.class, redSchema, new ObjectSchema("blackField")).
+			withPrefabValues(SopremoTestRecords.class,
+				(SopremoTestRecords) new SopremoTestRecords().add(redRecord),
+				(SopremoTestRecords) new SopremoTestRecords().add(blackRecord)).
+			withPrefabValues(SopremoRecordLayout.class, redSchema, blackSchema).
 			// withPrefabValues(SopremoTestPlan.ActualOutput.class,
 			// new SopremoTestPlan.ActualOutput(0).addValue(0),
 			// new SopremoTestPlan.ActualOutput(1).addValue(1)).
@@ -343,13 +343,13 @@ public class SopremoTestPlanTest extends EqualVerifyTest<SopremoTestPlan> {
 		for (final String line : lines)
 			testPlan.getInput(0).add(JsonUtil.createObjectNode("line", TextNode.valueOf(line.toLowerCase())));
 
-		final String[] singleWords = { "voluptate", "veniam", "velit", "ullamco", "tempor", "sunt", "sit", "sint",
-			"sed",
-			"reprehenderit", "quis", "qui", "proident", "pariatur", "officia", "occaecat", "nulla", "nostrud", "non",
-			"nisi", "mollit", "minim", "magna", "lorem", "laborum", "laboris", "labore", "irure", "ipsum",
-			"incididunt", "id", "fugiat", "exercitation", "excepteur", "ex", "eu", "et", "est", "esse", "enim", "elit",
-			"eiusmod", "ea", "duis", "do", "deserunt", "cupidatat", "culpa", "consequat", "consectetur", "commodo",
-			"cillum", "aute", "anim", "amet", "aliquip", "aliqua", "adipisicing", "ad" };
+		final String[] singleWords =
+		{ "voluptate", "veniam", "velit", "ullamco", "tempor", "sunt", "sit", "sint", "sed",
+			"reprehenderit", "quis", "qui", "proident", "pariatur", "officia", "occaecat", "nulla", "nostrud",
+			"non", "nisi", "mollit", "minim", "magna", "lorem", "laborum", "laboris", "labore", "irure", "ipsum",
+			"incididunt", "id", "fugiat", "exercitation", "excepteur", "ex", "eu", "et", "est", "esse", "enim",
+			"elit", "eiusmod", "ea", "duis", "do", "deserunt", "cupidatat", "culpa", "consequat", "consectetur",
+			"commodo", "cillum", "aute", "anim", "amet", "aliquip", "aliqua", "adipisicing", "ad" };
 		for (final String singleWord : singleWords)
 			testPlan.getExpectedOutput(0).add(JsonUtil.createObjectNode("word", singleWord, "count", 1));
 		testPlan.getExpectedOutput(0).
@@ -358,5 +358,7 @@ public class SopremoTestPlanTest extends EqualVerifyTest<SopremoTestPlan> {
 			add(JsonUtil.createObjectNode("word", "dolore", "count", 2)).
 			add(JsonUtil.createObjectNode("word", "dolor", "count", 2));
 		testPlan.run();
+		for (IJsonNode node : testPlan.getActualOutput(0))
+			System.out.println(node);
 	}
 }

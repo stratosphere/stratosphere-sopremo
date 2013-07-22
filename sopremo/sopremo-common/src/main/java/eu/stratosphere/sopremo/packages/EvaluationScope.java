@@ -23,4 +23,5 @@ public interface EvaluationScope {
 
 	public abstract IFunctionRegistry getFunctionRegistry();
 
+	public abstract ITypeRegistry getTypeRegistry();
 }

@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
+import com.esotericsoftware.kryo.DefaultSerializer;
 import com.google.common.collect.Iterators;
 
 import eu.stratosphere.util.CollectionUtil;
@@ -17,6 +18,7 @@ import eu.stratosphere.util.CollectionUtil;
  * @author Michael Hopstock
  * @author Tommy Neubert
  */
+@DefaultSerializer(AbstractArrayNode.ArraySerializer.class)
 public class ArrayNode<T extends IJsonNode> extends AbstractArrayNode<T> {
 	private final List<T> children;
 
@@ -54,6 +56,7 @@ public class ArrayNode<T extends IJsonNode> extends AbstractArrayNode<T> {
 	 * @param nodes
 	 *        the nodes that should be added to this ArrayNode
 	 */
+	@SafeVarargs
 	public ArrayNode(final T... nodes) {
 		this();
 		for (final T node : nodes)
@@ -217,7 +220,13 @@ public class ArrayNode<T extends IJsonNode> extends AbstractArrayNode<T> {
 		if (this.getClass() != obj.getClass())
 			return super.equals(obj);
 		ArrayNode<?> other = (ArrayNode<?>) obj;
-		return this.children.equals(other.children);
+		int size = this.size();
+		if (other.size() != size)
+			return false;
+		for (int index = 0; index < size; index++)
+			if (!this.children.get(index).equals(other.children.get(index)))
+				return false;
+		return true;
 	}
 
 	@Override

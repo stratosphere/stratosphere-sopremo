@@ -2,11 +2,11 @@ package eu.stratosphere.sopremo.pact;
 
 import eu.stratosphere.nephele.configuration.Configuration;
 import eu.stratosphere.pact.common.stubs.Collector;
-import eu.stratosphere.pact.common.stubs.MatchStub;
-import eu.stratosphere.pact.common.type.PactRecord;
+import eu.stratosphere.pact.generic.stub.AbstractStub;
+import eu.stratosphere.pact.generic.stub.GenericMatcher;
 import eu.stratosphere.sopremo.EvaluationContext;
-import eu.stratosphere.sopremo.SopremoRuntime;
-import eu.stratosphere.sopremo.serialization.Schema;
+import eu.stratosphere.sopremo.SopremoEnvironment;
+import eu.stratosphere.sopremo.serialization.SopremoRecord;
 import eu.stratosphere.sopremo.type.IJsonNode;
 
 /**
@@ -14,11 +14,9 @@ import eu.stratosphere.sopremo.type.IJsonNode;
  * standard input of the MatchStub to a more manageable representation (both inputs are converted to an
  * {@link IJsonNode}).
  */
-public abstract class TypedSopremoMatch<LeftType extends IJsonNode, RightType extends IJsonNode> extends MatchStub
-		implements SopremoStub {
+public abstract class TypedSopremoMatch<LeftType extends IJsonNode, RightType extends IJsonNode> extends AbstractStub
+		implements GenericMatcher<SopremoRecord, SopremoRecord, SopremoRecord>, SopremoStub {
 	private EvaluationContext context;
-
-	private Schema inputSchema1, inputSchema2;
 
 	private JsonCollector collector;
 
@@ -30,13 +28,11 @@ public abstract class TypedSopremoMatch<LeftType extends IJsonNode, RightType ex
 	public void open(final Configuration parameters) throws Exception {
 		// We need to pass our class loader since the default class loader is
 		// not able to resolve classes coming from the Sopremo user jar file.
-		SopremoRuntime.getInstance().setClassLoader(getClass().getClassLoader());
-		this.context = (EvaluationContext) SopremoUtil.getObject(parameters, SopremoUtil.CONTEXT, null);
-		this.inputSchema1 = this.context.getInputSchema(0);
-		this.inputSchema2 = this.context.getInputSchema(1);
-		this.collector = new JsonCollector(this.context.getOutputSchema(0));
+		SopremoEnvironment.getInstance().setClassLoader(getClass().getClassLoader());
+		this.context = SopremoUtil.getEvaluationContext(parameters);
+		this.collector = new JsonCollector(SopremoUtil.getLayout(parameters));
 		SopremoUtil.configureWithTransferredState(this, TypedSopremoMatch.class, parameters);
-		SopremoRuntime.getInstance().setCurrentEvaluationContext(this.getContext());
+		SopremoEnvironment.getInstance().setEvaluationContext(this.getContext());
 	}
 
 	@Override
@@ -63,11 +59,10 @@ public abstract class TypedSopremoMatch<LeftType extends IJsonNode, RightType ex
 	 */
 	@SuppressWarnings("unchecked")
 	@Override
-	public void match(final PactRecord record1, final PactRecord record2, final Collector<PactRecord> out) {
-		this.context.incrementInputCount();
+	public void match(final SopremoRecord record1, final SopremoRecord record2, final Collector<SopremoRecord> out) {
 		this.collector.configure(out, this.context);
-		final LeftType input1 = (LeftType) this.inputSchema1.recordToJson(record1);
-		final RightType input2 = (RightType) this.inputSchema2.recordToJson(record2);
+		final LeftType input1 = (LeftType) record1.getNode();
+		final RightType input2 = (RightType) record2.getNode();
 		if (SopremoUtil.LOG.isTraceEnabled())
 			SopremoUtil.LOG.trace(String.format("%s %s/%s", this.getContext().getOperatorDescription(), input1,
 				input2));
