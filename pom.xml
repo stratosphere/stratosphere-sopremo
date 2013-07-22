@@ -28,7 +28,7 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-		<ozone.version>0.3</ozone.version>
+		<ozone.version>0.2-ozone</ozone.version>
 	</properties>
 
 	<pluginRepositories>

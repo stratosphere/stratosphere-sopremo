@@ -19,6 +19,7 @@ import java.io.IOException;
 
 import eu.stratosphere.nephele.services.memorymanager.DataInputView;
 import eu.stratosphere.nephele.services.memorymanager.DataOutputView;
+import eu.stratosphere.nephele.services.memorymanager.MemorySegment;
 import eu.stratosphere.pact.generic.types.TypeComparator;
 import eu.stratosphere.sopremo.cache.NodeCache;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
@@ -194,12 +195,11 @@ public final class SopremoRecordComparator extends TypeComparator<SopremoRecord>
 		return false;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.pact.generic.types.TypeComparator#putNormalizedKey(java.lang.Object, byte[], int, int)
+	/* (non-Javadoc)
+	 * @see eu.stratosphere.pact.generic.types.TypeComparator#putNormalizedKey(java.lang.Object, eu.stratosphere.nephele.services.memorymanager.MemorySegment, int, int)
 	 */
 	@Override
-	public void putNormalizedKey(SopremoRecord record, byte[] target, int offset, int numBytes) {
+	public void putNormalizedKey(SopremoRecord record, MemorySegment target, int offset, int numBytes) {
 	}
 
 	/*
