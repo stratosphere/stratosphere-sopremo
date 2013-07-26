@@ -18,16 +18,20 @@ import com.esotericsoftware.kryo.io.Output;
  * @author Tommy Neubert
  */
 @DefaultSerializer(TextNode.TextNodeSerializer.class)
-public class TextNode extends AbstractJsonNode implements IPrimitiveNode, CharSequence, Appendable {
+public class TextNode extends AbstractJsonNode implements IPrimitiveNode,
+		CharSequence, Appendable {
 
 	public static class TextNodeSerializer extends ReusingSerializer<TextNode> {
 		/*
 		 * (non-Javadoc)
-		 * @see eu.stratosphere.sopremo.type.ReusingSerializer#read(com.esotericsoftware.kryo.Kryo,
-		 * com.esotericsoftware.kryo.io.Input, java.lang.Object, java.lang.Class)
+		 * @see
+		 * eu.stratosphere.sopremo.type.ReusingSerializer#read(com.esotericsoftware
+		 * .kryo.Kryo, com.esotericsoftware.kryo.io.Input, java.lang.Object,
+		 * java.lang.Class)
 		 */
 		@Override
-		public TextNode read(Kryo kryo, Input input, TextNode oldInstance, Class<TextNode> type) {
+		public TextNode read(Kryo kryo, Input input, TextNode oldInstance,
+				Class<TextNode> type) {
 			final String string = input.readString();
 			if (oldInstance == null)
 				return new TextNode(string);
@@ -38,8 +42,9 @@ public class TextNode extends AbstractJsonNode implements IPrimitiveNode, CharSe
 
 		/*
 		 * (non-Javadoc)
-		 * @see com.esotericsoftware.kryo.Serializer#write(com.esotericsoftware.kryo.Kryo,
-		 * com.esotericsoftware.kryo.io.Output, java.lang.Object)
+		 * @see
+		 * com.esotericsoftware.kryo.Serializer#write(com.esotericsoftware.kryo
+		 * .Kryo, com.esotericsoftware.kryo.io.Output, java.lang.Object)
 		 */
 		@Override
 		public void write(Kryo kryo, Output output, TextNode object) {
@@ -48,7 +53,9 @@ public class TextNode extends AbstractJsonNode implements IPrimitiveNode, CharSe
 
 		/*
 		 * (non-Javadoc)
-		 * @see com.esotericsoftware.kryo.Serializer#copy(com.esotericsoftware.kryo.Kryo, java.lang.Object)
+		 * @see
+		 * com.esotericsoftware.kryo.Serializer#copy(com.esotericsoftware.kryo
+		 * .Kryo, java.lang.Object)
 		 */
 		@Override
 		public TextNode copy(Kryo kryo, TextNode original) {
@@ -69,8 +76,9 @@ public class TextNode extends AbstractJsonNode implements IPrimitiveNode, CharSe
 	}
 
 	/**
-	 * Initializes a TextNode which represents the given <code>String</code>. To create new TextNodes please
-	 * use TextNode.valueOf(<code>String</code>) instead.
+	 * Initializes a TextNode which represents the given <code>String</code>. To
+	 * create new TextNodes please use TextNode.valueOf(<code>String</code>)
+	 * instead.
 	 * 
 	 * @param v
 	 *        the value that should be represented by this node
@@ -87,7 +95,8 @@ public class TextNode extends AbstractJsonNode implements IPrimitiveNode, CharSe
 	}
 
 	/**
-	 * Creates a new instance of TextNode. This new instance represents the given value.
+	 * Creates a new instance of TextNode. This new instance represents the
+	 * given value.
 	 * 
 	 * @param v
 	 *        the value that should be represented by the new instance
@@ -113,14 +122,16 @@ public class TextNode extends AbstractJsonNode implements IPrimitiveNode, CharSe
 	}
 
 	/**
-	 * Appends the given String with a leading and ending " to the given StringBuilder.
+	 * Appends the given String with a leading and ending " to the given
+	 * StringBuilder.
 	 * 
 	 * @param sb
 	 *        the StringBuilder where the quoted String should be added to
 	 * @param content
 	 *        the String that should be appended
 	 */
-	public static void appendQuoted(final StringBuilder appendable, final CharSequence content) {
+	public static void appendQuoted(final StringBuilder appendable,
+			final CharSequence content) {
 		appendable.append('"');
 		appendable.append(content);
 		appendable.append('"');
@@ -185,7 +196,8 @@ public class TextNode extends AbstractJsonNode implements IPrimitiveNode, CharSe
 
 	public void setValue(TextNode text, int start, int end) {
 		this.value.size(end - start);
-		System.arraycopy(text.value.elements(), start, this.value.elements(), 0, end - start);
+		System.arraycopy(text.value.elements(), start, this.value.elements(),
+			0, end - start);
 	}
 
 	public void setValue(CharSequence text, int start, int end) {
@@ -270,7 +282,8 @@ public class TextNode extends AbstractJsonNode implements IPrimitiveNode, CharSe
 	 * @see java.lang.Appendable#append(java.lang.CharSequence, int, int)
 	 */
 	public Appendable append(TextNode csq, int start, int end) {
-		this.value.addElements(this.value.size(), csq.value.elements(), start, end);
+		this.value.addElements(this.value.size(), csq.value.elements(), start,
+			end);
 		return this;
 	}
 
@@ -289,6 +302,31 @@ public class TextNode extends AbstractJsonNode implements IPrimitiveNode, CharSe
 	 */
 	public void append(long number) {
 		this.asFormatter().format("%d", number);
+	}
+
+	public int indexOf(TextNode needle) {
+		return indexOf(0, this.value.size(), needle, 0, needle.length());
+	}
+
+	public int indexOf(int thisFromIndex, int thisEndIndex, TextNode needle,
+			int needleFromIndex, int needleToIndex) {
+		final int searchLength = needleToIndex - needleFromIndex;
+		if (searchLength <= 0)
+			return thisFromIndex;
+
+		final int maxIndex = thisEndIndex - searchLength;
+		final char[] needleValue = needle.value.elements();
+		final char[] value = this.value.elements();
+		findStart: for (int startIndex = thisFromIndex; startIndex <= maxIndex; startIndex++)
+			if (value[startIndex] == needleValue[needleFromIndex]) {
+				// check if remaining string match
+				for (int pos = 1; pos < searchLength; pos++)
+					if (value[startIndex + pos] != needleValue[needleFromIndex + pos])
+						continue findStart;
+				return startIndex;
+			}
+
+		return -1;
 	}
 
 }
