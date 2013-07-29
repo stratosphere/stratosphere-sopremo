@@ -12,8 +12,8 @@ import com.google.common.collect.Iterators;
 import eu.stratosphere.util.CollectionUtil;
 
 /**
- * This node represents an array and can store all types of {@link IJsonNode}s. In addition, the size of the array
- * increases when needed.
+ * This node represents an array and can store all types of {@link IJsonNode}s.
+ * In addition, the size of the array increases when needed.
  * 
  * @author Michael Hopstock
  * @author Tommy Neubert
@@ -23,7 +23,8 @@ public class ArrayNode<T extends IJsonNode> extends AbstractArrayNode<T> {
 	private final List<T> children;
 
 	@SuppressWarnings("unchecked")
-	public final static IArrayNode<?> EMPTY = new ArrayNode<IJsonNode>(Collections.EMPTY_LIST);
+	public final static IArrayNode<?> EMPTY = new ArrayNode<IJsonNode>(
+			Collections.EMPTY_LIST);
 
 	/**
 	 * Initializes an empty ArrayNode.
@@ -51,46 +52,56 @@ public class ArrayNode<T extends IJsonNode> extends AbstractArrayNode<T> {
 	}
 
 	/**
-	 * Initializes an ArrayNode<T> which contains the given {@link IJsonNode}s in proper sequence.
+	 * Initializes an ArrayNode<T> which contains the given {@link IJsonNode}s
+	 * in proper sequence.
 	 * 
 	 * @param nodes
-	 *        the nodes that should be added to this ArrayNode
+	 *            the nodes that should be added to this ArrayNode
 	 */
 	@SafeVarargs
 	public ArrayNode(final T... nodes) {
 		this();
-		for (final T node : nodes)
+		for (final T node : nodes) {
+			if (node == null)
+				throw new NullPointerException();
 			this.children.add(node);
+		}
 	}
 
 	/**
-	 * Initializes an ArrayNode<T> which cointains all {@link IJsonNode}s from the given Iterable in proper sequence.
+	 * Initializes an ArrayNode<T> which cointains all {@link IJsonNode}s from
+	 * the given Iterable in proper sequence.
 	 * 
 	 * @param nodes
-	 *        a Collection of nodes that should be added to this ArrayNode
+	 *            a Collection of nodes that should be added to this ArrayNode
 	 */
 	public ArrayNode(final Iterable<? extends T> nodes) {
 		this();
-		for (final T node : nodes)
+		for (final T node : nodes) {
+			if (node == null)
+				throw new NullPointerException();
 			this.children.add(node);
+		}
 	}
 
 	/**
-	 * Initializes an ArrayNode<T> which contains all {@link IJsonNode}s from the given stream array node in proper
-	 * sequence.
+	 * Creates an ArrayNode<T> which contains clones of all {@link IJsonNode}s from
+	 * the given stream array node in proper sequence.
 	 * 
 	 * @param nodes
-	 *        a Collection of nodes that should be added to this ArrayNode
+	 *            a Collection of nodes that should be added to this ArrayNode
 	 */
 	@SuppressWarnings("unchecked")
-	public ArrayNode(final IStreamNode<? extends T> nodes) {
-		this();
+	public static <T extends IJsonNode> ArrayNode<T> deepClone(final IStreamNode<? extends T> nodes) {
+		ArrayNode<T> clone = new ArrayNode<T>();
 		for (final T node : nodes)
-			this.children.add((T) node.clone());
+			clone.children.add((T) node.clone());
+		return clone;
 	}
 
 	/*
 	 * (non-Javadoc)
+	 * 
 	 * @see eu.stratosphere.sopremo.type.AbstractJsonNode#clone()
 	 */
 	@Override
@@ -100,6 +111,7 @@ public class ArrayNode<T extends IJsonNode> extends AbstractArrayNode<T> {
 
 	/*
 	 * (non-Javadoc)
+	 * 
 	 * @see eu.stratosphere.sopremo.type.IArrayNode#asCollection()
 	 */
 	@Override
@@ -109,19 +121,24 @@ public class ArrayNode<T extends IJsonNode> extends AbstractArrayNode<T> {
 
 	/*
 	 * (non-Javadoc)
+	 * 
 	 * @see eu.stratosphere.sopremo.type.JsonArray#size()
 	 */
 	@Override
 	public int size() {
 		int size = this.children.size();
-		while (size > 0 && this.children.get(size - 1) == MissingNode.getInstance())
+		while (size > 0
+				&& this.children.get(size - 1) == MissingNode.getInstance())
 			size--;
 		return size;
 	}
 
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.type.JsonArray#add(eu.stratosphere.sopremo.type.IJsonNode)
+	 * 
+	 * @see
+	 * eu.stratosphere.sopremo.type.JsonArray#add(eu.stratosphere.sopremo.type
+	 * .IJsonNode)
 	 */
 	@Override
 	public ArrayNode<T> add(final T node) {
@@ -144,7 +161,9 @@ public class ArrayNode<T extends IJsonNode> extends AbstractArrayNode<T> {
 
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.type.JsonArray#add(int, eu.stratosphere.sopremo.type.IJsonNode)
+	 * 
+	 * @see eu.stratosphere.sopremo.type.JsonArray#add(int,
+	 * eu.stratosphere.sopremo.type.IJsonNode)
 	 */
 	@Override
 	public ArrayNode<T> add(final int index, final T element) {
@@ -158,7 +177,10 @@ public class ArrayNode<T extends IJsonNode> extends AbstractArrayNode<T> {
 
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.type.AbstractArrayNode#contains(eu.stratosphere.sopremo.type.IJsonNode)
+	 * 
+	 * @see
+	 * eu.stratosphere.sopremo.type.AbstractArrayNode#contains(eu.stratosphere
+	 * .sopremo.type.IJsonNode)
 	 */
 	@Override
 	public boolean contains(IJsonNode node) {
@@ -167,6 +189,7 @@ public class ArrayNode<T extends IJsonNode> extends AbstractArrayNode<T> {
 
 	/*
 	 * (non-Javadoc)
+	 * 
 	 * @see eu.stratosphere.sopremo.type.JsonArray#get(int)
 	 */
 	@SuppressWarnings("unchecked")
@@ -179,14 +202,17 @@ public class ArrayNode<T extends IJsonNode> extends AbstractArrayNode<T> {
 
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.type.JsonArray#set(int, eu.stratosphere.sopremo.type.IJsonNode)
+	 * 
+	 * @see eu.stratosphere.sopremo.type.JsonArray#set(int,
+	 * eu.stratosphere.sopremo.type.IJsonNode)
 	 */
 	@SuppressWarnings("unchecked")
 	@Override
 	public void set(final int index, final T node) {
 		if (node == null)
 			throw new NullPointerException();
-		CollectionUtil.ensureSize(this.children, index + 1, (T) MissingNode.getInstance());
+		CollectionUtil.ensureSize(this.children, index + 1,
+				(T) MissingNode.getInstance());
 		this.children.set(index, node);
 	}
 
@@ -198,6 +224,7 @@ public class ArrayNode<T extends IJsonNode> extends AbstractArrayNode<T> {
 
 	/*
 	 * (non-Javadoc)
+	 * 
 	 * @see eu.stratosphere.sopremo.type.JsonArray#clear()
 	 */
 	@Override
@@ -209,7 +236,8 @@ public class ArrayNode<T extends IJsonNode> extends AbstractArrayNode<T> {
 	public int hashCode() {
 		final int prime = 31;
 		int result = super.hashCode();
-		result = prime * result + (this.children == null ? 0 : this.children.hashCode());
+		result = prime * result
+				+ (this.children == null ? 0 : this.children.hashCode());
 		return result;
 	}
 
@@ -243,13 +271,16 @@ public class ArrayNode<T extends IJsonNode> extends AbstractArrayNode<T> {
 	}
 
 	/**
-	 * Initializes a new ArrayNode<T> which contains all {@link IJsonNode}s from the provided Iterator.
+	 * Initializes a new ArrayNode<T> which contains all {@link IJsonNode}s from
+	 * the provided Iterator.
 	 * 
 	 * @param iterator
-	 *        an Iterator over IJsonNodes that should be added to the new ArrayNode
+	 *            an Iterator over IJsonNodes that should be added to the new
+	 *            ArrayNode
 	 * @return the created ArrayNode
 	 */
-	public static <T extends IJsonNode> ArrayNode<T> valueOf(final Iterator<T> iterator) {
+	public static <T extends IJsonNode> ArrayNode<T> valueOf(
+			final Iterator<T> iterator) {
 		final ArrayNode<T> array = new ArrayNode<T>();
 		while (iterator.hasNext())
 			array.add(iterator.next());
@@ -258,11 +289,15 @@ public class ArrayNode<T extends IJsonNode> extends AbstractArrayNode<T> {
 
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.type.AbstractArrayNode#fillArray(eu.stratosphere.sopremo.type.IJsonNode[])
+	 * 
+	 * @see
+	 * eu.stratosphere.sopremo.type.AbstractArrayNode#fillArray(eu.stratosphere
+	 * .sopremo.type.IJsonNode[])
 	 */
 	@Override
 	protected void fillArray(IJsonNode[] result) {
-		IJsonNode[] array = this.children.toArray(new IJsonNode[this.children.size()]);
+		IJsonNode[] array = this.children.toArray(new IJsonNode[this.children
+				.size()]);
 		for (int i = 0; i < this.children.size(); i++)
 			result[i] = array[i];
 	}
@@ -284,14 +319,14 @@ public class ArrayNode<T extends IJsonNode> extends AbstractArrayNode<T> {
 	}
 
 	/**
-	 * Returns a view of the portion of this ArrayNode<T> between the specified fromIndex, inclusive, and toIndex,
-	 * exclusive.
-	 * (If fromIndex and toIndex are equal, the returned ArrayNode<T> is empty.)
+	 * Returns a view of the portion of this ArrayNode<T> between the specified
+	 * fromIndex, inclusive, and toIndex, exclusive. (If fromIndex and toIndex
+	 * are equal, the returned ArrayNode<T> is empty.)
 	 * 
 	 * @param fromIndex
-	 *        the index where the new ArrayNode<T> should start (inclusive)
+	 *            the index where the new ArrayNode<T> should start (inclusive)
 	 * @param toIndex
-	 *        the index where the new ArrayNode<T> should stop (exclusive)
+	 *            the index where the new ArrayNode<T> should stop (exclusive)
 	 * @return the new ArrayNode<T> (subarray)
 	 */
 	public IJsonNode subArray(final int fromIndex, final int toIndex) {

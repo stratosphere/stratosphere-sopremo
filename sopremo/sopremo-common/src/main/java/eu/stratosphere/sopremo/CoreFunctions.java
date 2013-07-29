@@ -546,8 +546,7 @@ public class CoreFunctions implements BuiltinProvider {
 			.withDefaultParameters(new IntNode(-1));;
 
 	@Name(noun = "substring")
-	public static class SUBSTRING extends
-			SopremoFunction3<TextNode, IntNode, IntNode> {
+	public static class SUBSTRING extends			SopremoFunction3<TextNode, IntNode, IntNode> {
 		SUBSTRING() {
 			super("substring");
 		}
@@ -669,11 +668,11 @@ public class CoreFunctions implements BuiltinProvider {
 		}
 	};
 	
-	public static final WEEKOFYEAR WEEKOFYEAR = new WEEKOFYEAR();
+	public static final WEEK_OF_YEAR WEEK_OF_YEAR = new WEEK_OF_YEAR();
 
 	@Name(noun = "weekOfYear")
-	public static class WEEKOFYEAR extends SopremoFunction2<TextNode, TextNode> {
-		WEEKOFYEAR() {
+	public static class WEEK_OF_YEAR extends SopremoFunction2<TextNode, TextNode> {
+		WEEK_OF_YEAR() {
 			super("weekOfYear");
 		}
 
@@ -716,11 +715,11 @@ public class CoreFunctions implements BuiltinProvider {
 	};
 	
 	
-	public static final GETYEAR GETYEAR = new GETYEAR();
+	public static final GET_YEAR GET_YEAR = new GET_YEAR();
 
 	@Name(noun = "getYear")
-	public static class GETYEAR extends SopremoFunction2<TextNode, TextNode> {
-		GETYEAR() {
+	public static class GET_YEAR extends SopremoFunction2<TextNode, TextNode> {
+		GET_YEAR() {
 			super("getYear");
 		}
 
@@ -752,11 +751,11 @@ public class CoreFunctions implements BuiltinProvider {
 		}
 	};
 	
-	public static final FORMATDATE FORMATDATE = new FORMATDATE();
+	public static final FORMAT_DATE FORMAT_DATE = new FORMAT_DATE();
 
 	@Name(noun = "formatDate")
-	public static class FORMATDATE extends SopremoFunction3<TextNode, TextNode, TextNode> {
-		FORMATDATE() {
+	public static class FORMAT_DATE extends SopremoFunction3<TextNode, TextNode, TextNode> {
+		FORMAT_DATE() {
 			super("formatDate");
 		}
 
@@ -778,165 +777,21 @@ public class CoreFunctions implements BuiltinProvider {
 			return this.result;
 		}
 	};
-	
-	public static final REPLACEMISSING REPLACEMISSING = new REPLACEMISSING();
 
-	@Name(noun = "replaceMissing")
-	public static class REPLACEMISSING extends SopremoFunction2<IJsonNode, IJsonNode> {
-		REPLACEMISSING() {
-			super("replaceMissing");
-		}
+	public static final SopremoFunction STRPOS = new STRPOS();
 
-		@Override
-		protected IJsonNode call(IJsonNode input, IJsonNode replacement) {
-			if (input == MissingNode.getInstance() || input == NullNode.getInstance()) {
-				return replacement;
-			}
-			return input;
-		}
-	};
-	
-	
-	public static final PARSEINT PARSEINT = new PARSEINT();
-
-	@Name(noun = "parseInt")
-	public static class PARSEINT extends SopremoFunction1<TextNode> {
-		PARSEINT() {
-			super("parseInt");
+	@Name(noun = { "indexOf", "strpos" })
+	public static class STRPOS extends SopremoFunction2<TextNode, TextNode> {
+		STRPOS() {
+			super("strpos");
 		}
 
 		private final transient IntNode result = new IntNode();
 
 		@Override
-		protected IJsonNode call(TextNode input) {
-			String str = input.toString();
-			this.result.setValue(Integer.parseInt(str));
+		protected IJsonNode call(final TextNode input, final TextNode needle) {
+			this.result.setValue(input.indexOf(needle));
 			return this.result;
 		}
 	};
-	//return a DM-data by given dataset ds="abcdef$%&!"
-	public static final GETDMDATA GETDMDATA = new GETDMDATA();
-
-	@Name(noun = "getdata")
-	public static class GETDMDATA extends SopremoFunction1<TextNode> {
-		GETDMDATA() {
-			super("getdata");
-		}
-
-		private final transient TextNode result = new TextNode();
-
-		@Override
-		protected IJsonNode call(TextNode ds) {
-			String dataset=ds.toString();
-			 this.result.setValue(readDMtoString(dataset));
-			 return  this.result;
-		}
-		
-	private static String readDMtoString(String urlString)  {
-	    BufferedReader reader = null;
-	    String result="";
-	    try {
-	       //JsonParser jp=new JsonParser(url);	        
-	       // IJsonNode out= jp.readValueAsTree();
-	       // String outString=out.toString();			       		       
-	       // return outString;
-            URL url = new URL("http://datamarket.com/api/v1/series.json?ds="+urlString);
-	        reader = new BufferedReader(new InputStreamReader(url.openStream()));   		        
-	        StringBuffer buffer = new StringBuffer();	      
-	        int read;
-	        char[] chars = new char[1024];
-	       
-	        while ((read = reader.read(chars)) != -1)
-	          buffer.append(chars, 0, read); 
-              result=buffer.toString();
-       			        
-	    } catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	    return result;
-	}
-	}
-	
-	public static final JSONCONVERTER JSONCONVERTER = new JSONCONVERTER();
-
-	@Name(noun = "convertJson")
-	public static class JSONCONVERTER extends SopremoFunction1<TextNode> {
-		JSONCONVERTER() {
-			super("convertJson");
-		}
-
-		@Override
-		protected IJsonNode call(TextNode dmResult) {
-			
-			String jsonString = dmResult.toString();
-			// remove Data Market API call around content
-			Pattern pattern = Pattern.compile("jsonDataMarketApi\\(\\[(.+)\\]\\)", Pattern.DOTALL);
-			Matcher matcher = pattern.matcher(jsonString);
-			if (!matcher.find()) {
-				return null;
-			}
-			String jsoncontent = matcher.group(1);
-			JsonParser parser = new JsonParser(jsoncontent);
-			
-			// send Json content to parser
-			IObjectNode obj;
-			try {
-				obj = (IObjectNode) parser.readValueAsTree();
-			} catch (JsonParseException e) {
-				return MissingNode.getInstance();
-			}
-
-			//getting the columns of file at first
-			//to read data following the given hierarchy in Data-market files
-			String[] dimensions;
-			@SuppressWarnings("unchecked")
-			IArrayNode<IObjectNode> columns = (IArrayNode<IObjectNode>) obj.get ("columns");
-			dimensions = new String[columns.size()];
-			for (int i = 0; i < columns.size(); i++) {
-				IObjectNode subcolumn = columns.get(i);
-				IJsonNode column = subcolumn.get("title");				    					
-				String titel = column.toString();
-				dimensions[i] = titel;
-			}				
-
-			// array for the converted data items		
-			ArrayNode<IJsonNode> finalJsonArr= new ArrayNode<IJsonNode> ();
-			
-			// fill target array with the values from the "data" array
-			@SuppressWarnings("unchecked")
-			IArrayNode<IArrayNode<IJsonNode>> data = (IArrayNode<IArrayNode<IJsonNode>>) obj.get("data");
-			for (int j = 0; j < data.size(); j++){
-				IArrayNode<IJsonNode> subDataArray = data.get(j);
-
-				IObjectNode extractedObj = new ObjectNode ();
-				for (int n = 0; n < subDataArray.size(); n++) {
-					if (dimensions[n].equals("Date")){
-						extractedObj.put(dimensions[n],handleDateForDatamarket(subDataArray.get(n)));
-					} else {						
-						extractedObj.put(dimensions[n],subDataArray.get(n));
-					}
-				}
-				finalJsonArr.add(extractedObj);	
-			}
-			return finalJsonArr;
-		}
-	};
-		
-	private static TextNode handleDateForDatamarket(IJsonNode timeIn){
-		DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
-		Date date;
-		SimpleDateFormat f=new SimpleDateFormat("dd-MMM-yyyy");;
-		String time = "";
-		try {
-			date = formatter.parse(timeIn.toString());
-			time = f.format(date).intern();
-			
-		} catch (ParseException e1) {
-			System.out.println("Exception :" + e1);
-			System.out.println("Exception : Given Text does not fit our Date-Format.");
-		}
-		return new TextNode(time);
-	}
-
 }
