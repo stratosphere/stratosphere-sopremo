@@ -84,10 +84,11 @@ public class PackageInfo extends AbstractSopremoType implements ISopremoType, Pa
 	 * 
 	 * @return the typeRegistry
 	 */
+	@Override
 	public ITypeRegistry getTypeRegistry() {
 		return this.typeRegistry;
 	}
-	
+
 	/**
 	 * Returns the fileFormatRegistry.
 	 * 
@@ -146,13 +147,15 @@ public class PackageInfo extends AbstractSopremoType implements ISopremoType, Pa
 	}
 
 	public void importFromJar() throws IOException {
-		Enumeration<JarEntry> entries = new JarFile(this.packagePath).entries();
-		while (entries.hasMoreElements()) {
-			JarEntry jarEntry = entries.nextElement();
-			if (jarEntry.getName().endsWith(".class")) {
-				String className =
-					jarEntry.getName().replaceAll(".class$", "").replaceAll("/|\\\\", ".").replaceAll("^\\.", "");
-				this.importClass(className);
+		try(final JarFile jarFile = new JarFile(this.packagePath)) {
+			Enumeration<JarEntry> entries = jarFile.entries();
+			while (entries.hasMoreElements()) {
+				JarEntry jarEntry = entries.nextElement();
+				if (jarEntry.getName().endsWith(".class")) {
+					String className =
+						jarEntry.getName().replaceAll(".class$", "").replaceAll("/|\\\\", ".").replaceAll("^\\.", "");
+					this.importClass(className);
+				}
 			}
 		}
 	}
@@ -184,7 +187,7 @@ public class PackageInfo extends AbstractSopremoType implements ISopremoType, Pa
 	public IFunctionRegistry getFunctionRegistry() {
 		return this.functionRegistry;
 	}
-	
+
 	/*
 	 * (non-Javadoc)
 	 * @see java.lang.Object#toString()

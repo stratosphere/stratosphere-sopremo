@@ -47,7 +47,8 @@ public class PackageManager implements ParsingScope {
 
 	public final static IConfObjectRegistry<Operator<?>> IORegistry = new DefaultConfObjectRegistry<Operator<?>>();
 
-	public final static IConfObjectRegistry<SopremoFormat> DefaultFormatRegistry = new DefaultConfObjectRegistry<SopremoFormat>();
+	public final static IConfObjectRegistry<SopremoFormat> DefaultFormatRegistry =
+		new DefaultConfObjectRegistry<SopremoFormat>();
 
 	static {
 		IORegistry.put(Sink.class);
@@ -70,7 +71,8 @@ public class PackageManager implements ParsingScope {
 
 	private StackedConfObjectRegistry<Operator<?>> operatorRegistries = new StackedConfObjectRegistry<Operator<?>>();
 
-	private StackedConfObjectRegistry<SopremoFormat> fileFormatRegistries = new StackedConfObjectRegistry<SopremoFormat>();
+	private StackedConfObjectRegistry<SopremoFormat> fileFormatRegistries =
+		new StackedConfObjectRegistry<SopremoFormat>();
 
 	/**
 	 * Imports sopremo-&lt;packageName&gt;.jar or returns a cached package
@@ -97,7 +99,8 @@ public class PackageManager implements ParsingScope {
 				if (jarLocation == null)
 					throw new IllegalArgumentException(String.format("no package %s found", packageName));
 				try {
-					packageInfo = new PackageInfo(packageName, new URLClassLoader(new URL[] { jarLocation.toURI().toURL() }));
+					packageInfo =
+						new PackageInfo(packageName, new URLClassLoader(new URL[] { jarLocation.toURI().toURL() }));
 				} catch (MalformedURLException e) {
 					throw new IllegalStateException(e);
 				}
@@ -143,7 +146,7 @@ public class PackageManager implements ParsingScope {
 	public IConfObjectRegistry<Operator<?>> getOperatorRegistry() {
 		return this.operatorRegistries;
 	}
-	
+
 	@Override
 	public IConstantRegistry getConstantRegistry() {
 		return this.constantRegistries;
@@ -153,7 +156,7 @@ public class PackageManager implements ParsingScope {
 	public IFunctionRegistry getFunctionRegistry() {
 		return this.functionRegistries;
 	}
-	
+
 	/**
 	 * Returns the typeRegistries.
 	 * 
@@ -178,7 +181,8 @@ public class PackageManager implements ParsingScope {
 				continue;
 			int nextIndex = pathIndex + sopremoPackage.length();
 			// next character must be '.', '-', or file separator
-			if (nextIndex < path.length() && path.charAt(nextIndex) != File.separatorChar && path.charAt(nextIndex) != '.' && path.charAt(nextIndex) != '-')
+			if (nextIndex < path.length() && path.charAt(nextIndex) != File.separatorChar &&
+				path.charAt(nextIndex) != '.' && path.charAt(nextIndex) != '-')
 				continue;
 			paths.add(new File(path));
 		}
@@ -208,7 +212,7 @@ public class PackageManager implements ParsingScope {
 	 * Sets the defaultJarPath to the specified value.
 	 * 
 	 * @param defaultJarPath
-	 *            the defaultJarPath to set
+	 *        the defaultJarPath to set
 	 */
 	public void addJarPathLocation(File jarPathLocation) {
 		if (jarPathLocation == null)
@@ -230,6 +234,18 @@ public class PackageManager implements ParsingScope {
 		this.importPackage(this.getPackageInfo(packageName));
 	}
 
+	public void importPackageFrom(String packageName, File directory) {
+		try {
+			PackageInfo packageInfo =
+				new PackageInfo(packageName, new URLClassLoader(
+					new URL[] { directory.getAbsoluteFile().toURI().toURL() }));
+			packageInfo.importFrom(directory);
+			this.importPackage(packageInfo);
+		} catch (Exception e) {
+			throw new IllegalArgumentException("Cannot load package from directory", e);
+		}
+	}
+
 	public void importPackage(PackageInfo packageInfo) {
 		this.constantRegistries.push(packageInfo.getConstantRegistry());
 		this.functionRegistries.push(packageInfo.getFunctionRegistry());
@@ -240,11 +256,18 @@ public class PackageManager implements ParsingScope {
 
 	/*
 	 * (non-Javadoc)
-	 * 
 	 * @see java.lang.Object#toString()
 	 */
 	@Override
 	public String toString() {
 		return String.format("Package manager with packages %s", this.packages);
+	}
+
+	public void addAll(PackageManager packageManager) {
+		this.constantRegistries.push(packageManager.getConstantRegistry());
+		this.functionRegistries.push(packageManager.getFunctionRegistry());
+		this.operatorRegistries.push(packageManager.getOperatorRegistry());
+		this.fileFormatRegistries.push(packageManager.getFileFormatRegistry());
+		this.typeRegistries.push(packageManager.getTypeRegistry());
 	}
 }

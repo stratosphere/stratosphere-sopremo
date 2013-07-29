@@ -20,9 +20,7 @@ import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import junit.framework.Assert;
-import junit.framework.AssertionFailedError;
-
+import org.junit.Assert;
 import org.junit.Ignore;
 
 import eu.stratosphere.sopremo.operator.Operator;
@@ -47,10 +45,14 @@ public class MeteorTest {
 		// printBeamerSlide(script);
 		SopremoPlan plan = null;
 		try {
-			plan = new QueryParser().withInputDirectory(new File("/")).tryParse(script);
+			final QueryParser queryParser = new QueryParser().withInputDirectory(new File("/"));
+			final String name = MavenUtil.getProjectName();
+				String packageName = name.startsWith("sopremo-") ? name.substring("sopremo-".length()) : null;
+				queryParser.getPackageManager().importPackageFrom(packageName, new File("target/classes"));
+			plan = queryParser.tryParse(script);
 			// System.out.println(new QueryParser().toJavaString(script));
 		} catch (final QueryParserException e) {
-			final AssertionFailedError error = new AssertionFailedError(String.format("could not parse script: %s",
+			final AssertionError error = new AssertionError(String.format("could not parse script: %s",
 				e.getMessage()));
 			error.initCause(e);
 			throw error;
@@ -88,9 +90,9 @@ public class MeteorTest {
 		final List<Operator<?>> unmatchingOperators = actualPlan.getUnmatchingOperators(expectedPlan);
 		if (!unmatchingOperators.isEmpty())
 			if (unmatchingOperators.get(0).getClass() == unmatchingOperators.get(1).getClass())
-				Assert.failNotEquals("operators are different", "\n" + unmatchingOperators.get(1), "\n"
+				Assert.fail("operators are different\nexpected: " + unmatchingOperators.get(1) + "\nbut was: "
 					+ unmatchingOperators.get(0));
 			else
-				Assert.failNotEquals("plans are different", expectedPlan, actualPlan);
+				Assert.fail("plans are different\nexpected: " + expectedPlan + "\nbut was: " + actualPlan);
 	}
 }

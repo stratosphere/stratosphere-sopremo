@@ -27,6 +27,7 @@ import eu.stratosphere.sopremo.query.ConfObjectInfo;
 import eu.stratosphere.sopremo.query.ConfObjectInfo.ConfObjectIndexedPropertyInfo;
 import eu.stratosphere.sopremo.query.ConfObjectInfo.ConfObjectPropertyInfo;
 import eu.stratosphere.sopremo.query.IConfObjectRegistry;
+import eu.stratosphere.sopremo.query.PackageManager;
 import eu.stratosphere.sopremo.query.PlanCreator;
 import eu.stratosphere.sopremo.query.QueryParserException;
 import eu.stratosphere.util.StringUtil;
@@ -36,6 +37,8 @@ public class QueryParser extends PlanCreator {
 	Deque<List<Operator<?>>> operatorInputs = new LinkedList<List<Operator<?>>>();
 
 	private File inputDirectory = new File(".");
+	
+	private PackageManager packageManager = new PackageManager();
 
 	private void appendExpression(final Object value, final JavaRenderInfo renderInfo) {
 		renderInfo.adaptor.addJavaFragment(value, renderInfo.builder);
@@ -170,9 +173,19 @@ public class QueryParser extends PlanCreator {
 		final MeteorParser parser = new MeteorParser(tokens);
 		SopremoEnvironment.getInstance().getEvaluationContext()
 			.setWorkingPath(new Path(this.inputDirectory.toURI().toString()));
+		parser.getPackageManager().addAll(this.packageManager);
 		parser.getPackageManager().addJarPathLocation(this.inputDirectory);
 		parser.setTreeAdaptor(new SopremoTreeAdaptor());
 		return parser.parse();
+	}
+	
+	/**
+	 * Returns the packageManager.
+	 * 
+	 * @return the packageManager
+	 */
+	public PackageManager getPackageManager() {
+		return this.packageManager;
 	}
 
 	public SopremoPlan tryParse(final InputStream stream) throws IOException, QueryParserException {
