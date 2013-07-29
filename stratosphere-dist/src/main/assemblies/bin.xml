@@ -84,29 +84,6 @@
 			<outputDirectory>docs/javadoc</outputDirectory>
 			<fileMode>0644</fileMode>
 		</fileSet>
-
-		<fileSet>
-			<!-- copy files for PACT web frontend -->
-			<directory>../pact/pact-clients/resources</directory>
-			<outputDirectory>resources</outputDirectory>
-			<fileMode>0644</fileMode>
-			<excludes>
-				<exclude>*etc/users</exclude>
-			</excludes>
-		</fileSet>
-
-		<fileSet>
-			<!-- copy jar files of pact job examples -->
-			<directory>../pact/pact-examples/target</directory>
-			<outputDirectory>examples/pact/</outputDirectory>
-			<fileMode>0644</fileMode>
-			<includes>
-				<include>*.jar</include>
-			</includes>
-			<excludes>
-				<exclude>pact-examples-${project.version}.jar</exclude>
-			</excludes>
-		</fileSet>
 	</fileSets>
 
 </assembly>
