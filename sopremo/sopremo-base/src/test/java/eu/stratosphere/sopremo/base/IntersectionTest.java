@@ -3,10 +3,10 @@ package eu.stratosphere.sopremo.base;
 import org.junit.Test;
 
 import eu.stratosphere.sopremo.CoreFunctions;
-import eu.stratosphere.sopremo.operator.SopremoOperatorTestBase;
+import eu.stratosphere.sopremo.testing.SopremoOperatorTestBase;
 import eu.stratosphere.sopremo.testing.SopremoTestPlan;
 
-//import eu.stratosphere.sopremo.testing.SopremoTestPlan;
+//import eu.stratosphere.sopremo.SopremoTestPlan;
 
 public class IntersectionTest extends SopremoOperatorTestBase<Intersection> {
 	/*

@@ -33,6 +33,7 @@
   </developers>
   <properties>
     </properties>
+
   <dependencyManagement>
     <!--
         this section defines the module versions that are used if nothing
@@ -41,15 +42,7 @@
     <dependencies>
         </dependencies>
   </dependencyManagement>
-  <dependencies>
-    <dependency>
-      <groupId>nl.jqno.equalsverifier</groupId>
-      <artifactId>equalsverifier</artifactId>
-      <version>1.1.3</version>
-      <type>jar</type>
-      <scope>test</scope>
-    </dependency>
-  </dependencies>
+
   <build>
     <plugins>
       <plugin>
@@ -74,10 +67,13 @@
     </plugins>
   </build>
   <modules>
+    <module>sopremo-testutil</module>
     <module>sopremo-common</module>
+    <module>sopremo-testplan</module>
     <module>sopremo-base</module>
     <module>sopremo-query</module>
     <module>sopremo-client</module>
     <module>sopremo-server</module>
+    <module>sopremo-testserver</module>
   </modules>
 </project>

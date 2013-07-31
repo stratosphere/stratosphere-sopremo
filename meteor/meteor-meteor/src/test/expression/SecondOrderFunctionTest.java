@@ -14,7 +14,7 @@
  **********************************************************************************************************************/
 package eu.stratosphere.meteor.expression;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.junit.Test;
 
@@ -45,7 +45,7 @@ public class SecondOrderFunctionTest extends MeteorTest {
 
 	@Test
 	public void testMapWithFunctionDefinition() {
-		final SopremoPlan actualPlan = this.parseScript("square = fn(elem) { elem.a * elem.b };\n" +
+		final SopremoPlan actualPlan = parseScript("square = fn(elem) { elem.a * elem.b };\n" +
 			"$input = read from 'file://input.json';\n" +
 			"$result = group $input by $input.key into { squared: map($input, &square) };\n" +
 			"write $result to 'file://output.json'; ");
@@ -99,7 +99,7 @@ public class SecondOrderFunctionTest extends MeteorTest {
 
 	@Test
 	public void testMapWithInlineFunction() {
-		final SopremoPlan actualPlan = this.parseScript(
+		final SopremoPlan actualPlan = parseScript(
 			"$input = read from 'file://input.json';\n" +
 				"$result = group $input by $input.key into [map($input, fn(elem) { elem.a * elem.b })];\n" +
 				"write $result to 'file://output.json'; ");

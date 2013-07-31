@@ -1,9 +1,5 @@
 package eu.stratosphere.sopremo.base;
 
-import com.esotericsoftware.kryo.DefaultSerializer;
-import com.esotericsoftware.kryo.Kryo;
-import com.esotericsoftware.kryo.io.Input;
-
 import eu.stratosphere.nephele.configuration.Configuration;
 import eu.stratosphere.pact.generic.contract.Contract;
 import eu.stratosphere.sopremo.EvaluationContext;
@@ -24,7 +20,6 @@ import eu.stratosphere.sopremo.type.IObjectNode;
 import eu.stratosphere.sopremo.type.IntNode;
 import eu.stratosphere.sopremo.type.LongNode;
 import eu.stratosphere.sopremo.type.ObjectNode;
-import eu.stratosphere.sopremo.type.ReusingSerializer;
 import eu.stratosphere.sopremo.type.TextNode;
 
 @InputCardinality(1)

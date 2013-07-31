@@ -7,10 +7,10 @@ import org.junit.Test;
 import eu.stratosphere.sopremo.expressions.ArithmeticExpression;
 import eu.stratosphere.sopremo.expressions.ArithmeticExpression.ArithmeticOperator;
 import eu.stratosphere.sopremo.expressions.ObjectCreation;
-import eu.stratosphere.sopremo.operator.SopremoOperatorTestBase;
+import eu.stratosphere.sopremo.testing.SopremoOperatorTestBase;
 import eu.stratosphere.sopremo.testing.SopremoTestPlan;
 
-//import eu.stratosphere.sopremo.testing.SopremoTestPlan;
+//import eu.stratosphere.sopremo.SopremoTestPlan;
 
 public class ProjectionTest extends SopremoOperatorTestBase<Projection> {
 	@Override

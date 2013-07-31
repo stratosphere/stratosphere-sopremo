@@ -14,7 +14,7 @@
  **********************************************************************************************************************/
 package eu.stratosphere.sopremo.cache;
 
-import eu.stratosphere.sopremo.ICloneable;
+import eu.stratosphere.util.ICloneable;
 
 /**
  * Tag interface for all Sopremo cache classes.

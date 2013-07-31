@@ -74,6 +74,7 @@
   </build>
   <modules>
     <module>meteor-meteor</module>
+    <module>meteor-testing</module>
     <module>meteor-client</module>
     <module>meteor-webfrontend</module>
   </modules>

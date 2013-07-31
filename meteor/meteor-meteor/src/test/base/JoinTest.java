@@ -16,7 +16,7 @@ public class JoinTest extends MeteorTest {
 
 	@Test
 	public void testJoin1() {
-		final SopremoPlan actualPlan = this.parseScript("$users = read from 'file://users.json';\n" +
+		final SopremoPlan actualPlan = parseScript("$users = read from 'file://users.json';\n" +
 			"$pages = read from 'file://pages.json';\n" +
 			"$result = join $users, $pages\n" +
 			"  where $users.id == $pages.userid\n" +
@@ -42,7 +42,7 @@ public class JoinTest extends MeteorTest {
 
 	@Test
 	public void testJoin2() {
-		final SopremoPlan actualPlan = this.parseScript("$users = read from 'file://users.json';\n" +
+		final SopremoPlan actualPlan = parseScript("$users = read from 'file://users.json';\n" +
 			"$pages = read from 'file://pages.json';\n" +
 			"$result = join $u in $users, $p in $pages\n" +
 			"  where $u.id == $p.userid\n" +
@@ -68,7 +68,7 @@ public class JoinTest extends MeteorTest {
 
 	@Test
 	public void testOuterJoin() {
-		final SopremoPlan actualPlan = this.parseScript("$users = read from 'file://users.json';\n" +
+		final SopremoPlan actualPlan = parseScript("$users = read from 'file://users.json';\n" +
 			"$pages = read from 'file://pages.json';\n" +
 			"$result = join $u in $users, $p in $pages\n" +
 			"  preserve $u\n" +
@@ -96,7 +96,7 @@ public class JoinTest extends MeteorTest {
 	
 	@Test
 	public void testLeftOuterJoin() {
-		final SopremoPlan actualPlan = this.parseScript("$stocks = read from 'file://stocks.json';" +
+		final SopremoPlan actualPlan = parseScript("$stocks = read from 'file://stocks.json';" +
 				"$tweets = read from 'file://tweets.json';" +
 				"$merged = join $s in $stocks, $t in $tweets where $s.date == $t.date" +
 				"    preserve $s" +

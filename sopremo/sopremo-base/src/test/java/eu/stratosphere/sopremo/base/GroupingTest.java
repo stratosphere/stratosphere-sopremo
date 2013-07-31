@@ -1,5 +1,8 @@
 package eu.stratosphere.sopremo.base;
 
+import static eu.stratosphere.sopremo.expressions.ExpressionUtil.makePath;
+import static eu.stratosphere.sopremo.type.JsonUtil.createPath;
+
 import org.junit.Test;
 
 import eu.stratosphere.sopremo.CoreFunctions;
@@ -11,11 +14,8 @@ import eu.stratosphere.sopremo.expressions.FunctionCall;
 import eu.stratosphere.sopremo.expressions.InputSelection;
 import eu.stratosphere.sopremo.expressions.ObjectAccess;
 import eu.stratosphere.sopremo.expressions.ObjectCreation;
-import eu.stratosphere.sopremo.operator.SopremoOperatorTestBase;
+import eu.stratosphere.sopremo.testing.SopremoOperatorTestBase;
 import eu.stratosphere.sopremo.testing.SopremoTestPlan;
-
-import static eu.stratosphere.sopremo.expressions.ExpressionUtil.*;
-import static eu.stratosphere.sopremo.type.JsonUtil.*;
 
 public class GroupingTest extends SopremoOperatorTestBase<Grouping> {
 	@Override

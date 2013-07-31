@@ -2,7 +2,7 @@ package eu.stratosphere.sopremo.io;
 
 import java.io.IOException;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.junit.Test;
 
@@ -19,20 +19,6 @@ public class CsvOutputFormatTest extends OutputFormatTest {
 	 */
 	@Test
 	public void shouldWriteParsableCsv() throws IOException {
-		// final Sink sink = new Sink(new CsvFormat(), output);
-		//
-		// final EqualCloneTestPlan testPlan = new EqualCloneTestPlan(sink); // write
-		//
-		// testPlan.getInput(0).
-		// addObject("id", "1", "name", "arnie morton's of chicago",
-		// "addr", "435 s. la cienega blv.", "city", "los angeles",
-		// "phone", "310/246-1501", "type", "american", "class", "'0'").
-		// addObject("id", "2", "name", "\"arnie morton's of chicago\"",
-		// "addr", "435 s. la cienega blv.", "city", "los,angeles",
-		// "phone", "310/246-1501", "type", "american", "class", "'0'").
-		// addObject("id", "3", "name", "arnie morton's of chicago",
-		// "addr", "435 s. la cienega blv.", "city", "los\nangeles", "phone", "310/246-1501",
-		// "type", "american", "class", "'0'");
 
 		final CsvFormat format = new CsvFormat();
 		format.setKeyNames("id", "name", "addr", "city", "phone", "type", "class");

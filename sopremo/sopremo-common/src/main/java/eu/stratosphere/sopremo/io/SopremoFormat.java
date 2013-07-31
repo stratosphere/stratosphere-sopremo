@@ -18,12 +18,17 @@ import java.io.IOException;
 import java.lang.reflect.Modifier;
 import java.net.URI;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 
 import eu.stratosphere.nephele.configuration.Configuration;
 import eu.stratosphere.nephele.fs.FSDataInputStream;
 import eu.stratosphere.nephele.fs.FSDataOutputStream;
 import eu.stratosphere.nephele.fs.FileInputSplit;
+import eu.stratosphere.nephele.fs.FileStatus;
+import eu.stratosphere.nephele.fs.FileSystem;
+import eu.stratosphere.nephele.fs.Path;
 import eu.stratosphere.nephele.template.InputSplit;
+import eu.stratosphere.pact.common.io.statistics.BaseStatistics;
 import eu.stratosphere.pact.generic.io.FileInputFormat;
 import eu.stratosphere.pact.generic.io.FileOutputFormat;
 import eu.stratosphere.pact.generic.io.InputFormat;
@@ -442,6 +447,65 @@ public abstract class SopremoFormat extends ConfigurableSopremoType {
 
 		protected abstract void open(FSDataInputStream stream, FileInputSplit split) throws IOException;
 
+		@Override
+		public FileBaseStatistics getStatistics(BaseStatistics cachedStatistics) throws IOException {
+			final ArrayList<FileStatus> files = getFileStati();
+			
+			long latestModTime = files.get(0).getModificationTime();
+			for (int index = 1; index < files.size(); index++) 
+				latestModTime = Math.max(files.get(index).getModificationTime(), latestModTime);
+			
+			if (cachedStatistics != null && cachedStatistics instanceof FileBaseStatistics) {
+				FileBaseStatistics fileStatistics = (FileBaseStatistics) cachedStatistics;
+
+				// check whether the cached statistics are still valid, if we have any
+				if (latestModTime <= fileStatistics.getLastModificationTime()) {
+					return fileStatistics;
+				}				
+			}
+			
+			// calculate the whole length
+			long len = 0;
+			for (FileStatus s : files) {
+				len += s.getLen();
+			}
+			
+			return new FileBaseStatistics(latestModTime, len, 
+				getAverageRecordBytes(FileSystem.get(this.filePath.toUri()), files, len));
+		}
+		
+		@SuppressWarnings("unused") 
+		protected float getAverageRecordBytes(FileSystem fileSystem, ArrayList<FileStatus> files, long fileSize) throws IOException {
+			return BaseStatistics.AVG_RECORD_BYTES_UNKNOWN;
+		}
+
+		protected ArrayList<FileStatus> getFileStati() throws IOException {
+			final Path filePath = this.filePath;
+		
+			// get the filesystem
+			final FileSystem fs = FileSystem.get(filePath.toUri());
+
+			// get the file info and check whether the cached statistics are still valid.
+			final FileStatus file = fs.getFileStatus(filePath);
+			
+			final ArrayList<FileStatus> files = new ArrayList<FileStatus>(1);
+
+			// enumerate all files and check their modification time stamp.
+			if (file.isDir()) {
+				FileStatus[] fss = fs.listStatus(filePath);
+				files.ensureCapacity(fss.length);
+				
+				for (FileStatus s : fss) {
+					if (!s.isDir()) {
+						files.add(s);
+					}
+				}
+			} else {
+				files.add(file);
+			}
+			return files;
+		}
+		
 		@Override
 		public void configure(final Configuration parameters) {
 			super.configure(parameters);

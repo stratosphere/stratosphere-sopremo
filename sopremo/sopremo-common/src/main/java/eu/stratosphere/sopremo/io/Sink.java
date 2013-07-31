@@ -16,7 +16,7 @@ import eu.stratosphere.sopremo.operator.Property;
 import eu.stratosphere.sopremo.pact.SopremoUtil;
 import eu.stratosphere.sopremo.serialization.SopremoRecord;
 import eu.stratosphere.sopremo.serialization.SopremoRecordLayout;
-import eu.stratosphere.sopremo.util.Equaler;
+import eu.stratosphere.util.Equaler;
 
 /**
  * Represents a data sink in a PactPlan.

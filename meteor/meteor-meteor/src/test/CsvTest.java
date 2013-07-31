@@ -29,7 +29,7 @@ public class CsvTest extends MeteorTest {
 
 	@Test
 	public void shouldConfigureColumnNames() {
-		final SopremoPlan actualPlan = this.parseScript(
+		final SopremoPlan actualPlan = parseScript(
 			"$input = read csv from 'file://input.any'" +
 				"  columns ['A', 'B', 'C'];\n" +
 				"write $input to 'file://output.json';");
@@ -44,7 +44,7 @@ public class CsvTest extends MeteorTest {
 
 	@Test
 	public void shouldConfigureEncoding() {
-		final SopremoPlan actualPlan = this.parseScript(
+		final SopremoPlan actualPlan = parseScript(
 			"$input = read csv from 'file://input.any'" +
 				"  encoding 'iso-8859-1';\n" +
 				"write $input to 'file://output.json';");
@@ -59,7 +59,7 @@ public class CsvTest extends MeteorTest {
 
 	@Test
 	public void shouldConfigureFieldDelimiter() {
-		final SopremoPlan actualPlan = this.parseScript(
+		final SopremoPlan actualPlan = parseScript(
 			"$input = read csv from 'file://input.any'" +
 				"  delimiter ',';\n" +
 				"write $input to 'file://output.json';");
@@ -74,7 +74,7 @@ public class CsvTest extends MeteorTest {
 
 	@Test
 	public void shouldConfigureQuotationOff() {
-		final SopremoPlan actualPlan = this.parseScript(
+		final SopremoPlan actualPlan = parseScript(
 			"$input = read csv from 'file://input.any'" +
 				"  quote false;\n" +
 				"write $input to 'file://output.json';");
@@ -89,7 +89,7 @@ public class CsvTest extends MeteorTest {
 
 	@Test
 	public void shouldConfigureQuotationOn() {
-		final SopremoPlan actualPlan = this.parseScript(
+		final SopremoPlan actualPlan = parseScript(
 			"$input = read csv from 'file://input.any'" +
 				"  quote true;\n" +
 				"write $input to 'file://output.json';");
@@ -104,7 +104,7 @@ public class CsvTest extends MeteorTest {
 
 	@Test
 	public void shouldDetectCsv() {
-		final SopremoPlan actualPlan = this.parseScript(
+		final SopremoPlan actualPlan = parseScript(
 			"$input = read from 'file://input.csv';\n" +
 				"write $input to 'file://output.json';");
 
@@ -118,7 +118,7 @@ public class CsvTest extends MeteorTest {
 
 	@Test
 	public void shouldSetToCsv() {
-		final SopremoPlan actualPlan = this.parseScript(
+		final SopremoPlan actualPlan = parseScript(
 			"$input = read csv from 'file://input.any';\n" +
 				"write $input to 'file://output.json';");
 

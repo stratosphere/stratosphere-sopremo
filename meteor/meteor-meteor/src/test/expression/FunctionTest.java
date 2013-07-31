@@ -14,7 +14,7 @@
  **********************************************************************************************************************/
 package eu.stratosphere.meteor.expression;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.junit.Test;
 
@@ -38,7 +38,7 @@ public class FunctionTest extends MeteorTest {
 
 	@Test
 	public void testFunctionDefinition() {
-		final SopremoPlan actualPlan = this.parseScript("square = fn(x) { x * x };\n" +
+		final SopremoPlan actualPlan = parseScript("square = fn(x) { x * x };\n" +
 			"$input = read from 'file://input.json';\n" +
 			"$result = transform $input into { squared: square($input) };\n" +
 			"write $result to 'file://output.json'; ");

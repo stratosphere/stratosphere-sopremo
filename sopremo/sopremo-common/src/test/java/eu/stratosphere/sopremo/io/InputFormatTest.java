@@ -37,6 +37,8 @@ import eu.stratosphere.sopremo.type.IJsonNode;
  */
 @Ignore
 public class InputFormatTest {
+	public static final SopremoRecordLayout NULL_LAYOUT = SopremoRecordLayout.create();
+	
 	public static Collection<IJsonNode> readFromFile(final File file, final SopremoFormat format,
 			final SopremoRecordLayout layout) throws IOException {
 		

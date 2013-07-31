@@ -5,7 +5,7 @@ import static eu.stratosphere.sopremo.type.JsonUtil.createArrayNode;
 import java.util.Arrays;
 import java.util.List;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.junit.Ignore;
 import org.junit.Test;

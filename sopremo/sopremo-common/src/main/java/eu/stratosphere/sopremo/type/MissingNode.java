@@ -4,8 +4,8 @@ import java.io.IOException;
 
 import com.esotericsoftware.kryo.DefaultSerializer;
 
-import eu.stratosphere.sopremo.Immutable;
 import eu.stratosphere.sopremo.SingletonSerializer;
+import eu.stratosphere.util.Immutable;
 
 /**
  * This node represents a missing value.

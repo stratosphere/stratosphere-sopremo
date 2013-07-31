@@ -14,7 +14,7 @@ import eu.stratosphere.sopremo.expressions.ElementInSetExpression.Quantor;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
 import eu.stratosphere.sopremo.expressions.InputSelection;
 import eu.stratosphere.sopremo.expressions.ObjectCreation;
-import eu.stratosphere.sopremo.operator.SopremoOperatorTestBase;
+import eu.stratosphere.sopremo.testing.SopremoOperatorTestBase;
 import eu.stratosphere.sopremo.testing.SopremoTestPlan;
 import eu.stratosphere.sopremo.type.JsonUtil;
 import eu.stratosphere.sopremo.type.MissingNode;

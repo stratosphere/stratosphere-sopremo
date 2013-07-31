@@ -40,7 +40,7 @@ public class AggregationTest extends MeteorTest {
 	@Test
 	public void test() {
 		final SopremoPlan actualPlan =
-			this.parseScript("$li = read from 'file://lineitem.json';\n" +
+			parseScript("$li = read from 'file://lineitem.json';\n" +
 				"$filterLi = filter $li where $li.l_linenumber >= 1;\n" +
 				"$groups = group $filterLi by [$filterLi.l_linestatus, $filterLi.l_returnflag] into {\n" +
 				"     first: $filterLi[0],\n" +

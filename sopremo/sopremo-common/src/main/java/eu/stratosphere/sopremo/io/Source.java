@@ -17,7 +17,7 @@ import eu.stratosphere.sopremo.pact.SopremoUtil;
 import eu.stratosphere.sopremo.serialization.SopremoRecordLayout;
 import eu.stratosphere.sopremo.type.IJsonNode;
 import eu.stratosphere.sopremo.type.NullNode;
-import eu.stratosphere.sopremo.util.Equaler;
+import eu.stratosphere.util.Equaler;
 
 /**
  * Represents a data source in a PactPlan.

@@ -22,8 +22,7 @@ import static org.powermock.api.mockito.PowerMockito.whenNew;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 
-import junit.framework.Assert;
-
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -35,10 +34,21 @@ import eu.stratosphere.nephele.client.JobExecutionException;
 import eu.stratosphere.nephele.configuration.Configuration;
 import eu.stratosphere.nephele.jobgraph.JobGraph;
 import eu.stratosphere.pact.common.plan.Plan;
+import eu.stratosphere.sopremo.base.Selection;
 import eu.stratosphere.sopremo.execution.ExecutionRequest;
-import eu.stratosphere.sopremo.execution.SopremoID;
 import eu.stratosphere.sopremo.execution.ExecutionRequest.ExecutionMode;
 import eu.stratosphere.sopremo.execution.ExecutionResponse.ExecutionState;
+import eu.stratosphere.sopremo.execution.SopremoID;
+import eu.stratosphere.sopremo.expressions.ComparativeExpression;
+import eu.stratosphere.sopremo.expressions.ComparativeExpression.BinaryOperator;
+import eu.stratosphere.sopremo.expressions.ConstantExpression;
+import eu.stratosphere.sopremo.expressions.OrExpression;
+import eu.stratosphere.sopremo.expressions.UnaryExpression;
+import eu.stratosphere.sopremo.io.Sink;
+import eu.stratosphere.sopremo.io.Source;
+import eu.stratosphere.sopremo.operator.SopremoPlan;
+import eu.stratosphere.sopremo.testing.SopremoTestUtil;
+import eu.stratosphere.sopremo.type.JsonUtil;
 
 /**
  * @author Arvid Heise
@@ -53,10 +63,25 @@ public class SopremoExecuctionThreadTest {
 
 	private SopremoExecutionThread thread;
 
+	static SopremoPlan createPlan() {
+		final SopremoPlan plan = new SopremoPlan();
+		final Source input = new Source(SopremoTestUtil.createTemporaryFile("input"));
+		final Selection selection = new Selection().
+			withCondition(
+				new OrExpression(
+					new UnaryExpression(JsonUtil.createPath("0", "mgr")),
+					new ComparativeExpression(JsonUtil.createPath("0", "income"), BinaryOperator.GREATER,
+						new ConstantExpression(30000)))).
+			withInputs(input);
+		final Sink output = new Sink(SopremoTestUtil.createTemporaryFile("output")).withInputs(selection);
+		plan.setSinks(output);
+		return plan;
+	}
+	
 	@Before
 	public void setup() throws Exception {
 		this.jobInfo = new SopremoJobInfo(SopremoID.generate(),
-			new ExecutionRequest(SopremoServerTest.createPlan()), new Configuration());
+			new ExecutionRequest(createPlan()), new Configuration());
 		this.thread = new SopremoExecutionThread(this.jobInfo, new InetSocketAddress(0)) {
 			/*
 			 * (non-Javadoc)

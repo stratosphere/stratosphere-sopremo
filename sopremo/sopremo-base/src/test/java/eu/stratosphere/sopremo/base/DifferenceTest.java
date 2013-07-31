@@ -1,8 +1,8 @@
 package eu.stratosphere.sopremo.base;
 
-import eu.stratosphere.sopremo.operator.SopremoOperatorTestBase;
+import eu.stratosphere.sopremo.testing.SopremoOperatorTestBase;
 
-//import eu.stratosphere.sopremo.testing.SopremoTestPlan;
+//import eu.stratosphere.sopremo.SopremoTestPlan;
 
 public class DifferenceTest extends SopremoOperatorTestBase<Difference> {
 	/*

@@ -3,14 +3,11 @@ package eu.stratosphere.sopremo.io;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.net.URL;
 
-import junit.framework.Assert;
-
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import eu.stratosphere.sopremo.SopremoTestUtil;
 import eu.stratosphere.sopremo.type.ArrayNode;
 import eu.stratosphere.sopremo.type.BooleanNode;
 import eu.stratosphere.sopremo.type.IJsonNode;
@@ -67,8 +64,8 @@ public class JsonGeneratorTest {
 	@Test
 	public void shouldGenerateGivenFile() {
 		try {
-			final JsonParser parser = new JsonParser(new URL(
-				SopremoTestUtil.getResourcePath("SopremoTestPlan/test.json")));
+			final JsonParser parser = new JsonParser(
+				JsonGeneratorTest.class.getResource("test.json"));
 			final File file = File.createTempFile("test", "json");
 			final JsonGenerator gen = new JsonGenerator(file);
 			gen.writeStartArray();

@@ -3,7 +3,7 @@ package eu.stratosphere.sopremo.expressions;
 import static eu.stratosphere.sopremo.type.JsonUtil.createArrayNode;
 import static eu.stratosphere.sopremo.type.JsonUtil.createObjectNode;
 import static eu.stratosphere.sopremo.type.JsonUtil.createStreamArrayNode;
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.junit.Test;
 

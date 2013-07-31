@@ -14,10 +14,10 @@ import eu.stratosphere.sopremo.expressions.ConstantExpression;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
 import eu.stratosphere.sopremo.expressions.FunctionCall;
 import eu.stratosphere.sopremo.expressions.ObjectAccess;
-import eu.stratosphere.sopremo.operator.SopremoOperatorTestBase;
+import eu.stratosphere.sopremo.testing.SopremoOperatorTestBase;
 import eu.stratosphere.sopremo.testing.SopremoTestPlan;
 
-//import eu.stratosphere.sopremo.testing.SopremoTestPlan;
+//import eu.stratosphere.sopremo.SopremoTestPlan;
 
 public class ReplaceTest extends SopremoOperatorTestBase<Replace> {
 	@Override

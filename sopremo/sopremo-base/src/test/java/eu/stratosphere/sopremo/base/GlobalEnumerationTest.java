@@ -16,15 +16,14 @@ package eu.stratosphere.sopremo.base;
 
 import java.util.List;
 
-import junit.framework.Assert;
-
+import org.junit.Assert;
 import org.junit.Test;
 
 import eu.stratosphere.sopremo.testing.SopremoTestPlan;
 import eu.stratosphere.sopremo.type.IObjectNode;
 import eu.stratosphere.sopremo.type.TextNode;
 
-//import eu.stratosphere.sopremo.testing.SopremoTestPlan;
+//import eu.stratosphere.sopremo.SopremoTestPlan;
 
 /**
  * @author Arvid Heise

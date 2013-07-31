@@ -15,13 +15,11 @@
 package eu.stratosphere.sopremo.function;
 
 import eu.stratosphere.sopremo.AbstractSopremoType;
-import eu.stratosphere.sopremo.ICloneable;
 import eu.stratosphere.sopremo.ISopremoType;
 
 /**
  * @author Arvid Heise
  */
-public abstract class Callable<Result, InputType> extends AbstractSopremoType implements ISopremoType,
-		ICloneable {
+public abstract class Callable<Result, InputType> extends AbstractSopremoType implements ISopremoType {
 	public abstract Result call(InputType params);
 }

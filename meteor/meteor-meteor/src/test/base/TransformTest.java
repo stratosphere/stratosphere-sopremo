@@ -33,7 +33,7 @@ public class TransformTest extends MeteorTest {
 
 	@Test
 	public void testTransform() {
-		final SopremoPlan actualPlan = this.parseScript("$input = read from 'file://input.json';\n" +
+		final SopremoPlan actualPlan = parseScript("$input = read from 'file://input.json';\n" +
 			"$result = transform $input into {sum: $input.a + $input.b};\n" +
 			"write $result to 'file://output.json'; ");
 

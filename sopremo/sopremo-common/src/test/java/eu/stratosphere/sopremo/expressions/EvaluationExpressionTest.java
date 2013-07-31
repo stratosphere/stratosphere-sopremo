@@ -15,7 +15,7 @@
 package eu.stratosphere.sopremo.expressions;
 
 import static eu.stratosphere.sopremo.type.JsonUtil.createPath;
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.junit.Test;
 

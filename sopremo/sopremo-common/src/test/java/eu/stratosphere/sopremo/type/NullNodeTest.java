@@ -1,6 +1,6 @@
 package eu.stratosphere.sopremo.type;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.junit.Test;
 

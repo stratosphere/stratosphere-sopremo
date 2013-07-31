@@ -32,7 +32,7 @@ public class TernaryExpressionTest extends MeteorTest {
 
 	@Test
 	public void shouldSupportTernary() {
-		final SopremoPlan actualPlan = this.parseScript("$input = read from 'file://input.json';\n" +
+		final SopremoPlan actualPlan = parseScript("$input = read from 'file://input.json';\n" +
 			"$result = transform $input into {name: $input.name ? $input.name : 'unknown'};\n" +
 			"write $result to 'file://output.json'; ");
 
@@ -52,7 +52,7 @@ public class TernaryExpressionTest extends MeteorTest {
 	}
 	@Test
 	public void shouldSupportElvis() {
-		final SopremoPlan actualPlan = this.parseScript("$input = read from 'file://input.json';\n" +
+		final SopremoPlan actualPlan = parseScript("$input = read from 'file://input.json';\n" +
 			"$result = transform $input into {name: $input.name ? $input.name : 'unknown'};\n" +
 			"write $result to 'file://output.json'; ");
 

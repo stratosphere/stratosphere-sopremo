@@ -14,13 +14,13 @@
  **********************************************************************************************************************/
 package eu.stratosphere.sopremo;
 
-import java.io.IOException;
+import eu.stratosphere.util.IAppending;
+import eu.stratosphere.util.ICloneable;
 
 /**
  * Interface for all types.
  * 
  * @author Arvid Heise
  */
-public interface ISopremoType extends ICloneable {
-	public void appendAsString(Appendable appendable) throws IOException;
+public interface ISopremoType extends ICloneable, IAppending {
 }

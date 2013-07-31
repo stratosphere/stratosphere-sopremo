@@ -1,6 +1,6 @@
 package eu.stratosphere.sopremo.expressions;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 import nl.jqno.equalsverifier.EqualsVerifier;
 import nl.jqno.equalsverifier.Warning;
 

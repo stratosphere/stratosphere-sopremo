@@ -2,7 +2,7 @@ package eu.stratosphere.sopremo.type;
 
 import java.util.Iterator;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.junit.Test;
 

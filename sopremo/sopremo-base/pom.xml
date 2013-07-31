@@ -15,27 +15,14 @@
       <artifactId>sopremo-common</artifactId>
       <version>${project.version}</version>
     </dependency>
+    
     <dependency>
       <groupId>eu.stratosphere</groupId>
-      <artifactId>sopremo-common</artifactId>
+      <artifactId>sopremo-testplan</artifactId>
       <version>${project.version}</version>
-      <type>test-jar</type>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>nl.jqno.equalsverifier</groupId>
-      <artifactId>equalsverifier</artifactId>
-      <version>1.0.1</version>
-      <type>jar</type>
       <scope>test</scope>
     </dependency>
   </dependencies>
-  <repositories>
-    <repository>
-      <id>equalsverifier-repository</id>
-      <url>http://equalsverifier.googlecode.com/svn/maven/</url>
-    </repository>
-  </repositories>
   <reporting>
     <plugins>
 		</plugins>

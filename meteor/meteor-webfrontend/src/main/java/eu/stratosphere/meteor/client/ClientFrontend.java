@@ -155,7 +155,12 @@ public class ClientFrontend {
 	public String getMetaData(String key) {
 		System.out.println("returning metadata for " + currentSopremoID);
 		if (currentSopremoID != null) {
-			return sopremoClient.getMetaData(currentSopremoID, key).toString();
+			try {
+				return sopremoClient.getMetaData(currentSopremoID, key).toString();
+			} catch (IOException | InterruptedException e) {
+				System.out.println("Error retrieving metadata for " + currentSopremoID);
+				e.printStackTrace(System.out);
+			}
 		}
 		return null;
 	}

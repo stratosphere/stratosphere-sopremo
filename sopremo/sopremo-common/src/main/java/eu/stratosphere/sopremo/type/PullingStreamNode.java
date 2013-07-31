@@ -17,8 +17,10 @@ package eu.stratosphere.sopremo.type;
 import java.util.Collections;
 import java.util.Iterator;
 
+import com.google.common.base.Function;
+import com.google.common.collect.Iterators;
+
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
-import eu.stratosphere.util.ConversionIterator;
 
 /**
  * @author rico
@@ -50,12 +52,12 @@ public class PullingStreamNode<T extends IJsonNode> extends StreamNode<T> {
 	@SuppressWarnings("unchecked")
 	public void setSource(IStreamNode<?> node) {
 		this.source = (Iterator<IJsonNode>) node.iterator();
-		this.iterator = new ConversionIterator<IJsonNode, T>(this.source) {
+		this.iterator = Iterators.transform(this.source, new Function<IJsonNode, T>() {
 			@Override
-			protected T convert(IJsonNode inputObject) {
-				return (T) PullingStreamNode.this.expression.evaluate(inputObject);
+			public T apply(IJsonNode inputNode) {
+				return (T) PullingStreamNode.this.expression.evaluate(inputNode);
 			}
-		};
+		});
 	}
 
 	@Override

@@ -13,7 +13,6 @@ import eu.stratosphere.pact.generic.contract.Contract;
 import eu.stratosphere.sopremo.AbstractSopremoType;
 import eu.stratosphere.sopremo.CoreFunctions;
 import eu.stratosphere.sopremo.EvaluationContext;
-import eu.stratosphere.sopremo.ICloneable;
 import eu.stratosphere.sopremo.io.Sink;
 import eu.stratosphere.sopremo.packages.EvaluationScope;
 import eu.stratosphere.sopremo.packages.IConstantRegistry;
@@ -26,7 +25,7 @@ import eu.stratosphere.sopremo.serialization.SopremoRecordLayout;
  * 
  * @author Arvid Heise
  */
-public class SopremoPlan extends AbstractSopremoType implements ICloneable, Serializable, EvaluationScope {
+public class SopremoPlan extends AbstractSopremoType implements Serializable, EvaluationScope {
 
 	private static final long serialVersionUID = 5702832506916907827L;
 

@@ -14,7 +14,6 @@
  **********************************************************************************************************************/
 package eu.stratosphere.sopremo.type;
 
-import eu.stratosphere.sopremo.ICloneable;
 import eu.stratosphere.sopremo.ISopremoType;
 
 /**
@@ -23,7 +22,7 @@ import eu.stratosphere.sopremo.ISopremoType;
  * @author Michael Hopstock
  * @author Tommy Neubert
  */
-public interface IJsonNode extends ISopremoType, ICloneable, Comparable<IJsonNode> {
+public interface IJsonNode extends ISopremoType, Comparable<IJsonNode> {
 	public void clear();
 	
 	public Class<? extends IJsonNode> getType();

@@ -35,7 +35,7 @@ public class FilterTest extends MeteorTest {
 
 	@Test
 	public void testFilter() {
-		final SopremoPlan actualPlan = this.parseScript("$input = read from 'file://input.json';\n" +
+		final SopremoPlan actualPlan = parseScript("$input = read from 'file://input.json';\n" +
 			"$result = filter $emp in $input where $emp.mgr or $emp.income > 30000;\n" +
 			"write $result to 'file://output.json';");
 

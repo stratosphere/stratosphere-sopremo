@@ -20,7 +20,6 @@ import java.net.URI;
 import eu.stratosphere.nephele.configuration.Configuration;
 import eu.stratosphere.nephele.template.InputSplit;
 import eu.stratosphere.pact.common.io.statistics.BaseStatistics;
-import eu.stratosphere.pact.generic.io.FileInputFormat.FileBaseStatistics;
 import eu.stratosphere.pact.generic.io.InputFormat;
 import eu.stratosphere.sopremo.operator.Property;
 import eu.stratosphere.sopremo.pact.SopremoUtil;
@@ -140,20 +139,37 @@ public class SampleFormat extends SopremoFormat {
 		 * BaseStatistics)
 		 */
 		@Override
-		public FileBaseStatistics getStatistics(BaseStatistics cachedStatistics) throws IOException {
-			final BaseStatistics statistics = this.originalInputFormat.getStatistics(cachedStatistics);
+		public BaseStatistics getStatistics(BaseStatistics cachedStatistics) throws IOException {
+			final BaseStatistics stats = this.originalInputFormat.getStatistics(cachedStatistics);
 
-			FileBaseStatistics stats = null;
+			return new BaseStatistics() {
+				/*
+				 * (non-Javadoc)
+				 * @see eu.stratosphere.pact.common.io.statistics.BaseStatistics#getAverageRecordWidth()
+				 */
+				@Override
+				public float getAverageRecordWidth() {
+					return stats.getAverageRecordWidth();
+				}
 
-			if (cachedStatistics != null && statistics instanceof FileBaseStatistics)
-				stats = (FileBaseStatistics) statistics;
-			else
-				stats = new FileBaseStatistics(-1, statistics.getTotalInputSize(), statistics.getAverageRecordWidth());
+				/*
+				 * (non-Javadoc)
+				 * @see eu.stratosphere.pact.common.io.statistics.BaseStatistics#getNumberOfRecords()
+				 */
+				@Override
+				public long getNumberOfRecords() {
+					return Math.min(SampleInputFormat.this.sampleSize, stats.getNumberOfRecords());
+				}
 
-			long sampleSize = Math.min(this.sampleSize, stats.getNumberOfRecords());
-			stats.setTotalInputSize((long) Math.ceil(sampleSize * stats.getAverageRecordWidth()));
-
-			return stats;
+				/*
+				 * (non-Javadoc)
+				 * @see eu.stratosphere.pact.common.io.statistics.BaseStatistics#getTotalInputSize()
+				 */
+				@Override
+				public long getTotalInputSize() {
+					return (long) Math.ceil(getNumberOfRecords() * getAverageRecordWidth());
+				}
+			};
 		}
 
 		/*
@@ -188,7 +204,6 @@ public class SampleFormat extends SopremoFormat {
 		public Class<? extends InputSplit> getInputSplitType() {
 			return this.originalInputFormat.getInputSplitType();
 		}
-
 
 		/*
 		 * (non-Javadoc)

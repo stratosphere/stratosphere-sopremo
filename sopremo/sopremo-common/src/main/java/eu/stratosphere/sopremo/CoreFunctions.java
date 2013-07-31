@@ -1,9 +1,6 @@
 package eu.stratosphere.sopremo;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.InputStreamReader;
-import java.net.URL;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -35,8 +32,6 @@ import eu.stratosphere.sopremo.function.SopremoFunction2;
 import eu.stratosphere.sopremo.function.SopremoFunction3;
 import eu.stratosphere.sopremo.function.SopremoVarargFunction;
 import eu.stratosphere.sopremo.function.SopremoVarargFunction1;
-import eu.stratosphere.sopremo.io.JsonParseException;
-import eu.stratosphere.sopremo.io.JsonParser;
 import eu.stratosphere.sopremo.operator.Name;
 import eu.stratosphere.sopremo.packages.BuiltinProvider;
 import eu.stratosphere.sopremo.tokenizer.RegexTokenizer;
@@ -46,12 +41,10 @@ import eu.stratosphere.sopremo.type.CachingArrayNode;
 import eu.stratosphere.sopremo.type.IArrayNode;
 import eu.stratosphere.sopremo.type.IJsonNode;
 import eu.stratosphere.sopremo.type.INumericNode;
-import eu.stratosphere.sopremo.type.IObjectNode;
 import eu.stratosphere.sopremo.type.IStreamNode;
 import eu.stratosphere.sopremo.type.IntNode;
 import eu.stratosphere.sopremo.type.MissingNode;
 import eu.stratosphere.sopremo.type.NullNode;
-import eu.stratosphere.sopremo.type.ObjectNode;
 import eu.stratosphere.sopremo.type.TextNode;
 
 

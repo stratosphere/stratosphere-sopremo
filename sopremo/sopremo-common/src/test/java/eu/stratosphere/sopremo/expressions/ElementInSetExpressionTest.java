@@ -1,7 +1,7 @@
 package eu.stratosphere.sopremo.expressions;
 
 import static eu.stratosphere.sopremo.type.JsonUtil.createArrayNode;
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.junit.Test;
 

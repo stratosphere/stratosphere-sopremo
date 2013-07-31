@@ -23,8 +23,6 @@ import java.util.ListIterator;
 
 import eu.stratosphere.sopremo.AbstractSopremoType;
 import eu.stratosphere.sopremo.EvaluationException;
-import eu.stratosphere.sopremo.ICloneable;
-import eu.stratosphere.sopremo.ISopremoType;
 import eu.stratosphere.sopremo.expressions.tree.ChildIterator;
 import eu.stratosphere.sopremo.type.IArrayNode;
 import eu.stratosphere.sopremo.type.IJsonNode;
@@ -347,8 +345,9 @@ public class ObjectCreation extends EvaluationExpression {
 		 */
 		CopyFields() {
 		}
-		
-		/* (non-Javadoc)
+
+		/*
+		 * (non-Javadoc)
 		 * @see eu.stratosphere.sopremo.expressions.ObjectCreation.FieldAssignment#getTargetExpression()
 		 */
 		@Override
@@ -395,14 +394,15 @@ public class ObjectCreation extends EvaluationExpression {
 			target.put(this.target, value);
 		}
 
-		/* (non-Javadoc)
+		/*
+		 * (non-Javadoc)
 		 * @see eu.stratosphere.sopremo.expressions.ObjectCreation.Mapping#getTargetExpression()
 		 */
 		@Override
 		public PathSegmentExpression getTargetExpression() {
 			return new ObjectAccess(this.target);
 		}
-		
+
 		/*
 		 * (non-Javadoc)
 		 * @see eu.stratosphere.sopremo.expressions.ObjectCreation.Mapping#appendTarget(java.lang.Appendable)
@@ -440,16 +440,18 @@ public class ObjectCreation extends EvaluationExpression {
 		protected void evaluate(final IJsonNode node, final IObjectNode target) {
 			throw new EvaluationException("Only tag mapping");
 		}
-		
-		/* (non-Javadoc)
+
+		/*
+		 * (non-Javadoc)
 		 * @see eu.stratosphere.sopremo.expressions.ObjectCreation.Mapping#getTargetExpression()
 		 */
 		@Override
 		public PathSegmentExpression getTargetExpression() {
 			return (PathSegmentExpression) this.target;
 		}
-		
-		/* (non-Javadoc)
+
+		/*
+		 * (non-Javadoc)
 		 * @see eu.stratosphere.sopremo.expressions.ObjectCreation.Mapping#getTargetTagExpression()
 		 */
 		@Override
@@ -487,14 +489,15 @@ public class ObjectCreation extends EvaluationExpression {
 			this.target.set(target, this.lastResult);
 		}
 
-		/* (non-Javadoc)
+		/*
+		 * (non-Javadoc)
 		 * @see eu.stratosphere.sopremo.expressions.ObjectCreation.Mapping#getTargetExpression()
 		 */
 		@Override
 		public PathSegmentExpression getTargetExpression() {
 			return this.target;
 		}
-		
+
 		/*
 		 * (non-Javadoc)
 		 * @see eu.stratosphere.sopremo.expressions.ObjectCreation.Mapping#appendTarget(java.lang.Appendable)
@@ -505,8 +508,7 @@ public class ObjectCreation extends EvaluationExpression {
 		}
 	}
 
-	public abstract static class Mapping<Target> extends AbstractSopremoType implements ISopremoType,
-			ICloneable {
+	public abstract static class Mapping<Target> extends AbstractSopremoType {
 		protected Target target;
 
 		protected EvaluationExpression expression;
@@ -574,9 +576,9 @@ public class ObjectCreation extends EvaluationExpression {
 		public Target getTarget() {
 			return this.target;
 		}
-		
+
 		public abstract PathSegmentExpression getTargetExpression();
-		
+
 		public EvaluationExpression getTargetTagExpression() {
 			return getTargetExpression();
 		}

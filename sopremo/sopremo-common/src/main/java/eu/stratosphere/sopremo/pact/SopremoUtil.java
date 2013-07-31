@@ -31,7 +31,6 @@ import com.esotericsoftware.kryo.io.Output;
 import eu.stratosphere.nephele.configuration.Configuration;
 import eu.stratosphere.nephele.util.StringUtils;
 import eu.stratosphere.sopremo.EvaluationContext;
-import eu.stratosphere.sopremo.ICloneable;
 import eu.stratosphere.sopremo.ISopremoType;
 import eu.stratosphere.sopremo.SopremoEnvironment;
 import eu.stratosphere.sopremo.cache.NodeCache;
@@ -43,6 +42,8 @@ import eu.stratosphere.sopremo.type.IArrayNode;
 import eu.stratosphere.sopremo.type.IJsonNode;
 import eu.stratosphere.sopremo.type.IObjectNode;
 import eu.stratosphere.sopremo.type.ReusingSerializer;
+import eu.stratosphere.util.ICloneable;
+import eu.stratosphere.util.KryoUtil;
 
 /**
  * Provides utility methods for sopremo
@@ -240,7 +241,7 @@ public class SopremoUtil {
 	/**
 	 * @param evaluationExpression
 	 */
-	public static void initTransientFields(ICloneable object) {
+	public static void initTransientFields(Object object) {
 		for (Class<?> clazz = object.getClass(); clazz != Object.class; clazz = clazz.getSuperclass()) {
 			final Field[] fields = clazz.getDeclaredFields();
 			for (Field field : fields)
@@ -254,7 +255,7 @@ public class SopremoUtil {
 							continue;
 
 						if (ICloneable.class.isAssignableFrom(type)) { // make copy of one default instantiation
-							final Object defaultObject = getDefault(object.getClass(), object);
+							final Object defaultObject = getDefault(object.getClass(), (ICloneable) object);
 							field.set(object, ((ICloneable) field.get(defaultObject)).clone());
 						} else
 							// try to create new object
@@ -281,15 +282,6 @@ public class SopremoUtil {
 				appendable.append(object.toString());
 	}
 
-	private final static ThreadLocal<Kryo> Serialization = new ThreadLocal<Kryo>() {
-		@Override
-		protected Kryo initialValue() {
-			final Kryo kryo = new Kryo();
-			kryo.setReferences(false);
-			return kryo;
-		};
-	};
-
 	// Hack found in http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6400767
 	private final static Charset BINARY_CHARSET = Charset.forName("ISO-8859-1");
 
@@ -305,36 +297,30 @@ public class SopremoUtil {
 		if (stringRepresentation == null)
 			return defaultValue;
 		Input input = new Input(stringRepresentation.getBytes(BINARY_CHARSET));
-		final Kryo kryo = getKryo();
+		final Kryo kryo = KryoUtil.getKryo();
 		kryo.setClassLoader(SopremoEnvironment.getInstance().getClassLoader());
 		return (T) kryo.readClassAndObject(input);
-	}
-
-	public static Kryo getKryo() {
-		final Kryo kryo = Serialization.get();
-		return kryo;
 	}
 
 	public static EvaluationContext getEvaluationContext(Configuration config) {
 		return getObject(config, CONTEXT, null);
 	}
-	
+
 	public static SopremoRecordLayout getLayout(Configuration config) {
 		return getObject(config, LAYOUT, null);
 	}
 
 	public static void setEvaluationContext(Configuration config, EvaluationContext context) {
-		if(context == null)
+		if (context == null)
 			throw new NullPointerException();
 		setObject(config, CONTEXT, context);
 	}
-	
+
 	public static void setLayout(Configuration config, SopremoRecordLayout layout) {
-		if(layout == null)
+		if (layout == null)
 			throw new NullPointerException();
 		setObject(config, LAYOUT, layout);
 	}
-	
 
 	/**
 	 * @param config
@@ -344,7 +330,7 @@ public class SopremoUtil {
 	public static void setObject(Configuration config, String keyName, Object object) {
 		final ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		final Output output = new Output(baos);
-		final Kryo kryo = getKryo();
+		final Kryo kryo = KryoUtil.getKryo();
 		kryo.reset();
 		kryo.writeClassAndObject(output, object);
 		output.close();
@@ -362,7 +348,7 @@ public class SopremoUtil {
 
 	@SuppressWarnings("unchecked")
 	public static <T extends IJsonNode> T copyInto(T node, IJsonNode possibleTarget) {
-		if(possibleTarget == null || possibleTarget.getType() != node.getType())
+		if (possibleTarget == null || possibleTarget.getType() != node.getType())
 			return (T) node.clone();
 		possibleTarget.copyValueFrom(node);
 		return (T) possibleTarget;

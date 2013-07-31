@@ -6,14 +6,8 @@ import static org.junit.Assert.assertTrue;
 import java.util.Arrays;
 
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mockito;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
 
 import eu.stratosphere.nephele.configuration.Configuration;
-import eu.stratosphere.pact.common.plan.ContractUtil;
 import eu.stratosphere.pact.common.stubs.Stub;
 import eu.stratosphere.pact.generic.contract.Contract;
 import eu.stratosphere.pact.generic.contract.GenericMapContract;
@@ -59,7 +53,6 @@ public class ElementaryOperatorTest {
 		new OperatorWithUnknownStub().getContract(LAYOUT);
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
 	public void getContractShouldReturnTheMatchingContractToTheFirstStub() {
 		final SopremoRecordLayout layout = SopremoRecordLayout.create(new ObjectAccess("someField"));
@@ -87,7 +80,6 @@ public class ElementaryOperatorTest {
 		assertEquals(null, new OperatorWithNoStubs().getStubClass());
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
 	public void getStubClassShouldReturnTheFirstStub() {
 		final Class<? extends eu.stratosphere.pact.common.stubs.Stub> stubClass = new OperatorWithTwoStubs()

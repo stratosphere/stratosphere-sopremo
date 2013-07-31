@@ -16,7 +16,7 @@ package eu.stratosphere.sopremo.expressions;
 
 import java.io.IOException;
 
-import eu.stratosphere.sopremo.Immutable;
+import eu.stratosphere.util.Immutable;
 
 /**
  * This expression represents a Singleton.

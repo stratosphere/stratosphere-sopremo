@@ -12,7 +12,7 @@ public class DifferenceTest extends MeteorTest {
 
 	@Test
 	public void testDifference() {
-		final SopremoPlan actualPlan = this.parseScript("$oldUsers = read from 'file://oldUsers.json';\n" +
+		final SopremoPlan actualPlan = parseScript("$oldUsers = read from 'file://oldUsers.json';\n" +
 			"$currentUsers = read from 'file://currentUsers.json';\n" +
 			"$newUsers = subtract $currentUsers, $oldUsers;\n" +
 			"write $newUsers to 'file://newUsers.json';");

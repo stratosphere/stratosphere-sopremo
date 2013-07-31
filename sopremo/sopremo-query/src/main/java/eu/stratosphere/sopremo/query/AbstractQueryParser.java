@@ -9,7 +9,6 @@ import java.math.BigInteger;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -54,14 +53,7 @@ import eu.stratosphere.sopremo.packages.ITypeRegistry;
 import eu.stratosphere.sopremo.pact.SopremoUtil;
 import eu.stratosphere.sopremo.query.ConfObjectInfo.ConfObjectIndexedPropertyInfo;
 import eu.stratosphere.sopremo.query.ConfObjectInfo.ConfObjectPropertyInfo;
-import eu.stratosphere.sopremo.type.AbstractJsonNode;
-import eu.stratosphere.sopremo.type.ArrayNode;
-import eu.stratosphere.sopremo.type.BooleanNode;
 import eu.stratosphere.sopremo.type.IJsonNode;
-import eu.stratosphere.sopremo.type.MissingNode;
-import eu.stratosphere.sopremo.type.NullNode;
-import eu.stratosphere.sopremo.type.ObjectNode;
-import eu.stratosphere.sopremo.type.TypeCoercer;
 
 public abstract class AbstractQueryParser extends Parser implements ParsingScope {
 	/**

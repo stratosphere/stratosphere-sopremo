@@ -16,6 +16,7 @@ package eu.stratosphere.sopremo.util;
 
 import eu.stratosphere.pact.common.type.PactRecord;
 import eu.stratosphere.pact.common.type.Value;
+import eu.stratosphere.util.Equaler;
 
 /**
  * @author arv

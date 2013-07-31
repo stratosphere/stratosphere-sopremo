@@ -2,7 +2,7 @@ package eu.stratosphere.sopremo.expressions;
 
 import static eu.stratosphere.sopremo.type.JsonUtil.createObjectNode;
 import javolution.util.FastMap;
-import junit.framework.Assert;
+import org.junit.Assert;
 import nl.jqno.equalsverifier.EqualsVerifier;
 
 import org.junit.Test;

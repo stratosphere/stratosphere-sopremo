@@ -2,26 +2,16 @@ package eu.stratosphere.sopremo.base;
 
 import java.util.List;
 
-import eu.stratosphere.pact.common.IdentityMap;
-import eu.stratosphere.pact.common.contract.MapContract;
 import eu.stratosphere.pact.common.plan.PactModule;
-import eu.stratosphere.pact.common.stubs.Collector;
-import eu.stratosphere.pact.common.stubs.MapStub;
-import eu.stratosphere.pact.common.type.PactRecord;
 import eu.stratosphere.pact.generic.contract.Contract;
 import eu.stratosphere.pact.generic.contract.GenericMapContract;
-import eu.stratosphere.pact.generic.stub.GenericMapper;
 import eu.stratosphere.sopremo.EvaluationContext;
 import eu.stratosphere.sopremo.operator.ElementaryOperator;
 import eu.stratosphere.sopremo.operator.InputCardinality;
 import eu.stratosphere.sopremo.operator.JsonStream;
 import eu.stratosphere.sopremo.operator.Name;
-import eu.stratosphere.sopremo.pact.JsonCollector;
-import eu.stratosphere.sopremo.pact.SopremoMap;
 import eu.stratosphere.sopremo.pact.SopremoNop;
-import eu.stratosphere.sopremo.serialization.SopremoRecord;
 import eu.stratosphere.sopremo.serialization.SopremoRecordLayout;
-import eu.stratosphere.sopremo.type.IJsonNode;
 
 /**
  * Unifies the input json streams in a bag semantic.

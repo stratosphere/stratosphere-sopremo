@@ -25,20 +25,19 @@ import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 
 import eu.stratosphere.sopremo.AbstractSopremoType;
-import eu.stratosphere.sopremo.ICloneable;
 import eu.stratosphere.sopremo.ISopremoType;
-import eu.stratosphere.sopremo.Immutable;
 import eu.stratosphere.sopremo.SingletonSerializer;
 import eu.stratosphere.sopremo.expressions.tree.ChildIterator;
 import eu.stratosphere.sopremo.expressions.tree.ListChildIterator;
 import eu.stratosphere.sopremo.type.IJsonNode;
+import eu.stratosphere.util.Immutable;
 
 /**
  * Base class for all evaluable expressions that can form an expression tree.<br>
  * All implementing classes are not thread-safe unless otherwise noted.
  */
 public abstract class EvaluationExpression extends AbstractSopremoType implements ISopremoType,
-		Iterable<EvaluationExpression>, ICloneable {
+		Iterable<EvaluationExpression> {
 
 	@DefaultSerializer(ValueSerializer.class)
 	@Immutable

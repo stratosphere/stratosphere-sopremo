@@ -90,7 +90,7 @@ public class BoundTypeUtilTest {
 		assertArrayEquals(BoundType.arrayOf(klasses), BoundTypeUtil.getStaticBoundTypes(BoundList.class));
 	}
 
-	private static <T> T[] array(final T... ts) {
+	private static <T> T[] array(@SuppressWarnings("unchecked") final T... ts) {
 		return ts;
 	}
 

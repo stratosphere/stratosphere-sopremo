@@ -16,13 +16,10 @@ package eu.stratosphere.sopremo.serialization;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
-import org.codehaus.jackson.JsonNode;
 import org.junit.Test;
 
 import com.esotericsoftware.kryo.Kryo;
@@ -31,7 +28,6 @@ import com.esotericsoftware.kryo.io.Output;
 
 import eu.stratosphere.sopremo.EqualCloneTest;
 import eu.stratosphere.sopremo.expressions.ArrayAccess;
-import eu.stratosphere.sopremo.expressions.EvaluationExpression;
 import eu.stratosphere.sopremo.expressions.ObjectAccess;
 import eu.stratosphere.sopremo.type.IntNode;
 import eu.stratosphere.sopremo.type.JsonUtil;

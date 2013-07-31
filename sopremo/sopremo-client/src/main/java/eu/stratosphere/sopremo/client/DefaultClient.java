@@ -185,9 +185,9 @@ public class DefaultClient implements Closeable {
 			progressListener = new DummyListener();
 		System.out.println("Init connection");
 		this.initConnection(progressListener);
-		System.out.println("Transfering libraries");
+		System.out.println("Transferring libraries");
 		if (!this.transferLibraries(plan, progressListener)) {
-			System.out.println("did not transfer libraries!");
+			System.out.println("Could not transfer libraries - aborting");
 			return null;
 		}
 
@@ -201,7 +201,7 @@ public class DefaultClient implements Closeable {
 			return null;
 		}
 
-		System.out.println("waiting for completion");
+		System.out.println("Waiting for completion");
 		if (wait)
 			return this.waitForCompletion(response, progressListener);
 		return response.getJobId();
@@ -227,10 +227,8 @@ public class DefaultClient implements Closeable {
 			request.setRequiredLibraries(internalJarNames);
 
 			// Send the request
-			System.out.println("Sending library cache request");
 			LibraryCacheProfileResponse response = null;
 			response = this.executor.getLibraryCacheProfile(request);
-			System.out.println("Received response");
 
 			// Check response and transfer libraries if necessary
 			for (int k = 0; k < internalJarNames.length; k++)
@@ -238,9 +236,7 @@ public class DefaultClient implements Closeable {
 					final String library = internalJarNames[k];
 					progressListener.progressUpdate(ExecutionState.SETUP, "Transfering " + requiredLibraries.get(k));
 					LibraryCacheUpdate update = new LibraryCacheUpdate(library);
-					System.out.println("sending update for library " + library);
 					this.executor.updateLibraryCache(update);
-					System.out.println("done");
 				}
 
 			// now change the names of the required libraries to the internal names
@@ -343,17 +339,8 @@ public class DefaultClient implements Closeable {
 		}
 	}
 
-	public Object getMetaData(SopremoID id, String key) {
-		Object result = null;
-		try {
-			result = this.executor.getMetaData(id, key);
-		} catch (InterruptedException e) {
-			System.out.println(e);
-			e.printStackTrace(System.out);
-		} catch (IOException e) {
-			System.out.println(e);
-			e.printStackTrace(System.out);
-		}
+	public Object getMetaData(SopremoID id, String key) throws IOException, InterruptedException {
+		Object result = this.executor.getMetaData(id, key);
 		return result;
 	}
 

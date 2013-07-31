@@ -3,12 +3,11 @@ package eu.stratosphere.sopremo.aggregation;
 import java.io.IOException;
 
 import eu.stratosphere.sopremo.AbstractSopremoType;
-import eu.stratosphere.sopremo.ICloneable;
 import eu.stratosphere.sopremo.ISopremoType;
 import eu.stratosphere.sopremo.expressions.AggregationExpression;
 import eu.stratosphere.sopremo.type.IJsonNode;
 
-public abstract class Aggregation extends AbstractSopremoType implements ISopremoType, ICloneable {
+public abstract class Aggregation extends AbstractSopremoType implements ISopremoType {
 	private final transient String name;
 
 	public Aggregation(final String name) {

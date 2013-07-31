@@ -35,7 +35,7 @@ public class GroupingTest extends MeteorTest {
 
 	@Test
 	public void testCoGrouping1() {
-		final SopremoPlan actualPlan = this.parseScript("$employees = read from 'file://employees.json';\n" +
+		final SopremoPlan actualPlan = parseScript("$employees = read from 'file://employees.json';\n" +
 			"$depts = read from 'file://departments.json';\n" +
 			"$result = group $es in $employees by $es.dept,\n" +
 			"	$ds in $depts by $ds.did into {\n" +
@@ -70,7 +70,7 @@ public class GroupingTest extends MeteorTest {
 
 	@Test
 	public void testCoGrouping2() {
-		final SopremoPlan actualPlan = this.parseScript("$employees = read from 'file://employees.json';\n" +
+		final SopremoPlan actualPlan = parseScript("$employees = read from 'file://employees.json';\n" +
 			"$depts = read from 'file://departments.json';\n" +
 			"$result = group $employees by $employees.dept,\n" +
 			"	$depts by $depts.did into {\n" +
@@ -105,7 +105,7 @@ public class GroupingTest extends MeteorTest {
 
 	@Test
 	public void testGrouping1() {
-		final SopremoPlan actualPlan = this.parseScript("$employees = read from 'file://employees.json';\n" +
+		final SopremoPlan actualPlan = parseScript("$employees = read from 'file://employees.json';\n" +
 			"$result = group $employees into count($employees);\n" +
 			"write $result to 'file://output.json'; ");
 
@@ -124,7 +124,7 @@ public class GroupingTest extends MeteorTest {
 
 	@Test
 	public void testGrouping2() {
-		final SopremoPlan actualPlan = this.parseScript("$employees = read from 'file://employees.json';\n" +
+		final SopremoPlan actualPlan = parseScript("$employees = read from 'file://employees.json';\n" +
 			"$result = group $employees by $employees.dept into {\n" +
 			"	$employees[0].dept,\n" +
 			"	total: sum($employees[*].income)\n" +
@@ -151,7 +151,7 @@ public class GroupingTest extends MeteorTest {
 
 	@Test
 	public void testGrouping3() {
-		final SopremoPlan actualPlan = this.parseScript("$employees = read from 'file://employees.json';\n" +
+		final SopremoPlan actualPlan = parseScript("$employees = read from 'file://employees.json';\n" +
 			"$result = group $employee in $employees by $employee.dept into {\n" +
 			"	$employee[0].dept, \n" +
 			"	total: sum($employee[*].income) \n" +

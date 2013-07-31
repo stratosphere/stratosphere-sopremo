@@ -5,7 +5,7 @@ import static eu.stratosphere.sopremo.type.JsonUtil.createArrayNode;
 
 import java.util.Arrays;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 import nl.jqno.equalsverifier.EqualsVerifier;
 
 import org.junit.Before;

@@ -11,7 +11,7 @@ import eu.stratosphere.sopremo.operator.SopremoPlan;
 public class UnionAllTest extends MeteorTest {
 	@Test
 	public void testUnionAll1() {
-		final SopremoPlan actualPlan = this.parseScript("$users1 = read from 'file://users1.json';\n" +
+		final SopremoPlan actualPlan = parseScript("$users1 = read from 'file://users1.json';\n" +
 			"$users2 = read from 'file://users2.json';\n" +
 			"$allUsers = union all $users1, $users2;\n" +
 			"write $allUsers to 'file://allUsers.json';");

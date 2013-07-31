@@ -21,9 +21,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map.Entry;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 import com.google.common.collect.Lists;
 
 import eu.stratosphere.nephele.configuration.Configuration;
@@ -34,7 +31,6 @@ import eu.stratosphere.nephele.fs.FileStatus;
 import eu.stratosphere.nephele.fs.FileSystem;
 import eu.stratosphere.nephele.fs.LineReader;
 import eu.stratosphere.nephele.fs.Path;
-import eu.stratosphere.pact.common.io.statistics.BaseStatistics;
 import eu.stratosphere.sopremo.operator.Name;
 import eu.stratosphere.sopremo.operator.Property;
 import eu.stratosphere.sopremo.type.IArrayNode;
@@ -42,7 +38,7 @@ import eu.stratosphere.sopremo.type.IJsonNode;
 import eu.stratosphere.sopremo.type.IObjectNode;
 import eu.stratosphere.sopremo.type.ObjectNode;
 import eu.stratosphere.sopremo.type.TextNode;
-import eu.stratosphere.sopremo.util.Equaler;
+import eu.stratosphere.util.Equaler;
 
 @Name(noun = { "csv", "tsv" })
 public class CsvFormat extends SopremoFormat {
@@ -396,11 +392,6 @@ public class CsvFormat extends SopremoFormat {
 	 * InputFormat that interpretes the input data as a csv representation.
 	 */
 	public static class CsvInputFormat extends SopremoFileInputFormat {
-		/**
-		 * The log.
-		 */
-		private static final Log LOG = LogFactory.getLog(CsvInputFormat.class);
-
 		private char fieldDelimiter;
 
 		private Boolean quotation;
@@ -605,134 +596,57 @@ public class CsvFormat extends SopremoFormat {
 		/*
 		 * (non-Javadoc)
 		 * @see
-		 * eu.stratosphere.pact.common.generic.io.InputFormat#getStatistics(eu.stratosphere.pact.common.io.statistics.
-		 * BaseStatistics)
+		 * eu.stratosphere.sopremo.io.SopremoFormat.SopremoFileInputFormat#getAverageRecordBytes(java.util.ArrayList)
 		 */
 		@Override
-		public FileBaseStatistics getStatistics(BaseStatistics cachedStatistics) {
-			// check the cache
-			FileBaseStatistics stats = null;
+		protected float getAverageRecordBytes(FileSystem fs, ArrayList<FileStatus> files, long fileSize)
+				throws IOException {
+			// make the samples small for very small files
+			int numSamples = Math.min(this.numLineSamples, (int) (fileSize / 1024));
+			if (numSamples < 2)
+				numSamples = 2;
 
-			if (cachedStatistics != null && cachedStatistics instanceof FileBaseStatistics)
-				stats = (FileBaseStatistics) cachedStatistics;
-			else
-				stats =
-					new FileBaseStatistics(-1, BaseStatistics.SIZE_UNKNOWN, BaseStatistics.AVG_RECORD_BYTES_UNKNOWN);
+			long offset = 0;
+			long bytes = 0; // one byte for the line-break
+			long stepSize = fileSize / numSamples;
 
-			try {
-				final Path file = this.filePath;
-				final URI uri = file.toUri();
+			int fileNum = 0;
+			int samplesTaken = 0;
 
-				// get the filesystem
-				final FileSystem fs = FileSystem.get(uri);
-				List<FileStatus> files = null;
+			// take the samples
+			for (int sampleNum = 0; sampleNum < numSamples && fileNum < files.size(); sampleNum++) {
+				FileStatus currentFile = files.get(fileNum);
+				FSDataInputStream inStream = null;
 
-				// get the file info and check whether the cached statistics are still
-				// valid.
-				{
-					FileStatus status = fs.getFileStatus(file);
+				try {
+					inStream = fs.open(currentFile.getPath());
+					LineReader lineReader = new LineReader(inStream, offset, currentFile.getLen() - offset, 1024);
+					byte[] line = lineReader.readLine();
+					lineReader.close();
 
-					if (status.isDir()) {
-						FileStatus[] fss = fs.listStatus(file);
-						files = new ArrayList<FileStatus>(fss.length);
-						boolean unmodified = true;
-
-						for (FileStatus s : fss)
-							if (!s.isDir()) {
-								files.add(s);
-								if (s.getModificationTime() > stats.getLastModificationTime()) {
-									stats.setLastModificationTime(s.getModificationTime());
-									unmodified = false;
-								}
-							}
-
-						if (unmodified)
-							return stats;
+					if (line != null && line.length > 0) {
+						samplesTaken++;
+						bytes += line.length + 1; // one for the linebreak
 					}
-					else {
-						// check if the statistics are up to date
-						long modTime = status.getModificationTime();
-						if (stats.getLastModificationTime() == modTime)
-							return stats;
-
-						stats.setLastModificationTime(modTime);
-
-						files = new ArrayList<FileStatus>(1);
-						files.add(status);
-					}
-				}
-
-				long fileSize = 0;
-
-				// calculate the whole length
-				for (FileStatus s : files)
-					fileSize += s.getLen();
-
-				// sanity check
-				if (fileSize <= 0) {
-					fileSize = BaseStatistics.SIZE_UNKNOWN;
-					return stats;
-				}
-				stats.setTotalInputSize(fileSize);
-
-				// make the samples small for very small files
-				int numSamples = Math.min(this.numLineSamples, (int) (fileSize / 1024));
-				if (numSamples < 2)
-					numSamples = 2;
-
-				long offset = 0;
-				long bytes = 0; // one byte for the line-break
-				long stepSize = fileSize / numSamples;
-
-				int fileNum = 0;
-				int samplesTaken = 0;
-
-				// take the samples
-				for (int sampleNum = 0; sampleNum < numSamples && fileNum < files.size(); sampleNum++) {
-					FileStatus currentFile = files.get(fileNum);
-					FSDataInputStream inStream = null;
-
-					try {
-						inStream = fs.open(currentFile.getPath());
-						LineReader lineReader = new LineReader(inStream, offset, currentFile.getLen() - offset, 1024);
-						byte[] line = lineReader.readLine();
-						lineReader.close();
-
-						if (line != null && line.length > 0) {
-							samplesTaken++;
-							bytes += line.length + 1; // one for the linebreak
+				} finally {
+					// make a best effort to close
+					if (inStream != null)
+						try {
+							inStream.close();
+						} catch (Throwable t) {
 						}
-					} finally {
-						// make a best effort to close
-						if (inStream != null)
-							try {
-								inStream.close();
-							} catch (Throwable t) {
-							}
-					}
-
-					offset += stepSize;
-
-					// skip to the next file, if necessary
-					while (fileNum < files.size() && offset >= (currentFile = files.get(fileNum)).getLen()) {
-						offset -= currentFile.getLen();
-						fileNum++;
-					}
 				}
 
-				stats.setAverageRecordWidth(bytes / (float) samplesTaken);
-			} catch (IOException ioex) {
-				if (LOG.isWarnEnabled())
-					LOG.warn("Could not determine complete statistics for file '" + this.filePath
-						+ "' due to an io error: "
-						+ ioex.getMessage());
-			} catch (Throwable t) {
-				if (LOG.isErrorEnabled())
-					LOG.error("Unexpected problen while getting the file statistics for file '" + this.filePath + "': "
-						+ t.getMessage(), t);
+				offset += stepSize;
+
+				// skip to the next file, if necessary
+				while (fileNum < files.size() && offset >= (currentFile = files.get(fileNum)).getLen()) {
+					offset -= currentFile.getLen();
+					fileNum++;
+				}
 			}
 
-			return stats;
+			return bytes / (float) samplesTaken;
 		}
 
 	}
