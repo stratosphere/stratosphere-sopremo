@@ -27,22 +27,28 @@ import eu.stratosphere.sopremo.server.SopremoTestServer;
 /**
  * @author Arvid Heise
  */
-public abstract class MeteorIT extends MeteorParseTest{
+public abstract class MeteorIT extends MeteorParseTest {
 
 	protected SopremoTestServer testServer;
 
 	protected DefaultClient client;
 
 	protected File inputDir;
+	
+	private String projectName;
+
+	private File projectJar;
 
 	/**
 	 * Initializes DefaultClientIT.
 	 */
 	public MeteorIT() {
+		projectName = MavenUtil.getProjectName();
+		init();
 	}
 
 	@Before
-	public final void setup() throws Exception{
+	public final void setup() throws Exception {
 		this.testServer = new SopremoTestServer(true);
 		this.inputDir = this.testServer.createDir("input");
 
@@ -50,10 +56,24 @@ public abstract class MeteorIT extends MeteorParseTest{
 		this.client.setServerAddress(this.testServer.getServerAddress());
 		this.client.setUpdateTime(100);
 	}
+
+	private void init() {
+
+		try {
+			String projectPath = (new File(".")).getCanonicalPath();
+			 projectJar = MavenUtil.buildJarForProject(projectPath, projectName+"_testing");
+			projectJar.deleteOnExit();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 	
-	@Before
-	public abstract void setupSpecific() throws Exception;
-	
+	@Override
+	protected void initParser(QueryParser queryParser) {
+		//queryParser.setInputDirectory(new File("target"));
+		queryParser.getPackageManager().importPackageFrom(projectName.substring("sopremo-".length()), projectJar);
+	}
+
 	protected abstract SopremoPlan getPlan() throws IOException;
 
 	@After

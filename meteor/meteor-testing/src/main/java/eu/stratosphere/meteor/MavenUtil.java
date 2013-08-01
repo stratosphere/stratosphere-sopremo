@@ -14,11 +14,13 @@
  **********************************************************************************************************************/
 package eu.stratosphere.meteor;
 
+import java.io.File;
 import java.io.FileReader;
 import java.io.Reader;
 
-import org.apache.maven.project.Model;
-import org.apache.maven.project.io.xpp3.MavenXpp3Reader;
+import org.apache.maven.cli.MavenCli;
+import org.apache.maven.model.Model;
+import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 
 /**
  * @author arv
@@ -38,5 +40,13 @@ public class MavenUtil {
 		} catch(Exception e) {
 			throw new RuntimeException("Could not read project name", e);
 		}
+	}
+	
+	public static File buildJarForProject(String canonicalProjectPath, String jarName) {
+		MavenCli cli = new MavenCli();
+		if (cli.doMain(new String[] { "jar:jar", "-Djar.finalName=" + jarName }, new File(".").getAbsolutePath(), System.out, System.out) != 0) {
+			throw new RuntimeException("Jar for desired project path " + canonicalProjectPath + " could not be build.");
+		}
+		return new File("target", jarName + ".jar");
 	}
 }

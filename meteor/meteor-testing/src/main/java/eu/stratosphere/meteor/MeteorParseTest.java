@@ -29,11 +29,12 @@ import eu.stratosphere.sopremo.query.QueryParserException;
  */
 @Ignore
 public class MeteorParseTest {
-	public static SopremoPlan parseScript(final String script) {
+	public SopremoPlan parseScript(final String script) {
 		// printBeamerSlide(script);
 		SopremoPlan plan = null;
 		try {
 			final QueryParser queryParser = new QueryParser().withInputDirectory(new File("/"));
+			initParser(queryParser);
 			plan = queryParser.tryParse(script);
 		} catch (final QueryParserException e) {
 			final AssertionError error = new AssertionError(String.format("could not parse script: %s",
@@ -46,6 +47,10 @@ public class MeteorParseTest {
 
 		// System.out.println(plan);
 		return plan;
+	}
+
+	protected void initParser(QueryParser queryParser) {
+		
 	}
 
 	public static void assertPlanEquals(final SopremoPlan expectedPlan, final SopremoPlan actualPlan) {
