@@ -46,7 +46,6 @@ public class Graph<Node> implements Iterable<Graph<Node>.NodePath> {
 		this.navigator = this.modifier = modifier;
 	}
 
-	@SafeVarargs
 	public Graph(final ConnectionModifier<Node> modifier, final Node... startNodes) {
 		this(modifier, Arrays.asList(startNodes));
 	}

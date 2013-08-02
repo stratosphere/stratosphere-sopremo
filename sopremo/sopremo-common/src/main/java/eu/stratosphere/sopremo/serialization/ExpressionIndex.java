@@ -47,7 +47,7 @@ public class ExpressionIndex extends AbstractSopremoType {
 
 	private final Int2ObjectMap<ExpressionIndex> arrayAccesses = new Int2ObjectOpenHashMap<ExpressionIndex>();
 
-	private final static ExpressionIndex EMPTY_INDEX = new ExpressionIndex(null, -1);
+	private final static ExpressionIndex EMPTY_INDEX = null;
 
 	private final int keyIndex;
 

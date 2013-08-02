@@ -148,7 +148,8 @@ public class PackageInfo extends AbstractSopremoType implements ISopremoType, Pa
 	}
 
 	public void importFromJar(File jarFileHandle) throws IOException {
-		try(final JarFile jarFile = new JarFile(jarFileHandle)) {
+		final JarFile jarFile = new JarFile(jarFileHandle);
+		try {
 			Enumeration<JarEntry> entries = jarFile.entries();
 			while (entries.hasMoreElements()) {
 				JarEntry jarEntry = entries.nextElement();
@@ -158,6 +159,8 @@ public class PackageInfo extends AbstractSopremoType implements ISopremoType, Pa
 					this.importClass(className);
 				}
 			}
+		} finally {
+			jarFile.close();
 		}
 	}
 
@@ -217,14 +220,15 @@ public class PackageInfo extends AbstractSopremoType implements ISopremoType, Pa
 		}
 	}
 
-	private File getJarFileInParentDirectory(File packagePath, String packageName) {
-		String fileName = packagePath.getParentFile().getAbsolutePath()+"/"+packagePath.getParentFile().list(new FilenameFilter() {
+	private File getJarFileInParentDirectory(File packagePath, final String packageName) {
+		final File[] jarsInParentDir = packagePath.getParentFile().listFiles(new FilenameFilter() {
 			@Override
 			public boolean accept(File dir, String name) {
 				return new File(dir, name).isFile() &&
-				           name.toLowerCase().endsWith( ".jar" )&&name.contains(PackageManager.getJarFileNameForPackageName(PackageInfo.this.packageName));
+					name.toLowerCase().endsWith(".jar") &&
+					name.contains(PackageManager.getJarFileNameForPackageName(packageName));
 			}
-		})[0];
-		return new File(fileName);
+		});
+		return jarsInParentDir.length == 0 ? null : jarsInParentDir[0];
 	}
 }

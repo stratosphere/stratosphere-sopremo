@@ -58,7 +58,6 @@ public class ArrayNode<T extends IJsonNode> extends AbstractArrayNode<T> {
 	 * @param nodes
 	 *            the nodes that should be added to this ArrayNode
 	 */
-	@SafeVarargs
 	public ArrayNode(final T... nodes) {
 		this();
 		for (final T node : nodes) {

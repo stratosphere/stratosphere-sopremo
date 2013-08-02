@@ -47,6 +47,7 @@ import eu.stratosphere.sopremo.type.IObjectNode;
 import eu.stratosphere.sopremo.type.MissingNode;
 import eu.stratosphere.sopremo.type.ObjectNode;
 import eu.stratosphere.sopremo.type.ReusingSerializer;
+import eu.stratosphere.sopremo.type.TextNode;
 
 /**
  * @author Arvid Heise
@@ -291,9 +292,13 @@ public final class SopremoRecord extends AbstractSopremoType implements ISopremo
 			SopremoRecord.this.output.writeInt(fieldNames.size());
 			for (String fieldName : fieldNames) {
 				SopremoRecord.this.output.writeString(fieldName);
-				ExpressionIndex subIndex = expressionIndex.subIndex(fieldName);
-				if (subIndex != null && subIndex.getExpression() != null)
-					SopremoRecord.this.offsets[subIndex.getKeyIndex()] = position();
+				final ExpressionIndex subIndex;
+				if (expressionIndex != null) {
+					subIndex = expressionIndex.subIndex(fieldName);
+					if (subIndex != null && subIndex.getExpression() != null)
+						SopremoRecord.this.offsets[subIndex.getKeyIndex()] = position();
+				} else
+					subIndex = null;
 				writeRecursivelyToBuffer(node.get(fieldName), subIndex);
 			}
 		}
@@ -356,14 +361,22 @@ public final class SopremoRecord extends AbstractSopremoType implements ISopremo
 			final int size = node.size();
 			SopremoRecord.this.output.writeInt(size);
 			for (int index = 0; index < size; index++) {
-				final ExpressionIndex subIndex = expressionIndex.get(index);
-				if (subIndex != null && subIndex.getExpression() != null)
-					SopremoRecord.this.offsets[subIndex.getKeyIndex()] = position();
-				final ExpressionIndex subIndex2 = expressionIndex.get(index - size);
-				if (subIndex2 != null && subIndex2.getExpression() != null)
-					SopremoRecord.this.offsets[subIndex2.getKeyIndex()] = position();
+				final ExpressionIndex subIndex;
+				if (expressionIndex != null) {
+					subIndex = getSubIndex(expressionIndex, size, index);
+					if (subIndex != null && subIndex.getExpression() != null)
+						SopremoRecord.this.offsets[subIndex.getKeyIndex()] = position();
+				} else
+					subIndex = null;
 				writeRecursivelyToBuffer(node.get(index), subIndex);
 			}
+		}
+
+		private ExpressionIndex getSubIndex(ExpressionIndex expressionIndex, final int size, int index) {
+			final ExpressionIndex subIndex = expressionIndex.get(index);
+			if (subIndex != null)
+				return subIndex;
+			return expressionIndex.get(index - size);
 		}
 	}
 
@@ -396,7 +409,7 @@ public final class SopremoRecord extends AbstractSopremoType implements ISopremo
 			return serializer.read(SopremoRecord.this.kryo, SopremoRecord.this.input, registration.getType());
 		}
 	}
-
+	
 	/*
 	 * (non-Javadoc)
 	 * @see eu.stratosphere.nephele.types.Record#read(java.io.DataInput)
@@ -451,7 +464,7 @@ public final class SopremoRecord extends AbstractSopremoType implements ISopremo
 	public IJsonNode getKey(EvaluationExpression expression, IJsonNode target) {
 		if (this.node == null) {
 			int offset = getKeyOffset(this.layout.getKeyIndex(expression));
-			if(offset < 0)
+			if (offset < 0)
 				return MissingNode.getInstance();
 			return getValueAtOffset(offset, target);
 		}
@@ -461,7 +474,7 @@ public final class SopremoRecord extends AbstractSopremoType implements ISopremo
 	public IJsonNode getKey(EvaluationExpression expression, NodeCache nodeCache) {
 		if (this.node == null) {
 			int offset = getKeyOffset(this.layout.getKeyIndex(expression));
-			if(offset == MISSING)
+			if (offset == MISSING)
 				return MissingNode.getInstance();
 			return getValueAtOffset(offset, nodeCache);
 		}
@@ -471,7 +484,7 @@ public final class SopremoRecord extends AbstractSopremoType implements ISopremo
 	public IJsonNode getKey(int expressionIndex, IJsonNode target) {
 		if (this.node == null) {
 			int offset = getKeyOffset(expressionIndex);
-			if(offset == MISSING)
+			if (offset == MISSING)
 				return MissingNode.getInstance();
 			return getValueAtOffset(offset, target);
 		}
@@ -481,7 +494,7 @@ public final class SopremoRecord extends AbstractSopremoType implements ISopremo
 	public IJsonNode getKey(int expressionIndex, NodeCache nodeCache) {
 		if (this.node == null) {
 			int offset = getKeyOffset(expressionIndex);
-			if(offset == MISSING)
+			if (offset == MISSING)
 				return MissingNode.getInstance();
 			return getValueAtOffset(offset, nodeCache);
 		}
@@ -489,20 +502,20 @@ public final class SopremoRecord extends AbstractSopremoType implements ISopremo
 	}
 
 	public int getKeyOffset(int expressionIndex) {
-		if(expressionIndex == SopremoRecordLayout.VALUE_INDEX)
+		if (expressionIndex == SopremoRecordLayout.VALUE_INDEX)
 			return 0;
 		return this.offsets[expressionIndex];
 	}
 
 	public IJsonNode getValueAtOffset(int offset, IJsonNode target) {
-		if(offset == 0)
+		if (offset == 0)
 			return getNode();
 		this.input.setBuffer(this.binaryRepresentation.elements(), offset, this.binaryRepresentation.size());
 		return readRecursively(target);
 	}
 
 	public IJsonNode getValueAtOffset(int offset, NodeCache nodeCache) {
-		if(offset == 0)
+		if (offset == 0)
 			return getNode();
 		this.input.setBuffer(this.binaryRepresentation.elements(), offset, this.binaryRepresentation.size());
 		return readRecursively(nodeCache);
