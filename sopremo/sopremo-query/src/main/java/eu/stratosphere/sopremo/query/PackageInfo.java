@@ -15,6 +15,7 @@
 package eu.stratosphere.sopremo.query;
 
 import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.lang.reflect.Modifier;
 import java.util.Enumeration;
@@ -146,8 +147,8 @@ public class PackageInfo extends AbstractSopremoType implements ISopremoType, Pa
 			((ConstantRegistryCallback) ReflectUtil.newInstance(clazz)).registerConstants(this.getConstantRegistry());
 	}
 
-	public void importFromJar() throws IOException {
-		try(final JarFile jarFile = new JarFile(this.packagePath)) {
+	public void importFromJar(File jarFileHandle) throws IOException {
+		try(final JarFile jarFile = new JarFile(jarFileHandle)) {
 			Enumeration<JarEntry> entries = jarFile.entries();
 			while (entries.hasMoreElements()) {
 				JarEntry jarEntry = entries.nextElement();
@@ -198,14 +199,32 @@ public class PackageInfo extends AbstractSopremoType implements ISopremoType, Pa
 	}
 
 	/**
-	 * @param packagePath2
+	 * @param packageName
+	 * @param packagePath
 	 */
-	public void importFrom(File packagePath) throws IOException {
+	public void importFrom(File packagePath, String packageName) throws IOException {
 		this.packagePath = packagePath.getAbsoluteFile();
 		if (packagePath.getName().endsWith(".jar"))
-			this.importFromJar();
-		else
-			// should only happen while debugging
-			this.importFromProject();
+			this.importFromJar(this.packagePath);
+		// FIXME hack for testing in eclipse
+		else {
+			File jarFileInParentDirectory = getJarFileInParentDirectory(packagePath, packageName);
+			if (jarFileInParentDirectory.exists()) {
+				this.packagePath = jarFileInParentDirectory;
+				this.importFromJar(jarFileInParentDirectory);
+			} else
+				throw new IllegalStateException("Cannot import non-jar " + packagePath);
+		}
+	}
+
+	private File getJarFileInParentDirectory(File packagePath, String packageName) {
+		String fileName = packagePath.getParentFile().getAbsolutePath()+"/"+packagePath.getParentFile().list(new FilenameFilter() {
+			@Override
+			public boolean accept(File dir, String name) {
+				return new File(dir, name).isFile() &&
+				           name.toLowerCase().endsWith( ".jar" )&&name.contains(PackageManager.getJarFileNameForPackageName(PackageInfo.this.packageName));
+			}
+		})[0];
+		return new File(fileName);
 	}
 }
