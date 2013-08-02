@@ -55,6 +55,8 @@ constructSopremoClassPath() {
 			add=1
 		elif [[ "$jarfile" =~ 'sopremo-server' ]]; then
 			add=1
+		elif [[ "$jarfile" =~ 'stratosphere-util' ]]; then
+			add=1
 		elif [[ "$jarfile" =~ 'commons-codec' ]]; then
 			add=1
 		elif [[ "$jarfile" =~ 'commons-httpclient' ]]; then
