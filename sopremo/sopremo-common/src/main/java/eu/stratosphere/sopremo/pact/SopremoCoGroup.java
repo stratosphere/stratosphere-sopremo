@@ -7,6 +7,6 @@ import eu.stratosphere.sopremo.type.IJsonNode;
  * standard input of the CoGroupStub to a more manageable representation (both inputs are converted to an
  * {@link eu.stratosphere.sopremo.type.IStreamNode}).
  */
-public abstract class SopremoCoGroup extends TypedSopremoCoGroup<IJsonNode, IJsonNode> {
+public abstract class SopremoCoGroup extends GenericSopremoCoGroup<IJsonNode, IJsonNode, IJsonNode> {
 
 }

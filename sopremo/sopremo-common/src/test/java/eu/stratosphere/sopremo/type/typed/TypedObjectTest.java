@@ -254,11 +254,11 @@ public class TypedObjectTest {
 	}
 }
 
-interface EmptyInterface1 extends TypedInterface {
+interface EmptyInterface1 extends ITypedObjectNode {
 
 }
 
-interface EmptyInterface2 extends TypedInterface {
+interface EmptyInterface2 extends ITypedObjectNode {
 
 }
 
@@ -266,7 +266,7 @@ interface EmptyInterfaceNotExtendingTypedInterface {
 
 }
 
-interface EmptyInterface3 extends TypedInterface {
+interface EmptyInterface3 extends ITypedObjectNode {
 
 }
 
@@ -274,7 +274,7 @@ interface EmptyInterface4 extends EmptyInterface2, EmptyInterface3 {
 
 }
 
-interface PersonInterface extends TypedInterface {
+interface PersonInterface extends ITypedObjectNode {
 	public TextNode getName();
 
 	public void setName(TextNode aNewName);
@@ -298,7 +298,7 @@ interface PersonWithAgeAndWeightAndIncomeInterface extends PersonWithAgeAndWeigh
 	public void setIncome(INumericNode anIncome);
 }
 
-interface SomeThingInterface extends TypedInterface {
+interface SomeThingInterface extends ITypedObjectNode {
 	public TextNode getName();
 
 	public void setName(TextNode aNewName);
@@ -312,19 +312,19 @@ interface SomeThingInterface extends TypedInterface {
 	public void setCool(BooleanNode coolness);
 }
 
-interface TypedObjectWithJavaTypesProperties extends TypedInterface {
+interface TypedObjectWithJavaTypesProperties extends ITypedObjectNode {
 	public String getLabel();
 
 	public void setLabel(String aNewName);
 }
 
-interface MyInterfaceWithTypedObjectProperty extends TypedInterface {
+interface MyInterfaceWithTypedObjectProperty extends ITypedObjectNode {
 	public PersonWithAgeAndWeightInterface getPerson();
 
 	public void setPerson(PersonWithAgeAndWeightInterface aPerson);
 }
 
-interface MyInterfaceWithCyclicTypedObjectProperty extends TypedInterface {
+interface MyInterfaceWithCyclicTypedObjectProperty extends ITypedObjectNode {
 	public MyInterfaceWithCyclicTypedObjectProperty getCyclicProperty();
 
 	public void setCyclicProperty(MyInterfaceWithCyclicTypedObjectProperty anInner);
@@ -351,7 +351,7 @@ interface InterfaceImplementingTwoTypedInterfacesAndAnotherNoTypedObjectInterfac
 
 }
 
-interface InterfaceWithATypedObjectProperty extends TypedInterface {
+interface InterfaceWithATypedObjectProperty extends ITypedObjectNode {
 	public SomeThingInterface getIt();
 
 	public void setIt(SomeThingInterface aTypedObject);
@@ -361,11 +361,11 @@ interface InterfaceWithATypedObjectProperty extends TypedInterface {
 	public void setNumber(INumericNode aNumericNode);
 }
 
-interface ATypedObject extends TypedInterface {
+interface ATypedObject extends ITypedObjectNode {
 
 }
 
-interface Document extends TypedInterface {
+interface Document extends ITypedObjectNode {
 	public TextNode getText();
 
 	public void setText(TextNode aText);
@@ -375,7 +375,7 @@ interface Document extends TypedInterface {
 	public void setAnnotations(ArrayNode<Annotation> anAnnotationsArray);
 }
 
-interface Annotation extends TypedInterface {
+interface Annotation extends ITypedObjectNode {
 	public TextNode getText();
 
 	public void setText(TextNode aText);

@@ -11,7 +11,7 @@ import eu.stratosphere.sopremo.type.IJsonNode;
 
 /**
  * This class uses the ASM framework to build instances of {@link TypedObjectNode}s that implement a certain interface (
- * extending {@link TypedInterface}), specified by the user. The main idea is to create
+ * extending {@link ITypedObjectNode}), specified by the user. The main idea is to create
  * the getters and setters given in the interface which delegate the data to and
  * from the underlying backingObject of a {@link TypedObject}. These methods are
  * generated at JVM byte code level.
@@ -69,7 +69,7 @@ public class ASMClassBuilder implements Opcodes {
 	}
 
 	private String getPropertyTypeName(PropertyDescriptor prop) {
-		if (!(IJsonNode.class.isAssignableFrom(prop.getPropertyType()) || TypedInterface.class.isAssignableFrom(prop
+		if (!(IJsonNode.class.isAssignableFrom(prop.getPropertyType()) || ITypedObjectNode.class.isAssignableFrom(prop
 			.getPropertyType())))
 			throw new IllegalArgumentException(
 				"Only subtypes of IJsonNode are allowed as property types for typed objects so far. "

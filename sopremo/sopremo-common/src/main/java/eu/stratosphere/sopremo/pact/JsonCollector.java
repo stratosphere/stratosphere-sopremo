@@ -18,7 +18,7 @@ public class JsonCollector {
 	private EvaluationContext context;
 
 	private EvaluationExpression resultProjection = EvaluationExpression.VALUE;
-	
+
 	private final SopremoRecord sopremoRecord;
 
 	/**

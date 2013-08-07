@@ -96,17 +96,17 @@ public abstract class TypedObjectNode implements ITypedObjectNode {
 			return null;
 		else if (desiredTypeClass.isInstance(fromBackingObject))
 			return (T) fromBackingObject;
-		else if (TypedInterface.class.isAssignableFrom(desiredTypeClass) && desiredTypeClass.isInterface())
+		else if (ITypedObjectNode.class.isAssignableFrom(desiredTypeClass) && desiredTypeClass.isInterface())
 			return (T) this.tryToWrapObjectNodeIntoTypedObject(fromBackingObject,
-				(Class<TypedInterface>) desiredTypeClass);
+				(Class<ITypedObjectNode>) desiredTypeClass);
 		else
 			throw new IllegalArgumentException("The data object in the backing object was not of the desired type.");
 	}
 
-	private <T extends TypedInterface> T tryToWrapObjectNodeIntoTypedObject(IJsonNode anObjectfromBackingObject,
+	private <T extends ITypedObjectNode> T tryToWrapObjectNodeIntoTypedObject(IJsonNode anObjectfromBackingObject,
 			Class<T> aDesiredClass) {
 		T desiredTypeObject = TypedObjectNodeFactory.getInstance().getTypedObjectForInterface(aDesiredClass);
-		ITypedObjectNode desiredTypeObjectNode = (ITypedObjectNode) desiredTypeObject;
+		TypedObjectNode desiredTypeObjectNode = (TypedObjectNode) desiredTypeObject;
 		desiredTypeObjectNode.setBackingNode((IObjectNode) anObjectfromBackingObject);
 		return desiredTypeObject;
 	}
@@ -131,12 +131,10 @@ public abstract class TypedObjectNode implements ITypedObjectNode {
 		return this.backingObject.size();
 	}
 
-	@Override
 	public IObjectNode getBackingNode() {
 		return this.backingObject;
 	}
 
-	@Override
 	public void setBackingNode(IObjectNode backingNode) {
 		this.backingObject = backingNode;
 	}

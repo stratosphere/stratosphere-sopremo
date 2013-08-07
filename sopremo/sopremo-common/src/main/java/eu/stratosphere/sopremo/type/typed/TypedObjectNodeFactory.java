@@ -11,9 +11,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import eu.stratosphere.util.reflect.ReflectUtil;
+
 /**
  * This class implements a factory for {@link TypedObjectNode}s for a user given
- * interface that extends {@link TypedInterface}. It is implemented as a
+ * interface that extends {@link ITypedObjectNode}. It is implemented as a
  * singleton and already created class instances of {@link TypedObjectNode}s are
  * cached.
  * 
@@ -23,10 +25,10 @@ import java.util.Set;
 public class TypedObjectNodeFactory {
 	private static TypedObjectNodeFactory instance = null;
 
-	Map<Class<? extends TypedInterface>, Class<? extends TypedInterface>> typesMap;
+	Map<Class<? extends ITypedObjectNode>, Class<? extends ITypedObjectNode>> typesMap;
 
 	private TypedObjectNodeFactory() {
-		this.typesMap = new IdentityHashMap<Class<? extends TypedInterface>, Class<? extends TypedInterface>>();
+		this.typesMap = new IdentityHashMap<Class<? extends ITypedObjectNode>, Class<? extends ITypedObjectNode>>();
 	}
 
 	public static TypedObjectNodeFactory getInstance() {
@@ -36,29 +38,15 @@ public class TypedObjectNodeFactory {
 	}
 
 	@SuppressWarnings("unchecked")
-	public <T extends TypedInterface> T getTypedObjectForInterface(Class<T> myInterface) {
+	public <T extends ITypedObjectNode> T getTypedObjectForInterface(Class<T> myInterface) {
 		Class<T> classObject = (Class<T>) this.typesMap.get(myInterface);
 		if (classObject == null)
-			try {
-				classObject = this.createTypedObjectExtendingClassForInterface(myInterface);
-			} catch (IntrospectionException e) {
-				e.printStackTrace();
-				return null;
-			}
+			classObject = this.createTypedObjectExtendingClassForInterface(myInterface);
 
-		try {
-			return classObject.newInstance();
-		} catch (InstantiationException e) {
-			e.printStackTrace();
-		} catch (IllegalAccessException e) {
-			e.printStackTrace();
-		}
-		return null;
-
+		return ReflectUtil.newInstance(classObject);
 	}
 
-	private <T extends TypedInterface> Class<T> createTypedObjectExtendingClassForInterface(Class<T> myInterface)
-			throws IntrospectionException {
+	private <T extends ITypedObjectNode> Class<T> createTypedObjectExtendingClassForInterface(Class<T> myInterface) {
 		@SuppressWarnings("unchecked")
 		Class<T> classObject = (Class<T>) this.typesMap.get(myInterface);
 		if (classObject != null)
@@ -71,7 +59,7 @@ public class TypedObjectNodeFactory {
 		classBuilder.initializePublicClass(className.replace(".", "/"), superClass.getName().replace(".", "/"),
 			interfaceNames);
 
-		BeanInfo interfaceInfo = Introspector.getBeanInfo(myInterface);
+		BeanInfo interfaceInfo = getBeanInfo(myInterface);
 		PropertyDescriptor[] props = interfaceInfo.getPropertyDescriptors();
 
 		for (PropertyDescriptor prop : props)
@@ -89,20 +77,18 @@ public class TypedObjectNodeFactory {
 	 * @throws IntrospectionException
 	 */
 	@SuppressWarnings("unchecked")
-	private <T extends TypedInterface> Class<T> createNecessarySuperClassImplementations(Class<T> myInterface)
-			throws IntrospectionException {
+	private <T extends ITypedObjectNode> Class<T> createNecessarySuperClassImplementations(Class<T> myInterface) {
 		if (myInterface.getInterfaces().length > 1)
 			return this.createSuperClassForMultipleInheritingInterface(myInterface);
 		for (Class<?> extendedInterface : myInterface.getInterfaces())
-			if (extendedInterface == TypedInterface.class)
+			if (extendedInterface == ITypedObjectNode.class)
 				return (Class<T>) TypedObjectNode.class;
-			else if (TypedInterface.class.isAssignableFrom(extendedInterface))
+			else if (ITypedObjectNode.class.isAssignableFrom(extendedInterface))
 				return this.createTypedObjectExtendingClassForInterface((Class<T>) extendedInterface);
 		return null;
 	}
 
-	private <T extends TypedInterface> Class<T> createSuperClassForMultipleInheritingInterface(Class<T> myInterface)
-			throws IntrospectionException {
+	private <T extends ITypedObjectNode> Class<T> createSuperClassForMultipleInheritingInterface(Class<T> myInterface) {
 		Class<T> classObject;
 		List<Class<T>> allInterfacesInHierarchyToImplement = this.collectAllInterfacesToImplement(myInterface);
 		ASMClassBuilder classBuilder = new ASMClassBuilder();
@@ -113,9 +99,9 @@ public class TypedObjectNodeFactory {
 		for (Class<?> extendedInterface : myInterface.getInterfaces()) {
 			interfaceNames[i] = extendedInterface.getName().replace(".", "/");
 			i++;
-			if (!TypedInterface.class.isAssignableFrom(extendedInterface))
+			if (!ITypedObjectNode.class.isAssignableFrom(extendedInterface))
 				throw new IllegalArgumentException("Your interface extends an interface, which is no subtype of "
-					+ TypedInterface.class.getName() + ". Wrong interface is: " + extendedInterface);
+					+ ITypedObjectNode.class.getName() + ". Wrong interface is: " + extendedInterface);
 		}
 		classBuilder.initializePublicClass(className.replace(".", "/"),
 			TypedObjectNode.class.getName().replace(".", "/"), interfaceNames);
@@ -123,7 +109,7 @@ public class TypedObjectNodeFactory {
 		Set<String> uniqueProperties = new HashSet<String>();
 
 		for (Class<?> extendedInterface : allInterfacesInHierarchyToImplement) {
-			BeanInfo interfaceInfo = Introspector.getBeanInfo(extendedInterface);
+			BeanInfo interfaceInfo = getBeanInfo(extendedInterface);
 			PropertyDescriptor[] props = interfaceInfo.getPropertyDescriptors();
 			for (PropertyDescriptor prop : props)
 				if (!uniqueProperties.contains(prop.getName())) {
@@ -136,11 +122,19 @@ public class TypedObjectNodeFactory {
 		return classObject;
 	}
 
+	private BeanInfo getBeanInfo(Class<?> clazz) {
+		try {
+			return Introspector.getBeanInfo(clazz);
+		} catch (IntrospectionException e) {
+			throw new IllegalStateException("Cannot inspect class " + clazz, e);
+		}
+	}
+
 	@SuppressWarnings("unchecked")
-	private <T extends TypedInterface> List<Class<T>> collectAllInterfacesToImplement(Class<T> anInterface) {
+	private <T extends ITypedObjectNode> List<Class<T>> collectAllInterfacesToImplement(Class<T> anInterface) {
 		List<Class<T>> allInterfacesToImplement = new ArrayList<Class<T>>();
 		for (Class<T> superInterface : (Class<T>[]) anInterface.getInterfaces())
-			if (TypedInterface.class.isAssignableFrom(superInterface)) {
+			if (ITypedObjectNode.class.isAssignableFrom(superInterface)) {
 				allInterfacesToImplement.add(superInterface);
 				allInterfacesToImplement.addAll(this.collectAllInterfacesToImplement(superInterface));
 			}
@@ -149,7 +143,7 @@ public class TypedObjectNodeFactory {
 
 	// taken from http://asm.ow2.org/doc/faq.html#Q5
 	@SuppressWarnings("unchecked")
-	private <T extends TypedInterface> Class<T> loadClass(byte[] b, String className) {
+	private <T extends ITypedObjectNode> Class<T> loadClass(byte[] b, String className) {
 		// override classDefine (as it is protected) and define the class.
 		Class<T> clazz = null;
 		try {

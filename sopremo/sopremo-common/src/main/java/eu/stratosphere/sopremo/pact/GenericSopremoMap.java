@@ -13,7 +13,7 @@ import eu.stratosphere.sopremo.type.IJsonNode;
  * An abstract implementation of the {@link MapStub}. SopremoMap provides the functionality to convert the
  * standard input of the MapStub to a more manageable representation (the input is converted to an {@link IJsonNode}).
  */
-public abstract class TypedSopremoMap<T extends IJsonNode> extends AbstractStub implements
+public abstract class GenericSopremoMap<In extends IJsonNode, Out extends IJsonNode> extends AbstractStub implements
 		GenericMapper<SopremoRecord, SopremoRecord>, SopremoStub {
 	private EvaluationContext context;
 
@@ -26,7 +26,7 @@ public abstract class TypedSopremoMap<T extends IJsonNode> extends AbstractStub 
 		SopremoEnvironment.getInstance().setClassLoader(getClass().getClassLoader());
 		this.context = SopremoUtil.getEvaluationContext(parameters);
 		this.collector = new JsonCollector(SopremoUtil.getLayout(parameters));
-		SopremoUtil.configureWithTransferredState(this, TypedSopremoMap.class, parameters);
+		SopremoUtil.configureWithTransferredState(this, GenericSopremoMap.class, parameters);
 		SopremoEnvironment.getInstance().setEvaluationContext(this.getContext());
 	}
 
@@ -55,7 +55,7 @@ public abstract class TypedSopremoMap<T extends IJsonNode> extends AbstractStub 
 	@Override
 	public void map(final SopremoRecord record, final Collector<SopremoRecord> out) {
 		this.collector.configure(out, this.context);
-		final T input = (T) record.getNode();
+		final In input = (In) record.getNode();
 		if (SopremoUtil.LOG.isTraceEnabled())
 			SopremoUtil.LOG.trace(String.format("%s %s", this.getContext().getOperatorDescription(), input));
 		try {

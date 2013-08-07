@@ -19,7 +19,7 @@ import eu.stratosphere.sopremo.operator.ElementaryOperator;
 import eu.stratosphere.sopremo.operator.InputCardinality;
 import eu.stratosphere.sopremo.pact.JsonCollector;
 import eu.stratosphere.sopremo.pact.SopremoUtil;
-import eu.stratosphere.sopremo.pact.TypedSopremoReduce;
+import eu.stratosphere.sopremo.pact.GenericSopremoReduce;
 import eu.stratosphere.sopremo.type.CachingArrayNode;
 import eu.stratosphere.sopremo.type.IArrayNode;
 import eu.stratosphere.sopremo.type.IJsonNode;
@@ -39,7 +39,7 @@ public class AssembleArray extends ElementaryOperator<AssembleArray> {
 		this.setKeyExpressions(0, new ArrayAccess(2));
 	}
 
-	public static class Implementation extends TypedSopremoReduce<IArrayNode<?>> {
+	public static class Implementation extends GenericSopremoReduce<IArrayNode<?>> {
 		private CachingArrayNode<IJsonNode> assembledArray = new CachingArrayNode<IJsonNode>();
 
 		/*

@@ -19,7 +19,7 @@ import eu.stratosphere.sopremo.type.StreamNode;
  * standard input of the CoGroupStub to a more manageable representation (both inputs are converted to an
  * {@link IArrayNode}).
  */
-public abstract class TypedSopremoCoGroup<LeftType extends IJsonNode, RightType extends IJsonNode> extends AbstractStub
+public abstract class GenericSopremoCoGroup<LeftElem extends IJsonNode, RightElem extends IJsonNode, Out extends IJsonNode> extends AbstractStub
 		implements GenericCoGrouper<SopremoRecord, SopremoRecord, SopremoRecord>, SopremoStub {
 	private EvaluationContext context;
 
@@ -27,9 +27,9 @@ public abstract class TypedSopremoCoGroup<LeftType extends IJsonNode, RightType 
 
 	private RecordToJsonIterator cachedIterator1, cachedIterator2;
 
-	private final StreamNode<LeftType> leftArray = new StreamNode<LeftType>();
+	private final StreamNode<LeftElem> leftArray = new StreamNode<LeftElem>();
 
-	private final StreamNode<RightType> rightArray = new StreamNode<RightType>();
+	private final StreamNode<RightElem> rightArray = new StreamNode<RightElem>();
 
 	/**
 	 * This method must be overridden by CoGoup UDFs that want to make use of the combining feature
@@ -85,13 +85,13 @@ public abstract class TypedSopremoCoGroup<LeftType extends IJsonNode, RightType 
 
 		try {
 			if (SopremoUtil.DEBUG && SopremoUtil.LOG.isTraceEnabled()) {
-				ArrayNode<LeftType> leftArray = new ArrayNode<LeftType>(this.leftArray);
-				ArrayNode<RightType> rightArray = new ArrayNode<RightType>(this.rightArray);
+				ArrayNode<LeftElem> leftArray = new ArrayNode<LeftElem>(this.leftArray);
+				ArrayNode<RightElem> rightArray = new ArrayNode<RightElem>(this.rightArray);
 
 				SopremoUtil.LOG.trace(String.format("%s %s/%s", this.getContext().getOperatorDescription(), leftArray,
 					rightArray));
-				this.coGroup(new StreamNode<LeftType>(leftArray.iterator()),
-					new StreamNode<RightType>(rightArray.iterator()), this.collector);
+				this.coGroup(new StreamNode<LeftElem>(leftArray.iterator()),
+					new StreamNode<RightElem>(rightArray.iterator()), this.collector);
 			} else
 				this.coGroup(this.leftArray, this.rightArray, this.collector);
 		} catch (final RuntimeException e) {
@@ -115,10 +115,10 @@ public abstract class TypedSopremoCoGroup<LeftType extends IJsonNode, RightType 
 		this.collector = new JsonCollector(SopremoUtil.getLayout(parameters));
 		this.cachedIterator1 = new RecordToJsonIterator();
 		this.cachedIterator2 = new RecordToJsonIterator();
-		SopremoUtil.configureWithTransferredState(this, TypedSopremoCoGroup.class, parameters);
+		SopremoUtil.configureWithTransferredState(this, GenericSopremoCoGroup.class, parameters);
 		SopremoEnvironment.getInstance().setEvaluationContext(this.getContext());
-		this.leftArray.setNodeIterator((Iterator<LeftType>) this.cachedIterator1);
-		this.rightArray.setNodeIterator((Iterator<RightType>) this.cachedIterator2);
+		this.leftArray.setNodeIterator((Iterator<LeftElem>) this.cachedIterator1);
+		this.rightArray.setNodeIterator((Iterator<RightElem>) this.cachedIterator2);
 	}
 
 	/**
@@ -131,7 +131,7 @@ public abstract class TypedSopremoCoGroup<LeftType extends IJsonNode, RightType 
 	 * @param out
 	 *        a collector that collects all output pairs
 	 */
-	protected abstract void coGroup(IStreamNode<LeftType> values1, IStreamNode<RightType> values2, JsonCollector out);
+	protected abstract void coGroup(IStreamNode<LeftElem> values1, IStreamNode<RightElem> values2, JsonCollector out);
 
 	@Override
 	public final EvaluationContext getContext() {
