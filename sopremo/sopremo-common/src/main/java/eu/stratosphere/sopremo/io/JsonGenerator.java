@@ -10,6 +10,7 @@ import java.io.Writer;
 import java.util.IdentityHashMap;
 import java.util.Map;
 
+import eu.stratosphere.sopremo.type.IArrayNode;
 import eu.stratosphere.sopremo.type.IJsonNode;
 import eu.stratosphere.sopremo.type.IObjectNode;
 import eu.stratosphere.sopremo.type.IStreamNode;
@@ -246,6 +247,7 @@ public class JsonGenerator {
 			writerMap.put(TextNode.class, (JsonTypeWriter) TextNodeTypeWriter.Instance);
 			writerMap.put(IObjectNode.class, (JsonTypeWriter) ObjectNodeTypeWriter.Instance);
 			writerMap.put(IStreamNode.class, (JsonTypeWriter) ArrayNodeTypeWriter.Instance);
+			writerMap.put(IArrayNode.class, (JsonTypeWriter) ArrayNodeTypeWriter.Instance);
 		}
 
 		/**
