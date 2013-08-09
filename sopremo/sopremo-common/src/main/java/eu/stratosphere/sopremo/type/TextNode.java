@@ -155,6 +155,17 @@ public class TextNode extends AbstractJsonNode implements IPrimitiveNode,
 		return this.value.equals(other.value);
 	}
 
+	public boolean contentEquals(final CharSequence seq) {
+		int count = seq.length();
+		if (this.value.size() != count)
+			return false;
+
+		for (int index = 0; index < count; index++)
+			if (this.value.get(index) != seq.charAt(index))
+				return false;
+		return true;
+	}
+
 	@Override
 	public void clear() {
 		this.value.clear();
@@ -327,6 +338,10 @@ public class TextNode extends AbstractJsonNode implements IPrimitiveNode,
 			}
 
 		return -1;
+	}
+
+	public char[] toArray() {
+		return this.value.toCharArray();
 	}
 
 }

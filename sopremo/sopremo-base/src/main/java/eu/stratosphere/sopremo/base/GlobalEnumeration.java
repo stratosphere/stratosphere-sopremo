@@ -249,7 +249,7 @@ public class GlobalEnumeration extends ElementaryOperator<GlobalEnumeration> {
 		}
 
 		@Override
-		protected void map(final IJsonNode value, final JsonCollector out) {
+		protected void map(final IJsonNode value, final JsonCollector<IJsonNode> out) {
 			this.counter.setValue(this.counter.getLongValue() + 1);
 			final IJsonNode id = this.idGeneration.evaluate(this.params);
 			out.collect(this.enumerationExpression.set(value, id));

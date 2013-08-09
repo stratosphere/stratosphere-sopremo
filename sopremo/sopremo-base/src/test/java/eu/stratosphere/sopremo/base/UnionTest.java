@@ -6,8 +6,6 @@ import eu.stratosphere.sopremo.CoreFunctions;
 import eu.stratosphere.sopremo.testing.SopremoOperatorTestBase;
 import eu.stratosphere.sopremo.testing.SopremoTestPlan;
 
-//import eu.stratosphere.sopremo.SopremoTestPlan;
-
 public class UnionTest extends SopremoOperatorTestBase<Union> {
 	/*
 	 * (non-Javadoc)

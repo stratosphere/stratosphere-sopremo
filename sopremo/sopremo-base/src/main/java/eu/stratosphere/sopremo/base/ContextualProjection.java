@@ -41,7 +41,7 @@ public class ContextualProjection extends ElementaryOperator<ContextualProjectio
 		private PathSegmentExpression contextPath;
 
 		@Override
-		protected void cross(final IJsonNode value, final IJsonNode context, final JsonCollector out) {
+		protected void cross(final IJsonNode value, final IJsonNode context, final JsonCollector<IJsonNode> out) {
 			this.contextPath.set(value, context);
 			out.collect(value);
 		}

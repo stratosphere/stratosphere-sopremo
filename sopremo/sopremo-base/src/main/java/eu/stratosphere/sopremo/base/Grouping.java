@@ -175,7 +175,7 @@ public class Grouping extends CompositeOperator<Grouping> {
 			private final IArrayNode<IStreamNode<IJsonNode>> streams = new ArrayNode<IStreamNode<IJsonNode>>(2);
 
 			@Override
-			protected void coGroup(IStreamNode<IJsonNode> values1, IStreamNode<IJsonNode> values2, JsonCollector out) {
+			protected void coGroup(IStreamNode<IJsonNode> values1, IStreamNode<IJsonNode> values2, JsonCollector<IJsonNode> out) {
 				this.streams.set(0, values1);
 				this.streams.set(1, values2);
 				out.collect(this.streams);
@@ -216,14 +216,14 @@ public class Grouping extends CompositeOperator<Grouping> {
 		@Combinable
 		public static class CombinableImplementation extends SopremoReduce {
 			@Override
-			protected void reduce(final IStreamNode<IJsonNode> values, final JsonCollector out) {
+			protected void reduce(final IStreamNode<IJsonNode> values, final JsonCollector<IJsonNode> out) {
 				out.collect(values);
 			}
 		}
 
 		public static class Implementation extends SopremoReduce {
 			@Override
-			protected void reduce(final IStreamNode<IJsonNode> values, final JsonCollector out) {
+			protected void reduce(final IStreamNode<IJsonNode> values, final JsonCollector<IJsonNode> out) {
 				out.collect(values);
 			}
 		}

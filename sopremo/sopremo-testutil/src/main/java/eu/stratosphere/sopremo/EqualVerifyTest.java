@@ -17,6 +17,8 @@ package eu.stratosphere.sopremo;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.lang.reflect.Array;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
@@ -38,9 +40,9 @@ import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import com.google.common.collect.Iterables;
+import com.google.common.reflect.TypeToken;
 
 import eu.stratosphere.util.KryoUtil;
-import eu.stratosphere.util.reflect.BoundTypeUtil;
 
 /**
  * @author arv
@@ -67,6 +69,7 @@ public abstract class EqualVerifyTest<T> {
 		this.more = more;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Test
 	public void testKryoSerialization() {
 		for (Object original : Iterables.concat(Arrays.asList(this.first, this.second), this.more)) {
@@ -82,7 +85,7 @@ public abstract class EqualVerifyTest<T> {
 		final Output output = new Output(baos);
 		kryo.writeClassAndObject(output, original);
 		output.close();
-		
+
 		kryo.reset();
 		final ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
 		final Object deserialized = kryo.readClassAndObject(new Input(bais));
@@ -101,9 +104,9 @@ public abstract class EqualVerifyTest<T> {
 	@Before
 	public void initInstances() {
 		if (this.type == null) {
-			this.type =
-				(Class<T>) BoundTypeUtil.getBindingOfSuperclass(this.getClass(), EqualVerifyTest.class).getParameters()[0]
-					.getType();
+			final Type boundParamType =
+				((ParameterizedType) TypeToken.of(this.getClass()).getSupertype(EqualVerifyTest.class).getType()).getActualTypeArguments()[0];
+			this.type = (Class<T>) TypeToken.of(boundParamType).getRawType();
 			this.createInstances();
 		}
 	}
@@ -142,7 +145,8 @@ public abstract class EqualVerifyTest<T> {
 		}
 	}
 
-	public void shouldComplyEqualsContract(final T first, final T second, @SuppressWarnings("unchecked") final T... more) {
+	public void shouldComplyEqualsContract(final T first, final T second,
+			@SuppressWarnings("unchecked") final T... more) {
 		final EqualsVerifier<T> equalVerifier = EqualsVerifier.forExamples(first, second, more);
 		this.initVerifier(equalVerifier);
 		equalVerifier.verify();

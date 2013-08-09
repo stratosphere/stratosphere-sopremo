@@ -8,7 +8,7 @@ public class LeftOuterJoin extends TwoSourceJoinBase<LeftOuterJoin> {
 	public static class Implementation extends FullOuterJoin.Implementation {
 
 		@Override
-		protected void coGroup(IStreamNode<IJsonNode> values1, IStreamNode<IJsonNode> values2, JsonCollector out) {
+		protected void coGroup(IStreamNode<IJsonNode> values1, IStreamNode<IJsonNode> values2, JsonCollector<IJsonNode> out) {
 			if (values1.isEmpty())
 				// special case: no items from first source
 				return;

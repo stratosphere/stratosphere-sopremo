@@ -1,12 +1,15 @@
 package eu.stratosphere.sopremo.type;
 
-import org.junit.Assert;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.google.common.reflect.TypeToken;
+
 import eu.stratosphere.sopremo.EqualCloneTest;
-import eu.stratosphere.util.reflect.BoundTypeUtil;
 import eu.stratosphere.util.reflect.ReflectUtil;
 
 public abstract class JsonNodeTest<T extends IJsonNode> extends EqualCloneTest<T> {
@@ -18,10 +21,9 @@ public abstract class JsonNodeTest<T extends IJsonNode> extends EqualCloneTest<T
 	@Before
 	public void setUp() {
 		try {
-			this.node =
-				(T) ReflectUtil.newInstance(
-					BoundTypeUtil.getBindingOfSuperclass(this.getClass(), JsonNodeTest.class).getParameters()[0]
-						.getType());
+			final Type boundParamType =
+				((ParameterizedType) TypeToken.of(this.getClass()).getSupertype(JsonNodeTest.class).getType()).getActualTypeArguments()[0];
+			this.node = (T) ReflectUtil.newInstance(TypeToken.of(boundParamType).getRawType());
 		} catch (final Exception e) {
 			throw new AssertionError(e);
 		}

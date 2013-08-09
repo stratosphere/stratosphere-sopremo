@@ -38,7 +38,7 @@ public class ThetaJoin extends TwoSourceJoinBase<ThetaJoin> {
 		private BooleanExpression condition;
 
 		@Override
-		protected void cross(IJsonNode value1, IJsonNode value2, JsonCollector out) {
+		protected void cross(IJsonNode value1, IJsonNode value2, JsonCollector<IJsonNode> out) {
 			this.inputs.set(0, value1);
 			this.inputs.set(1, value2);
 			if (this.condition.evaluate(this.inputs) == BooleanNode.TRUE)

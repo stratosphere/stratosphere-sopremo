@@ -7,11 +7,12 @@ import eu.stratosphere.pact.generic.stub.GenericMatcher;
 import eu.stratosphere.sopremo.EvaluationContext;
 import eu.stratosphere.sopremo.SopremoEnvironment;
 import eu.stratosphere.sopremo.serialization.SopremoRecord;
+import eu.stratosphere.sopremo.serialization.SopremoRecordLayout;
 import eu.stratosphere.sopremo.type.IJsonNode;
 
 /**
- * An abstract implementation of the {@link MatchStub}. SopremoMatch provides the functionality to convert the
- * standard input of the MatchStub to a more manageable representation (both inputs are converted to an
+ * An abstract implementation of the {@link GenericMatcher}. SopremoMatch provides the functionality to convert the
+ * standard input of the GenericMatcher to a more manageable representation (both inputs are converted to a subclass of
  * {@link IJsonNode}).
  */
 public abstract class GenericSopremoMatch<Left extends IJsonNode, Right extends IJsonNode, Out extends IJsonNode>
@@ -19,7 +20,7 @@ public abstract class GenericSopremoMatch<Left extends IJsonNode, Right extends 
 		implements GenericMatcher<SopremoRecord, SopremoRecord, SopremoRecord>, SopremoStub {
 	private EvaluationContext context;
 
-	private JsonCollector collector;
+	private JsonCollector<Out> collector;
 
 	/*
 	 * (non-Javadoc)
@@ -31,9 +32,13 @@ public abstract class GenericSopremoMatch<Left extends IJsonNode, Right extends 
 		// not able to resolve classes coming from the Sopremo user jar file.
 		SopremoEnvironment.getInstance().setClassLoader(getClass().getClassLoader());
 		this.context = SopremoUtil.getEvaluationContext(parameters);
-		this.collector = new JsonCollector(SopremoUtil.getLayout(parameters));
+		this.collector = createCollector(SopremoUtil.getLayout(parameters));
 		SopremoUtil.configureWithTransferredState(this, GenericSopremoMatch.class, parameters);
 		SopremoEnvironment.getInstance().setEvaluationContext(this.getContext());
+	}
+
+	protected JsonCollector<Out> createCollector(final SopremoRecordLayout layout) {
+		return new JsonCollector<Out>(layout);
 	}
 
 	@Override
@@ -51,7 +56,7 @@ public abstract class GenericSopremoMatch<Left extends IJsonNode, Right extends 
 	 * @param out
 	 *        a collector that collects all output pairs
 	 */
-	protected abstract void match(Left value1, Right value2, JsonCollector out);
+	protected abstract void match(Left value1, Right value2, JsonCollector<Out> out);
 
 	/*
 	 * (non-Javadoc)

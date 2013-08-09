@@ -42,8 +42,8 @@ public interface IArrayNode<T extends IJsonNode> extends IStreamNode<T> {
 	public abstract IArrayNode<T> add(final T node);
 
 	/**
-	 * Adds the given {@link IJsonNode} at the specified <code>index</code> to the array. The node which was saved at
-	 * this index before and all nodes with a higher index get there index incremeted by 1.
+	 * Adds the given {@link IJsonNode} at the specified <code>index</code> to the array. All previous nodes at this or
+	 * a higher index are shifted towards the end.
 	 * 
 	 * @param index
 	 *        the index where the node should be added

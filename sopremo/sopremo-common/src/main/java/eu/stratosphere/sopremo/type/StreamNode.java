@@ -59,15 +59,16 @@ public class StreamNode<T extends IJsonNode> extends AbstractJsonNode implements
 		return (Class) IArrayNode.class;
 	}
 
-	public Iterator<T> getNodeIterator() {
+	public Iterator<? extends T> getNodeIterator() {
 		return this.nodeIterator;
 	}
 
-	public void setNodeIterator(Iterator<T> nodeIterator) {
+	@SuppressWarnings("unchecked")
+	public void setNodeIterator(Iterator<? extends T> nodeIterator) {
 		if (nodeIterator == null)
 			throw new NullPointerException("nodeIterator must not be null");
 
-		this.nodeIterator = nodeIterator;
+		this.nodeIterator = (Iterator<T>) nodeIterator;
 	}
 
 	/*

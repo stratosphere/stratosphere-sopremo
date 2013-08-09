@@ -73,7 +73,7 @@ public class ObjectSplit extends ElementaryOperator<ObjectSplit> {
 		private EvaluationExpression valueProjection;
 
 		@Override
-		protected void map(IJsonNode value, JsonCollector out) {
+		protected void map(IJsonNode value, JsonCollector<IJsonNode> out) {
 			final IJsonNode targetValue = this.objectPath.evaluate(value);
 			if (!(targetValue instanceof IObjectNode))
 				throw new EvaluationException("Cannot split non-object");

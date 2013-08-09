@@ -197,7 +197,7 @@ public class SopremoTestPlanTest extends EqualVerifyTest<SopremoTestPlan> {
 	public static class CartesianProduct extends ElementaryOperator<CartesianProduct> {
 		public static class Implementation extends SopremoCross {
 			@Override
-			protected void cross(final IJsonNode value1, final IJsonNode value2, final JsonCollector out) {
+			protected void cross(final IJsonNode value1, final IJsonNode value2, final JsonCollector<IJsonNode> out) {
 				out.collect(JsonUtil.asArray(value1, value2));
 			}
 		}
@@ -207,7 +207,7 @@ public class SopremoTestPlanTest extends EqualVerifyTest<SopremoTestPlan> {
 	public static class Identity extends ElementaryOperator<Identity> {
 		public static class Implementation extends SopremoMap {
 			@Override
-			protected void map(final IJsonNode value, final JsonCollector out) {
+			protected void map(final IJsonNode value, final JsonCollector<IJsonNode> out) {
 				out.collect(value);
 			}
 		}
@@ -273,7 +273,7 @@ public class SopremoTestPlanTest extends EqualVerifyTest<SopremoTestPlan> {
 			 * eu.stratosphere.sopremo.pact.JsonCollector)
 			 */
 			@Override
-			protected void map(final IJsonNode value, final JsonCollector out) {
+			protected void map(final IJsonNode value, final JsonCollector<IJsonNode> out) {
 				final Matcher matcher = WORD_PATTERN.matcher(((TextNode) ((IObjectNode) value).get("line")));
 				while (matcher.find())
 					out.collect(JsonUtil.createObjectNode("word", TextNode.valueOf(matcher.group())));
@@ -305,7 +305,7 @@ public class SopremoTestPlanTest extends EqualVerifyTest<SopremoTestPlan> {
 			 * eu.stratosphere.sopremo.pact.JsonCollector)
 			 */
 			@Override
-			protected void reduce(final IStreamNode<IJsonNode> values, final JsonCollector out) {
+			protected void reduce(final IStreamNode<IJsonNode> values, final JsonCollector<IJsonNode> out) {
 				final Iterator<IJsonNode> valueIterator = values.iterator();
 				final IObjectNode firstEntry = (IObjectNode) valueIterator.next();
 				int sum = this.getCount(firstEntry);

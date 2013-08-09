@@ -3,6 +3,7 @@ package eu.stratosphere.pact.common.plan;
 import java.util.List;
 
 import eu.stratosphere.pact.generic.contract.Contract;
+import eu.stratosphere.pact.generic.contract.ContractUtil;
 import eu.stratosphere.util.dag.ConnectionNavigator;
 
 /**

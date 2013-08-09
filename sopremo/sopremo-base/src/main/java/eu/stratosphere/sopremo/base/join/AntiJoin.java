@@ -26,7 +26,7 @@ public class AntiJoin extends TwoSourceJoinBase<AntiJoin> {
 		 * eu.stratosphere.sopremo.type.IArrayNode, eu.stratosphere.sopremo.pact.JsonCollector)
 		 */
 		@Override
-		protected void coGroup(IStreamNode<IJsonNode> values1, IStreamNode<IJsonNode> values2, JsonCollector out) {
+		protected void coGroup(IStreamNode<IJsonNode> values1, IStreamNode<IJsonNode> values2, JsonCollector<IJsonNode> out) {
 			if (values2.isEmpty())
 				for (final IJsonNode value : values1) {
 					this.result.set(0, value);

@@ -69,7 +69,7 @@ public class Selection extends ElementaryOperator<Selection> {
 		private BooleanExpression condition;
 
 		@Override
-		protected void map(final IJsonNode value, final JsonCollector out) {
+		protected void map(final IJsonNode value, final JsonCollector<IJsonNode> out) {
 			if (this.condition.evaluate(value) == BooleanNode.TRUE)
 				out.collect(value);
 		}

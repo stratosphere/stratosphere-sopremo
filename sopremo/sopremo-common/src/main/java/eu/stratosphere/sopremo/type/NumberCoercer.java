@@ -3,50 +3,48 @@ package eu.stratosphere.sopremo.type;
 import java.util.IdentityHashMap;
 import java.util.Map;
 
-import eu.stratosphere.sopremo.type.TypeCoercer.Coercer;
-
 public final class NumberCoercer {
 	/**
 	 * The default instance.
 	 */
 	public static final NumberCoercer INSTANCE = new NumberCoercer();
 
-	private final Map<Class<? extends INumericNode>, Coercer<? extends INumericNode, ? extends INumericNode>> coercers =
-		new IdentityHashMap<Class<? extends INumericNode>, Coercer<? extends INumericNode, ? extends INumericNode>>();
+	private final Map<Class<? extends INumericNode>, TypeMapper<? extends INumericNode, ? extends INumericNode>> coercers =
+		new IdentityHashMap<Class<? extends INumericNode>, TypeMapper<? extends INumericNode, ? extends INumericNode>>();
 
 	public NumberCoercer() {
-		this.coercers.put(IntNode.class, new Coercer<INumericNode, IntNode>(IntNode.class) {
+		this.coercers.put(IntNode.class, new TypeMapper<INumericNode, IntNode>(IntNode.class) {
 			@Override
-			public IntNode coerce(final INumericNode from, final IntNode target) {
+			public IntNode mapTo(final INumericNode from, final IntNode target) {
 				target.setValue(from.getIntValue());
 				return target;
 			}
 		});
-		this.coercers.put(LongNode.class, new Coercer<INumericNode, LongNode>(LongNode.class) {
+		this.coercers.put(LongNode.class, new TypeMapper<INumericNode, LongNode>(LongNode.class) {
 			@Override
-			public LongNode coerce(final INumericNode from, final LongNode target) {
+			public LongNode mapTo(final INumericNode from, final LongNode target) {
 				target.setValue(from.getLongValue());
 				return target;
 			}
 		});
-		this.coercers.put(DoubleNode.class, new Coercer<INumericNode, DoubleNode>(DoubleNode.class) {
+		this.coercers.put(DoubleNode.class, new TypeMapper<INumericNode, DoubleNode>(DoubleNode.class) {
 			@Override
-			public DoubleNode coerce(final INumericNode from, final DoubleNode target) {
+			public DoubleNode mapTo(final INumericNode from, final DoubleNode target) {
 				target.setValue(from.getDoubleValue());
 				return target;
 			}
 		});
-		this.coercers.put(DecimalNode.class, new Coercer<INumericNode, DecimalNode>(DecimalNode.class) {
+		this.coercers.put(DecimalNode.class, new TypeMapper<INumericNode, DecimalNode>(DecimalNode.class) {
 			@Override
-			public DecimalNode coerce(final INumericNode from, final DecimalNode target) {
+			public DecimalNode mapTo(final INumericNode from, final DecimalNode target) {
 				target.setValue(from.getDecimalValue());
 				return target;
 			}
 		});
-		this.coercers.put(BigIntegerNode.class, new Coercer<INumericNode, BigIntegerNode>(
+		this.coercers.put(BigIntegerNode.class, new TypeMapper<INumericNode, BigIntegerNode>(
 			BigIntegerNode.class) {
 			@Override
-			public BigIntegerNode coerce(final INumericNode from, final BigIntegerNode target) {
+			public BigIntegerNode mapTo(final INumericNode from, final BigIntegerNode target) {
 				target.setValue(from.getBigIntegerValue());
 				return target;
 			}
@@ -58,8 +56,8 @@ public final class NumberCoercer {
 			final Class<To> targetType) {
 		if (node.getClass() == targetType)
 			return (To) node;
-		final Coercer<From, To> coercer = (Coercer<From, To>) this.coercers.get(targetType);
-		return coercer.coerce(node, target);
+		final TypeMapper<From, To> coercer = (TypeMapper<From, To>) this.coercers.get(targetType);
+		return coercer.mapTo(node, target);
 	}
 
 	/**
@@ -67,7 +65,7 @@ public final class NumberCoercer {
 	 * 
 	 * @return the coercers
 	 */
-	Map<Class<? extends INumericNode>, Coercer<? extends INumericNode, ? extends INumericNode>> getCoercers() {
+	Map<Class<? extends INumericNode>, TypeMapper<? extends INumericNode, ? extends INumericNode>> getCoercers() {
 		return this.coercers;
 	}
 }

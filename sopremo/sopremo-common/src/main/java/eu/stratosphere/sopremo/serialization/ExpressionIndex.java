@@ -20,6 +20,7 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.util.Deque;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -34,6 +35,10 @@ import eu.stratosphere.sopremo.expressions.ArrayAccess;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
 import eu.stratosphere.sopremo.expressions.InputSelection;
 import eu.stratosphere.sopremo.expressions.ObjectAccess;
+import eu.stratosphere.sopremo.type.IJsonNode;
+import eu.stratosphere.sopremo.type.typed.ITypedObjectNode;
+import eu.stratosphere.sopremo.type.typed.TypedObjectNode;
+import eu.stratosphere.sopremo.type.typed.TypedObjectNodeFactory;
 
 /**
  * @author arv
@@ -151,7 +156,7 @@ public class ExpressionIndex extends AbstractSopremoType {
 			if (subIndex == EMPTY_INDEX)
 				this.arrayAccesses.put(index, subIndex = new ExpressionIndex(new ArrayAccess(index), keyIndex));
 			subIndex.add(expressionChain, expression, keyIndex);
-		} else if(currentExpression == EvaluationExpression.VALUE)
+		} else if (currentExpression == EvaluationExpression.VALUE)
 			add(expressionChain, currentExpression, keyIndex);
 	}
 

@@ -146,7 +146,7 @@ public abstract class AbstractArrayNode<T extends IJsonNode> extends AbstractJso
 	}
 
 	@SuppressWarnings("unchecked")
-	protected void setSize(final int len) {
+	public void setSize(final int len) {
 		for (int i = len, size = size(); i < size; i++)
 			this.set(i, (T) MissingNode.getInstance());
 	}

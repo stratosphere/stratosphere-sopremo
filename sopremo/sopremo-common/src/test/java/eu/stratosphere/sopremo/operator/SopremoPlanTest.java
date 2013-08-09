@@ -161,7 +161,7 @@ class TokenizeLine extends ElementaryOperator<TokenizeLine> {
 		 * eu.stratosphere.sopremo.pact.JsonCollector)
 		 */
 		@Override
-		protected void map(final IJsonNode value, final JsonCollector out) {
+		protected void map(final IJsonNode value, final JsonCollector<IJsonNode> out) {
 			final Matcher matcher = WORD_PATTERN.matcher(((TextNode) ((IObjectNode) value).get("line")));
 			while (matcher.find())
 				out.collect(JsonUtil.createObjectNode("word", TextNode.valueOf(matcher.group())));
@@ -193,7 +193,7 @@ class CountWords extends ElementaryOperator<CountWords> {
 		 * eu.stratosphere.sopremo.pact.JsonCollector)
 		 */
 		@Override
-		protected void reduce(final IStreamNode<IJsonNode> values, final JsonCollector out) {
+		protected void reduce(final IStreamNode<IJsonNode> values, final JsonCollector<IJsonNode> out) {
 			final Iterator<IJsonNode> valueIterator = values.iterator();
 			final IObjectNode firstEntry = (IObjectNode) valueIterator.next();
 			int sum = this.getCount(firstEntry);
@@ -215,7 +215,7 @@ class CountWords extends ElementaryOperator<CountWords> {
 class Identity extends ElementaryOperator<Identity> {
 	public static class Implementation extends SopremoMap {
 		@Override
-		protected void map(final IJsonNode value, final JsonCollector out) {
+		protected void map(final IJsonNode value, final JsonCollector<IJsonNode> out) {
 			out.collect(value);
 		}
 	}

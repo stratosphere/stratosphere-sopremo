@@ -29,6 +29,7 @@ import eu.stratosphere.sopremo.packages.DefaultRegistry;
 import eu.stratosphere.sopremo.packages.IRegistry;
 import eu.stratosphere.sopremo.packages.NameChooser;
 import eu.stratosphere.sopremo.type.IJsonNode;
+import eu.stratosphere.sopremo.type.JsonToJavaMapper;
 import eu.stratosphere.sopremo.type.MissingNode;
 import eu.stratosphere.util.reflect.ReflectUtil;
 
@@ -195,7 +196,7 @@ public class ConfObjectInfo<Obj extends ConfigurableSopremoType> extends Abstrac
 		if (EvaluationExpression.class.isAssignableFrom(propertyType))
 			return expression;
 		final IJsonNode constantExpressionResult = expression.evaluate(MissingNode.getInstance());
-		return JsonToJavaMapper.INSTANCE.treeToValue(constantExpressionResult, propertyType);
+		return JsonToJavaMapper.INSTANCE.map(constantExpressionResult, null, propertyType);
 	}
 
 	private void initProperties() {

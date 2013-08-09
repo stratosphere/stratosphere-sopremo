@@ -10,8 +10,8 @@ import java.util.List;
 
 import com.google.common.base.Predicates;
 
-import eu.stratosphere.pact.common.plan.ContractUtil;
 import eu.stratosphere.pact.common.plan.PactModule;
+import eu.stratosphere.pact.generic.contract.ContractUtil;
 import eu.stratosphere.sopremo.EvaluationContext;
 import eu.stratosphere.sopremo.base.join.AntiJoin;
 import eu.stratosphere.sopremo.base.join.EquiJoin;

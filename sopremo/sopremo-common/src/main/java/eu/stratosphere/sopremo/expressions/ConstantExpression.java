@@ -50,7 +50,7 @@ public class ConstantExpression extends EvaluationExpression {
 	 *        this Objects JsonNode representation should be represented by this ConstantExpression
 	 */
 	public ConstantExpression(final Object constant) {
-		this.constant = JsonUtil.OBJECT_MAPPER.valueToTree(constant);
+		this.constant = JsonUtil.OBJECT_MAPPER.map(constant);
 	}
 
 	/**

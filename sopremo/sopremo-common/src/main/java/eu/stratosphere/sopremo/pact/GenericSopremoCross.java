@@ -7,18 +7,20 @@ import eu.stratosphere.pact.generic.stub.GenericCrosser;
 import eu.stratosphere.sopremo.EvaluationContext;
 import eu.stratosphere.sopremo.SopremoEnvironment;
 import eu.stratosphere.sopremo.serialization.SopremoRecord;
+import eu.stratosphere.sopremo.serialization.SopremoRecordLayout;
 import eu.stratosphere.sopremo.type.IJsonNode;
 
 /**
- * An abstract implementation of the {@link CrossStub}. SopremoCross provides the functionality to convert the
- * standard input of the CrossStub to a more manageable representation (both inputs are converted to an
+ * An abstract implementation of the {@link GenericCrosser}. SopremoCross provides the functionality to convert the
+ * standard input of the GenericCrosser to a more manageable representation (both inputs are converted to a subclass of
  * {@link IJsonNode}).
  */
-public abstract class GenericSopremoCross<Left extends IJsonNode, Right extends IJsonNode, Out extends IJsonNode> extends AbstractStub
+public abstract class GenericSopremoCross<Left extends IJsonNode, Right extends IJsonNode, Out extends IJsonNode>
+		extends AbstractStub
 		implements GenericCrosser<SopremoRecord, SopremoRecord, SopremoRecord>, SopremoStub {
 	private EvaluationContext context;
 
-	private JsonCollector collector;
+	private JsonCollector<Out> collector;
 
 	/*
 	 * (non-Javadoc)
@@ -30,9 +32,13 @@ public abstract class GenericSopremoCross<Left extends IJsonNode, Right extends 
 		// not able to resolve classes coming from the Sopremo user jar file.
 		SopremoEnvironment.getInstance().setClassLoader(getClass().getClassLoader());
 		this.context = SopremoUtil.getEvaluationContext(parameters);
-		this.collector = new JsonCollector(SopremoUtil.getLayout(parameters));
+		this.collector = createCollector(SopremoUtil.getLayout(parameters));
 		SopremoUtil.configureWithTransferredState(this, GenericSopremoCross.class, parameters);
 		SopremoEnvironment.getInstance().setEvaluationContext(this.getContext());
+	}
+
+	protected JsonCollector<Out> createCollector(final SopremoRecordLayout layout) {
+		return new JsonCollector<Out>(layout);
 	}
 
 	/**
@@ -45,7 +51,7 @@ public abstract class GenericSopremoCross<Left extends IJsonNode, Right extends 
 	 * @param out
 	 *        a collector that collects all output pairs
 	 */
-	protected abstract void cross(IJsonNode value1, IJsonNode value2, JsonCollector out);
+	protected abstract void cross(IJsonNode value1, IJsonNode value2, JsonCollector<Out> out);
 
 	/*
 	 * (non-Javadoc)

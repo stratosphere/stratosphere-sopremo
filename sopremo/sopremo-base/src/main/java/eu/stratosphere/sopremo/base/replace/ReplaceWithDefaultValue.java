@@ -57,7 +57,7 @@ public class ReplaceWithDefaultValue extends ReplaceBase<ReplaceWithDefaultValue
 		 * eu.stratosphere.sopremo.type.IArrayNode, eu.stratosphere.sopremo.pact.JsonCollector)
 		 */
 		@Override
-		protected void coGroup(IStreamNode<IJsonNode> values1, IStreamNode<IJsonNode> values2, JsonCollector out) {
+		protected void coGroup(IStreamNode<IJsonNode> values1, IStreamNode<IJsonNode> values2, JsonCollector<IJsonNode> out) {
 			final Iterator<IJsonNode> valueIterator = values1.iterator();
 			if(!valueIterator.hasNext())
 				return;

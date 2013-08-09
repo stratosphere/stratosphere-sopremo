@@ -1,6 +1,6 @@
 /***********************************************************************************************************************
  *
- * Copyright (C) 2010-2013 by the Stratosphere project (http://stratosphere.eu)
+ * Copyright (C) 2010 by the Stratosphere project (http://stratosphere.eu)
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -12,36 +12,37 @@
  * specific language governing permissions and limitations under the License.
  *
  **********************************************************************************************************************/
-package eu.stratosphere.sopremo.base.replace;
+package eu.stratosphere.sopremo.base;
 
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
-import eu.stratosphere.sopremo.expressions.PathSegmentExpression;
+import eu.stratosphere.sopremo.operator.ElementaryOperator;
 import eu.stratosphere.sopremo.operator.InputCardinality;
+import eu.stratosphere.sopremo.operator.Name;
 import eu.stratosphere.sopremo.pact.JsonCollector;
-import eu.stratosphere.sopremo.pact.SopremoMatch;
+import eu.stratosphere.sopremo.pact.SopremoReduce;
 import eu.stratosphere.sopremo.type.IJsonNode;
+import eu.stratosphere.sopremo.type.IStreamNode;
 
-/**
- * Replaces values in the first source by values in the dictionary given in the second source.
- * 
- * @author Arvid Heise
- */
-@InputCardinality(min = 2, max = 2)
-public class StrictReplace extends ReplaceBase<StrictReplace> {
-	public static class Implementation extends SopremoMatch {
-		private PathSegmentExpression replaceExpression;
-
-		private EvaluationExpression dictionaryValueExtraction;
-
+@InputCardinality(min = 1, max = 1)
+@Name(adjective = "unique")
+public class Unique extends ElementaryOperator<Unique> {
+	/**
+	 * Initializes Unique.
+	 */
+	public Unique() {
+		setKeyExpressions(0, EvaluationExpression.VALUE);
+	}
+	
+	public static class Implementation extends SopremoReduce {
 		/*
 		 * (non-Javadoc)
-		 * @see eu.stratosphere.sopremo.pact.SopremoMatch#match(eu.stratosphere.sopremo.type.IJsonNode,
-		 * eu.stratosphere.sopremo.type.IJsonNode, eu.stratosphere.sopremo.pact.JsonCollector)
+		 * @see eu.stratosphere.sopremo.pact.GenericSopremoReduce#reduce(eu.stratosphere.sopremo.type.IStreamNode,
+		 * eu.stratosphere.sopremo.pact.JsonCollector)
 		 */
 		@Override
-		protected void match(IJsonNode value1, IJsonNode value2, JsonCollector<IJsonNode> out) {
-			out.collect(this.replaceExpression.set(value1,
-				this.dictionaryValueExtraction.evaluate(value2)));
+		protected void reduce(IStreamNode<IJsonNode> values, JsonCollector<IJsonNode> out) {
+			out.collect(values.iterator().next());
 		}
 	}
+
 }

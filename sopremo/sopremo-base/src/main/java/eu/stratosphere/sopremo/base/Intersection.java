@@ -1,41 +1,96 @@
 package eu.stratosphere.sopremo.base;
 
+import java.util.Iterator;
+
+import eu.stratosphere.sopremo.EvaluationContext;
+import eu.stratosphere.sopremo.expressions.EvaluationExpression;
+import eu.stratosphere.sopremo.operator.CompositeOperator;
 import eu.stratosphere.sopremo.operator.ElementaryOperator;
 import eu.stratosphere.sopremo.operator.InputCardinality;
-import eu.stratosphere.sopremo.operator.JsonStream;
 import eu.stratosphere.sopremo.operator.Name;
+import eu.stratosphere.sopremo.operator.OutputCardinality;
+import eu.stratosphere.sopremo.operator.SopremoModule;
 import eu.stratosphere.sopremo.pact.JsonCollector;
-import eu.stratosphere.sopremo.pact.SopremoCoGroup;
+import eu.stratosphere.sopremo.pact.SopremoReduce;
 import eu.stratosphere.sopremo.type.IJsonNode;
 import eu.stratosphere.sopremo.type.IStreamNode;
 
 /**
  * Calculates the set-based intersection of two or more input streams.<br>
- * A value <i>v</i> is emitted only iff <i>v</i> is contained at least once in every input stream.<br>
- * A value is emitted at most once.
+ * It is assumed that each value occurs only once in each input stream.<br>
+ * A value <i>v</i> is emitted only iff <i>v</i> is contained once in every input stream.
  * 
  * @author Arvid Heise
  */
 @Name(verb = "intersect")
-public class Intersection extends SetOperation<Intersection> {
+@InputCardinality(min = 1)
+@OutputCardinality(1)
+public class Intersection extends CompositeOperator<Intersection> {
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.base.SetOperation#createBinaryOperations(eu.stratosphere.sopremo.JsonStream,
-	 * eu.stratosphere.sopremo.JsonStream)
+	 * @see
+	 * eu.stratosphere.sopremo.operator.CompositeOperator#addImplementation(eu.stratosphere.sopremo.operator.SopremoModule
+	 * , eu.stratosphere.sopremo.EvaluationContext)
 	 */
 	@Override
-	protected ElementaryOperator<?> createBinaryOperations(JsonStream leftInput, JsonStream rightInput) {
-		return new TwoInputIntersection().withInputs(leftInput, rightInput);
+	public void addImplementation(SopremoModule module, EvaluationContext context) {
+		final UnionAll merged = new UnionAll().withInputs(module.getInputs());
+		module.embed(new FilterLess().withThreshold(module.getNumInputs()).withInputs(merged));
 	}
 
-	@InputCardinality(min = 2, max = 2)
-	public static class TwoInputIntersection extends ElementaryOperator<TwoInputIntersection> {
-		public static class Implementation extends SopremoCoGroup {
+	@InputCardinality(min = 1, max = 1)
+	public static class FilterLess extends ElementaryOperator<FilterLess> {
+		private int threshold;
+
+		/**
+		 * Initializes Unique.
+		 */
+		public FilterLess() {
+			setKeyExpressions(0, EvaluationExpression.VALUE);
+		}
+
+		public FilterLess withThreshold(int threshold) {
+			this.threshold = threshold;
+			return this;
+		}
+
+		/**
+		 * Returns the threshold.
+		 * 
+		 * @return the threshold
+		 */
+		public int getThreshold() {
+			return this.threshold;
+		}
+
+		/**
+		 * Sets the threshold to the specified value.
+		 * 
+		 * @param threshold
+		 *        the threshold to set
+		 */
+		public void setThreshold(int threshold) {
+			this.threshold = threshold;
+		}
+
+		public static class Implementation extends SopremoReduce {
+			private int threshold;
+
+			/*
+			 * (non-Javadoc)
+			 * @see eu.stratosphere.sopremo.pact.GenericSopremoReduce#reduce(eu.stratosphere.sopremo.type.IStreamNode,
+			 * eu.stratosphere.sopremo.pact.JsonCollector)
+			 */
 			@Override
-			protected void coGroup(final IStreamNode<IJsonNode> values1, final IStreamNode<IJsonNode> values2,
-					final JsonCollector out) {
-				if (!values1.isEmpty() && !values2.isEmpty())
-					out.collect(values1.iterator().next());
+			protected void reduce(IStreamNode<IJsonNode> values, JsonCollector<IJsonNode> out) {
+				final Iterator<IJsonNode> iterator = values.iterator();
+				final IJsonNode value = iterator.next();
+				int count = 1;
+				for (; iterator.hasNext(); count++)
+					iterator.next();
+
+				if (count == this.threshold)
+					out.collect(value);
 			}
 		}
 	}

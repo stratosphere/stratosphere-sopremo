@@ -53,6 +53,7 @@ public class ElementaryOperatorTest {
 		new OperatorWithUnknownStub().getContract(LAYOUT);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Test
 	public void getContractShouldReturnTheMatchingContractToTheFirstStub() {
 		final SopremoRecordLayout layout = SopremoRecordLayout.create(new ObjectAccess("someField"));
@@ -80,6 +81,7 @@ public class ElementaryOperatorTest {
 		assertEquals(null, new OperatorWithNoStubs().getStubClass());
 	}
 
+	@SuppressWarnings("unchecked")
 	@Test
 	public void getStubClassShouldReturnTheFirstStub() {
 		final Class<? extends eu.stratosphere.pact.common.stubs.Stub> stubClass = new OperatorWithTwoStubs()
@@ -104,7 +106,7 @@ public class ElementaryOperatorTest {
 			 * eu.stratosphere.sopremo.pact.JsonCollector)
 			 */
 			@Override
-			protected void map(final IJsonNode value, final JsonCollector out) {
+			protected void map(final IJsonNode value, final JsonCollector<IJsonNode> out) {
 			}
 		}
 	}
@@ -122,7 +124,7 @@ public class ElementaryOperatorTest {
 			 * eu.stratosphere.sopremo.pact.JsonCollector)
 			 */
 			@Override
-			protected void map(final IJsonNode value, final JsonCollector out) {
+			protected void map(final IJsonNode value, final JsonCollector<IJsonNode> out) {
 			}
 		}
 	}
@@ -143,7 +145,7 @@ public class ElementaryOperatorTest {
 			 * eu.stratosphere.sopremo.pact.JsonCollector)
 			 */
 			@Override
-			protected void reduce(final IStreamNode<IJsonNode> values, final JsonCollector out) {
+			protected void reduce(final IStreamNode<IJsonNode> values, final JsonCollector<IJsonNode> out) {
 			}
 		}
 
@@ -154,7 +156,7 @@ public class ElementaryOperatorTest {
 			 * eu.stratosphere.sopremo.pact.JsonCollector)
 			 */
 			@Override
-			protected void reduce(final IStreamNode<IJsonNode> values, final JsonCollector out) {
+			protected void reduce(final IStreamNode<IJsonNode> values, final JsonCollector<IJsonNode> out) {
 			}
 		}
 	}
