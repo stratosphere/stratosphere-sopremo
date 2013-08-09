@@ -167,13 +167,10 @@ public class PackageManager implements ParsingScope {
 	}
 
 	protected List<File> findPackageInClassPath(String packageName) {
-		String classpath = System.getProperty("surefire.test.class.path");
-		if(StringUtils.isBlank(classpath))
-			classpath = System.getProperty("java.class.path");
 		String sopremoPackage = getJarFileNameForPackageName(packageName);
 		// check in class paths
 		List<File> paths = new ArrayList<File>();
-		for (String path : classpath.split(File.pathSeparator)) {
+		for (String path : getClasspath().split(File.pathSeparator)) {
 			final int pathIndex = path.indexOf(sopremoPackage);
 			if (pathIndex == -1)
 				continue;
@@ -188,6 +185,14 @@ public class PackageManager implements ParsingScope {
 		}
 
 		return paths;
+	}
+
+	private String getClasspath() {
+		// FIXME hack for running integration tests wit maven
+		String classpath = System.getProperty("surefire.test.class.path");
+		if (StringUtils.isBlank(classpath))
+			classpath = System.getProperty("java.class.path");
+		return classpath;
 	}
 
 	protected File findPackageInJarPathLocations(String packageName) {
