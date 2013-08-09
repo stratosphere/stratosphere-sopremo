@@ -1,7 +1,7 @@
-package eu.stratosphere.sopremo;
+package eu.stratosphere.sopremo.testing;
 
-import static eu.stratosphere.sopremo.FunctionTest.assertAggregate;
-import static eu.stratosphere.sopremo.FunctionTest.assertReturn;
+import static eu.stratosphere.sopremo.testing.FunctionTest.assertAggregate;
+import static eu.stratosphere.sopremo.testing.FunctionTest.assertReturn;
 import static eu.stratosphere.sopremo.type.JsonUtil.createArrayNode;
 import static eu.stratosphere.sopremo.type.JsonUtil.createCompactArray;
 
@@ -11,6 +11,8 @@ import java.util.List;
 
 import org.junit.Test;
 
+import eu.stratosphere.sopremo.CoreFunctions;
+import eu.stratosphere.sopremo.EvaluationContext;
 import eu.stratosphere.sopremo.type.DoubleNode;
 import eu.stratosphere.sopremo.type.IArrayNode;
 import eu.stratosphere.sopremo.type.IntNode;

@@ -12,9 +12,9 @@
  * specific language governing permissions and limitations under the License.
  *
  **********************************************************************************************************************/
-package eu.stratosphere.sopremo;
+package eu.stratosphere.sopremo.testing;
 
-import static eu.stratosphere.sopremo.FunctionTest.assertReturn;
+import static eu.stratosphere.sopremo.testing.FunctionTest.assertReturn;
 
 import org.junit.Test;
 
@@ -22,6 +22,9 @@ import com.google.common.collect.ContiguousSet;
 import com.google.common.collect.DiscreteDomains;
 import com.google.common.collect.Ranges;
 
+import eu.stratosphere.sopremo.EvaluationContext;
+import eu.stratosphere.sopremo.MathFunctions;
+import eu.stratosphere.sopremo.SecondOrderFunctions;
 import eu.stratosphere.sopremo.expressions.ArithmeticExpression;
 import eu.stratosphere.sopremo.expressions.ArithmeticExpression.ArithmeticOperator;
 import eu.stratosphere.sopremo.expressions.ComparativeExpression;
