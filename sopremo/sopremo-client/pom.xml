@@ -4,7 +4,7 @@
   <parent>
     <artifactId>sopremo</artifactId>
     <groupId>eu.stratosphere</groupId>
-    <version>0.3</version>
+    <version>0.3-SNAPSHOT</version>
   </parent>
   <artifactId>sopremo-client</artifactId>
   <name>sopremo-client</name>

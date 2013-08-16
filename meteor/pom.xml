@@ -4,10 +4,9 @@
   <parent>
     <artifactId>hll</artifactId>
     <groupId>eu.stratosphere</groupId>
-    <version>0.3</version>
+    <version>0.3-SNAPSHOT</version>
   </parent>
   <artifactId>meteor</artifactId>
-  <version>0.3</version>
   <packaging>pom</packaging>
   <name>meteor</name>
   <inceptionYear>2011</inceptionYear>
