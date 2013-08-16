@@ -57,8 +57,8 @@ public class PackageManager implements ParsingScope {
 	}
 
 	public PackageManager() {
-		this.operatorRegistries.push(IORegistry);
-		this.fileFormatRegistries.push(DefaultFormatRegistry);
+		this.operatorRegistries.addLast(IORegistry);
+		this.fileFormatRegistries.addLast(DefaultFormatRegistry);
 	}
 
 	private StackedConstantRegistry constantRegistries = new StackedConstantRegistry();

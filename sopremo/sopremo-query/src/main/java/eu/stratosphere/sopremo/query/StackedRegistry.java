@@ -31,6 +31,10 @@ public class StackedRegistry<T, R extends IRegistry<T>> extends AbstractSopremoT
 		this.registryStack.push(e);
 	}
 
+	public void addLast(R e) {
+		this.registryStack.addLast(e);
+	}
+
 	public R pop() {
 		return this.registryStack.pop();
 	}

@@ -335,7 +335,8 @@ public abstract class AbstractQueryParser extends Parser implements ParsingScope
 			try {
 				path = new URI(pathName);
 			} catch (URISyntaxException e) {
-				final RecognitionExceptionWithUsageHint hint = new RecognitionExceptionWithUsageHint(name, "invalid path URI");
+				final RecognitionExceptionWithUsageHint hint =
+					new RecognitionExceptionWithUsageHint(name, "invalid path URI");
 				hint.initCause(e);
 				throw hint;
 			}
@@ -399,7 +400,7 @@ public abstract class AbstractQueryParser extends Parser implements ParsingScope
 	}
 
 	public ConfObjectInfo.ConfObjectIndexedPropertyInfo findInputPropertyRelunctantly(ConfObjectInfo<?> info,
-			Token firstWord) {
+			Token firstWord, boolean consume) {
 		String name = firstWord.getText();
 		ConfObjectInfo.ConfObjectIndexedPropertyInfo property;
 
@@ -421,8 +422,9 @@ public abstract class AbstractQueryParser extends Parser implements ParsingScope
 		// firstWord);
 
 		// consume additional tokens
-		for (; lookAhead > 1; lookAhead--)
-			this.input.consume();
+		if (consume)
+			for (; lookAhead > 0; lookAhead--)
+				this.input.consume();
 
 		return property;
 	}

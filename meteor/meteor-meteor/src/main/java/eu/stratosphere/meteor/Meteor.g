@@ -70,7 +70,10 @@ packageImport
      (',' additionalPackage=ID { getPackageManager().importPackage($additionalPackage.text); })* ->;
 
 assignment
-	:	target=VAR '=' source=operator { putVariable($target, new JsonStreamExpression($source.op)); } -> ;
+	:	targets+=VAR (',' targets+=VAR)* '=' source=operator 
+	{ for(int index = 0; index < $targets.size(); index++)
+	    putVariable((Token) $targets.get(index), new JsonStreamExpression($source.op.getOutput(index))); 
+	} -> ;
 
 functionDefinition
   : name=ID '=' func=inlineFunction { addFunction($name.text, $func.func); } -> ;
@@ -86,7 +89,7 @@ inlineFunction returns [ExpressionFunction func]
     for(int index = 0; index < params.size(); index++) 
       this.getConstantRegistry().put(params.get(index).getText(), new InputSelection(index)); 
   } 
-  '{' def=contextAwareExpression[null] '}'
+  '{' def=ternaryExpression '}'
   { 
     $func = new ExpressionFunction(params.size(), def.tree);
     removeConstantScope(); 
@@ -102,7 +105,7 @@ scope { EvaluationExpression context }
   : ternaryExpression;
 
 expression
-  : (operatorExpression)=> operatorExpression
+  : ('read' | 'write' | genericOperatorName)=> operatorExpression
   | ternaryExpression;
 
 ternaryExpression
@@ -241,7 +244,7 @@ fieldAssignment
     { $objectCreation::mappings.add(new ObjectCreation.FieldAssignment($ID.text, $expression.tree)); } -> )
   | VAR 
     ( '.' STAR { $objectCreation::mappings.add(new ObjectCreation.CopyFields(getInputSelection($VAR))); } ->
-      | '=' op=operator { setInnerOutput($VAR, $op.op) }?=>
+//      | '=' op=operator { setInnerOutput($VAR, $op.op) }?=>
       | p=contextAwarePathExpression[getVariable($VAR).toInputSelection($operator::result)]
       ( ':' e2=expression { $objectCreation::mappings.add(new ObjectCreation.TagMapping($p.tree, $e2.tree)); } ->
         | /* empty */ { $objectCreation::mappings.add(new ObjectCreation.FieldAssignment(getAssignmentName($p.tree), $p.tree)); } ->
@@ -275,7 +278,7 @@ streamIndexAccess
 arrayCreation
 @init { paraphrase.push("a json array"); }
 @after { paraphrase.pop(); }
-	:	 '[' elems+=expression (',' elems+=expression)* ','? ']' -> ^(EXPRESSION["ArrayCreation"] { $elems.toArray(new EvaluationExpression[$elems.size()]) });
+	:	 '[' (elems+=expression (',' elems+=expression)* ','?)? ']' -> ^(EXPRESSION["ArrayCreation"] { $elems == null ? new EvaluationExpression[0] : $elems.toArray(new EvaluationExpression[$elems.size()]) });
 
 /*
  * An operator is either read/write or generic operator.
@@ -334,6 +337,9 @@ writeOperator returns [Sink sink]
   this.sinks.add($sink);
 } ->;
 
+genericOperatorName returns [ConfObjectInfo<? extends Operator<?>> info]:
+(packageName=ID ':')? name=ID { ($info = findOperatorGreedily($packageName.text, $name)) != null  }?=> ->;
+
 // <name> flags* <input>* options*
 // flags - boolean options
 // inputs - variables starting with $
@@ -341,10 +347,10 @@ writeOperator returns [Sink sink]
 genericOperator returns [Operator<?> op]
 @init { 
   ConfObjectInfo<? extends Operator<?>> operatorInfo;
-}	:	(packageName=ID ':')? name=ID { (operatorInfo = findOperatorGreedily($packageName.text, $name)) != null }?=>
+}	:	name=genericOperatorName { (operatorInfo = $name.info) != null }?=>
 { $operator::result = $op = operatorInfo.newInstance(); } 
 operatorFlag[operatorInfo, $op]*
-(('[')=> arrayInput | (VAR)=> input[operatorInfo, $op] ((',')=> ',' input[operatorInfo, $op])*)
+((VAR)=> input[operatorInfo, $op] ((',')=> ',' input[operatorInfo, $op])*)
 confOption[operatorInfo, $op]* 
 ->; 
 	
@@ -354,7 +360,7 @@ confOption [ConfObjectInfo<?> info, ConfigurableSopremoType object]
 } : //{ findOperatorPropertyRelunctantly($genericOperator::operatorInfo, input.LT(1)) != null }?	
   name=ID
 	{ property = findPropertyRelunctantly(info, name); }
-  expr=contextAwareExpression[null] { property.setValue(object, $expr.tree); } ->;
+  expr=ternaryExpression { property.setValue(object, $expr.tree); } ->;
 
 operatorFlag [ConfObjectInfo<?> info, ConfigurableSopremoType object]
 @init {
@@ -367,7 +373,7 @@ operatorFlag [ConfObjectInfo<?> info, ConfigurableSopremoType object]
 
 input	[ConfObjectInfo<?> info, Operator<?> object]
 @init {
- ConfObjectInfo.ConfObjectIndexedPropertyInfo inputProperty;
+ ConfObjectInfo.ConfObjectIndexedPropertyInfo inputProperty = null;
 }	:	(name=VAR IN)? from=VAR
 { 
   int inputIndex = $operator::numInputs++;
@@ -377,19 +383,10 @@ input	[ConfObjectInfo<?> info, Operator<?> object]
   JsonStreamExpression inputExpression = new JsonStreamExpression(input.getStream(), inputIndex);
   putVariable(name != null ? name : from, inputExpression);
 } 
-({ (inputProperty = findInputPropertyRelunctantly(info, input.LT(1))) != null }?=> 
-  { this.input.consume(); } // consume the initial token
-  expr=contextAwareExpression[new InputSelection($operator::numInputs - 1)] { inputProperty.setValue(object, $operator::numInputs-1, $expr.tree); })?
+({ (findInputPropertyRelunctantly(info, input.LT(1), false) != null) }?=>
+  { inputProperty = findInputPropertyRelunctantly(info, input.LT(1), true); }
+  expr=ternaryExpression { inputProperty.setValue(object, $operator::numInputs-1, $expr.tree); })?
 -> ;
-
-arrayInput
-  : '[' names+=VAR (',' names+=VAR)? ']' 'in' from=VAR
-{ 
-  $operator::result.setInput(0, getVariable(from).getStream());
-  for(int index = 0; index < $names.size(); index++) {
-	  putVariable((Token) $names.get(index), new JsonStreamExpression(null, index)); 
-  }
-} -> ;
 
 /**
  * Lexer rules

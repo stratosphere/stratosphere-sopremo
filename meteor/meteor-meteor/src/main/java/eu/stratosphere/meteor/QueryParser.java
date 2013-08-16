@@ -33,9 +33,6 @@ import eu.stratosphere.sopremo.query.QueryParserException;
 import eu.stratosphere.util.StringUtil;
 
 public class QueryParser extends PlanCreator {
-
-	Deque<List<Operator<?>>> operatorInputs = new LinkedList<List<Operator<?>>>();
-
 	private File inputDirectory = new File(".");
 	
 	private PackageManager packageManager = new PackageManager();
