@@ -34,6 +34,7 @@ public class DefaultTypeRegistry extends AbstractSopremoType implements ITypeReg
 
 	/*
 	 * (non-Javadoc)
+	 * 
 	 * @see eu.stratosphere.sopremo.packages.IRegistry#get(java.lang.String)
 	 */
 	@Override
@@ -43,15 +44,19 @@ public class DefaultTypeRegistry extends AbstractSopremoType implements ITypeReg
 
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.packages.IRegistry#put(java.lang.String, java.lang.Object)
+	 * 
+	 * @see eu.stratosphere.sopremo.packages.IRegistry#put(java.lang.String,
+	 * java.lang.Object)
 	 */
 	@Override
 	public void put(String name, Class<? extends IJsonNode> element) {
 		this.elements.put(name, element);
 		this.typeList.add(element);
 	}
-	
-	/* (non-Javadoc)
+
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see eu.stratosphere.sopremo.packages.ITypeRegistry#put(java.lang.Class)
 	 */
 	@Override
@@ -61,6 +66,7 @@ public class DefaultTypeRegistry extends AbstractSopremoType implements ITypeReg
 
 	/*
 	 * (non-Javadoc)
+	 * 
 	 * @see eu.stratosphere.sopremo.packages.IRegistry#keySet()
 	 */
 	@Override
@@ -70,7 +76,9 @@ public class DefaultTypeRegistry extends AbstractSopremoType implements ITypeReg
 
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.ISopremoType#appendAsString(java.lang.Appendable)
+	 * 
+	 * @see
+	 * eu.stratosphere.sopremo.ISopremoType#appendAsString(java.lang.Appendable)
 	 */
 	@Override
 	public void appendAsString(Appendable appendable) throws IOException {
@@ -88,11 +96,43 @@ public class DefaultTypeRegistry extends AbstractSopremoType implements ITypeReg
 
 	/*
 	 * (non-Javadoc)
+	 * 
 	 * @see eu.stratosphere.sopremo.packages.ITypeRegistry#getTypes()
 	 */
 	@Override
 	public List<Class<? extends IJsonNode>> getTypes() {
 		return this.typeList;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((elements == null) ? 0 : elements.hashCode());
+		result = prime * result + ((typeList == null) ? 0 : typeList.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		DefaultTypeRegistry other = (DefaultTypeRegistry) obj;
+		if (elements == null) {
+			if (other.elements != null)
+				return false;
+		} else if (!elements.equals(other.elements))
+			return false;
+		if (typeList == null) {
+			if (other.typeList != null)
+				return false;
+		} else if (!typeList.equals(other.typeList))
+			return false;
+		return true;
 	}
 
 }

@@ -146,7 +146,7 @@ public class ElementarySopremoModule extends SopremoModule {
 		private final EvaluationContext context;
 
 		public PactAssembler(final EvaluationContext context) {
-			this.context = context.clone();
+			this.context = context;
 		}
 
 		public Collection<Contract> assemble(SopremoRecordLayout layout) {
