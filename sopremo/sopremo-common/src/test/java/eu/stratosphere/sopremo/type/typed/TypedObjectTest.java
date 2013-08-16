@@ -6,6 +6,7 @@ import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 import eu.stratosphere.sopremo.type.ArrayNode;
@@ -17,18 +18,19 @@ import eu.stratosphere.sopremo.type.ObjectNode;
 import eu.stratosphere.sopremo.type.TextNode;
 
 public class TypedObjectTest {
+	private TypedObjectNodeFactory factory = TypedObjectNodeFactory.getInstance();
 
 	@Test
 	public void testSimpleObjectCreationForEmptyInterface() {
 		EmptyInterface1 dummy;
-		dummy = TypedObjectNodeFactory.getInstance().getTypedObjectForInterface(EmptyInterface1.class);
+		dummy = this.factory.getTypedObjectForInterface(EmptyInterface1.class);
 		assertNotNull(dummy);
 	}
 
 	@Test
 	public void testTypedObjectNodeClone() {
 		TypedObjectNode dummy1;
-		dummy1 = (TypedObjectNode) TypedObjectNodeFactory.getInstance().getTypedObjectForInterface(
+		dummy1 = (TypedObjectNode) this.factory.getTypedObjectForInterface(
 			EmptyInterface1.class);
 		dummy1.backingObject.put("foo", new TextNode("bar"));
 		TypedObjectNode dummy2 = dummy1.clone();
@@ -39,15 +41,15 @@ public class TypedObjectTest {
 
 	@Test
 	public void testMultipleInstantiationOfTypedObject() {
-		EmptyInterface3 dummy1 = TypedObjectNodeFactory.getInstance().getTypedObjectForInterface(EmptyInterface3.class);
-		EmptyInterface3 dummy2 = TypedObjectNodeFactory.getInstance().getTypedObjectForInterface(EmptyInterface3.class);
+		EmptyInterface3 dummy1 = this.factory.getTypedObjectForInterface(EmptyInterface3.class);
+		EmptyInterface3 dummy2 = this.factory.getTypedObjectForInterface(EmptyInterface3.class);
 		assertSame(dummy1.getClass(), dummy2.getClass());
 		assertNotSame(dummy1, dummy2);
 	}
 
 	@Test
 	public void testSimpleObjectCreationForSimpleInterface() {
-		PersonInterface dummy = TypedObjectNodeFactory.getInstance().getTypedObjectForInterface(PersonInterface.class);
+		PersonInterface dummy = this.factory.getTypedObjectForInterface(PersonInterface.class);
 		TextNode nameNode = new TextNode("FooBär");
 		dummy.setName(nameNode);
 		assertSame(nameNode, dummy.getName());
@@ -55,7 +57,7 @@ public class TypedObjectTest {
 
 	@Test
 	public void testMultipleInheritanceHierarchies() {
-		PersonWithAgeAndWeightInterface dummy = TypedObjectNodeFactory.getInstance().getTypedObjectForInterface(
+		PersonWithAgeAndWeightInterface dummy = this.factory.getTypedObjectForInterface(
 			PersonWithAgeAndWeightInterface.class);
 		TextNode nameNode = new TextNode("FooBär");
 		INumericNode ageNode = new IntNode(3);
@@ -70,7 +72,7 @@ public class TypedObjectTest {
 
 	@Test
 	public void testSimpleObjectCreationForALessSimpleInterface() {
-		SomeThingInterface dummy = TypedObjectNodeFactory.getInstance().getTypedObjectForInterface(
+		SomeThingInterface dummy = this.factory.getTypedObjectForInterface(
 			SomeThingInterface.class);
 		TextNode labelNode = new TextNode("labelText");
 		IntNode ageNode = new IntNode(5);
@@ -85,8 +87,7 @@ public class TypedObjectTest {
 
 	@Test
 	public void testNullReturningForUnsetValues() {
-		SomeThingInterface dummy = TypedObjectNodeFactory.getInstance().getTypedObjectForInterface(
-			SomeThingInterface.class);
+		SomeThingInterface dummy = this.factory.getTypedObjectForInterface(SomeThingInterface.class);
 		assertNull(dummy.getName());
 		assertNull(dummy.getAge());
 		assertNull(dummy.getCool());
@@ -94,7 +95,7 @@ public class TypedObjectTest {
 
 	@Test
 	public void testNullReturningForNullSetValues() {
-		SomeThingInterface dummy = TypedObjectNodeFactory.getInstance().getTypedObjectForInterface(
+		SomeThingInterface dummy = this.factory.getTypedObjectForInterface(
 			SomeThingInterface.class);
 		dummy.setName(null);
 		assertNull(dummy.getName());
@@ -104,18 +105,9 @@ public class TypedObjectTest {
 		assertNull(dummy.getCool());
 	}
 
-	@Test(expected = IllegalArgumentException.class)
-	public void testSimpleObjectCreationForAnInterfaceWithJavaTypes() {
-		TypedObjectWithJavaTypesProperties dummy = TypedObjectNodeFactory.getInstance().getTypedObjectForInterface(
-			TypedObjectWithJavaTypesProperties.class);
-		String labelNode = "labelText";
-		dummy.setLabel(labelNode);
-		assertSame(labelNode, dummy.getLabel());
-	}
-
 	@Test
 	public void testTypedObjectCreationForAnInterfaceExtendingAnotherTypedInterface() {
-		PersonWithAgeAndWeightInterface person = TypedObjectNodeFactory.getInstance().getTypedObjectForInterface(
+		PersonWithAgeAndWeightInterface person = this.factory.getTypedObjectForInterface(
 			PersonWithAgeAndWeightInterface.class);
 		TextNode nameNode = new TextNode("FooBär");
 		INumericNode ageNode = new IntNode(3);
@@ -124,7 +116,7 @@ public class TypedObjectTest {
 		person.setAge(ageNode);
 		person.setWeight(weightNode);
 
-		MyInterfaceWithTypedObjectProperty dummy = TypedObjectNodeFactory.getInstance().getTypedObjectForInterface(
+		MyInterfaceWithTypedObjectProperty dummy = this.factory.getTypedObjectForInterface(
 			MyInterfaceWithTypedObjectProperty.class);
 
 		dummy.setPerson(person);
@@ -135,13 +127,13 @@ public class TypedObjectTest {
 
 	@Test
 	public void testTypedObjectCreationForAnInterfaceWithCyclicTypedObjectProperties() {
-		MyInterfaceWithCyclicTypedObjectProperty inner = TypedObjectNodeFactory.getInstance()
+		MyInterfaceWithCyclicTypedObjectProperty inner = this.factory
 			.getTypedObjectForInterface(MyInterfaceWithCyclicTypedObjectProperty.class);
 
-		MyInterfaceWithCyclicTypedObjectProperty outer = TypedObjectNodeFactory.getInstance()
+		MyInterfaceWithCyclicTypedObjectProperty outer = this.factory
 			.getTypedObjectForInterface(MyInterfaceWithCyclicTypedObjectProperty.class);
 
-		MyInterfaceWithCyclicTypedObjectProperty someOther = TypedObjectNodeFactory.getInstance()
+		MyInterfaceWithCyclicTypedObjectProperty someOther = this.factory
 			.getTypedObjectForInterface(MyInterfaceWithCyclicTypedObjectProperty.class);
 
 		outer.setCyclicProperty(inner);
@@ -152,12 +144,12 @@ public class TypedObjectTest {
 
 	@Test
 	public void testTypedInterfaceWithAListsOfTypedObjectNodes() {
-		PersonOwningThingsInterface personOwning = TypedObjectNodeFactory.getInstance().getTypedObjectForInterface(
+		PersonOwningThingsInterface personOwning = this.factory.getTypedObjectForInterface(
 			PersonOwningThingsInterface.class);
 
-		SomeThingInterface thing1 = TypedObjectNodeFactory.getInstance().getTypedObjectForInterface(
+		SomeThingInterface thing1 = this.factory.getTypedObjectForInterface(
 			SomeThingInterface.class);
-		SomeThingInterface thing2 = TypedObjectNodeFactory.getInstance().getTypedObjectForInterface(
+		SomeThingInterface thing2 = this.factory.getTypedObjectForInterface(
 			SomeThingInterface.class);
 
 		ArrayNode<SomeThingInterface> listOfThings = new ArrayNode<SomeThingInterface>();
@@ -173,7 +165,7 @@ public class TypedObjectTest {
 
 	@Test
 	public void testTypedInterfaceWithAListsOfTypedObjectNodesWithoutPriorClassInstantiation() {
-		InterfaceWithATypedObjectProperty owningPerson = TypedObjectNodeFactory.getInstance()
+		InterfaceWithATypedObjectProperty owningPerson = this.factory
 			.getTypedObjectForInterface(InterfaceWithATypedObjectProperty.class);
 
 		IObjectNode thing1 = new ObjectNode();
@@ -191,9 +183,9 @@ public class TypedObjectTest {
 		assertSame(cool, thing1_1.getCool());
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = ClassCastException.class)
 	public void testIfWrongDatatypeInBackingObjectCausesErrorForJSONPrimitives() {
-		InterfaceWithATypedObjectProperty dummy = TypedObjectNodeFactory.getInstance().getTypedObjectForInterface(
+		InterfaceWithATypedObjectProperty dummy = this.factory.getTypedObjectForInterface(
 			InterfaceWithATypedObjectProperty.class);
 		TextNode number = new TextNode("foo");
 		dummy.put("number", number);
@@ -202,7 +194,7 @@ public class TypedObjectTest {
 
 	@Test
 	public void testTypedInterfaceExtendingTwoTypedInterfaces() {
-		InterfaceImplementingTwoInterfaces personAndThing = TypedObjectNodeFactory.getInstance()
+		InterfaceImplementingTwoInterfaces personAndThing = this.factory
 			.getTypedObjectForInterface(InterfaceImplementingTwoInterfaces.class);
 		TextNode name = new TextNode("Foobär");
 		personAndThing.setName(name);
@@ -222,19 +214,18 @@ public class TypedObjectTest {
 		// TODO assert that the most specific type of an attribute is used
 	}
 
-	@SuppressWarnings("unused")
-	@Test(expected = IllegalArgumentException.class)
 	public void testTypedInterfaceExtendingTypedInterfacesAndOneOrMoreNoTypedInterfaces() {
 		InterfaceImplementingTwoTypedInterfacesAndAnotherNoTypedObjectInterface dummy = TypedObjectNodeFactory
 			.getInstance().getTypedObjectForInterface(
 				InterfaceImplementingTwoTypedInterfacesAndAnotherNoTypedObjectInterface.class);
+		Assert.assertNotNull(dummy);
 	}
 
 	@Test
 	public void testDocumentUseCase() {
-		Document document = TypedObjectNodeFactory.getInstance().getTypedObjectForInterface(Document.class);
-		Annotation annotation1 = TypedObjectNodeFactory.getInstance().getTypedObjectForInterface(Annotation.class);
-		Annotation annotation2 = TypedObjectNodeFactory.getInstance().getTypedObjectForInterface(Annotation.class);
+		Document document = this.factory.getTypedObjectForInterface(Document.class);
+		Annotation annotation1 = this.factory.getTypedObjectForInterface(Annotation.class);
+		Annotation annotation2 = this.factory.getTypedObjectForInterface(Annotation.class);
 
 		TextNode fooText = new TextNode("foo");
 		TextNode barText = new TextNode("bar");
@@ -254,11 +245,11 @@ public class TypedObjectTest {
 	}
 }
 
-interface EmptyInterface1 extends TypedInterface {
+interface EmptyInterface1 extends ITypedObjectNode {
 
 }
 
-interface EmptyInterface2 extends TypedInterface {
+interface EmptyInterface2 extends ITypedObjectNode {
 
 }
 
@@ -266,7 +257,7 @@ interface EmptyInterfaceNotExtendingTypedInterface {
 
 }
 
-interface EmptyInterface3 extends TypedInterface {
+interface EmptyInterface3 extends ITypedObjectNode {
 
 }
 
@@ -274,7 +265,7 @@ interface EmptyInterface4 extends EmptyInterface2, EmptyInterface3 {
 
 }
 
-interface PersonInterface extends TypedInterface {
+interface PersonInterface extends ITypedObjectNode {
 	public TextNode getName();
 
 	public void setName(TextNode aNewName);
@@ -298,7 +289,7 @@ interface PersonWithAgeAndWeightAndIncomeInterface extends PersonWithAgeAndWeigh
 	public void setIncome(INumericNode anIncome);
 }
 
-interface SomeThingInterface extends TypedInterface {
+interface SomeThingInterface extends ITypedObjectNode {
 	public TextNode getName();
 
 	public void setName(TextNode aNewName);
@@ -312,19 +303,13 @@ interface SomeThingInterface extends TypedInterface {
 	public void setCool(BooleanNode coolness);
 }
 
-interface TypedObjectWithJavaTypesProperties extends TypedInterface {
-	public String getLabel();
-
-	public void setLabel(String aNewName);
-}
-
-interface MyInterfaceWithTypedObjectProperty extends TypedInterface {
+interface MyInterfaceWithTypedObjectProperty extends ITypedObjectNode {
 	public PersonWithAgeAndWeightInterface getPerson();
 
 	public void setPerson(PersonWithAgeAndWeightInterface aPerson);
 }
 
-interface MyInterfaceWithCyclicTypedObjectProperty extends TypedInterface {
+interface MyInterfaceWithCyclicTypedObjectProperty extends ITypedObjectNode {
 	public MyInterfaceWithCyclicTypedObjectProperty getCyclicProperty();
 
 	public void setCyclicProperty(MyInterfaceWithCyclicTypedObjectProperty anInner);
@@ -351,7 +336,7 @@ interface InterfaceImplementingTwoTypedInterfacesAndAnotherNoTypedObjectInterfac
 
 }
 
-interface InterfaceWithATypedObjectProperty extends TypedInterface {
+interface InterfaceWithATypedObjectProperty extends ITypedObjectNode {
 	public SomeThingInterface getIt();
 
 	public void setIt(SomeThingInterface aTypedObject);
@@ -361,11 +346,11 @@ interface InterfaceWithATypedObjectProperty extends TypedInterface {
 	public void setNumber(INumericNode aNumericNode);
 }
 
-interface ATypedObject extends TypedInterface {
+interface ATypedObject extends ITypedObjectNode {
 
 }
 
-interface Document extends TypedInterface {
+interface Document extends ITypedObjectNode {
 	public TextNode getText();
 
 	public void setText(TextNode aText);
@@ -375,7 +360,7 @@ interface Document extends TypedInterface {
 	public void setAnnotations(ArrayNode<Annotation> anAnnotationsArray);
 }
 
-interface Annotation extends TypedInterface {
+interface Annotation extends ITypedObjectNode {
 	public TextNode getText();
 
 	public void setText(TextNode aText);

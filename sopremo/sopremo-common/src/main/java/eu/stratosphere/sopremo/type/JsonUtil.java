@@ -97,7 +97,7 @@ public class JsonUtil {
 	 * @return the array
 	 */
 	public static IArrayNode<?> createArrayNode(final Object... constants) {
-		return (IArrayNode<?>) JsonUtil.OBJECT_MAPPER.valueToTree(constants);
+		return (IArrayNode<?>) JsonUtil.OBJECT_MAPPER.map(constants);
 	}
 
 	/**
@@ -144,12 +144,12 @@ public class JsonUtil {
 			throw new IllegalArgumentException("must have an even number of params");
 		final ObjectNode objectNode = new ObjectNode();
 		for (int index = 0; index < fields.length; index += 2)
-			objectNode.put(fields[index].toString(), JsonUtil.OBJECT_MAPPER.valueToTree(fields[index + 1]));
+			objectNode.put(fields[index].toString(), JsonUtil.OBJECT_MAPPER.map(fields[index + 1]));
 		return objectNode;
 	}
 
 	public static IJsonNode createValueNode(final Object value) {
-		return JsonUtil.OBJECT_MAPPER.valueToTree(value);
+		return JsonUtil.OBJECT_MAPPER.map(value);
 	}
 
 }

@@ -13,8 +13,7 @@ public class FullOuterJoin extends TwoSourceJoinBase<FullOuterJoin> {
 	public static class Implementation extends SopremoCoGroup {
 		protected final IArrayNode<IJsonNode> result = new ArrayNode<IJsonNode>();
 
-
-		protected  void leftOuterJoin(IArrayNode<IJsonNode> result, IStreamNode<IJsonNode> values2, JsonCollector out) {
+		protected void leftOuterJoin(IArrayNode<IJsonNode> result, IStreamNode<IJsonNode> values2, JsonCollector<IJsonNode> out) {
 			result.set(1, MissingNode.getInstance());
 			for (final IJsonNode value : values2) {
 				result.set(0, value);
@@ -22,7 +21,7 @@ public class FullOuterJoin extends TwoSourceJoinBase<FullOuterJoin> {
 			}
 		}
 
-		protected  void rightOuterJoin(IArrayNode<IJsonNode> result, IStreamNode<IJsonNode> values2, JsonCollector out) {
+		protected void rightOuterJoin(IArrayNode<IJsonNode> result, IStreamNode<IJsonNode> values2, JsonCollector<IJsonNode> out) {
 			result.set(0, MissingNode.getInstance());
 			for (final IJsonNode value : values2) {
 				result.set(1, value);
@@ -31,8 +30,9 @@ public class FullOuterJoin extends TwoSourceJoinBase<FullOuterJoin> {
 		}
 
 		private transient CachingArrayNode<IJsonNode> firstSourceNodes = new CachingArrayNode<IJsonNode>();
-		protected  void cogroupJoin(IArrayNode<IJsonNode> result, IStreamNode<IJsonNode> values1,
-				IStreamNode<IJsonNode> values2,	JsonCollector out) {
+
+		protected void cogroupJoin(IArrayNode<IJsonNode> result, IStreamNode<IJsonNode> values1,
+				IStreamNode<IJsonNode> values2, JsonCollector<IJsonNode> out) {
 			this.firstSourceNodes.setSize(0);
 			// TODO: use resettable iterator to avoid OOME
 			// TODO: can we estimate if first or second source is smaller?
@@ -47,8 +47,10 @@ public class FullOuterJoin extends TwoSourceJoinBase<FullOuterJoin> {
 				}
 			}
 		}
+
 		@Override
-		protected void coGroup(IStreamNode<IJsonNode> values1, IStreamNode<IJsonNode> values2, JsonCollector out) {
+		protected void coGroup(IStreamNode<IJsonNode> values1, IStreamNode<IJsonNode> values2,
+				JsonCollector<IJsonNode> out) {
 			if (values1.isEmpty()) {
 				// special case: no items from first source
 				// emit all values of the second source

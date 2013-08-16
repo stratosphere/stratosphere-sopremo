@@ -58,12 +58,12 @@ public class DefaultRegistry<T extends ISopremoType> extends AbstractSopremoType
 		appendable.append("Registry: {");
 		boolean first = true;
 		for (final Entry<String, T> method : this.elements.entrySet()) {
-			appendable.append(method.getKey()).append(": ");
-			method.getValue().appendAsString(appendable);
 			if (first)
 				first = false;
 			else
 				appendable.append(", ");
+			appendable.append(method.getKey()).append(": ");
+			method.getValue().appendAsString(appendable);
 		}
 		appendable.append("}");
 	}

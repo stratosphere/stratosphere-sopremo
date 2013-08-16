@@ -7,6 +7,6 @@ import eu.stratosphere.sopremo.type.IJsonNode;
  * standard input of the ReduceStub to a more manageable representation (the input is converted to an {@link IArrayNode}
  * ).
  */
-public abstract class SopremoReduce extends TypedSopremoReduce<IJsonNode> {
+public abstract class SopremoReduce extends GenericSopremoReduce<IJsonNode, IJsonNode> {
 
 }

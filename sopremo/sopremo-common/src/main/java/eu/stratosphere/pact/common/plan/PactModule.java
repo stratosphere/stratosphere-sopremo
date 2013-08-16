@@ -26,6 +26,7 @@ import eu.stratosphere.pact.common.contract.GenericDataSource;
 import eu.stratosphere.pact.common.util.Visitable;
 import eu.stratosphere.pact.common.util.Visitor;
 import eu.stratosphere.pact.generic.contract.Contract;
+import eu.stratosphere.pact.generic.contract.ContractUtil;
 import eu.stratosphere.pact.generic.io.SequentialInputFormat;
 import eu.stratosphere.pact.generic.io.SequentialOutputFormat;
 import eu.stratosphere.util.dag.GraphModule;

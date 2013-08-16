@@ -7,7 +7,7 @@
 
 	<groupId>eu.stratosphere</groupId>
 	<artifactId>hll</artifactId>
-	<version>0.3</version>
+	<version>0.3-SNAPSHOT</version>
 
 	<name>hll</name>
 	<packaging>pom</packaging>
@@ -410,6 +410,7 @@
 
 	<modules>
     	<module>stratosphere-util</module>
+    	<module>stratosphere-testutil</module>
 		<module>sopremo</module>
     	<module>meteor</module>
 		<module>stratosphere-dist</module>

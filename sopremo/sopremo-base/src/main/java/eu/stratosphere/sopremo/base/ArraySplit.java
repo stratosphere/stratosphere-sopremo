@@ -107,7 +107,7 @@ public class ArraySplit extends ElementaryOperator<ArraySplit> {
 		private EvaluationExpression splitProjection;
 
 		@Override
-		protected void map(final IJsonNode value, JsonCollector out) {
+		protected void map(final IJsonNode value, JsonCollector<IJsonNode> out) {
 			final IJsonNode target = this.arrayPath.evaluate(value);
 			if (!(target instanceof IArrayNode<?>))				
 				throw new EvaluationException("Cannot split non-array");

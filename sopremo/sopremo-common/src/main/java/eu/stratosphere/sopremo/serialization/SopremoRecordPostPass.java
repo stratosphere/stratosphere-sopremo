@@ -14,9 +14,13 @@
  **********************************************************************************************************************/
 package eu.stratosphere.sopremo.serialization;
 
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.Iterator;
+import java.util.List;
 
 import com.google.common.collect.Iterables;
+import com.google.common.reflect.TypeToken;
 
 import eu.stratosphere.nephele.configuration.Configuration;
 import eu.stratosphere.pact.common.util.FieldList;
@@ -28,14 +32,19 @@ import eu.stratosphere.pact.compiler.plan.candidate.PlanNode;
 import eu.stratosphere.pact.compiler.plan.candidate.SingleInputPlanNode;
 import eu.stratosphere.pact.compiler.plan.candidate.SourcePlanNode;
 import eu.stratosphere.pact.compiler.postpass.OptimizerPostPass;
+import eu.stratosphere.pact.generic.stub.AbstractStub;
+import eu.stratosphere.sopremo.pact.GenericSopremoReduce;
+import eu.stratosphere.sopremo.pact.SopremoReduce;
+import eu.stratosphere.sopremo.pact.SopremoStub;
 import eu.stratosphere.sopremo.pact.SopremoUtil;
+import eu.stratosphere.sopremo.type.IJsonNode;
+import eu.stratosphere.util.reflect.ReflectUtil;
 
 /**
  * Post pass implementation for the PactRecord data model. Does only type inference and creates
  * serializers and comparators.
  */
 public class SopremoRecordPostPass implements OptimizerPostPass {
-
 	/*
 	 * (non-Javadoc)
 	 * @see
@@ -61,6 +70,7 @@ public class SopremoRecordPostPass implements OptimizerPostPass {
 		});
 	}
 
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	protected void processNode(final SopremoRecordLayout layout, PlanNode node) {
 		if (node instanceof SingleInputPlanNode) {
 			SingleInputPlanNode sn = (SingleInputPlanNode) node;
@@ -84,11 +94,25 @@ public class SopremoRecordPostPass implements OptimizerPostPass {
 		}
 
 		final Iterator<Channel> inputs = node.getInputs();
-		while (inputs.hasNext())
-			processChannel(layout, inputs.next());
+		final Class<?> userCodeClass = node.getPactContract().getUserCodeClass();
+
+		if (SopremoStub.class.isAssignableFrom(userCodeClass)) {
+			final List<Type> hierarchy = ReflectUtil.getHierarchy(AbstractStub.class, userCodeClass);
+			final Class genericSopremoStubClass = (Class) ((ParameterizedType) hierarchy.get(hierarchy.size() - 2)).getRawType();
+			final ParameterizedType boundType =
+				(ParameterizedType) TypeToken.of(userCodeClass).getSupertype(genericSopremoStubClass).getType();
+			for (int index = 0; inputs.hasNext(); index++)
+				processChannel(layout, inputs.next(), boundType.getActualTypeArguments()[index]);
+		} else
+			while (inputs.hasNext())
+				processChannel(layout, inputs.next(), IJsonNode.class);
 	}
 
-	private void processChannel(SopremoRecordLayout layout, Channel channel) {
+	private void processChannel(SopremoRecordLayout layout, Channel channel, Type type) {
+		if (!type.equals(layout.getTargetType())) {
+			layout = layout.copy();
+			layout.setTargetType(type);
+		}
 		channel.setSerializer(new SopremoRecordSerializerFactory(layout));
 		if (channel.getLocalStrategy().requiresComparator())
 			channel.setLocalStrategyComparator(createComparator(channel.getLocalStrategyKeys(),

@@ -39,10 +39,10 @@ public class ArithmeticCrossTest {
 		final ArithmeticExpression arithmetic = new ArithmeticExpression(new InputSelection(0), this.operator,
 			new InputSelection(1));
 		final IJsonNode result = arithmetic.evaluate(
-			JsonUtil.asArray(JsonUtil.OBJECT_MAPPER.valueToTree(this.left),
-				JsonUtil.OBJECT_MAPPER.valueToTree(this.right)));
+			JsonUtil.asArray(JsonUtil.OBJECT_MAPPER.map(this.left),
+				JsonUtil.OBJECT_MAPPER.map(this.right)));
 
-		final IJsonNode expectedNode = JsonUtil.OBJECT_MAPPER.valueToTree(this.expected);
+		final IJsonNode expectedNode = JsonUtil.OBJECT_MAPPER.map(this.expected);
 		Assert.assertEquals(
 			String.format("%s%s%s/%s%s%s",
 				this.left.getClass().getSimpleName(), this.operator, this.right.getClass().getSimpleName(),

@@ -243,7 +243,7 @@ public class JsonGenerator {
 		private static Map<Class<? extends IJsonNode>, JsonTypeWriter<IJsonNode>> writerMap;
 
 		static {
-			writerMap = new IdentityHashMap<Class<? extends IJsonNode>, JsonGenerator.JsonTypeWriter<IJsonNode>>();
+			writerMap = new IdentityHashMap<Class<? extends IJsonNode>, JsonGenerator.JsonTypeWriter<IJsonNode>>(4);
 			writerMap.put(TextNode.class, (JsonTypeWriter) TextNodeTypeWriter.Instance);
 			writerMap.put(IObjectNode.class, (JsonTypeWriter) ObjectNodeTypeWriter.Instance);
 			writerMap.put(IStreamNode.class, (JsonTypeWriter) ArrayNodeTypeWriter.Instance);

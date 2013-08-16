@@ -34,6 +34,16 @@ public class DecimalNode extends AbstractNumericNode implements INumericNode {
 		this.value = v;
 	}
 
+	/**
+	 * Initializes a DecimalNode which represents the given textual representation of a {@link BigDecimal}.
+	 * 
+	 * @param v
+	 *        the value that should be represented by this node
+	 */
+	public DecimalNode(final String textual) {
+		this.value = new BigDecimal(textual);
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * @see eu.stratosphere.sopremo.type.INumericNode#getGeneralilty()
@@ -151,7 +161,7 @@ public class DecimalNode extends AbstractNumericNode implements INumericNode {
 	 */
 	@Override
 	public void appendAsString(Appendable appendable) throws IOException {
-		//TextFormat.getInstance(BigDecimal.class).format(this.value, appendable);
+		// TextFormat.getInstance(BigDecimal.class).format(this.value, appendable);
 		appendable.append(this.value.toPlainString());
 	}
 }

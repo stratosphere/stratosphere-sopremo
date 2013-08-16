@@ -20,6 +20,7 @@ import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -31,10 +32,15 @@ import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import com.google.common.reflect.TypeToken;
 
 import eu.stratosphere.sopremo.AbstractSopremoType;
 import eu.stratosphere.sopremo.expressions.ArrayAccess;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
+import eu.stratosphere.sopremo.type.IJsonNode;
+import eu.stratosphere.sopremo.type.typed.ITypedObjectNode;
+import eu.stratosphere.sopremo.type.typed.TypedObjectNode;
+import eu.stratosphere.sopremo.type.typed.TypedObjectNodeFactory;
 import eu.stratosphere.util.AppendUtil;
 
 /**
@@ -42,6 +48,11 @@ import eu.stratosphere.util.AppendUtil;
  */
 @DefaultSerializer(SopremoRecordLayout.KryoSerializer.class)
 public class SopremoRecordLayout extends AbstractSopremoType {
+	/**
+	 * 
+	 */
+	private static final Type UNTYPED = IJsonNode.class;
+
 	/**
 	 * 
 	 */
@@ -57,6 +68,7 @@ public class SopremoRecordLayout extends AbstractSopremoType {
 		@Override
 		public void write(Kryo kryo, Output output, SopremoRecordLayout object) {
 			kryo.writeObject(output, object.getKeyExpressions());
+			kryo.writeClassAndObject(output, object.targetType == UNTYPED ? null : object.targetType);
 		}
 
 		/*
@@ -76,7 +88,10 @@ public class SopremoRecordLayout extends AbstractSopremoType {
 		@SuppressWarnings("unchecked")
 		@Override
 		public SopremoRecordLayout read(Kryo kryo, Input input, Class<SopremoRecordLayout> type) {
-			return SopremoRecordLayout.create(kryo.readObject(input, ArrayList.class));
+			final SopremoRecordLayout layout = SopremoRecordLayout.create(kryo.readObject(input, ArrayList.class));
+			final Type targetType = (Type) kryo.readClassAndObject(input);
+			layout.setTargetType(targetType == null ? UNTYPED : targetType);
+			return layout;
 		}
 	}
 
@@ -95,6 +110,8 @@ public class SopremoRecordLayout extends AbstractSopremoType {
 
 	private final EvaluationExpression[] directDataExpression, calculatedKeyExpressions;
 
+	private Type targetType = UNTYPED;
+
 	private final transient ExpressionIndex expressionIndex;
 
 	public IntCollection indicesOf(EvaluationExpression expression) {
@@ -111,6 +128,48 @@ public class SopremoRecordLayout extends AbstractSopremoType {
 			indices.add(index);
 		}
 		return indices;
+	}
+
+	private transient TypedObjectNode typedNode;
+
+	/**
+	 * Sets the targetType to the specified value.
+	 * 
+	 * @param targetType
+	 *        the targetType to set
+	 */
+	@SuppressWarnings("unchecked")
+	public void setTargetType(Type targetType) {
+		if (targetType == null)
+			throw new NullPointerException("targetType must not be null");
+
+		this.targetType = targetType;
+		if (ITypedObjectNode.class.isAssignableFrom(TypeToken.of(targetType).getRawType()))
+			this.typedNode = (TypedObjectNode) TypedObjectNodeFactory.getInstance().getTypedObjectForInterface(
+				(Class<? extends ITypedObjectNode>) this.targetType);
+	}
+
+	/**
+	 * Returns the typedNode.
+	 * 
+	 * @return the typedNode
+	 */
+	public TypedObjectNode getTypedNode() {
+		return this.typedNode;
+	}
+
+	/**
+	 * Returns the targetType.
+	 * 
+	 * @return the targetType
+	 */
+	public Type getTargetType() {
+		return this.targetType;
+	}
+
+	public SopremoRecordLayout withTargetType(Type targetType) {
+		setTargetType(targetType);
+		return this;
 	}
 
 	/*

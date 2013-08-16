@@ -28,7 +28,7 @@ public class ValueSplit extends ElementaryOperator<ValueSplit> {
 		private List<EvaluationExpression> projections = new ArrayList<EvaluationExpression>();
 
 		@Override
-		protected void map(IJsonNode value, JsonCollector out) {
+		protected void map(IJsonNode value, JsonCollector<IJsonNode> out) {
 			for (EvaluationExpression projection : this.projections)
 				out.collect(projection.evaluate(value));
 		}

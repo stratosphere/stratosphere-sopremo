@@ -5,7 +5,7 @@
 	<parent>
 		<artifactId>sopremo</artifactId>
 		<groupId>eu.stratosphere</groupId>
-		<version>0.3</version>
+		<version>0.3-SNAPSHOT</version>
 	</parent>
 	<artifactId>sopremo-testplan</artifactId>
 	<name>sopremo-testplan</name>
@@ -18,7 +18,7 @@
 		</dependency>
 		<dependency>
 			<groupId>eu.stratosphere</groupId>
-			<artifactId>sopremo-testutil</artifactId>
+			<artifactId>stratosphere-testutil</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>

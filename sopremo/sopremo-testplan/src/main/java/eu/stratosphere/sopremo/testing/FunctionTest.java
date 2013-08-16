@@ -34,16 +34,16 @@ public class FunctionTest {
 		function.initialize();
 
 		for (Object item : items)
-			function.aggregate(JavaToJsonMapper.INSTANCE.valueToTree(item));
+			function.aggregate(JavaToJsonMapper.INSTANCE.map(item));
 
 		final IJsonNode result = function.getFinalAggregate();
-		Assert.assertEquals(JavaToJsonMapper.INSTANCE.valueToTree(expected), result);
+		Assert.assertEquals(JavaToJsonMapper.INSTANCE.map(expected), result);
 	}
 
 	public static void assertReturn(Object expected, SopremoFunction function, Object... items) {
 		@SuppressWarnings("unchecked")
-		final IArrayNode<IJsonNode> params = (IArrayNode<IJsonNode>) JavaToJsonMapper.INSTANCE.valueToTree(items);
+		final IArrayNode<IJsonNode> params = (IArrayNode<IJsonNode>) JavaToJsonMapper.INSTANCE.map(items);
 		final IJsonNode result = function.call(params);
-		Assert.assertEquals(JavaToJsonMapper.INSTANCE.valueToTree(expected), result);
+		Assert.assertEquals(JavaToJsonMapper.INSTANCE.map(expected), result);
 	}
 }

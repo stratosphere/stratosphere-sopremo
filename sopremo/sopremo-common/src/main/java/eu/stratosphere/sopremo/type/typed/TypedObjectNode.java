@@ -6,6 +6,8 @@ import java.util.Map.Entry;
 
 import eu.stratosphere.sopremo.type.IJsonNode;
 import eu.stratosphere.sopremo.type.IObjectNode;
+import eu.stratosphere.sopremo.type.JavaToJsonMapper;
+import eu.stratosphere.sopremo.type.JsonToJavaMapper;
 import eu.stratosphere.sopremo.type.MissingNode;
 import eu.stratosphere.sopremo.type.NullNode;
 import eu.stratosphere.sopremo.type.ObjectNode;
@@ -75,40 +77,45 @@ public abstract class TypedObjectNode implements ITypedObjectNode {
 
 	@Override
 	public IObjectNode put(String fieldName, IJsonNode value) {
-		if (value == null)
-			return this.backingObject.put(fieldName, NullNode.getInstance());
 		return this.backingObject.put(fieldName, value);
 	}
 
-	@SuppressWarnings("unchecked")
+	public IObjectNode putOrNull(String fieldName, IJsonNode value) {
+		return this.backingObject.put(fieldName, value == null ? NullNode.getInstance() : value);
+	}
+
 	@Override
-	public <T extends IJsonNode> T get(String fieldName) {
-		IJsonNode result = this.backingObject.get(fieldName);
+	public final <T extends IJsonNode> T get(String fieldName) {
+		return this.backingObject.get(fieldName);
+	}
+
+	@SuppressWarnings("cast")
+	public final <T extends IJsonNode> T getOrNull(String fieldName) {
+		final T result = this.backingObject.get(fieldName);
 		if (result == MissingNode.getInstance() || result == NullNode.getInstance())
 			return null;
 		return (T) result;
 	}
 
-	@SuppressWarnings("unchecked")
-	public <T extends IJsonNode> T get(String fieldName, Class<T> desiredTypeClass) {
-		IJsonNode fromBackingObject = this.get(fieldName);
-		if (fromBackingObject == null)
+	public final <T extends ITypedObjectNode> T getTyped(String fieldName, T object) {
+		IJsonNode result = this.get(fieldName);
+		if (result == MissingNode.getInstance() || result == NullNode.getInstance())
 			return null;
-		else if (desiredTypeClass.isInstance(fromBackingObject))
-			return (T) fromBackingObject;
-		else if (TypedInterface.class.isAssignableFrom(desiredTypeClass) && desiredTypeClass.isInterface())
-			return (T) this.tryToWrapObjectNodeIntoTypedObject(fromBackingObject,
-				(Class<TypedInterface>) desiredTypeClass);
-		else
-			throw new IllegalArgumentException("The data object in the backing object was not of the desired type.");
+		((TypedObjectNode) object).setBackingNode((IObjectNode) result);
+		return object;
 	}
 
-	private <T extends TypedInterface> T tryToWrapObjectNodeIntoTypedObject(IJsonNode anObjectfromBackingObject,
-			Class<T> aDesiredClass) {
-		T desiredTypeObject = TypedObjectNodeFactory.getInstance().getTypedObjectForInterface(aDesiredClass);
-		ITypedObjectNode desiredTypeObjectNode = (ITypedObjectNode) desiredTypeObject;
-		desiredTypeObjectNode.setBackingNode((IObjectNode) anObjectfromBackingObject);
-		return desiredTypeObject;
+	public final void putTyped(String fieldName, ITypedObjectNode value) {
+		this.backingObject.put(fieldName,
+			value == null ? NullNode.getInstance() : ((TypedObjectNode) value).getBackingNode());
+	}
+
+	protected static final JavaToJsonMapper JavaToJsonMapperInstance = JavaToJsonMapper.INSTANCE;
+
+	protected static final JsonToJavaMapper JsonToJavaMapperInstance = JsonToJavaMapper.INSTANCE;
+
+	protected final <T extends ITypedObjectNode> T createWrappingObject(Class<T> aDesiredClass) {
+		return TypedObjectNodeFactory.getInstance().getTypedObjectForInterface(aDesiredClass);
 	}
 
 	@Override
@@ -131,14 +138,11 @@ public abstract class TypedObjectNode implements ITypedObjectNode {
 		return this.backingObject.size();
 	}
 
-	@Override
 	public IObjectNode getBackingNode() {
 		return this.backingObject;
 	}
 
-	@Override
 	public void setBackingNode(IObjectNode backingNode) {
 		this.backingObject = backingNode;
 	}
-
 }

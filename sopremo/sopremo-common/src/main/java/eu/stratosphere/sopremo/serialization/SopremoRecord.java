@@ -47,14 +47,14 @@ import eu.stratosphere.sopremo.type.IObjectNode;
 import eu.stratosphere.sopremo.type.MissingNode;
 import eu.stratosphere.sopremo.type.ObjectNode;
 import eu.stratosphere.sopremo.type.ReusingSerializer;
-import eu.stratosphere.sopremo.type.TextNode;
+import eu.stratosphere.sopremo.type.typed.TypedObjectNode;
 
 /**
  * @author Arvid Heise
  */
 @DefaultSerializer(value = SopremoRecord.SopremoRecordKryoSerializer.class)
-public final class SopremoRecord extends AbstractSopremoType implements ISopremoType, KryoCopyable<SopremoRecord>,
-		Record {
+public final class SopremoRecord extends AbstractSopremoType implements ISopremoType,
+		KryoCopyable<SopremoRecord>, Record {
 
 	/**
 	 * 
@@ -139,7 +139,13 @@ public final class SopremoRecord extends AbstractSopremoType implements ISopremo
 	public IJsonNode getNode() {
 		if (this.node == null) {
 			this.input.setBuffer(this.binaryRepresentation.elements(), 0, this.binaryRepresentation.size());
-			this.node = readRecursively(this.node);
+			final IJsonNode readNode = readRecursively(this.node);
+			final TypedObjectNode typedNode = this.layout.getTypedNode();
+			if (typedNode != null) {
+				this.node = typedNode;
+				typedNode.setBackingNode((IObjectNode) readNode);
+			} else
+				this.node = readNode;
 		}
 		return this.node;
 	}
@@ -239,7 +245,10 @@ public final class SopremoRecord extends AbstractSopremoType implements ISopremo
 	private void writeRecursivelyToBuffer(final IJsonNode node, ExpressionIndex expressionIndex) {
 		NodeSerializer<IJsonNode> serializer = getSerializer(node.getType());
 		SopremoRecord.this.kryo.writeClass(SopremoRecord.this.output, node.getType());
-		serializer.write(node, expressionIndex);
+		if (node instanceof TypedObjectNode)
+			serializer.write(((TypedObjectNode) node).getBackingNode(), expressionIndex);
+		else
+			serializer.write(node, expressionIndex);
 	}
 
 	/**
@@ -409,7 +418,7 @@ public final class SopremoRecord extends AbstractSopremoType implements ISopremo
 			return serializer.read(SopremoRecord.this.kryo, SopremoRecord.this.input, registration.getType());
 		}
 	}
-	
+
 	/*
 	 * (non-Javadoc)
 	 * @see eu.stratosphere.nephele.types.Record#read(java.io.DataInput)
@@ -542,7 +551,8 @@ public final class SopremoRecord extends AbstractSopremoType implements ISopremo
 		return this.layout.equals(other.layout) && getNode().equals(other.getNode());
 	}
 
-	public static class SopremoRecordKryoSerializer extends ReusingSerializer<SopremoRecord> {
+	public static class SopremoRecordKryoSerializer<Node extends IJsonNode> extends
+			ReusingSerializer<SopremoRecord> {
 		/*
 		 * (non-Javadoc)
 		 * @see com.esotericsoftware.kryo.Serializer#write(com.esotericsoftware.kryo.Kryo,
@@ -560,13 +570,14 @@ public final class SopremoRecord extends AbstractSopremoType implements ISopremo
 		 * com.esotericsoftware.kryo.io.Input, java.lang.Object, java.lang.Class)
 		 */
 		@Override
-		public SopremoRecord read(Kryo kryo, Input input, SopremoRecord oldInstance, Class<SopremoRecord> type) {
+		public SopremoRecord read(Kryo kryo, Input input, SopremoRecord oldInstance,
+				Class<SopremoRecord> type) {
 			final SopremoRecordLayout layout = kryo.readObject(input, SopremoRecordLayout.class);
 			final SopremoRecord record;
 			if (oldInstance.layout.equals(layout))
 				record = oldInstance;
 			else
-				record = new SopremoRecord(kryo.readObject(input, SopremoRecordLayout.class));
+				record = new SopremoRecord(layout);
 			record.read(input);
 			return record;
 		}

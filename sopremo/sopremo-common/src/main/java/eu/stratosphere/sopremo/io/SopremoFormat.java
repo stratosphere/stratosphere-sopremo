@@ -16,9 +16,12 @@ package eu.stratosphere.sopremo.io;
 
 import java.io.IOException;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.ParameterizedType;
 import java.net.URI;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+
+import com.google.common.reflect.TypeToken;
 
 import eu.stratosphere.nephele.configuration.Configuration;
 import eu.stratosphere.nephele.fs.FSDataInputStream;
@@ -43,8 +46,6 @@ import eu.stratosphere.sopremo.pact.SopremoUtil;
 import eu.stratosphere.sopremo.serialization.SopremoRecord;
 import eu.stratosphere.sopremo.serialization.SopremoRecordLayout;
 import eu.stratosphere.sopremo.type.IJsonNode;
-import eu.stratosphere.util.reflect.BoundType;
-import eu.stratosphere.util.reflect.BoundTypeUtil;
 
 /**
  * Base class for all file or stream formats. A format can be read-only or write-only and has a number of configuration
@@ -177,8 +178,9 @@ public abstract class SopremoFormat extends ConfigurableSopremoType {
 		for (final Class<?> formatClass : this.getClass().getDeclaredClasses())
 			if ((formatClass.getModifiers() & Modifier.STATIC) != 0
 				&& InputFormat.class.isAssignableFrom(formatClass)) {
-				final BoundType bindings = BoundTypeUtil.getBindingOfSuperclass(formatClass, InputFormat.class);
-				if (bindings.getParameters()[0].getType() != SopremoRecord.class)
+				final TypeToken<?> typeToken =
+					TypeToken.of((Class<InputFormat<?, ?>>) formatClass).getSupertype(InputFormat.class);
+				if (((ParameterizedType) typeToken.getType()).getActualTypeArguments()[0] != SopremoRecord.class)
 					throw new IllegalStateException("Found input format but does not process " +
 						SopremoRecord.class.getSimpleName());
 				return (Class<? extends SopremoInputFormat<?>>) formatClass;
@@ -196,8 +198,9 @@ public abstract class SopremoFormat extends ConfigurableSopremoType {
 		for (final Class<?> formatClass : this.getClass().getDeclaredClasses())
 			if ((formatClass.getModifiers() & Modifier.STATIC) != 0
 				&& OutputFormat.class.isAssignableFrom(formatClass)) {
-				final BoundType bindings = BoundTypeUtil.getBindingOfSuperclass(formatClass, OutputFormat.class);
-				if (bindings.getParameters()[0].getType() != SopremoRecord.class)
+				final TypeToken<?> typeToken =
+					TypeToken.of((Class<OutputFormat<?>>) formatClass).getSupertype(OutputFormat.class);
+				if (((ParameterizedType) typeToken.getType()).getActualTypeArguments()[0] != SopremoRecord.class)
 					throw new IllegalStateException("Found output format but does not process " +
 						SopremoRecord.class.getSimpleName());
 				return (Class<? extends SopremoOutputFormat>) formatClass;
@@ -450,51 +453,52 @@ public abstract class SopremoFormat extends ConfigurableSopremoType {
 		@Override
 		public FileBaseStatistics getStatistics(BaseStatistics cachedStatistics) throws IOException {
 			final ArrayList<FileStatus> files = getFileStati();
-			
+
 			long latestModTime = files.get(0).getModificationTime();
-			for (int index = 1; index < files.size(); index++) 
+			for (int index = 1; index < files.size(); index++)
 				latestModTime = Math.max(files.get(index).getModificationTime(), latestModTime);
-			
+
 			if (cachedStatistics != null && cachedStatistics instanceof FileBaseStatistics) {
 				FileBaseStatistics fileStatistics = (FileBaseStatistics) cachedStatistics;
 
 				// check whether the cached statistics are still valid, if we have any
 				if (latestModTime <= fileStatistics.getLastModificationTime()) {
 					return fileStatistics;
-				}				
+				}
 			}
-			
+
 			// calculate the whole length
 			long len = 0;
 			for (FileStatus s : files) {
 				len += s.getLen();
 			}
-			
-			return new FileBaseStatistics(latestModTime, len, 
+
+			return new FileBaseStatistics(latestModTime, len,
 				getAverageRecordBytes(FileSystem.get(this.filePath.toUri()), files, len));
 		}
-		
-		@SuppressWarnings("unused") 
-		protected float getAverageRecordBytes(FileSystem fileSystem, ArrayList<FileStatus> files, long fileSize) throws IOException {
+
+		@SuppressWarnings("unused")
+		protected float getAverageRecordBytes(FileSystem fileSystem, ArrayList<FileStatus> files, long fileSize)
+				throws IOException {
 			return BaseStatistics.AVG_RECORD_BYTES_UNKNOWN;
 		}
 
 		protected ArrayList<FileStatus> getFileStati() throws IOException {
 			final Path filePath = this.filePath;
-		
+
 			// get the filesystem
 			final FileSystem fs = FileSystem.get(filePath.toUri());
 
 			// get the file info and check whether the cached statistics are still valid.
 			final FileStatus file = fs.getFileStatus(filePath);
-			
+
 			final ArrayList<FileStatus> files = new ArrayList<FileStatus>(1);
 
 			// enumerate all files and check their modification time stamp.
 			if (file.isDir()) {
 				FileStatus[] fss = fs.listStatus(filePath);
 				files.ensureCapacity(fss.length);
-				
+
 				for (FileStatus s : fss) {
 					if (!s.isDir()) {
 						files.add(s);
@@ -505,7 +509,7 @@ public abstract class SopremoFormat extends ConfigurableSopremoType {
 			}
 			return files;
 		}
-		
+
 		@Override
 		public void configure(final Configuration parameters) {
 			super.configure(parameters);

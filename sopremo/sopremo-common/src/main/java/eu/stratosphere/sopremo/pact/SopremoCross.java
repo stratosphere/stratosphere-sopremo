@@ -7,5 +7,5 @@ import eu.stratosphere.sopremo.type.IJsonNode;
  * standard input of the CrossStub to a more manageable representation (both inputs are converted to an
  * {@link IJsonNode}).
  */
-public abstract class SopremoCross extends TypedSopremoCross<IJsonNode, IJsonNode> {
+public abstract class SopremoCross extends GenericSopremoCross<IJsonNode, IJsonNode, IJsonNode> {
 }

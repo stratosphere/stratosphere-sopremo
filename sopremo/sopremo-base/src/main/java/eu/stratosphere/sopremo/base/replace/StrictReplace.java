@@ -39,7 +39,7 @@ public class StrictReplace extends ReplaceBase<StrictReplace> {
 		 * eu.stratosphere.sopremo.type.IJsonNode, eu.stratosphere.sopremo.pact.JsonCollector)
 		 */
 		@Override
-		protected void match(IJsonNode value1, IJsonNode value2, JsonCollector out) {
+		protected void match(IJsonNode value1, IJsonNode value2, JsonCollector<IJsonNode> out) {
 			out.collect(this.replaceExpression.set(value1,
 				this.dictionaryValueExtraction.evaluate(value2)));
 		}

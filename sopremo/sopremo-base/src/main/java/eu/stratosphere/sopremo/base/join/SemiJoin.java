@@ -21,7 +21,7 @@ public class SemiJoin extends TwoSourceJoinBase<SemiJoin> {
 		private IArrayNode<IJsonNode> result = new ArrayNode<IJsonNode>(NullNode.getInstance());
 
 		@Override
-		protected void coGroup(IStreamNode<IJsonNode> values1, IStreamNode<IJsonNode> values2, JsonCollector out) {
+		protected void coGroup(IStreamNode<IJsonNode> values1, IStreamNode<IJsonNode> values2, JsonCollector<IJsonNode> out) {
 			if (!values2.isEmpty())
 				for (final IJsonNode value : values1) {
 					this.result.set(0, value);

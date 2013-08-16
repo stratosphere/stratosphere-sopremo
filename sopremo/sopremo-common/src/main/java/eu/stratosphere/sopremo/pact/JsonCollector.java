@@ -11,14 +11,14 @@ import eu.stratosphere.sopremo.type.IJsonNode;
  * The JsonCollector converts {@link IJsonNode}s to {@link PactRecord}s and collects this records with a given
  * Collector.
  */
-public class JsonCollector {
+public class JsonCollector<T extends IJsonNode> {
 
 	private Collector<SopremoRecord> collector;
 
 	private EvaluationContext context;
 
 	private EvaluationExpression resultProjection = EvaluationExpression.VALUE;
-	
+
 	private final SopremoRecord sopremoRecord;
 
 	/**
@@ -29,6 +29,15 @@ public class JsonCollector {
 	 */
 	public JsonCollector(final SopremoRecordLayout sopremoRecordLayout) {
 		this.sopremoRecord = new SopremoRecord(sopremoRecordLayout);
+	}
+
+	/**
+	 * Returns the sopremoRecord.
+	 * 
+	 * @return the sopremoRecord
+	 */
+	SopremoRecord getSopremoRecord() {
+		return this.sopremoRecord;
 	}
 
 	/**
@@ -58,7 +67,7 @@ public class JsonCollector {
 	 * @param value
 	 *        the node that should be collected
 	 */
-	public void collect(final IJsonNode value) {
+	public void collect(final T value) {
 		final IJsonNode resultValue = this.resultProjection.evaluate(value);
 		if (SopremoUtil.LOG.isTraceEnabled())
 			SopremoUtil.LOG.trace(String.format(" to %s", resultValue));

@@ -9,42 +9,50 @@ import eu.stratosphere.pact.generic.stub.GenericReducer;
 import eu.stratosphere.sopremo.EvaluationContext;
 import eu.stratosphere.sopremo.SopremoEnvironment;
 import eu.stratosphere.sopremo.serialization.SopremoRecord;
+import eu.stratosphere.sopremo.serialization.SopremoRecordLayout;
 import eu.stratosphere.sopremo.type.ArrayNode;
 import eu.stratosphere.sopremo.type.IJsonNode;
 import eu.stratosphere.sopremo.type.IStreamNode;
 import eu.stratosphere.sopremo.type.StreamNode;
 
 /**
- * An abstract implementation of the {@link ReduceStub}. SopremoReduce provides the functionality to convert the
- * standard input of the ReduceStub to a more manageable representation (the input is converted to an {@link IArrayNode}
- * ).
+ * An abstract implementation of the {@link GenericReducer}. SopremoReduce provides the functionality to convert the
+ * standard input of the ReduceStub to a more manageable representation (the input is converted to an
+ * {@link IStreamNode} ).
  */
-public abstract class TypedSopremoReduce<T extends IJsonNode> extends AbstractStub
+public abstract class GenericSopremoReduce<Elem extends IJsonNode, Out extends IJsonNode> extends AbstractStub
 		implements GenericReducer<SopremoRecord, SopremoRecord>, SopremoStub {
 	private EvaluationContext context;
 
-	private JsonCollector collector;
+	JsonCollector<Out> collector;
 
-	private RecordToJsonIterator cachedIterator;
+	private RecordToJsonIterator<? extends Elem> iterator;
 
-	private final StreamNode<T> array = new StreamNode<T>();
+	private final StreamNode<Elem> array = new StreamNode<Elem>();
 
 	/*
 	 * (non-Javadoc)
 	 * @see eu.stratosphere.pact.common.stubs.Stub#open(eu.stratosphere.nephele.configuration.Configuration)
 	 */
-	@SuppressWarnings("unchecked")
 	@Override
-	public void open(final Configuration parameters) throws Exception {
+	public void open(final Configuration parameters) {
 		// We need to pass our class loader since the default class loader is
 		// not able to resolve classes coming from the Sopremo user jar file.
 		SopremoEnvironment.getInstance().setClassLoader(getClass().getClassLoader());
 		this.context = SopremoUtil.getEvaluationContext(parameters);
-		this.cachedIterator = new RecordToJsonIterator();
-		this.collector = new JsonCollector(SopremoUtil.getLayout(parameters));
-		SopremoUtil.configureWithTransferredState(this, TypedSopremoReduce.class, parameters);
+		this.iterator = createIterator();
+		this.collector = createCollector(SopremoUtil.getLayout(parameters));
+		SopremoUtil.configureWithTransferredState(this, GenericSopremoReduce.class, parameters);
 		SopremoEnvironment.getInstance().setEvaluationContext(this.getContext());
-		this.array.setNodeIterator((Iterator<T>) this.cachedIterator);
+		this.array.setNodeIterator(this.iterator);
+	}
+
+	protected JsonCollector<Out> createCollector(final SopremoRecordLayout layout) {
+		return new JsonCollector<Out>(layout);
+	}
+
+	protected RecordToJsonIterator<? extends Elem> createIterator() {
+		return new RecordToJsonIterator<Elem>();
 	}
 
 	@Override
@@ -60,7 +68,7 @@ public abstract class TypedSopremoReduce<T extends IJsonNode> extends AbstractSt
 	 * @param out
 	 *        a collector that collects all output nodes
 	 */
-	protected abstract void reduce(IStreamNode<T> values, JsonCollector out);
+	protected abstract void reduce(IStreamNode<Elem> values, JsonCollector<Out> out);
 
 	/*
 	 * (non-Javadoc)
@@ -70,11 +78,11 @@ public abstract class TypedSopremoReduce<T extends IJsonNode> extends AbstractSt
 	@Override
 	public void combine(Iterator<SopremoRecord> records, Collector<SopremoRecord> out) throws Exception {
 		this.collector.configure(out, this.context);
-		this.cachedIterator.setIterator(records);
+		this.iterator.setIterator(records);
 
 		try {
 			if (SopremoUtil.DEBUG && SopremoUtil.LOG.isTraceEnabled()) {
-				ArrayNode<T> array = new ArrayNode<T>(this.array);
+				ArrayNode<Elem> array = new ArrayNode<Elem>(this.array);
 				SopremoUtil.LOG.trace(String.format("%s %s", this.getContext().getOperatorDescription(), array));
 				this.combine(array, this.collector);
 			} else
@@ -107,7 +115,7 @@ public abstract class TypedSopremoReduce<T extends IJsonNode> extends AbstractSt
 	 *         runtime catches an exception, it aborts the combine task and lets the fail-over logic
 	 *         decide whether to retry the combiner execution.
 	 */
-	protected void combine(IStreamNode<T> values, JsonCollector out) {
+	protected void combine(IStreamNode<Elem> values, JsonCollector<Out> out) {
 		reduce(values, out);
 	}
 
@@ -119,11 +127,11 @@ public abstract class TypedSopremoReduce<T extends IJsonNode> extends AbstractSt
 	@Override
 	public void reduce(final Iterator<SopremoRecord> records, final Collector<SopremoRecord> out) {
 		this.collector.configure(out, this.context);
-		this.cachedIterator.setIterator(records);
+		this.iterator.setIterator(records);
 
 		try {
 			if (SopremoUtil.DEBUG && SopremoUtil.LOG.isTraceEnabled()) {
-				ArrayNode<T> array = new ArrayNode<T>(this.array);
+				ArrayNode<Elem> array = new ArrayNode<Elem>(this.array);
 				SopremoUtil.LOG.trace(String.format("%s %s", this.getContext().getOperatorDescription(), array));
 				this.reduce(array, this.collector);
 			} else

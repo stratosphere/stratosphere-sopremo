@@ -29,7 +29,7 @@ public class Projection extends ElementaryOperator<Projection> {
 	public static class ProjectionStub extends SopremoMap {
 
 		@Override
-		protected void map(final IJsonNode value, final JsonCollector out) {
+		protected void map(final IJsonNode value, final JsonCollector<IJsonNode> out) {
 			out.collect(value);
 		}
 	}

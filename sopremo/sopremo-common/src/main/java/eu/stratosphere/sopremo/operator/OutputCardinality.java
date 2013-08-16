@@ -15,5 +15,5 @@ public @interface OutputCardinality {
 
 	int max() default 1;
 
-	int value() default 1;
+	int value() default -1;
 }

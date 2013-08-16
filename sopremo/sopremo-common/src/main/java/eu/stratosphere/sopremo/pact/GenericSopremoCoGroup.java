@@ -9,27 +9,31 @@ import eu.stratosphere.pact.generic.stub.GenericCoGrouper;
 import eu.stratosphere.sopremo.EvaluationContext;
 import eu.stratosphere.sopremo.SopremoEnvironment;
 import eu.stratosphere.sopremo.serialization.SopremoRecord;
+import eu.stratosphere.sopremo.serialization.SopremoRecordLayout;
 import eu.stratosphere.sopremo.type.ArrayNode;
 import eu.stratosphere.sopremo.type.IJsonNode;
 import eu.stratosphere.sopremo.type.IStreamNode;
 import eu.stratosphere.sopremo.type.StreamNode;
 
 /**
- * An abstract implementation of the {@link CoGroupStub}. SopremoCoGroup provides the functionality to convert the
- * standard input of the CoGroupStub to a more manageable representation (both inputs are converted to an
- * {@link IArrayNode}).
+ * An abstract implementation of the {@link GenericCoGrouper}. SopremoCoGroup provides the functionality to convert the
+ * standard input of the GenericCoGrouper to a more manageable representation (both inputs are converted to an
+ * {@link IStreamNode}).
  */
-public abstract class TypedSopremoCoGroup<LeftType extends IJsonNode, RightType extends IJsonNode> extends AbstractStub
+public abstract class GenericSopremoCoGroup<LeftElem extends IJsonNode, RightElem extends IJsonNode, Out extends IJsonNode>
+		extends AbstractStub
 		implements GenericCoGrouper<SopremoRecord, SopremoRecord, SopremoRecord>, SopremoStub {
 	private EvaluationContext context;
 
-	private JsonCollector collector;
+	private JsonCollector<Out> collector;
 
-	private RecordToJsonIterator cachedIterator1, cachedIterator2;
+	private RecordToJsonIterator<LeftElem> cachedIterator1;
+	
+	private RecordToJsonIterator<RightElem> cachedIterator2;
 
-	private final StreamNode<LeftType> leftArray = new StreamNode<LeftType>();
+	private final StreamNode<LeftElem> leftArray = new StreamNode<LeftElem>();
 
-	private final StreamNode<RightType> rightArray = new StreamNode<RightType>();
+	private final StreamNode<RightElem> rightArray = new StreamNode<RightElem>();
 
 	/**
 	 * This method must be overridden by CoGoup UDFs that want to make use of the combining feature
@@ -85,13 +89,13 @@ public abstract class TypedSopremoCoGroup<LeftType extends IJsonNode, RightType 
 
 		try {
 			if (SopremoUtil.DEBUG && SopremoUtil.LOG.isTraceEnabled()) {
-				ArrayNode<LeftType> leftArray = new ArrayNode<LeftType>(this.leftArray);
-				ArrayNode<RightType> rightArray = new ArrayNode<RightType>(this.rightArray);
+				ArrayNode<LeftElem> leftArray = new ArrayNode<LeftElem>(this.leftArray);
+				ArrayNode<RightElem> rightArray = new ArrayNode<RightElem>(this.rightArray);
 
 				SopremoUtil.LOG.trace(String.format("%s %s/%s", this.getContext().getOperatorDescription(), leftArray,
 					rightArray));
-				this.coGroup(new StreamNode<LeftType>(leftArray.iterator()),
-					new StreamNode<RightType>(rightArray.iterator()), this.collector);
+				this.coGroup(new StreamNode<LeftElem>(leftArray.iterator()),
+					new StreamNode<RightElem>(rightArray.iterator()), this.collector);
 			} else
 				this.coGroup(this.leftArray, this.rightArray, this.collector);
 		} catch (final RuntimeException e) {
@@ -105,20 +109,23 @@ public abstract class TypedSopremoCoGroup<LeftType extends IJsonNode, RightType 
 	 * (non-Javadoc)
 	 * @see eu.stratosphere.pact.common.stubs.Stub#open(eu.stratosphere.nephele.configuration.Configuration)
 	 */
-	@SuppressWarnings("unchecked")
 	@Override
 	public void open(final Configuration parameters) throws Exception {
 		// We need to pass our class loader since the default class loader is
 		// not able to resolve classes coming from the Sopremo user jar file.
 		SopremoEnvironment.getInstance().setClassLoader(getClass().getClassLoader());
 		this.context = SopremoUtil.getEvaluationContext(parameters);
-		this.collector = new JsonCollector(SopremoUtil.getLayout(parameters));
-		this.cachedIterator1 = new RecordToJsonIterator();
-		this.cachedIterator2 = new RecordToJsonIterator();
-		SopremoUtil.configureWithTransferredState(this, TypedSopremoCoGroup.class, parameters);
+		this.collector = createCollector(SopremoUtil.getLayout(parameters));
+		this.cachedIterator1 = new RecordToJsonIterator<LeftElem>();
+		this.cachedIterator2 = new RecordToJsonIterator<RightElem>();
+		SopremoUtil.configureWithTransferredState(this, GenericSopremoCoGroup.class, parameters);
 		SopremoEnvironment.getInstance().setEvaluationContext(this.getContext());
-		this.leftArray.setNodeIterator((Iterator<LeftType>) this.cachedIterator1);
-		this.rightArray.setNodeIterator((Iterator<RightType>) this.cachedIterator2);
+		this.leftArray.setNodeIterator(this.cachedIterator1);
+		this.rightArray.setNodeIterator(this.cachedIterator2);
+	}
+	
+	protected JsonCollector<Out> createCollector(final SopremoRecordLayout layout) {
+		return new JsonCollector<Out>(layout);
 	}
 
 	/**
@@ -131,7 +138,7 @@ public abstract class TypedSopremoCoGroup<LeftType extends IJsonNode, RightType 
 	 * @param out
 	 *        a collector that collects all output pairs
 	 */
-	protected abstract void coGroup(IStreamNode<LeftType> values1, IStreamNode<RightType> values2, JsonCollector out);
+	protected abstract void coGroup(IStreamNode<LeftElem> values1, IStreamNode<RightElem> values2, JsonCollector<Out> out);
 
 	@Override
 	public final EvaluationContext getContext() {

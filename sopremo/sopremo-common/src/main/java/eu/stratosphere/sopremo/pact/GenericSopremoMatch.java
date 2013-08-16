@@ -7,18 +7,20 @@ import eu.stratosphere.pact.generic.stub.GenericMatcher;
 import eu.stratosphere.sopremo.EvaluationContext;
 import eu.stratosphere.sopremo.SopremoEnvironment;
 import eu.stratosphere.sopremo.serialization.SopremoRecord;
+import eu.stratosphere.sopremo.serialization.SopremoRecordLayout;
 import eu.stratosphere.sopremo.type.IJsonNode;
 
 /**
- * An abstract implementation of the {@link MatchStub}. SopremoMatch provides the functionality to convert the
- * standard input of the MatchStub to a more manageable representation (both inputs are converted to an
+ * An abstract implementation of the {@link GenericMatcher}. SopremoMatch provides the functionality to convert the
+ * standard input of the GenericMatcher to a more manageable representation (both inputs are converted to a subclass of
  * {@link IJsonNode}).
  */
-public abstract class TypedSopremoMatch<LeftType extends IJsonNode, RightType extends IJsonNode> extends AbstractStub
+public abstract class GenericSopremoMatch<Left extends IJsonNode, Right extends IJsonNode, Out extends IJsonNode>
+		extends AbstractStub
 		implements GenericMatcher<SopremoRecord, SopremoRecord, SopremoRecord>, SopremoStub {
 	private EvaluationContext context;
 
-	private JsonCollector collector;
+	private JsonCollector<Out> collector;
 
 	/*
 	 * (non-Javadoc)
@@ -30,9 +32,13 @@ public abstract class TypedSopremoMatch<LeftType extends IJsonNode, RightType ex
 		// not able to resolve classes coming from the Sopremo user jar file.
 		SopremoEnvironment.getInstance().setClassLoader(getClass().getClassLoader());
 		this.context = SopremoUtil.getEvaluationContext(parameters);
-		this.collector = new JsonCollector(SopremoUtil.getLayout(parameters));
-		SopremoUtil.configureWithTransferredState(this, TypedSopremoMatch.class, parameters);
+		this.collector = createCollector(SopremoUtil.getLayout(parameters));
+		SopremoUtil.configureWithTransferredState(this, GenericSopremoMatch.class, parameters);
 		SopremoEnvironment.getInstance().setEvaluationContext(this.getContext());
+	}
+
+	protected JsonCollector<Out> createCollector(final SopremoRecordLayout layout) {
+		return new JsonCollector<Out>(layout);
 	}
 
 	@Override
@@ -50,7 +56,7 @@ public abstract class TypedSopremoMatch<LeftType extends IJsonNode, RightType ex
 	 * @param out
 	 *        a collector that collects all output pairs
 	 */
-	protected abstract void match(LeftType value1, RightType value2, JsonCollector out);
+	protected abstract void match(Left value1, Right value2, JsonCollector<Out> out);
 
 	/*
 	 * (non-Javadoc)
@@ -61,8 +67,8 @@ public abstract class TypedSopremoMatch<LeftType extends IJsonNode, RightType ex
 	@Override
 	public void match(final SopremoRecord record1, final SopremoRecord record2, final Collector<SopremoRecord> out) {
 		this.collector.configure(out, this.context);
-		final LeftType input1 = (LeftType) record1.getNode();
-		final RightType input2 = (RightType) record2.getNode();
+		final Left input1 = (Left) record1.getNode();
+		final Right input2 = (Right) record2.getNode();
 		if (SopremoUtil.LOG.isTraceEnabled())
 			SopremoUtil.LOG.trace(String.format("%s %s/%s", this.getContext().getOperatorDescription(), input1,
 				input2));

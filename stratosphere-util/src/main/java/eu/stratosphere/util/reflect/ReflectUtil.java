@@ -3,6 +3,8 @@ package eu.stratosphere.util.reflect;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -121,6 +123,53 @@ public class ReflectUtil {
 		return distance;
 	}
 
+	public static List<Type> getHierarchy(final Class<?> superClass, final Class<?> subclass) {
+		if (!superClass.isAssignableFrom(subclass))
+			throw new IllegalArgumentException();
+
+		List<Type> hierarchy = new ArrayList<Type>();
+		if (superClass == subclass)
+			return hierarchy;
+
+		if (superClass.isInterface()) {
+			final Type[] interfaces = subclass.getGenericInterfaces();
+			int minDistance = Integer.MAX_VALUE;
+			for (final Type xface : interfaces) {
+
+				final Class<?> type = (Class<?>) (xface instanceof Class ? xface : ((ParameterizedType) xface)
+					.getRawType());
+				if (type == superClass) {
+					hierarchy.clear();
+					hierarchy.add(xface);
+					break;
+				}
+
+				if (superClass.isAssignableFrom(type)) {
+					final List<Type> partialHierarchy = getHierarchy(superClass, type);
+					if (partialHierarchy.size() + 1 < minDistance) {
+						hierarchy = partialHierarchy;
+						hierarchy.add(0, xface);
+						minDistance = hierarchy.size();
+					}
+				}
+			}
+			if (hierarchy.isEmpty()) {
+				hierarchy.add(subclass.getGenericSuperclass());
+				hierarchy.addAll(getHierarchy(superClass, subclass.getSuperclass()));
+			}
+			return hierarchy;
+		}
+
+		Type clazz = subclass;
+		Class<?> rawType = subclass;
+		do {
+			hierarchy.add(clazz);
+			rawType = (Class<?>) (clazz instanceof Class ? clazz : ((ParameterizedType) clazz).getRawType());
+			clazz = rawType.getGenericSuperclass();
+		} while (superClass != rawType);
+		return hierarchy;
+	}
+	
 	/**
 	 * Checks dynamically whether the object has the specified function, which takes the given parameters.
 	 * 

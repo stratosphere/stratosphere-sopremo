@@ -7,17 +7,19 @@ import eu.stratosphere.pact.generic.stub.GenericMapper;
 import eu.stratosphere.sopremo.EvaluationContext;
 import eu.stratosphere.sopremo.SopremoEnvironment;
 import eu.stratosphere.sopremo.serialization.SopremoRecord;
+import eu.stratosphere.sopremo.serialization.SopremoRecordLayout;
 import eu.stratosphere.sopremo.type.IJsonNode;
 
 /**
- * An abstract implementation of the {@link MapStub}. SopremoMap provides the functionality to convert the
- * standard input of the MapStub to a more manageable representation (the input is converted to an {@link IJsonNode}).
+ * An abstract implementation of the {@link GenericMapper}. GenericSopremoMap provides the functionality to convert the
+ * standard input of the GenericMapper to a more manageable representation (the input is converted to a subclass of
+ * {@link IJsonNode}).
  */
-public abstract class TypedSopremoMap<T extends IJsonNode> extends AbstractStub implements
+public abstract class GenericSopremoMap<In extends IJsonNode, Out extends IJsonNode> extends AbstractStub implements
 		GenericMapper<SopremoRecord, SopremoRecord>, SopremoStub {
 	private EvaluationContext context;
 
-	private JsonCollector collector;
+	private JsonCollector<Out> collector;
 
 	@Override
 	public void open(final Configuration parameters) {
@@ -25,9 +27,13 @@ public abstract class TypedSopremoMap<T extends IJsonNode> extends AbstractStub 
 		// not able to resolve classes coming from the Sopremo user jar file.
 		SopremoEnvironment.getInstance().setClassLoader(getClass().getClassLoader());
 		this.context = SopremoUtil.getEvaluationContext(parameters);
-		this.collector = new JsonCollector(SopremoUtil.getLayout(parameters));
-		SopremoUtil.configureWithTransferredState(this, TypedSopremoMap.class, parameters);
+		this.collector = createCollector(SopremoUtil.getLayout(parameters));
+		SopremoUtil.configureWithTransferredState(this, GenericSopremoMap.class, parameters);
 		SopremoEnvironment.getInstance().setEvaluationContext(this.getContext());
+	}
+
+	protected JsonCollector<Out> createCollector(final SopremoRecordLayout layout) {
+		return new JsonCollector<Out>(layout);
 	}
 
 	@Override
@@ -43,7 +49,7 @@ public abstract class TypedSopremoMap<T extends IJsonNode> extends AbstractStub 
 	 * @param out
 	 *        a collector that collects all output nodes
 	 */
-	protected abstract void map(IJsonNode value, JsonCollector out);
+	protected abstract void map(In value, JsonCollector<Out> out);
 
 	/*
 	 * (non-Javadoc)
@@ -55,7 +61,7 @@ public abstract class TypedSopremoMap<T extends IJsonNode> extends AbstractStub 
 	@Override
 	public void map(final SopremoRecord record, final Collector<SopremoRecord> out) {
 		this.collector.configure(out, this.context);
-		final T input = (T) record.getNode();
+		final In input = (In) record.getNode();
 		if (SopremoUtil.LOG.isTraceEnabled())
 			SopremoUtil.LOG.trace(String.format("%s %s", this.getContext().getOperatorDescription(), input));
 		try {

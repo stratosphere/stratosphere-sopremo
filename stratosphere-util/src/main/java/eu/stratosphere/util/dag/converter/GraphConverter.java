@@ -1,5 +1,7 @@
 package eu.stratosphere.util.dag.converter;
 
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -11,9 +13,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import com.google.common.reflect.TypeToken;
+
 import eu.stratosphere.util.OneElementList;
 import eu.stratosphere.util.dag.ConnectionNavigator;
-import eu.stratosphere.util.reflect.BoundTypeUtil;
 
 /**
  * Converts a directly acyclic graph to another by performing recursive invocation of {@link NodeConverter}s for
@@ -233,11 +236,11 @@ public class GraphConverter<InputType, OutputType> implements NodeConverter<Inpu
 	@SuppressWarnings("unchecked")
 	public <BaseInputType extends InputType> GraphConverter<InputType, OutputType> register(
 			final NodeConverter<BaseInputType, ? extends OutputType> converter) {
+		final Type nodeType =
+			((ParameterizedType) TypeToken.of(converter.getClass()).getSupertype(NodeConverter.class)).getActualTypeArguments()[0];
 		final OneElementList<Class<? extends BaseInputType>> wrapList =
 			new OneElementList<Class<? extends BaseInputType>>(
-				(Class<? extends BaseInputType>) BoundTypeUtil
-					.getBindingOfSuperclass(converter.getClass(),
-						NodeConverter.class).getParameters()[0].getType());
+				(Class<BaseInputType>) TypeToken.of(nodeType).getRawType());
 		this.register(converter, wrapList);
 		return this;
 	}

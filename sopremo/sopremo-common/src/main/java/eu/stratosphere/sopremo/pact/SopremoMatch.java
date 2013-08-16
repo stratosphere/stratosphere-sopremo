@@ -7,5 +7,5 @@ import eu.stratosphere.sopremo.type.IJsonNode;
  * standard input of the MatchStub to a more manageable representation (both inputs are converted to an
  * {@link IJsonNode}).
  */
-public abstract class SopremoMatch extends TypedSopremoMatch<IJsonNode, IJsonNode> {
+public abstract class SopremoMatch extends GenericSopremoMatch<IJsonNode, IJsonNode, IJsonNode> {
 }

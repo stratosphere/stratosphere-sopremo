@@ -9,7 +9,7 @@ import eu.stratosphere.sopremo.type.IJsonNode;
  * Iterator that allows to iterate over {@link PactRecord}s. Each record is converted to a {@link IJsonNode} before
  * returning it.
  */
-public class RecordToJsonIterator implements Iterator<IJsonNode> {
+public final class RecordToJsonIterator<Elem extends IJsonNode> implements Iterator<Elem> {
 
 	private Iterator<SopremoRecord> iterator;
 
@@ -36,9 +36,10 @@ public class RecordToJsonIterator implements Iterator<IJsonNode> {
 	 * (non-Javadoc)
 	 * @see java.util.Iterator#next()
 	 */
+	@SuppressWarnings("unchecked")
 	@Override
-	public IJsonNode next() {
-		return this.iterator.next().getNode();
+	public Elem next() {
+		return (Elem) this.iterator.next().getNode();
 	}
 
 	/*

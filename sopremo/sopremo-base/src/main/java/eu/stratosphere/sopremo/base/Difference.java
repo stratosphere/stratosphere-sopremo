@@ -1,9 +1,16 @@
 package eu.stratosphere.sopremo.base;
 
+import java.util.List;
+
+import eu.stratosphere.sopremo.EvaluationContext;
+import eu.stratosphere.sopremo.io.Source;
+import eu.stratosphere.sopremo.operator.CompositeOperator;
 import eu.stratosphere.sopremo.operator.ElementaryOperator;
 import eu.stratosphere.sopremo.operator.InputCardinality;
 import eu.stratosphere.sopremo.operator.JsonStream;
 import eu.stratosphere.sopremo.operator.Name;
+import eu.stratosphere.sopremo.operator.OutputCardinality;
+import eu.stratosphere.sopremo.operator.SopremoModule;
 import eu.stratosphere.sopremo.pact.JsonCollector;
 import eu.stratosphere.sopremo.pact.SopremoCoGroup;
 import eu.stratosphere.sopremo.type.IJsonNode;
@@ -18,16 +25,25 @@ import eu.stratosphere.sopremo.type.IStreamNode;
  * @author Arvid Heise
  */
 @Name(verb = "subtract")
-public class Difference extends SetOperation<Difference> {
-
+@InputCardinality(min = 1)
+@OutputCardinality(1)
+public class Difference extends CompositeOperator<Difference> {
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.base.SetOperation#createBinaryOperations(eu.stratosphere.sopremo.JsonStream,
-	 * eu.stratosphere.sopremo.JsonStream)
+	 * @see
+	 * eu.stratosphere.sopremo.operator.CompositeOperator#addImplementation(eu.stratosphere.sopremo.operator.SopremoModule
+	 * , eu.stratosphere.sopremo.EvaluationContext)
 	 */
 	@Override
-	protected ElementaryOperator<?> createBinaryOperations(JsonStream leftInput, JsonStream rightInput) {
-		return new TwoInputDifference().withInputs(leftInput, rightInput);
+	public void addImplementation(SopremoModule module, EvaluationContext context) {
+		final Source leftInput = module.getInput(0);
+		final List<Source> otherInputs = module.getInputs().subList(1, module.getInputs().size());
+		if (otherInputs.isEmpty())
+			module.embed(new Unique().withInputs(leftInput));
+		else {
+			final JsonStream unionOfOtherInputs = new UnionAll().withInputs(otherInputs);
+			module.embed(new TwoInputDifference().withInputs(leftInput, unionOfOtherInputs));
+		}
 	}
 
 	@InputCardinality(min = 2, max = 2)
@@ -35,7 +51,7 @@ public class Difference extends SetOperation<Difference> {
 		public static class Implementation extends SopremoCoGroup {
 			@Override
 			protected void coGroup(final IStreamNode<IJsonNode> values1, final IStreamNode<IJsonNode> values2,
-					final JsonCollector out) {
+					final JsonCollector<IJsonNode> out) {
 				if (values2.isEmpty())
 					out.collect(values1.iterator().next());
 			}

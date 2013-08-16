@@ -524,7 +524,7 @@ public class SopremoTestPlan {
 		public Iterator<IJsonNode> iterator() {
 			if (this.actualRecords == null)
 				throw new IllegalStateException("Can only access actual output after a complete test run");
-			final RecordToJsonIterator iterator = new RecordToJsonIterator();
+			final RecordToJsonIterator<IJsonNode> iterator = new RecordToJsonIterator<IJsonNode>();
 			iterator.setIterator(this.actualRecords.iterator());
 			return iterator;
 		}
@@ -642,7 +642,7 @@ public class SopremoTestPlan {
 			if (this.isEmpty())
 				return Collections.EMPTY_LIST.iterator();
 			if (this.testRecords != null) {
-				final RecordToJsonIterator recordToJsonIterator = new RecordToJsonIterator();
+				final RecordToJsonIterator<IJsonNode> recordToJsonIterator = new RecordToJsonIterator<IJsonNode>();
 				recordToJsonIterator.setIterator(this.testRecords.iterator());
 				return recordToJsonIterator;
 			}
