@@ -47,7 +47,10 @@ public class DefaultFunctionRegistry extends DefaultRegistry<Callable<?, ?>> imp
 
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.packages.AbstractMethodRegistry#findMethod(java.lang.String)
+	 * 
+	 * @see
+	 * eu.stratosphere.sopremo.packages.AbstractMethodRegistry#findMethod(java
+	 * .lang.String)
 	 */
 	@Override
 	public Callable<?, ?> get(String name) {
@@ -56,8 +59,10 @@ public class DefaultFunctionRegistry extends DefaultRegistry<Callable<?, ?>> imp
 
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.packages.AbstractMethodRegistry#registerMethod(java.lang.String,
-	 * eu.stratosphere.sopremo.function.MeteorMethod)
+	 * 
+	 * @see
+	 * eu.stratosphere.sopremo.packages.AbstractMethodRegistry#registerMethod
+	 * (java.lang.String, eu.stratosphere.sopremo.function.MeteorMethod)
 	 */
 	@Override
 	public void put(String name, Callable<?, ?> method) {
@@ -66,7 +71,9 @@ public class DefaultFunctionRegistry extends DefaultRegistry<Callable<?, ?>> imp
 
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.packages.IMethodRegistry#getRegisteredMethods()
+	 * 
+	 * @see
+	 * eu.stratosphere.sopremo.packages.IMethodRegistry#getRegisteredMethods()
 	 */
 	@Override
 	public Set<String> keySet() {
@@ -75,7 +82,9 @@ public class DefaultFunctionRegistry extends DefaultRegistry<Callable<?, ?>> imp
 
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.ISopremoType#toString(java.lang.StringBuilder)
+	 * 
+	 * @see
+	 * eu.stratosphere.sopremo.ISopremoType#toString(java.lang.StringBuilder)
 	 */
 	@Override
 	public void appendAsString(Appendable appendable) throws IOException {
@@ -101,24 +110,24 @@ public class DefaultFunctionRegistry extends DefaultRegistry<Callable<?, ?>> imp
 		// check if the individual parameters match
 		for (int index = 0; index < parameterTypes.length; index++)
 			if (!IJsonNode.class.isAssignableFrom(parameterTypes[index])
-				&& !(index == parameterTypes.length - 1 && method.isVarArgs() &&
-				IJsonNode.class.isAssignableFrom(parameterTypes[index].getComponentType())))
+					&& !(index == parameterTypes.length - 1 && method.isVarArgs() && IJsonNode.class.isAssignableFrom(parameterTypes[index].getComponentType())))
 				return false;
 		return true;
 	}
 
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.packages.IFunctionRegistry#put(java.lang.String, java.lang.Class, java.lang.String)
+	 * 
+	 * @see
+	 * eu.stratosphere.sopremo.packages.IFunctionRegistry#put(java.lang.String,
+	 * java.lang.Class, java.lang.String)
 	 */
 	@Override
 	public void put(String registeredName, Class<?> clazz, String staticMethodName) {
-		final List<Method> functions = this.getCompatibleMethods(
-			ReflectUtil.getMethods(clazz, staticMethodName, Modifier.STATIC | Modifier.PUBLIC));
+		final List<Method> functions = this.getCompatibleMethods(ReflectUtil.getMethods(clazz, staticMethodName, Modifier.STATIC | Modifier.PUBLIC));
 
 		if (functions.isEmpty())
-			throw new IllegalArgumentException(
-				String.format("Method %s not found in class %s", staticMethodName, clazz));
+			throw new IllegalArgumentException(String.format("Method %s not found in class %s", staticMethodName, clazz));
 
 		Callable<?, ?> javaMethod = this.get(registeredName);
 		if (javaMethod == null || !(javaMethod instanceof JavaMethod))
@@ -135,8 +144,7 @@ public class DefaultFunctionRegistry extends DefaultRegistry<Callable<?, ?>> imp
 
 	@Override
 	public void put(final Class<?> javaFunctions) {
-		final List<Method> functions = this.getCompatibleMethods(
-			ReflectUtil.getMethods(javaFunctions, null, Modifier.STATIC | Modifier.PUBLIC));
+		final List<Method> functions = this.getCompatibleMethods(ReflectUtil.getMethods(javaFunctions, null, Modifier.STATIC | Modifier.PUBLIC));
 
 		for (final Method method : functions)
 			this.put(method);
@@ -163,8 +171,7 @@ public class DefaultFunctionRegistry extends DefaultRegistry<Callable<?, ?>> imp
 					SopremoUtil.LOG.warn(String.format("Cannot access inner class %s: %s", innerClass, e));
 				}
 
-		final List<Field> declaredFields =
-			ReflectUtil.getFields(javaFunctions, null, Modifier.STATIC | Modifier.PUBLIC | Modifier.FINAL);
+		final List<Field> declaredFields = ReflectUtil.getFields(javaFunctions, null, Modifier.STATIC | Modifier.PUBLIC | Modifier.FINAL);
 
 		for (final Field field : declaredFields)
 			try {
@@ -193,9 +200,7 @@ public class DefaultFunctionRegistry extends DefaultRegistry<Callable<?, ?>> imp
 		String name = null;
 		final Name nameAnnotation = object.getAnnotation(Name.class);
 		if (nameAnnotation != null)
-			name = this.nameChooser.choose(nameAnnotation.noun(), nameAnnotation.verb(),
-				nameAnnotation.adjective(),
-				nameAnnotation.preposition());
+			name = this.nameChooser.choose(nameAnnotation.noun(), nameAnnotation.verb(), nameAnnotation.adjective(), nameAnnotation.preposition());
 		return name;
 	}
 
@@ -203,9 +208,7 @@ public class DefaultFunctionRegistry extends DefaultRegistry<Callable<?, ?>> imp
 		String name = null;
 		final Name nameAnnotation = object.getAnnotation(Name.class);
 		if (nameAnnotation != null)
-			name = this.nameChooser.choose(nameAnnotation.noun(), nameAnnotation.verb(),
-				nameAnnotation.adjective(),
-				nameAnnotation.preposition());
+			name = this.nameChooser.choose(nameAnnotation.noun(), nameAnnotation.verb(), nameAnnotation.adjective(), nameAnnotation.preposition());
 		return name;
 	}
 
@@ -225,11 +228,41 @@ public class DefaultFunctionRegistry extends DefaultRegistry<Callable<?, ?>> imp
 		for (final Method method : methods) {
 			final boolean compatibleSignature = isCompatibleSignature(method);
 			if (SopremoUtil.LOG.isDebugEnabled())
-				SopremoUtil.LOG.debug(String.format("Method %s is %s compatible", method, compatibleSignature ? ""
-					: " not"));
+				SopremoUtil.LOG.debug(String.format("Method %s is %s compatible", method, compatibleSignature ? "" : " not"));
 			if (compatibleSignature)
 				functions.add(method);
 		}
 		return functions;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((methods == null) ? 0 : methods.hashCode());
+		result = prime * result + ((nameChooser == null) ? 0 : nameChooser.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		DefaultFunctionRegistry other = (DefaultFunctionRegistry) obj;
+		if (methods == null) {
+			if (other.methods != null)
+				return false;
+		} else if (!methods.equals(other.methods))
+			return false;
+		if (nameChooser == null) {
+			if (other.nameChooser != null)
+				return false;
+		} else if (!nameChooser.equals(other.nameChooser))
+			return false;
+		return true;
 	}
 }

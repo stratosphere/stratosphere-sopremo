@@ -36,7 +36,7 @@ import eu.stratosphere.sopremo.type.NullNode;
 public class SecondOrderFunctions implements BuiltinProvider {
 	@Name(verb = "map")
 	public static class MAP extends SopremoFunction2<IArrayNode<IJsonNode>, FunctionNode> {
-		MAP() {
+		public MAP() {
 			super("map");
 		}
 
@@ -61,7 +61,7 @@ public class SecondOrderFunctions implements BuiltinProvider {
 
 	@Name(verb = "filter")
 	public static class FILTER extends SopremoFunction2<IArrayNode<IJsonNode>, FunctionNode> {
-		FILTER() {
+		public FILTER() {
 			super("filter");
 		}
 
@@ -85,7 +85,7 @@ public class SecondOrderFunctions implements BuiltinProvider {
 
 	@Name(verb = "find")
 	public static class FIND extends SopremoFunction2<IArrayNode<IJsonNode>, FunctionNode> {
-		FIND() {
+		public FIND() {
 			super("find");
 		}
 
@@ -107,7 +107,7 @@ public class SecondOrderFunctions implements BuiltinProvider {
 
 	@Name(verb = { "fold", "reduce" })
 	public static final class FOLD extends SopremoFunction3<IArrayNode<IJsonNode>, IJsonNode, FunctionNode> {
-		FOLD() {
+		public FOLD() {
 			super("fold");
 		}
 

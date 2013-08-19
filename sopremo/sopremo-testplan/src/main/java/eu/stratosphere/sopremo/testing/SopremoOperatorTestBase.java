@@ -17,9 +17,8 @@ package eu.stratosphere.sopremo.testing;
 import java.io.ByteArrayInputStream;
 import java.util.Arrays;
 
-import org.junit.Assert;
-
 import org.apache.commons.io.output.ByteArrayOutputStream;
+import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 

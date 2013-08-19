@@ -15,6 +15,10 @@
 package eu.stratosphere.meteor;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.util.List;
 
 import org.junit.Assert;
@@ -33,7 +37,7 @@ public class MeteorParseTest {
 		// printBeamerSlide(script);
 		SopremoPlan plan = null;
 		try {
-			final QueryParser queryParser = new QueryParser().withInputDirectory(new File("/"));
+			final QueryParser queryParser = new QueryParser().withInputDirectory(new File("."));
 			initParser(queryParser);
 			plan = queryParser.tryParse(script);
 		} catch (final QueryParserException e) {
@@ -47,6 +51,38 @@ public class MeteorParseTest {
 
 		// System.out.println(plan);
 		return plan;
+	}
+	
+	public SopremoPlan parseScript(final File script) {
+		// printBeamerSlide(script);
+		SopremoPlan plan = null;
+		try {
+			final QueryParser queryParser = new QueryParser().withInputDirectory(script.getParentFile());
+			initParser(queryParser);
+			plan = queryParser.tryParse(loadScriptFromFile(script));
+		} catch (final QueryParserException e) {
+			final AssertionError error = new AssertionError(String.format("could not parse script: %s",
+				e.getMessage()));
+			error.initCause(e);
+			throw error;
+		}
+
+		Assert.assertNotNull("could not parse script", plan);
+
+		// System.out.println(plan);
+		return plan;
+	}
+	
+	private String loadScriptFromFile(File scriptFile) {
+		byte[] encoded;
+		try {
+			encoded = Files.readAllBytes(scriptFile.toPath());
+			return Charset.defaultCharset().decode(ByteBuffer.wrap(encoded)).toString();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return null;
+		
 	}
 
 	protected void initParser(QueryParser queryParser) {
