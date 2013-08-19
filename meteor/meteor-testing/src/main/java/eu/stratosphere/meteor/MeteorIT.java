@@ -34,7 +34,7 @@ public abstract class MeteorIT extends MeteorParseTest {
 	protected DefaultClient client;
 
 	protected File inputDir;
-	
+
 	private String projectName;
 
 	private File projectJar;
@@ -61,16 +61,16 @@ public abstract class MeteorIT extends MeteorParseTest {
 
 		try {
 			String projectPath = (new File(".")).getCanonicalPath();
-			 projectJar = MavenUtil.buildJarForProject(projectPath, projectName+"_testing");
+			projectJar = MavenUtil.buildJarForProject(projectPath, projectName + "_testing");
 			projectJar.deleteOnExit();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
-	
+
 	@Override
 	protected void initParser(QueryParser queryParser) {
-		//queryParser.setInputDirectory(new File("target"));
+		// queryParser.setInputDirectory(new File("target"));
 		queryParser.getPackageManager().importPackageFrom(projectName.substring("sopremo-".length()), projectJar);
 	}
 

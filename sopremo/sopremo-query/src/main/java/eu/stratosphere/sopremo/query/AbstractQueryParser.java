@@ -83,8 +83,8 @@ public abstract class AbstractQueryParser extends Parser implements ParsingScope
 	 * 
 	 */
 	private void init() {
-		this.currentPlan.setContext(new EvaluationContext(this.getFunctionRegistry(), this.getConstantRegistry(),
-			this.getTypeRegistry()));
+		this.currentPlan.setContext(new EvaluationContext(this.getFunctionRegistry(), this.getConstantRegistry(), this.getTypeRegistry(),
+				new HashMap<String, Object>()));
 		this.packageManager.getFunctionRegistry().put(CoreFunctions.class);
 		this.packageManager.getFunctionRegistry().put(MathFunctions.class);
 		this.packageManager.getFunctionRegistry().put(SecondOrderFunctions.class);
@@ -113,6 +113,7 @@ public abstract class AbstractQueryParser extends Parser implements ParsingScope
 
 	/*
 	 * (non-Javadoc)
+	 * 
 	 * @see eu.stratosphere.sopremo.query.ParsingScope#getFileFormatRegistry()
 	 */
 	@Override
@@ -173,19 +174,17 @@ public abstract class AbstractQueryParser extends Parser implements ParsingScope
 	// this.getContext().getBindings().set(name.getText(), binding, scopeLevel);
 	// }
 
-	public EvaluationExpression createCheckedMethodCall(String packageName, Token name, EvaluationExpression[] params)
-			throws RecognitionException {
+	public EvaluationExpression createCheckedMethodCall(String packageName, Token name, EvaluationExpression[] params) throws RecognitionException {
 		return this.createCheckedMethodCall(packageName, name, null, params);
 	}
 
-	public EvaluationExpression createCheckedMethodCall(String packageName, Token name, EvaluationExpression object,
-			EvaluationExpression[] params) throws RecognitionException {
+	public EvaluationExpression createCheckedMethodCall(String packageName, Token name, EvaluationExpression object, EvaluationExpression[] params)
+			throws RecognitionException {
 		final IFunctionRegistry functionRegistry = this.getScope(packageName).getFunctionRegistry();
 		Callable<?, ?> callable = functionRegistry.get(name.getText());
 		if (callable == null)
-			throw new RecognitionExceptionWithUsageHint(name, String.format(
-				"Unknown function %s; possible alternatives %s", name,
-				this.inputSuggestion.suggest(name.getText(), functionRegistry.keySet())));
+			throw new RecognitionExceptionWithUsageHint(name, String.format("Unknown function %s; possible alternatives %s", name,
+					this.inputSuggestion.suggest(name.getText(), functionRegistry.keySet())));
 		if (callable instanceof MacroBase)
 			return ((MacroBase) callable).call(params);
 		if (!(callable instanceof SopremoFunction))
@@ -196,13 +195,12 @@ public abstract class AbstractQueryParser extends Parser implements ParsingScope
 			paramList.add(0, object);
 
 		if (callable instanceof Inlineable)
-			return ((Inlineable) callable).getDefinition().clone().replace(Predicates.instanceOf(InputSelection.class),
-				new TransformFunction() {
-					@Override
-					public EvaluationExpression apply(EvaluationExpression in) {
-						return paramList.get(((InputSelection) in).getIndex()).clone();
-					}
-				});
+			return ((Inlineable) callable).getDefinition().clone().replace(Predicates.instanceOf(InputSelection.class), new TransformFunction() {
+				@Override
+				public EvaluationExpression apply(EvaluationExpression in) {
+					return paramList.get(((InputSelection) in).getIndex()).clone();
+				}
+			});
 		return new FunctionCall(name.getText(), (SopremoFunction) callable, paramList.elements());
 	}
 
@@ -227,13 +225,11 @@ public abstract class AbstractQueryParser extends Parser implements ParsingScope
 	}
 
 	@Override
-	public Object recoverFromMismatchedSet(IntStream input, RecognitionException e, BitSet follow)
-			throws RecognitionException {
+	public Object recoverFromMismatchedSet(IntStream input, RecognitionException e, BitSet follow) throws RecognitionException {
 		throw e;
 	}
 
-	protected ConfObjectInfo<? extends Operator<?>> findOperatorGreedily(String packageName, Token firstWord)
-			throws RecognitionException {
+	protected ConfObjectInfo<? extends Operator<?>> findOperatorGreedily(String packageName, Token firstWord) throws RecognitionException {
 		StringBuilder name = new StringBuilder(firstWord.getText());
 		IntList wordBoundaries = new IntArrayList();
 		wordBoundaries.add(name.length());
@@ -256,9 +252,8 @@ public abstract class AbstractQueryParser extends Parser implements ParsingScope
 			this.input.consume();
 
 		if (info == null)
-			throw new RecognitionExceptionWithUsageHint(firstWord, String.format(
-				"Unknown operator %s; possible alternatives %s", name,
-				this.inputSuggestion.suggest(name, scope.getOperatorRegistry().keySet())));
+			throw new RecognitionExceptionWithUsageHint(firstWord, String.format("Unknown operator %s; possible alternatives %s", name,
+					this.inputSuggestion.suggest(name, scope.getOperatorRegistry().keySet())));
 		/*
 		 * throw new SimpleException(String.format(
 		 * "Unknown operator %s; possible alternatives %s", name,
@@ -276,9 +271,7 @@ public abstract class AbstractQueryParser extends Parser implements ParsingScope
 			try {
 				URI uri = new URI(filePath);
 				if (uri.getScheme() == null)
-					return new Path(SopremoEnvironment.getInstance().getEvaluationContext().getWorkingPath(),
-						filePath)
-						.toString();
+					return new Path(SopremoEnvironment.getInstance().getEvaluationContext().getWorkingPath(), filePath).toString();
 				return new Path(uri).toString();
 			} catch (URISyntaxException e) {
 				throw new IllegalArgumentException("Invalid path " + filePath, e);
@@ -295,8 +288,7 @@ public abstract class AbstractQueryParser extends Parser implements ParsingScope
 				try {
 					return new Path(workingPath, filePath).toString();
 				} catch (Exception e) {
-					throw new IllegalArgumentException("Cannot use current workingPath to form a valid file path for "
-						+ filePath, e);
+					throw new IllegalArgumentException("Cannot use current workingPath to form a valid file path for " + filePath, e);
 				}
 
 			try {
@@ -318,18 +310,15 @@ public abstract class AbstractQueryParser extends Parser implements ParsingScope
 			final Path workingPath = SopremoEnvironment.getInstance().getEvaluationContext().getWorkingPath();
 			// else prepend working directory if it specifies an hdfs path
 			if (workingPath.toUri().getScheme().equals("file"))
-				throw new IllegalArgumentException(
-					"To use shortened local path, a valid local path must be set as the working path");
+				throw new IllegalArgumentException("To use shortened local path, a valid local path must be set as the working path");
 
-			return new Path(SopremoEnvironment.getInstance().getEvaluationContext().getWorkingPath(), filePath)
-				.toString();
+			return new Path(SopremoEnvironment.getInstance().getEvaluationContext().getWorkingPath(), filePath).toString();
 		}
 
 		throw new IllegalArgumentException("Unknown protocol");
 	}
 
-	protected ConfObjectInfo<? extends SopremoFormat> findFormat(String packageName, Token name, String pathName)
-			throws RecognitionExceptionWithUsageHint {
+	protected ConfObjectInfo<? extends SopremoFormat> findFormat(String packageName, Token name, String pathName) throws RecognitionExceptionWithUsageHint {
 		if (name == null) {
 			URI path;
 			try {
@@ -347,16 +336,14 @@ public abstract class AbstractQueryParser extends Parser implements ParsingScope
 					return info;
 			}
 
-			SopremoUtil.LOG.warn("Cannot find file format for " + pathName + " using default " +
-				this.getDefaultFileFormat());
+			SopremoUtil.LOG.warn("Cannot find file format for " + pathName + " using default " + this.getDefaultFileFormat());
 			return fileFormatRegistry.get(fileFormatRegistry.getName(this.getDefaultFileFormat()));
 		}
 		ParsingScope scope = this.getScope(packageName);
 		final ConfObjectInfo<SopremoFormat> format = scope.getFileFormatRegistry().get(name.getText());
 		if (format == null)
-			throw new RecognitionExceptionWithUsageHint(name, String.format(
-				"Unknown file format %s; possible alternatives %s", name,
-				this.inputSuggestion.suggest(name.getText(), scope.getFileFormatRegistry().keySet())));
+			throw new RecognitionExceptionWithUsageHint(name, String.format("Unknown file format %s; possible alternatives %s", name,
+					this.inputSuggestion.suggest(name.getText(), scope.getFileFormatRegistry().keySet())));
 		return format;
 	}
 
@@ -374,8 +361,7 @@ public abstract class AbstractQueryParser extends Parser implements ParsingScope
 		return scope;
 	}
 
-	protected ConfObjectInfo.ConfObjectPropertyInfo findPropertyRelunctantly(ConfObjectInfo<?> info, Token firstWord)
-			throws RecognitionException {
+	protected ConfObjectInfo.ConfObjectPropertyInfo findPropertyRelunctantly(ConfObjectInfo<?> info, Token firstWord) throws RecognitionException {
 		String name = firstWord.getText();
 		ConfObjectInfo.ConfObjectPropertyInfo property;
 
@@ -388,9 +374,8 @@ public abstract class AbstractQueryParser extends Parser implements ParsingScope
 		}
 
 		if (property == null)
-			throw new RecognitionExceptionWithUsageHint(firstWord, String.format(
-				"Unknown property %s; possible alternatives %s", name,
-				this.inputSuggestion.suggest(name, propertyRegistry.keySet())));
+			throw new RecognitionExceptionWithUsageHint(firstWord, String.format("Unknown property %s; possible alternatives %s", name,
+					this.inputSuggestion.suggest(name, propertyRegistry.keySet())));
 
 		// consume additional tokens
 		for (; lookAhead > 1; lookAhead--)
