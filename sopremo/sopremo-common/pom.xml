@@ -10,6 +10,7 @@
 	<artifactId>sopremo-common</artifactId>
 	<name>sopremo-common</name>
 	<packaging>jar</packaging>
+	<description>Base infrastructure for Stratsphere Sopremo</description>
 	<dependencies>
 		<dependency>
 			<groupId>eu.stratosphere</groupId>
