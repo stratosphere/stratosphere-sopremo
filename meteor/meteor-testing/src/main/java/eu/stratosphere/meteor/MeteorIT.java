@@ -16,12 +16,14 @@ package eu.stratosphere.meteor;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 
 import eu.stratosphere.sopremo.client.DefaultClient;
-import eu.stratosphere.sopremo.operator.SopremoPlan;
 import eu.stratosphere.sopremo.server.SopremoTestServer;
 
 /**
@@ -39,12 +41,16 @@ public abstract class MeteorIT extends MeteorParseTest {
 
 	private File projectJar;
 
+	private final static Map<String, File> ProjectJars = new HashMap<String, File>();
+
 	/**
 	 * Initializes DefaultClientIT.
 	 */
 	public MeteorIT() {
-		projectName = MavenUtil.getProjectName();
-		init();
+		this.projectName = MavenUtil.getProjectName();
+		this.projectJar = ProjectJars.get(this.projectName);
+		if (this.projectJar == null)
+			ProjectJars.put(this.projectName, this.projectJar = build(this.projectName));
 	}
 
 	@Before
@@ -57,24 +63,24 @@ public abstract class MeteorIT extends MeteorParseTest {
 		this.client.setUpdateTime(100);
 	}
 
-	private void init() {
-
+	private static File build(String projectName) {
 		try {
 			String projectPath = (new File(".")).getCanonicalPath();
-			projectJar = MavenUtil.buildJarForProject(projectPath, projectName + "_testing");
+			File projectJar = MavenUtil.buildJarForProject(projectPath, projectName + "_testing");
 			projectJar.deleteOnExit();
-		} catch (Exception e) {
-			e.printStackTrace();
+			return projectJar;
+		} catch (IOException e) {
+			Assert.fail(e.getMessage());
+			return null;
 		}
 	}
 
 	@Override
 	protected void initParser(QueryParser queryParser) {
 		// queryParser.setInputDirectory(new File("target"));
-		queryParser.getPackageManager().importPackageFrom(projectName.substring("sopremo-".length()), projectJar);
+		queryParser.getPackageManager().importPackageFrom(this.projectName.substring("sopremo-".length()),
+			this.projectJar);
 	}
-
-	protected abstract SopremoPlan getPlan() throws IOException;
 
 	@After
 	public void teardown() throws Exception {

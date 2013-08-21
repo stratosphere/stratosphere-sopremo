@@ -9,6 +9,7 @@ import org.junit.Test;
 
 import eu.stratosphere.sopremo.CoreFunctions;
 import eu.stratosphere.sopremo.EvaluationContext;
+import eu.stratosphere.sopremo.base.replace.ReplaceBase;
 import eu.stratosphere.sopremo.expressions.ArrayAccess;
 import eu.stratosphere.sopremo.expressions.ConstantExpression;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
@@ -39,7 +40,7 @@ public class ReplaceTest extends SopremoOperatorTestBase<Replace> {
 	public void shouldLookupValuesStrictly() {
 		final Replace replace = new Replace().
 			withReplaceExpression(new ObjectAccess("fieldToReplace")).
-			withDefaultExpression(Replace.FILTER_RECORDS).
+			withDefaultExpression(ReplaceBase.FILTER_RECORDS).
 			withDictionaryKeyExtraction(new ArrayAccess(0)).
 			withDictionaryValueExtraction(new ArrayAccess(1));
 		final SopremoTestPlan sopremoPlan = new SopremoTestPlan(replace);
@@ -120,12 +121,11 @@ public class ReplaceTest extends SopremoOperatorTestBase<Replace> {
 	@Test
 	public void shouldLookupArrayValuesStrictly() {
 
-		final Replace replace = new Replace().
+		final ReplaceAll replace = new ReplaceAll().
 			withReplaceExpression(new ObjectAccess("fieldToReplace")).
-			withDefaultExpression(Replace.FILTER_RECORDS).
+			withDefaultExpression(ReplaceBase.FILTER_RECORDS).
 			withDictionaryKeyExtraction(new ArrayAccess(0)).
-			withDictionaryValueExtraction(new ArrayAccess(1)).
-			withArrayElementsReplacement(true);
+			withDictionaryValueExtraction(new ArrayAccess(1));
 		final SopremoTestPlan sopremoPlan = new SopremoTestPlan(replace);
 
 		sopremoPlan.getInput(0).
@@ -149,11 +149,10 @@ public class ReplaceTest extends SopremoOperatorTestBase<Replace> {
 	@Test
 	public void shouldKeepArrayValuesNotInDictionary() {
 
-		final Replace replace = new Replace().
+		final ReplaceAll replace = new ReplaceAll().
 			withReplaceExpression(new ObjectAccess("fieldToReplace")).
 			withDictionaryKeyExtraction(new ArrayAccess(0)).
-			withDictionaryValueExtraction(new ArrayAccess(1)).
-			withArrayElementsReplacement(true);
+			withDictionaryValueExtraction(new ArrayAccess(1));
 		final SopremoTestPlan sopremoPlan = new SopremoTestPlan(replace);
 
 		sopremoPlan.getInput(0).
@@ -177,7 +176,7 @@ public class ReplaceTest extends SopremoOperatorTestBase<Replace> {
 
 	@Test
 	public void shouldLookupArrayValuesWithDefault() {
-		final Replace replace = new Replace();
+		final ReplaceAll replace = new ReplaceAll();
 		final SopremoTestPlan sopremoPlan = new SopremoTestPlan(replace);
 		final EvaluationContext context = sopremoPlan.getEvaluationContext();
 		sopremoPlan.getEvaluationContext().getFunctionRegistry().put(CoreFunctions.class);
@@ -186,7 +185,6 @@ public class ReplaceTest extends SopremoOperatorTestBase<Replace> {
 		replace.setDictionaryValueExtraction(new ArrayAccess(1));
 		replace.setDefaultExpression(new FunctionCall("format", context, new ConstantExpression("default %s"),
 			EvaluationExpression.VALUE));
-		replace.setArrayElementsReplacement(true);
 
 		sopremoPlan.getInput(0).
 			addObject("field1", 1, "fieldToReplace", new int[] { 1, 2, 3 }, "field2", 2).

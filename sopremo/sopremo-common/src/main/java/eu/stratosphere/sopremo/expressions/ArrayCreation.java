@@ -80,6 +80,15 @@ public class ArrayCreation extends EvaluationExpression {
 
 	private final IArrayNode<IJsonNode> result = new ArrayNode<IJsonNode>();
 
+	/**
+	 * Returns the elements.
+	 * 
+	 * @return the elements
+	 */
+	public List<EvaluationExpression> getElements() {
+		return this.elements;
+	}
+	
 	@Override
 	public IJsonNode evaluate(final IJsonNode node) {
 		this.result.clear();

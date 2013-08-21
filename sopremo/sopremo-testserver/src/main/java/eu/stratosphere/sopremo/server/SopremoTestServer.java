@@ -131,7 +131,11 @@ public class SopremoTestServer implements Closeable, SopremoExecutionProtocol {
 	public void checkContentsOf(String fileName, IJsonNode... expected) throws IOException {
 		List<IJsonNode> remainingValues = new ArrayList<IJsonNode>(Arrays.asList(expected));
 
-		final JsonParser parser = new JsonParser(new FileReader(this.tempDir + fileName));
+		final String outputFile = this.tempDir + fileName;
+		this.filesToCleanup.add(outputFile);
+		final File file = new File(outputFile);
+		Assert.assertTrue("output " + fileName + " not written", file.exists());
+		final JsonParser parser = new JsonParser(new FileReader(file));
 		try {
 			parser.setWrappingArraySkipping(true);
 			int index = 0;
@@ -143,6 +147,8 @@ public class SopremoTestServer implements Closeable, SopremoExecutionProtocol {
 			}
 			if (!remainingValues.isEmpty())
 				Assert.fail("More elements expected " + remainingValues);
+			if (!parser.checkEnd())
+				Assert.fail("Less elements expected " + parser.readValueAsTree());
 		} finally {
 			parser.close();
 		}
@@ -182,9 +188,16 @@ public class SopremoTestServer implements Closeable, SopremoExecutionProtocol {
 		return createFile(getTempName(fileName), getJsonString(nodes));
 	}
 
+	public File getOutputFile(String fileName) {
+		this.filesToCleanup.add(getTempName(fileName));
+		final File file = new File(getTempName(fileName));
+		file.delete();
+		return file;
+	}
+
 	private File createFile(String fileName, String fileContent) throws IOException {
 		File f = new File(fileName);
-		if(this.filesToCleanup.contains(fileContent))
+		if (this.filesToCleanup.contains(fileContent))
 			throw new IllegalArgumentException("file already exists");
 
 		FileWriter fw = new FileWriter(f);

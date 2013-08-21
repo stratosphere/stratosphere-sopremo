@@ -153,9 +153,10 @@ public class PackageInfo extends AbstractSopremoType implements ISopremoType, Pa
 			Enumeration<JarEntry> entries = jarFile.entries();
 			while (entries.hasMoreElements()) {
 				JarEntry jarEntry = entries.nextElement();
-				if (jarEntry.getName().endsWith(".class")) {
+				final String entryName = jarEntry.getName();
+				if (entryName.endsWith(".class") && !entryName.contains("$")) {
 					String className =
-						jarEntry.getName().replaceAll(".class$", "").replaceAll("/|\\\\", ".").replaceAll("^\\.", "");
+						entryName.replaceAll(".class$", "").replaceAll("/|\\\\", ".").replaceAll("^\\.", "");
 					this.importClass(className);
 				}
 			}

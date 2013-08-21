@@ -89,7 +89,7 @@ inlineFunction returns [ExpressionFunction func]
     for(int index = 0; index < params.size(); index++) 
       this.getConstantRegistry().put(params.get(index).getText(), new InputSelection(index)); 
   } 
-  '{' def=ternaryExpression '}'
+  '{' def=expression '}'
   { 
     $func = new ExpressionFunction(params.size(), def.tree);
     removeConstantScope(); 
@@ -105,7 +105,7 @@ scope { EvaluationExpression context }
   : ternaryExpression;
 
 expression
-  : ('read' | 'write' | genericOperatorName)=> operatorExpression
+  : (ID (ID | VAR))=> operatorExpression
   | ternaryExpression;
 
 ternaryExpression
@@ -338,7 +338,7 @@ writeOperator returns [Sink sink]
 } ->;
 
 genericOperatorName returns [ConfObjectInfo<? extends Operator<?>> info]:
-(packageName=ID ':')? name=ID { ($info = findOperatorGreedily($packageName.text, $name)) != null  }?=> ->;
+;
 
 // <name> flags* <input>* options*
 // flags - boolean options
@@ -347,10 +347,10 @@ genericOperatorName returns [ConfObjectInfo<? extends Operator<?>> info]:
 genericOperator returns [Operator<?> op]
 @init { 
   ConfObjectInfo<? extends Operator<?>> operatorInfo;
-}	:	name=genericOperatorName { (operatorInfo = $name.info) != null }?=>
+}	:	(packageName=ID ':')? name=ID { (operatorInfo = findOperatorGreedily($packageName.text, $name)) != null  }?=> 
 { $operator::result = $op = operatorInfo.newInstance(); } 
-operatorFlag[operatorInfo, $op]*
-((VAR)=> input[operatorInfo, $op] ((',')=> ',' input[operatorInfo, $op])*)
+//operatorFlag[operatorInfo, $op]*
+((VAR)=> input[operatorInfo, $op] ((',')=> ',' input[operatorInfo, $op])*)?
 confOption[operatorInfo, $op]* 
 ->; 
 	
@@ -359,14 +359,14 @@ confOption [ConfObjectInfo<?> info, ConfigurableSopremoType object]
  ConfObjectInfo.ConfObjectPropertyInfo property = null;
 } : //{ findOperatorPropertyRelunctantly($genericOperator::operatorInfo, input.LT(1)) != null }?	
   name=ID
-	{ property = findPropertyRelunctantly(info, name); }
+	{ (property = findPropertyRelunctantly(info, name)) != null }?=>
   expr=ternaryExpression { property.setValue(object, $expr.tree); } ->;
 
 operatorFlag [ConfObjectInfo<?> info, ConfigurableSopremoType object]
 @init {
  ConfObjectInfo.ConfObjectPropertyInfo property = null;
 }
-  : name=ID  { (property = findPropertyRelunctantly(info, $name)) != null }?
+  : name=ID  { (property = findPropertyRelunctantly(info, $name)) != null }?=>
 { if(!property.isFlag())
     throw new QueryParserException(String.format("Property \%s is not a flag", $name.text), name);
   property.setValue(object, true); } ->;

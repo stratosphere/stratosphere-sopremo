@@ -14,11 +14,10 @@
  **********************************************************************************************************************/
 package eu.stratosphere.meteor;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
 import java.util.List;
 
 import org.junit.Assert;
@@ -52,7 +51,7 @@ public class MeteorParseTest {
 		// System.out.println(plan);
 		return plan;
 	}
-	
+
 	public SopremoPlan parseScript(final File script) {
 		// printBeamerSlide(script);
 		SopremoPlan plan = null;
@@ -72,21 +71,23 @@ public class MeteorParseTest {
 		// System.out.println(plan);
 		return plan;
 	}
-	
+
 	private String loadScriptFromFile(File scriptFile) {
-		byte[] encoded;
 		try {
-			encoded = Files.readAllBytes(scriptFile.toPath());
-			return Charset.defaultCharset().decode(ByteBuffer.wrap(encoded)).toString();
+			final BufferedReader reader = new BufferedReader(new FileReader(scriptFile));
+			StringBuilder builder = new StringBuilder();
+			int ch;
+			while ((ch = reader.read()) != -1)
+				builder.append((char) ch);
+			return builder.toString();
 		} catch (IOException e) {
-			e.printStackTrace();
+			throw new RuntimeException(e);
 		}
-		return null;
-		
+
 	}
 
 	protected void initParser(QueryParser queryParser) {
-		
+
 	}
 
 	public static void assertPlanEquals(final SopremoPlan expectedPlan, final SopremoPlan actualPlan) {

@@ -4,6 +4,7 @@ import org.junit.Test;
 
 import eu.stratosphere.meteor.MeteorParseTest;
 import eu.stratosphere.sopremo.base.Replace;
+import eu.stratosphere.sopremo.base.ReplaceAll;
 import eu.stratosphere.sopremo.expressions.ArithmeticExpression;
 import eu.stratosphere.sopremo.expressions.ArithmeticExpression.ArithmeticOperator;
 import eu.stratosphere.sopremo.expressions.ConstantExpression;
@@ -26,9 +27,8 @@ public class ReplaceTest extends MeteorParseTest {
 		final SopremoPlan expectedPlan = new SopremoPlan();
 		final Source persons = new Source("file://persons.json");
 		final Source languages = new Source("file://languages.json");
-		final Replace replace = new Replace().
+		final ReplaceAll replace = new ReplaceAll().
 			withInputs(persons, languages).
-			withArrayElementsReplacement(true).
 			withReplaceExpression(JsonUtil.createPath("0", "spokenLanguages"));
 		final Sink normalizedPersons = new Sink("file://normalizedPersons.json").withInputs(replace);
 		expectedPlan.setSinks(normalizedPersons);
@@ -49,9 +49,8 @@ public class ReplaceTest extends MeteorParseTest {
 		final SopremoPlan expectedPlan = new SopremoPlan();
 		final Source persons = new Source("file://persons.json");
 		final Source languages = new Source("file://languages.json");
-		final Replace replace = new Replace().
+		final ReplaceAll replace = new ReplaceAll().
 			withInputs(persons, languages).
-			withArrayElementsReplacement(true).
 			withDefaultExpression(new ArithmeticExpression(new ConstantExpression("unknown language "),
 				ArithmeticOperator.ADDITION, JsonUtil.createPath("0", "spokenLanguages"))).
 			withReplaceExpression(JsonUtil.createPath("0", "spokenLanguages"));
