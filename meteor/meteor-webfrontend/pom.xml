@@ -11,7 +11,7 @@
 	</parent>
 	
 	<name>meteor-webfrontend</name>
-
+	<artifactId>meteor-webfrontend</artifactId>
 	<packaging>jar</packaging>
 
 	<dependencies>
@@ -62,17 +62,4 @@
 		</plugins>
 	</reporting>
 
-	<build>
-		<plugins>
-				<plugin>
-          <artifactId>maven-compiler-plugin</artifactId>
-          <version>3.0</version>  
-          <configuration>  
-            <source>1.7</source>  
-            <target>1.7</target>  
-          </configuration>  
-        </plugin>
-		</plugins>
-	</build>
-	<artifactId>meteor-webfrontend</artifactId>
 </project>

@@ -4,6 +4,7 @@ logs.zip
 .idea/*
 *.jar
 target
+bin/
 .classpath
 .project
 .settings

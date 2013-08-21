@@ -11,6 +11,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import eu.stratosphere.meteor.client.common.HDFSUtil;
 import eu.stratosphere.meteor.client.common.MeteorContextHandler;
+import eu.stratosphere.nephele.util.StringUtils;
+import eu.stratosphere.util.StringUtil;
 
 /**
  * 
@@ -169,12 +171,7 @@ public class OutputServlet extends AbstractServletGUI {
 			writer.println("  output( obj );");
 			
 			// create error string
-			String error = e.getMessage() + System.lineSeparator();
-			StackTraceElement[] tmp = e.getStackTrace();
-			for ( int i = 0; i < tmp.length; i++ ){
-				error += tmp[i] + System.lineSeparator();
-			}			
-			ErrorServlet.setError( error );
+			ErrorServlet.setError( StringUtils.stringifyException(e) );
 		}
 		
 		// script footer
