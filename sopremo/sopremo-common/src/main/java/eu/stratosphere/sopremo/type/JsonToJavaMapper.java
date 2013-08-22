@@ -82,9 +82,9 @@ public class JsonToJavaMapper extends AbstractTypeMapper<TypeMapper<?, ?>> {
 
 	@SuppressWarnings("rawtypes")
 	private static final class ObjectToMapMapper extends TypeMapper<IObjectNode, Map> {
-		private final Type valueType;
+		private final Type valueType, keyType;
 
-		private final Class<?> rawKeyType, rawValueType;
+		private final Class<?> rawKeyType;
 
 		/**
 		 * Initializes JsonToJavaMapper.ObjectToMapMapper.
@@ -92,13 +92,12 @@ public class JsonToJavaMapper extends AbstractTypeMapper<TypeMapper<?, ?>> {
 		public ObjectToMapMapper(Type targetType) {
 			super(HashMap.class);
 			if (targetType instanceof ParameterizedType) {
+				this.keyType = ((ParameterizedType) targetType).getActualTypeArguments()[0];
 				this.valueType = ((ParameterizedType) targetType).getActualTypeArguments()[1];
-				this.rawKeyType =
-					TypeToken.of(((ParameterizedType) targetType).getActualTypeArguments()[0]).getRawType();
-				this.rawValueType = TypeToken.of(this.valueType).getRawType();
+				this.rawKeyType = TypeToken.of(this.keyType).getRawType();
 			} else {
-				this.rawKeyType = String.class;
-				this.valueType = this.rawValueType = Object.class;
+				this.keyType = this.rawKeyType = String.class;
+				this.valueType = Object.class;
 			}
 		}
 
@@ -124,7 +123,7 @@ public class JsonToJavaMapper extends AbstractTypeMapper<TypeMapper<?, ?>> {
 			}
 			else {
 				for (String key : from.getFieldNames()) {
-					final Object targetKey = INSTANCE.map(from.get(key), null, this.rawKeyType);
+					final Object targetKey = INSTANCE.map(from.get(key), null, this.keyType);
 					target.put(targetKey, INSTANCE.map(from.get(key), target.get(key), this.valueType));
 					reusedKeys.add(targetKey);
 				}

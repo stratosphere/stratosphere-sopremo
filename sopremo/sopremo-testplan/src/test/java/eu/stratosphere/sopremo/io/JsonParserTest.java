@@ -78,7 +78,7 @@ public class JsonParserTest {
 						new ArrayNode<IJsonNode>().add(IntNode.valueOf(24)).add(IntNode.valueOf(55)))
 						.add(IntNode.valueOf(12)).add(IntNode.valueOf(17))), 2 },
 			{ "\"Test\"", TextNode.valueOf("Test"), 1 },
-			{ "\"Test\\\"Test\"", TextNode.valueOf("Test\\\"Test"), 1 },
+			{ "\"Test\\\"Test\"", TextNode.valueOf("Test\"Test"), 1 },
 			{
 				"42, [23, [[24, \"Test\"], 12, \"17\"]]",
 

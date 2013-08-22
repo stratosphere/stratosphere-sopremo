@@ -64,25 +64,29 @@ public class EvaluationContext extends AbstractSopremoType implements ISopremoTy
 	 * Initializes EvaluationContext.
 	 */
 	public EvaluationContext() {
-		this(new DefaultFunctionRegistry(), new DefaultConstantRegistry(), new DefaultTypeRegistry(), new HashMap<String, Object>());
+		this(new DefaultFunctionRegistry(), new DefaultConstantRegistry(), new DefaultTypeRegistry(),
+			new HashMap<String, Object>());
 	}
 
 	/**
 	 * Initializes EvaluationContext.
 	 */
-	public EvaluationContext(IFunctionRegistry methodRegistry, IConstantRegistry constantRegistry, ITypeRegistry typeRegistry,
+	public EvaluationContext(IFunctionRegistry methodRegistry, IConstantRegistry constantRegistry,
+			ITypeRegistry typeRegistry,
 			Map<String, Object> contextParameters) {
 		this.methodRegistry = methodRegistry;
 		this.constantRegistry = constantRegistry;
 		this.typeRegistry = typeRegistry;
 		this.contextParameters = contextParameters;
 
-		workingPath = new Path(new File(".").toURI().toString()).toString();
+		this.workingPath = new Path(new File(".").toURI().toString()).toString();
 
 		this.kryo = new Kryo();
 		for (Class<? extends IJsonNode> type : TypeCoercer.NUMERIC_TYPES)
 			register(type);
-		List<Class<? extends Object>> defaultTypes = Arrays.asList(BooleanNode.class, TextNode.class, IObjectNode.class, IArrayNode.class, NullNode.class,
+		@SuppressWarnings("unchecked")
+		List<Class<? extends Object>> defaultTypes =
+			Arrays.asList(BooleanNode.class, TextNode.class, IObjectNode.class, IArrayNode.class, NullNode.class,
 				MissingNode.class, TreeMap.class, ArrayList.class, BigInteger.class, BigDecimal.class);
 		for (Class<?> type : defaultTypes)
 			register(type);
@@ -107,7 +111,6 @@ public class EvaluationContext extends AbstractSopremoType implements ISopremoTy
 
 	/*
 	 * (non-Javadoc)
-	 * 
 	 * @see eu.stratosphere.sopremo.AbstractSopremoType#getKryo()
 	 */
 	public Kryo getKryo() {
@@ -116,7 +119,6 @@ public class EvaluationContext extends AbstractSopremoType implements ISopremoTy
 
 	/*
 	 * (non-Javadoc)
-	 * 
 	 * @see
 	 * eu.stratosphere.sopremo.SopremoType#toString(java.lang.StringBuilder)
 	 */
@@ -132,7 +134,6 @@ public class EvaluationContext extends AbstractSopremoType implements ISopremoTy
 
 	/*
 	 * (non-Javadoc)
-	 * 
 	 * @see eu.stratosphere.sopremo.AbstractSopremoType#clone()
 	 */
 	@Override
@@ -142,7 +143,6 @@ public class EvaluationContext extends AbstractSopremoType implements ISopremoTy
 
 	/*
 	 * (non-Javadoc)
-	 * 
 	 * @see eu.stratosphere.sopremo.AbstractSopremoType#shallowClone()
 	 */
 	@Override
@@ -163,7 +163,6 @@ public class EvaluationContext extends AbstractSopremoType implements ISopremoTy
 	//
 	/*
 	 * (non-Javadoc)
-	 * 
 	 * @see eu.stratosphere.sopremo.AbstractSopremoType#copyPropertiesFrom(eu.
 	 * stratosphere.sopremo.AbstractSopremoType)
 	 */
@@ -175,7 +174,6 @@ public class EvaluationContext extends AbstractSopremoType implements ISopremoTy
 
 	/*
 	 * (non-Javadoc)
-	 * 
 	 * @see eu.stratosphere.sopremo.packages.RegistryScope#getConstantRegistry()
 	 */
 	@Override
@@ -216,7 +214,7 @@ public class EvaluationContext extends AbstractSopremoType implements ISopremoTy
 	 * Sets the operatorDescription to the specified value.
 	 * 
 	 * @param operatorDescription
-	 *            the operatorDescription to set
+	 *        the operatorDescription to set
 	 */
 	public void setOperatorDescription(String operatorDescription) {
 		if (operatorDescription == null)
@@ -258,7 +256,7 @@ public class EvaluationContext extends AbstractSopremoType implements ISopremoTy
 	 * Sets the hdfsPath to the specified value.
 	 * 
 	 * @param hdfsPath
-	 *            the hdfsPath to set
+	 *        the hdfsPath to set
 	 */
 	public void setWorkingPath(Path hdfsPath) {
 		if (hdfsPath == null)
@@ -272,7 +270,7 @@ public class EvaluationContext extends AbstractSopremoType implements ISopremoTy
 	}
 
 	@SuppressWarnings("unchecked")
-	public <Type> Type getParameter(String key, Class<Type> type) {
+	public <Type> Type getParameter(String key, @SuppressWarnings("unused") Class<Type> type) {
 		Object value = this.contextParameters.get(key);
 		return (Type) value;
 	}
@@ -281,14 +279,14 @@ public class EvaluationContext extends AbstractSopremoType implements ISopremoTy
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((constantRegistry == null) ? 0 : constantRegistry.hashCode());
-		result = prime * result + ((contextParameters == null) ? 0 : contextParameters.hashCode());
-		result = prime * result + ((methodRegistry == null) ? 0 : methodRegistry.hashCode());
-		result = prime * result + ((operatorDescription == null) ? 0 : operatorDescription.hashCode());
-		result = prime * result + ((resultProjection == null) ? 0 : resultProjection.hashCode());
-		result = prime * result + taskId;
-		result = prime * result + ((typeRegistry == null) ? 0 : typeRegistry.hashCode());
-		result = prime * result + ((workingPath == null) ? 0 : workingPath.hashCode());
+		result = prime * result + ((this.constantRegistry == null) ? 0 : this.constantRegistry.hashCode());
+		result = prime * result + ((this.contextParameters == null) ? 0 : this.contextParameters.hashCode());
+		result = prime * result + ((this.methodRegistry == null) ? 0 : this.methodRegistry.hashCode());
+		result = prime * result + ((this.operatorDescription == null) ? 0 : this.operatorDescription.hashCode());
+		result = prime * result + ((this.resultProjection == null) ? 0 : this.resultProjection.hashCode());
+		result = prime * result + this.taskId;
+		result = prime * result + ((this.typeRegistry == null) ? 0 : this.typeRegistry.hashCode());
+		result = prime * result + ((this.workingPath == null) ? 0 : this.workingPath.hashCode());
 		return result;
 	}
 
@@ -301,42 +299,42 @@ public class EvaluationContext extends AbstractSopremoType implements ISopremoTy
 		if (getClass() != obj.getClass())
 			return false;
 		EvaluationContext other = (EvaluationContext) obj;
-		if (constantRegistry == null) {
+		if (this.constantRegistry == null) {
 			if (other.constantRegistry != null)
 				return false;
-		} else if (!constantRegistry.equals(other.constantRegistry))
+		} else if (!this.constantRegistry.equals(other.constantRegistry))
 			return false;
-		if (contextParameters == null) {
+		if (this.contextParameters == null) {
 			if (other.contextParameters != null)
 				return false;
-		} else if (!contextParameters.equals(other.contextParameters))
+		} else if (!this.contextParameters.equals(other.contextParameters))
 			return false;
-		if (methodRegistry == null) {
+		if (this.methodRegistry == null) {
 			if (other.methodRegistry != null)
 				return false;
-		} else if (!methodRegistry.equals(other.methodRegistry))
+		} else if (!this.methodRegistry.equals(other.methodRegistry))
 			return false;
-		if (operatorDescription == null) {
+		if (this.operatorDescription == null) {
 			if (other.operatorDescription != null)
 				return false;
-		} else if (!operatorDescription.equals(other.operatorDescription))
+		} else if (!this.operatorDescription.equals(other.operatorDescription))
 			return false;
-		if (resultProjection == null) {
+		if (this.resultProjection == null) {
 			if (other.resultProjection != null)
 				return false;
-		} else if (!resultProjection.equals(other.resultProjection))
+		} else if (!this.resultProjection.equals(other.resultProjection))
 			return false;
-		if (taskId != other.taskId)
+		if (this.taskId != other.taskId)
 			return false;
-		if (typeRegistry == null) {
+		if (this.typeRegistry == null) {
 			if (other.typeRegistry != null)
 				return false;
-		} else if (!typeRegistry.equals(other.typeRegistry))
+		} else if (!this.typeRegistry.equals(other.typeRegistry))
 			return false;
-		if (workingPath == null) {
+		if (this.workingPath == null) {
 			if (other.workingPath != null)
 				return false;
-		} else if (!workingPath.equals(other.workingPath))
+		} else if (!this.workingPath.equals(other.workingPath))
 			return false;
 		return true;
 	}

@@ -246,7 +246,6 @@ public class JavaToJsonMapperTest {
 			}.getType()));
 	}
 
-	@SuppressWarnings("serial")
 	@Test
 	public void shouldMapTypedList() {
 		List<Object> object = new ArrayList<Object>();

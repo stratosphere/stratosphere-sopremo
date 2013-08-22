@@ -32,7 +32,7 @@ public class DefaultNameChooser implements NameChooser {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + Arrays.hashCode(preferredOrder);
+		result = prime * result + Arrays.hashCode(this.preferredOrder);
 		return result;
 	}
 
@@ -45,7 +45,7 @@ public class DefaultNameChooser implements NameChooser {
 		if (getClass() != obj.getClass())
 			return false;
 		DefaultNameChooser other = (DefaultNameChooser) obj;
-		if (!Arrays.equals(preferredOrder, other.preferredOrder))
+		if (!Arrays.equals(this.preferredOrder, other.preferredOrder))
 			return false;
 		return true;
 	}

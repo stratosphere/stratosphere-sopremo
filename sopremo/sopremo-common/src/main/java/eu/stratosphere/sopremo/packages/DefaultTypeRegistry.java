@@ -34,7 +34,6 @@ public class DefaultTypeRegistry extends AbstractSopremoType implements ITypeReg
 
 	/*
 	 * (non-Javadoc)
-	 * 
 	 * @see eu.stratosphere.sopremo.packages.IRegistry#get(java.lang.String)
 	 */
 	@Override
@@ -44,7 +43,6 @@ public class DefaultTypeRegistry extends AbstractSopremoType implements ITypeReg
 
 	/*
 	 * (non-Javadoc)
-	 * 
 	 * @see eu.stratosphere.sopremo.packages.IRegistry#put(java.lang.String,
 	 * java.lang.Object)
 	 */
@@ -56,7 +54,6 @@ public class DefaultTypeRegistry extends AbstractSopremoType implements ITypeReg
 
 	/*
 	 * (non-Javadoc)
-	 * 
 	 * @see eu.stratosphere.sopremo.packages.ITypeRegistry#put(java.lang.Class)
 	 */
 	@Override
@@ -66,7 +63,6 @@ public class DefaultTypeRegistry extends AbstractSopremoType implements ITypeReg
 
 	/*
 	 * (non-Javadoc)
-	 * 
 	 * @see eu.stratosphere.sopremo.packages.IRegistry#keySet()
 	 */
 	@Override
@@ -76,7 +72,6 @@ public class DefaultTypeRegistry extends AbstractSopremoType implements ITypeReg
 
 	/*
 	 * (non-Javadoc)
-	 * 
 	 * @see
 	 * eu.stratosphere.sopremo.ISopremoType#appendAsString(java.lang.Appendable)
 	 */
@@ -96,7 +91,6 @@ public class DefaultTypeRegistry extends AbstractSopremoType implements ITypeReg
 
 	/*
 	 * (non-Javadoc)
-	 * 
 	 * @see eu.stratosphere.sopremo.packages.ITypeRegistry#getTypes()
 	 */
 	@Override
@@ -108,8 +102,8 @@ public class DefaultTypeRegistry extends AbstractSopremoType implements ITypeReg
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((elements == null) ? 0 : elements.hashCode());
-		result = prime * result + ((typeList == null) ? 0 : typeList.hashCode());
+		result = prime * result + this.elements.hashCode();
+		result = prime * result + this.typeList.hashCode();
 		return result;
 	}
 
@@ -122,17 +116,7 @@ public class DefaultTypeRegistry extends AbstractSopremoType implements ITypeReg
 		if (getClass() != obj.getClass())
 			return false;
 		DefaultTypeRegistry other = (DefaultTypeRegistry) obj;
-		if (elements == null) {
-			if (other.elements != null)
-				return false;
-		} else if (!elements.equals(other.elements))
-			return false;
-		if (typeList == null) {
-			if (other.typeList != null)
-				return false;
-		} else if (!typeList.equals(other.typeList))
-			return false;
-		return true;
+		return this.elements.equals(other.elements) && this.typeList.equals(other.typeList);
 	}
 
 }

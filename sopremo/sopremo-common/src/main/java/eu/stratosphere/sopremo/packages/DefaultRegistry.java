@@ -49,7 +49,6 @@ public class DefaultRegistry<T extends ISopremoType> extends AbstractSopremoType
 
 	/*
 	 * (non-Javadoc)
-	 * 
 	 * @see
 	 * eu.stratosphere.sopremo.ISopremoType#toString(java.lang.StringBuilder)
 	 */
@@ -72,7 +71,7 @@ public class DefaultRegistry<T extends ISopremoType> extends AbstractSopremoType
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((elements == null) ? 0 : elements.hashCode());
+		result = prime * result + this.elements.hashCode();
 		return result;
 	}
 
@@ -84,12 +83,7 @@ public class DefaultRegistry<T extends ISopremoType> extends AbstractSopremoType
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		DefaultRegistry other = (DefaultRegistry) obj;
-		if (elements == null) {
-			if (other.elements != null)
-				return false;
-		} else if (!elements.equals(other.elements))
-			return false;
-		return true;
+		DefaultRegistry<?> other = (DefaultRegistry<?>) obj;
+		return this.elements.equals(other.elements);
 	}
 }
