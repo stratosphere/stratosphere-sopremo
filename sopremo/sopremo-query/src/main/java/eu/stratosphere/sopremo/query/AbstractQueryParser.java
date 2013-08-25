@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import org.antlr.runtime.BitSet;
 import org.antlr.runtime.IntStream;
@@ -24,6 +25,7 @@ import org.antlr.runtime.Token;
 import org.antlr.runtime.TokenStream;
 import org.antlr.runtime.UnwantedTokenException;
 
+import com.google.common.base.CharMatcher;
 import com.google.common.base.Predicates;
 
 import eu.stratosphere.nephele.fs.Path;
@@ -63,7 +65,7 @@ public abstract class AbstractQueryParser extends Parser implements ParsingScope
 
 	private PackageManager packageManager = new PackageManager();
 
-	private InputSuggestion inputSuggestion = new InputSuggestion().withMaxSuggestions(3).withMinSimilarity(0.5);
+	protected InputSuggestion inputSuggestion = new InputSuggestion().withMaxSuggestions(3).withMinSimilarity(0.5);
 
 	protected List<Sink> sinks = new ArrayList<Sink>();
 
@@ -235,7 +237,8 @@ public abstract class AbstractQueryParser extends Parser implements ParsingScope
 		wordBoundaries.add(name.length());
 
 		// greedily concatenate as many tokens as possible
-		for (int lookAhead = 1; this.input.LA(lookAhead) == firstWord.getType(); lookAhead++) {
+		for (int lookAhead = 1; this.input.LA(lookAhead) == firstWord.getType() || 
+				CharMatcher.JAVA_LETTER.matchesAllOf(this.input.LT(lookAhead).getText()); lookAhead++) {
 			Token matchedToken = this.input.LT(lookAhead);
 			name.append(' ').append(matchedToken.getText());
 			wordBoundaries.add(name.length());

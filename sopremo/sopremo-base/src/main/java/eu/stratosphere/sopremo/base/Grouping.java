@@ -1,5 +1,6 @@
 package eu.stratosphere.sopremo.base;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -163,10 +164,21 @@ public class Grouping extends CompositeOperator<Grouping> {
 
 		this.defaultGroupingKey = defaultGroupingKey;
 	}
-
+	
+	/* (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.operator.Operator#appendAsString(java.lang.Appendable)
+	 */
 	@Override
-	public String toString() {
-		return String.format("%s to %s", super.toString(), this.resultProjection);
+	public void appendAsString(Appendable appendable) throws IOException {
+		super.appendAsString(appendable);
+		appendable.append(" on ");
+		for(int input = 0; input < getNumInputs(); input++) {
+			if(input > 1)
+				appendable.append(", ");
+			getGroupingKey(input).appendAsString(appendable);
+		}
+		appendable.append(" to ");
+		this.resultProjection.appendAsString(appendable);
 	}
 
 	@InputCardinality(min = 2, max = 2)

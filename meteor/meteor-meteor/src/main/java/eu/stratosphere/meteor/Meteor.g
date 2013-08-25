@@ -48,8 +48,8 @@ catch (RecognitionException e) {
 	  return true;
 	}
   
-  protected EvaluationExpression getInputSelection(Token inputVar) {
-      return getVariable(inputVar).toInputSelection($operator::result);
+  protected EvaluationExpression getInputSelection(Token inputVar) throws RecognitionException {
+      return getVariableSafely(inputVar).toInputSelection($operator::result);
   }
 
   public void parseSinks() throws RecognitionException {
@@ -61,19 +61,13 @@ script
 	:	 (statement ';')+ ->;
 
 statement
-	:	(assignment | operator | packageImport | functionDefinition | javaudf
+	:	(operator | packageImport | functionDefinition | javaudf
 // configuration function call 
 	| m=functionCall { $m.tree.evaluate(MissingNode.getInstance()); }) ->;
 	
 packageImport
   :  'using' packageName=ID { getPackageManager().importPackage($packageName.text); } 
      (',' additionalPackage=ID { getPackageManager().importPackage($additionalPackage.text); })* ->;
-
-assignment
-	:	targets+=VAR (',' targets+=VAR)* '=' source=operator 
-	{ for(int index = 0; index < $targets.size(); index++)
-	    putVariable((Token) $targets.get(index), new JsonStreamExpression($source.op.getOutput(index))); 
-	} -> ;
 
 functionDefinition
   : name=ID '=' func=inlineFunction { addFunction($name.text, $func.func); } -> ;
@@ -158,12 +152,15 @@ preincrementExpression
 unaryExpression
 	:	('!' | '~')? castExpression;
 
+/**
+ * (int) exp
+ * exp as int
+ */
 castExpression
 	:	('(' ID ')')=> '(' type=ID ')' expr=generalPathExpression
   -> { coerce($type.text, $expr.tree) }
-	| (generalPathExpression AS)=> expr=generalPathExpression AS type=ID
-  -> { coerce($type.text, $expr.tree) }
-	| generalPathExpression;
+	| expr=generalPathExpression ({input.LT(1).getText().equals("as")}? ID type=ID)?
+	-> { type == null ? $expr.tree : coerce($type.text, $expr.tree)};
 	
 generalPathExpression
 	: value=valueExpression 
@@ -210,7 +207,6 @@ valueExpression
   | (FN)=> func=inlineFunction -> ^(EXPRESSION["ConstantExpression"] { new FunctionNode($func.func) })
 	| parenthesesExpression 
 	| literal 
-  | (VAR '[' VAR)=> streamIndexAccess
 	| VAR -> { getInputSelection($VAR) }
   | ((ID ':')=> packageName=ID ':')? constant=ID { getScope($packageName.text).getConstantRegistry().get($constant.text) != null }? => 
     -> { getScope($packageName.text).getConstantRegistry().get($constant.text) }  
@@ -245,7 +241,7 @@ fieldAssignment
   | VAR 
     ( '.' STAR { $objectCreation::mappings.add(new ObjectCreation.CopyFields(getInputSelection($VAR))); } ->
 //      | '=' op=operator { setInnerOutput($VAR, $op.op) }?=>
-      | p=contextAwarePathExpression[getVariable($VAR).toInputSelection($operator::result)]
+      | p=contextAwarePathExpression[getVariableSafely($VAR).toInputSelection($operator::result)]
       ( ':' e2=expression { $objectCreation::mappings.add(new ObjectCreation.TagMapping($p.tree, $e2.tree)); } ->
         | /* empty */ { $objectCreation::mappings.add(new ObjectCreation.FieldAssignment(getAssignmentName($p.tree), $p.tree)); } ->
       )
@@ -270,11 +266,6 @@ literal
   | (val=UINT | val=INTEGER) -> ^(EXPRESSION["ConstantExpression"] { parseInt($val.text) })
   | 'null' -> { ConstantExpression.NULL };
 
-streamIndexAccess
-  : op=VAR { getVariable($op) != null }?=>
-    '[' path=generalPathExpression ']' { !($path.tree instanceof ConstantExpression) }?
-  -> { new StreamIndexExpression(getVariable($op).getStream(), $path.tree) };
-	
 arrayCreation
 @init { paraphrase.push("a json array"); }
 @after { paraphrase.pop(); }
@@ -288,13 +279,6 @@ operator returns [Operator<?> op=null]
 scope { 
   int numInputs;
   Operator<?> result;
-}
-@init {
-  if(state.backtracking == 0) 
-	  addScope();
-}
-@after {
-  removeScope();
 }:	readOperator { $op = $readOperator.source; }
  |  writeOperator { $op = $writeOperator.sink; }
  |  genericOperator { $op = $genericOperator.op; }; 
@@ -306,15 +290,20 @@ readOperator returns [Source source]
   SopremoFormat fileFormat = null;
   String path = null;
 }
-	:	'read' ((packageName=ID ':')?format=ID)?
-	  'from' (protocol=ID? filePath=STRING | protocol=ID '(' filePath=STRING ')') 
+	:	(output=VAR '=')? 
+	  'read' ((packageName=ID ':')?format=ID)?
+	  {input.LT(1).getText().equals("from")}? ID (protocol=ID? filePath=STRING | protocol=ID '(' filePath=STRING ')') 
 { 
   path = makeFilePath($protocol, $filePath.text);
   formatInfo = findFormat($packageName.text, format, path);
   fileFormat = formatInfo.newInstance(); 
 }
 	  confOption[formatInfo, fileFormat]* 
-{ $source = new Source(fileFormat, path); } ->;
+{ 
+  $source = new Source(fileFormat, path); 
+  if(output != null)
+    putVariable(output, new JsonStreamExpression($source));
+} ->;
 
 // write <format> <input> to <path> options*
 writeOperator returns [Sink sink]
@@ -322,9 +311,15 @@ writeOperator returns [Sink sink]
   ConfObjectInfo<? extends SopremoFormat> formatInfo = null;
   SopremoFormat fileFormat = null;
   String path = null;
+  if(state.backtracking == 0) 
+    addScope();
 }
-	:	'write' ((packageName=ID ':')?format=ID)? from=VAR 
-	  'to' (protocol=ID? filePath=STRING | protocol=ID '(' filePath=STRING ')')
+@after {
+  removeScope();
+}	:	'write' 
+    ((packageName=ID ':')?format=ID)? from=VAR 
+	  {input.LT(1).getText().equals("to")}? ID 
+	  (protocol=ID? filePath=STRING | protocol=ID '(' filePath=STRING ')')
 { 
   path = makeFilePath($protocol, $filePath.text);
   formatInfo = findFormat($packageName.text, format, path);
@@ -333,12 +328,9 @@ writeOperator returns [Sink sink]
     confOption[formatInfo, fileFormat]* 
 { 
 	$sink = new Sink(fileFormat, makeFilePath($protocol, path));
-  $sink.setInputs(getVariable(from).getStream());
+  $sink.setInputs(getVariableSafely(from).getStream());
   this.sinks.add($sink);
 } ->;
-
-genericOperatorName returns [ConfObjectInfo<? extends Operator<?>> info]:
-;
 
 // <name> flags* <input>* options*
 // flags - boolean options
@@ -347,8 +339,21 @@ genericOperatorName returns [ConfObjectInfo<? extends Operator<?>> info]:
 genericOperator returns [Operator<?> op]
 @init { 
   ConfObjectInfo<? extends Operator<?>> operatorInfo;
-}	:	(packageName=ID ':')? name=ID { (operatorInfo = findOperatorGreedily($packageName.text, $name)) != null  }?=> 
-{ $operator::result = $op = operatorInfo.newInstance(); } 
+}
+@after {
+  removeScope();
+}	:	
+(targets+=VAR (',' targets+=VAR)* '=')? 
+(packageName=ID ':')? name=ID { (operatorInfo = findOperatorGreedily($packageName.text, $name)) != null  }?=> 
+{ 
+  $operator::result = $op = operatorInfo.newInstance(); 
+  if($targets != null)
+	  for(int index = 0; index < $targets.size(); index++)
+	    putVariable((Token) $targets.get(index), new JsonStreamExpression($op.getOutput(index)));
+	// add scope for input variables and recursive definition
+  if(state.backtracking == 0) 
+    addScope();   
+} 
 //operatorFlag[operatorInfo, $op]*
 ((VAR)=> input[operatorInfo, $op] ((',')=> ',' input[operatorInfo, $op])*)?
 confOption[operatorInfo, $op]* 
@@ -362,22 +367,13 @@ confOption [ConfObjectInfo<?> info, ConfigurableSopremoType object]
 	{ (property = findPropertyRelunctantly(info, name)) != null }?=>
   expr=ternaryExpression { property.setValue(object, $expr.tree); } ->;
 
-operatorFlag [ConfObjectInfo<?> info, ConfigurableSopremoType object]
-@init {
- ConfObjectInfo.ConfObjectPropertyInfo property = null;
-}
-  : name=ID  { (property = findPropertyRelunctantly(info, $name)) != null }?=>
-{ if(!property.isFlag())
-    throw new QueryParserException(String.format("Property \%s is not a flag", $name.text), name);
-  property.setValue(object, true); } ->;
-
 input	[ConfObjectInfo<?> info, Operator<?> object]
 @init {
  ConfObjectInfo.ConfObjectIndexedPropertyInfo inputProperty = null;
 }	:	(name=VAR IN)? from=VAR
 { 
   int inputIndex = $operator::numInputs++;
-  JsonStreamExpression input = getVariable(from);
+  JsonStreamExpression input = getVariableSafely(from);
   object.setInput(inputIndex, input.getStream());
   
   JsonStreamExpression inputExpression = new JsonStreamExpression(input.getStream(), inputIndex);
@@ -419,8 +415,6 @@ NOT : 'not';
 IN  : 'in';
 
 FN  : 'fn';
-
-AS  : 'as';
 
 ID	:	(LOWER_LETTER | UPPER_LETTER | '_') (LOWER_LETTER | UPPER_LETTER | DIGIT | '_')*;
 

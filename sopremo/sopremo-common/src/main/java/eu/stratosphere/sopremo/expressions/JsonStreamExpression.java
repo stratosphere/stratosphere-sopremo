@@ -15,11 +15,15 @@
 package eu.stratosphere.sopremo.expressions;
 
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.util.List;
+import java.util.Map;
+import java.util.WeakHashMap;
 
 import javolution.text.TypeFormat;
 import eu.stratosphere.sopremo.operator.JsonStream;
 import eu.stratosphere.sopremo.operator.Operator;
+import eu.stratosphere.sopremo.operator.Operator.Output;
 
 public class JsonStreamExpression extends UnevaluableExpression {
 	private final JsonStream stream;
@@ -123,6 +127,8 @@ public class JsonStreamExpression extends UnevaluableExpression {
 		return result;
 	}
 
+	private transient WeakReference<JsonStreamExpression> equalStream;
+
 	@Override
 	public boolean equals(final Object obj) {
 		if (this == obj)
@@ -132,7 +138,17 @@ public class JsonStreamExpression extends UnevaluableExpression {
 		if (this.getClass() != obj.getClass())
 			return false;
 		final JsonStreamExpression other = (JsonStreamExpression) obj;
-		return this.stream.getSource().equals(other.stream.getSource());
+		Output thisSource = this.stream.getSource();
+		Output otherSource = other.stream.getSource();
+		if( thisSource.getIndex() != otherSource.getIndex())
+			return false;
+		// at this point we assume that both stream expression could be equal
+		if(this.equalStream != null && this.equalStream.get() == other)
+			return true;
+
+		this.equalStream = new WeakReference<JsonStreamExpression>(other);
+		// here the actual recursion is very likely to occur
+		return thisSource.getOperator().equals(otherSource.getOperator());
 	}
 
 	/**
