@@ -111,8 +111,8 @@ public class ClientFrontend {
 		
 		// TODO: we should have another AJAX servlet, that is periodically queried -> will trigger complete reload
 		
-		// needs JAVA 7
-		try ( ByteArrayInputStream inputStream = new ByteArrayInputStream( meteorScript.getBytes("UTF-8") ) ){
+		ByteArrayInputStream inputStream = new ByteArrayInputStream( meteorScript.getBytes("UTF-8") );
+		try {
 			sopremoPlan = new QueryParser().tryParse( inputStream );
 			currentSopremoID = sopremoClient.submit(sopremoPlan, new SopremoStateListener(), false);
 			System.out.println("submitted with sopremoID " + currentSopremoID);
@@ -120,6 +120,8 @@ public class ClientFrontend {
 		} catch ( IOException ioe ){ 
 			configureClient( cmd ); //resets
 			throw ioe;
+		} finally {
+			inputStream.close();
 		}
 	}
 	
@@ -157,7 +159,7 @@ public class ClientFrontend {
 		if (currentSopremoID != null) {
 			try {
 				return sopremoClient.getMetaData(currentSopremoID, key).toString();
-			} catch (IOException | InterruptedException e) {
+			} catch (Exception  e) {
 				System.out.println("Error retrieving metadata for " + currentSopremoID);
 				e.printStackTrace(System.out);
 			}

@@ -27,7 +27,7 @@ import eu.stratosphere.sopremo.type.IJsonNode;
  * @author Arvid Heise
  */
 @InputCardinality(min = 2, max = 2)
-public class StrictReplace extends ReplaceBase<StrictReplace> {
+public class StrictAtomarReplace extends AtomarReplaceBase<StrictAtomarReplace> {
 	public static class Implementation extends SopremoMatch {
 		private PathSegmentExpression replaceExpression;
 

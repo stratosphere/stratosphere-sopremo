@@ -183,15 +183,12 @@ public class DefaultClient implements Closeable {
 
 		if (progressListener == null)
 			progressListener = new DummyListener();
-		System.out.println("Init connection");
 		this.initConnection(progressListener);
-		System.out.println("Transferring libraries");
 		if (!this.transferLibraries(plan, progressListener)) {
-			System.out.println("Could not transfer libraries - aborting");
+			dealWithError(progressListener, null, "Could not transfer libraries - aborting");
 			return null;
 		}
 
-		System.out.println("Sending plan");
 		final ExecutionResponse response = this.sendPlan(plan, progressListener);
 		if (response == null)
 			return null;
@@ -201,7 +198,6 @@ public class DefaultClient implements Closeable {
 			return null;
 		}
 
-		System.out.println("Waiting for completion");
 		if (wait)
 			return this.waitForCompletion(response, progressListener);
 		return response.getJobId();
@@ -262,7 +258,8 @@ public class DefaultClient implements Closeable {
 	 */
 	@Override
 	public void close() {
-		this.rpcService.shutDown();
+		if (this.rpcService != null)
+			this.rpcService.shutDown();
 	}
 
 	protected void sleepSafely(int updateTime) {

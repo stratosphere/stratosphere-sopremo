@@ -9,8 +9,7 @@ import java.util.Set;
 import eu.stratosphere.sopremo.AbstractSopremoType;
 import eu.stratosphere.sopremo.packages.IRegistry;
 
-public class StackedRegistry<T, R extends IRegistry<T>> extends AbstractSopremoType
-	implements IRegistry<T> {
+public class StackedRegistry<T, R extends IRegistry<T>> extends AbstractSopremoType implements IRegistry<T> {
 	private LinkedList<R> registryStack = new LinkedList<R>();
 
 	public StackedRegistry(R defaultRegistry) {
@@ -64,7 +63,7 @@ public class StackedRegistry<T, R extends IRegistry<T>> extends AbstractSopremoT
 	protected R getTopRegistry() {
 		return this.registryStack.peek();
 	}
-	
+
 	/**
 	 * Returns the registryStack.
 	 * 
@@ -81,5 +80,30 @@ public class StackedRegistry<T, R extends IRegistry<T>> extends AbstractSopremoT
 			appendable.append("\n ");
 			registry.appendAsString(appendable);
 		}
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((registryStack == null) ? 0 : registryStack.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		StackedRegistry other = (StackedRegistry) obj;
+		if (registryStack == null) {
+			if (other.registryStack != null)
+				return false;
+		} else if (!registryStack.equals(other.registryStack))
+			return false;
+		return true;
 	}
 }

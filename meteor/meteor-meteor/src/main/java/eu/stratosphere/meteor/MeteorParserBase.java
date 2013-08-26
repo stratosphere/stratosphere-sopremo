@@ -14,6 +14,7 @@
  **********************************************************************************************************************/
 package eu.stratosphere.meteor;
 
+import org.antlr.runtime.RecognitionException;
 import org.antlr.runtime.RecognizerSharedState;
 import org.antlr.runtime.Token;
 import org.antlr.runtime.TokenStream;
@@ -26,6 +27,7 @@ import eu.stratosphere.sopremo.io.SopremoFormat;
 import eu.stratosphere.sopremo.packages.DefaultConstantRegistry;
 import eu.stratosphere.sopremo.packages.IConstantRegistry;
 import eu.stratosphere.sopremo.query.QueryWithVariablesParser;
+import eu.stratosphere.sopremo.query.RecognitionExceptionWithUsageHint;
 import eu.stratosphere.sopremo.query.StackedConstantRegistry;
 import eu.stratosphere.sopremo.type.BooleanNode;
 import eu.stratosphere.sopremo.type.DecimalNode;
@@ -80,6 +82,18 @@ public abstract class MeteorParserBase extends QueryWithVariablesParser<JsonStre
 	protected JsonStreamExpression getVariable(Token name) {
 		return this.getVariableRegistry().get(name.getText());
 	}
+	
+	protected JsonStreamExpression getVariableSafely(Token name) throws RecognitionException {
+		JsonStreamExpression variable = getVariable(name);
+		if(variable == null)
+			throw new RecognitionExceptionWithUsageHint(name, String.format("Unknown varible %s; possible alternatives %s", name,
+				this.inputSuggestion.suggest(name.getText(), getVariableRegistry().keySet())));
+		return variable;
+	}
+
+	protected void putVariable(Token name, JsonStreamExpression expression) {
+		this.getVariableRegistry().put(name.getText(), expression);
+	}
 
 	private void init() {
 		this.getPackageManager().importPackage("base");
@@ -92,10 +106,6 @@ public abstract class MeteorParserBase extends QueryWithVariablesParser<JsonStre
 		this.addTypeAlias("bool", BooleanNode.class);
 
 		this.constantRegistry.push(super.getConstantRegistry());
-	}
-
-	protected void putVariable(Token name, JsonStreamExpression expression) {
-		this.getVariableRegistry().put(name.getText(), expression);
 	}
 
 	protected void removeConstantScope() {

@@ -14,15 +14,23 @@
  **********************************************************************************************************************/
 package eu.stratosphere.meteor.syntax;
 
+import java.io.IOException;
+
 import org.junit.Test;
 
 import eu.stratosphere.meteor.MeteorParseTest;
 import eu.stratosphere.meteor.QueryParser;
 import eu.stratosphere.sopremo.EvaluationContext;
+import eu.stratosphere.sopremo.base.Grouping;
 import eu.stratosphere.sopremo.base.Selection;
+import eu.stratosphere.sopremo.expressions.ArrayCreation;
 import eu.stratosphere.sopremo.expressions.ComparativeExpression;
 import eu.stratosphere.sopremo.expressions.ConstantExpression;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
+import eu.stratosphere.sopremo.expressions.JsonStreamExpression;
+import eu.stratosphere.sopremo.expressions.NestedOperatorExpression;
+import eu.stratosphere.sopremo.expressions.ObjectAccess;
+import eu.stratosphere.sopremo.expressions.ObjectCreation;
 import eu.stratosphere.sopremo.expressions.OrExpression;
 import eu.stratosphere.sopremo.expressions.UnaryExpression;
 import eu.stratosphere.sopremo.expressions.ComparativeExpression.BinaryOperator;
@@ -107,7 +115,7 @@ public class MultiOutputTest extends MeteorParseTest {
 
 		assertPlanEquals(expectedPlan, actualPlan);
 	}
-	
+
 	@Test
 	public void testTwoOutputProjection() {
 		String query = "$input = read from 'file://input.json';\n" +
@@ -117,7 +125,7 @@ public class MultiOutputTest extends MeteorParseTest {
 			"  }," +
 			"  group $input by $input.key2 into {" +
 			"    name2: $input.name2" +
-			"  }" +				
+			"  }" +
 			"];\n" +
 			"write $result1 to 'file://output1.json';\n" +
 			"write $result2 to 'file://output2.json';";
@@ -126,6 +134,13 @@ public class MultiOutputTest extends MeteorParseTest {
 		final SopremoPlan expectedPlan = new SopremoPlan();
 		final Source input = new Source("file://input.json");
 		final MultiOutputOp multi = new MultiOutputOp().withInputs(input);
+		Grouping grouping1 = new Grouping().withGroupingKey(JsonUtil.createPath("0", "key")).withResultProjection(
+			new ObjectCreation().addMapping("name", JsonUtil.createPath("0", "name")));
+		Grouping grouping2 = new Grouping().withGroupingKey(JsonUtil.createPath("0", "key2")).withResultProjection(
+			new ObjectCreation().addMapping("name2", JsonUtil.createPath("0", "name2")));
+		multi.setProjection(new ArrayCreation(new NestedOperatorExpression(grouping1),
+			new NestedOperatorExpression(grouping2)));
+
 		final Sink output1 = new Sink("file://output1.json").withInputs(multi.getOutput(0));
 		final Sink output2 = new Sink("file://output2.json").withInputs(multi.getOutput(1));
 		expectedPlan.setSinks(output1, output2);
@@ -133,16 +148,89 @@ public class MultiOutputTest extends MeteorParseTest {
 		assertPlanEquals(expectedPlan, actualPlan);
 	}
 
-	@InputCardinality(1)
+	@Test
+	public void testTwoInputAndOutputProjection() {
+		String query = "$input1 = read from 'file://input1.json';\n" +
+			"$input2 = read from 'file://input2.json';\n" +
+			"$result1, $result2 = multi $input1, $input2 with [\n" +
+			"  group $input1 by $input1.key into {" +
+			"    name: $input1.name" +
+			"  }," +
+			"  group $input2 by $input2.key2 into {" +
+			"    name2: $input2.name2" +
+			"  }" +
+			"];\n" +
+			"write $result1 to 'file://output1.json';\n" +
+			"write $result2 to 'file://output2.json';";
+		final SopremoPlan actualPlan = parseScript(query);
+
+		final SopremoPlan expectedPlan = new SopremoPlan();
+		final Source input1 = new Source("file://input1.json");
+		final Source input2 = new Source("file://input2.json");
+		final MultiOutputOp multi = new MultiOutputOp().withInputs(input1, input2);
+		Grouping grouping1 = new Grouping().withGroupingKey(JsonUtil.createPath("0", "key")).withResultProjection(
+			new ObjectCreation().addMapping("name", JsonUtil.createPath("0", "name")));
+		Grouping grouping2 = new Grouping().withGroupingKey(JsonUtil.createPath("0", "key2")).withResultProjection(
+			new ObjectCreation().addMapping("name2", JsonUtil.createPath("0", "name2")));
+		multi.setProjection(new ArrayCreation(new NestedOperatorExpression(grouping1),
+			new NestedOperatorExpression(grouping2)));
+
+		final Sink output1 = new Sink("file://output1.json").withInputs(multi.getOutput(0));
+		final Sink output2 = new Sink("file://output2.json").withInputs(multi.getOutput(1));
+		expectedPlan.setSinks(output1, output2);
+
+		assertPlanEquals(expectedPlan, actualPlan);
+	}
+
+	@Test
+	public void testCrossReferenceProjection() {
+		String query = "$input1 = read from 'file://input1.json';\n" +
+			"$input2 = read from 'file://input2.json';\n" +
+			"$result1, $result2 = multi $input1, $input2 with [\n" +
+			"  group $input1 by $input1.key into {" +
+			"    name: $result2.name" +
+			"  }," +
+			"  group $input2 by $input2.key2 into {" +
+			"    name2: $result1.name2" +
+			"  }" +
+			"];\n" +
+			"write $result1 to 'file://output1.json';\n" +
+			"write $result2 to 'file://output2.json';";
+		final SopremoPlan actualPlan = parseScript(query);
+
+		final SopremoPlan expectedPlan = new SopremoPlan();
+		final Source input1 = new Source("file://input1.json");
+		final Source input2 = new Source("file://input2.json");
+		final MultiOutputOp multi = new MultiOutputOp().withInputs(input1, input2);
+		Grouping grouping1 = new Grouping().
+			withGroupingKey(JsonUtil.createPath("0", "key")).
+			withResultProjection(new ObjectCreation().addMapping("name",
+				new ObjectAccess("name").withInputExpression(new JsonStreamExpression(multi.getOutput(1)))));
+		Grouping grouping2 = new Grouping().
+			withGroupingKey(JsonUtil.createPath("0", "key2")).
+			withResultProjection(new ObjectCreation().addMapping("name2",
+				new ObjectAccess("name2").withInputExpression(new JsonStreamExpression(multi.getOutput(0)))));
+		multi.setProjection(new ArrayCreation(new NestedOperatorExpression(grouping1),
+			new NestedOperatorExpression(grouping2)));
+
+		final Sink output1 = new Sink("file://output1.json").withInputs(multi.getOutput(0));
+		final Sink output2 = new Sink("file://output2.json").withInputs(multi.getOutput(1));
+		expectedPlan.setSinks(output1, output2);
+
+		assertPlanEquals(expectedPlan, actualPlan);
+	}
+
+	@InputCardinality(min = 1, max = 3)
 	@OutputCardinality(min = 1, max = 3)
 	@Name(noun = "multi")
 	public static class MultiOutputOp extends CompositeOperator<MultiOutputOp> {
-		private EvaluationExpression projection;
-		
+		private EvaluationExpression projection = EvaluationExpression.VALUE;
+
 		/**
 		 * Sets the projection to the specified value.
-		 *
-		 * @param projection the projection to set
+		 * 
+		 * @param projection
+		 *        the projection to set
 		 */
 		@Property
 		@Name(adjective = "with")
@@ -152,7 +240,7 @@ public class MultiOutputTest extends MeteorParseTest {
 
 			this.projection = assignment;
 		}
-		
+
 		/**
 		 * Returns the projection.
 		 * 
@@ -161,7 +249,46 @@ public class MultiOutputTest extends MeteorParseTest {
 		public EvaluationExpression getProjection() {
 			return this.projection;
 		}
-		
+
+		/*
+		 * (non-Javadoc)
+		 * @see java.lang.Object#hashCode()
+		 */
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = super.hashCode();
+			result = prime * result + projection.hashCode();
+			return result;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see java.lang.Object#equals(java.lang.Object)
+		 */
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (!super.equals(obj))
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			MultiOutputOp other = (MultiOutputOp) obj;
+			return projection.equals(other.projection);
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see eu.stratosphere.sopremo.operator.Operator#appendAsString(java.lang.Appendable)
+		 */
+		@Override
+		public void appendAsString(Appendable appendable) throws IOException {
+			super.appendAsString(appendable);
+			appendable.append(" with ");
+			projection.appendAsString(appendable);
+		}
+
 		/*
 		 * (non-Javadoc)
 		 * @see eu.stratosphere.sopremo.operator.CompositeOperator#addImplementation(eu.stratosphere.sopremo.operator.

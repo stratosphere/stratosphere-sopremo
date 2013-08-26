@@ -59,7 +59,7 @@ public class NestedOperatorExpression extends UnevaluableExpression {
 	@Override
 	public void appendAsString(final Appendable appendable) throws IOException {
 		appendable.append("<");
-		this.appendAsString(appendable);
+		this.operator.appendAsString(appendable);
 		appendable.append(">");
 	}
 

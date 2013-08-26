@@ -4,6 +4,7 @@ logs.zip
 .idea/*
 *.jar
 target
+bin/
 .classpath
 .project
 .settings
@@ -14,4 +15,3 @@ tmp/*
 pact/pact-tests/tmp/*
 *.iml
 .idea/*
-meteor/meteor-example/resources/*

@@ -10,6 +10,7 @@
 	<artifactId>sopremo-testplan</artifactId>
 	<name>sopremo-testplan</name>
 	<packaging>jar</packaging>
+	<description>Test utilities for Stratsphere Sopremo</description>
 	<dependencies>
 		<dependency>
 			<groupId>eu.stratosphere</groupId>

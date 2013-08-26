@@ -33,8 +33,6 @@ import eu.stratosphere.pact.compiler.plan.candidate.SingleInputPlanNode;
 import eu.stratosphere.pact.compiler.plan.candidate.SourcePlanNode;
 import eu.stratosphere.pact.compiler.postpass.OptimizerPostPass;
 import eu.stratosphere.pact.generic.stub.AbstractStub;
-import eu.stratosphere.sopremo.pact.GenericSopremoReduce;
-import eu.stratosphere.sopremo.pact.SopremoReduce;
 import eu.stratosphere.sopremo.pact.SopremoStub;
 import eu.stratosphere.sopremo.pact.SopremoUtil;
 import eu.stratosphere.sopremo.type.IJsonNode;

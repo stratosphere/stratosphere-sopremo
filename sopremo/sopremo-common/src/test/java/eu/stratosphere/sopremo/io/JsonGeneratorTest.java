@@ -31,7 +31,7 @@ public class JsonGeneratorTest {
 			.put("male", BooleanNode.TRUE));
 		friends.add(new ObjectNode().put("name", TextNode.valueOf("testfriend 2")).put("age", IntNode.valueOf(30))
 			.put("male", BooleanNode.FALSE));
-		friends.add(new ObjectNode().put("name", TextNode.valueOf("testfriend 2")).put("age", IntNode.valueOf(40))
+		friends.add(new ObjectNode().put("name", TextNode.valueOf("testfriend \" 2")).put("age", IntNode.valueOf(40))
 			.put("male", NullNode.getInstance()));
 		friends.add(NullNode.getInstance());
 

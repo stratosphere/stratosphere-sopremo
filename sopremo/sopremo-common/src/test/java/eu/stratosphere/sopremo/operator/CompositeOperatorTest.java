@@ -121,7 +121,7 @@ public class CompositeOperatorTest extends EqualCloneTest<CompositeOperatorTest.
 			 * eu.stratosphere.sopremo.pact.JsonCollector)
 			 */
 			@Override
-			protected void cross(final IJsonNode value1, final IJsonNode value2, final JsonCollector out) {
+			protected void cross(final IJsonNode value1, final IJsonNode value2, final JsonCollector<IJsonNode> out) {
 			}
 		}
 	}

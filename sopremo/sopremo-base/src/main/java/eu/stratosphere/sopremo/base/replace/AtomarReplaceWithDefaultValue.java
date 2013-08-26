@@ -26,7 +26,7 @@ import eu.stratosphere.sopremo.type.IJsonNode;
 import eu.stratosphere.sopremo.type.IStreamNode;
 
 @InputCardinality(min = 2, max = 2)
-public class ReplaceWithDefaultValue extends ReplaceBase<ReplaceWithDefaultValue> {
+public class AtomarReplaceWithDefaultValue extends AtomarReplaceBase<AtomarReplaceWithDefaultValue> {
 	private EvaluationExpression defaultExpression = EvaluationExpression.VALUE;
 
 	@Property
@@ -37,7 +37,7 @@ public class ReplaceWithDefaultValue extends ReplaceBase<ReplaceWithDefaultValue
 		this.defaultExpression = defaultExpression;
 	}
 
-	public ReplaceWithDefaultValue withDefaultExpression(EvaluationExpression prop) {
+	public AtomarReplaceWithDefaultValue withDefaultExpression(EvaluationExpression prop) {
 		this.setDefaultExpression(prop);
 		return this;
 	}

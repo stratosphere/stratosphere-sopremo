@@ -1,7 +1,6 @@
 package eu.stratosphere.sopremo.type;
 
 import java.lang.reflect.Array;
-import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.math.BigDecimal;
@@ -320,7 +319,7 @@ public class JavaToJsonMapper extends AbstractTypeMapper<TypeMapper<?, ?>> {
 		if (targetMapper == null)
 			throw new IllegalArgumentException(String.format("Cannot map %s to %s ", from, targetType));
 
-		return map(from, to, targetType, targetMapper);
+		return map(from, to, targetMapper);
 	}
 
 	/*
@@ -332,7 +331,7 @@ public class JavaToJsonMapper extends AbstractTypeMapper<TypeMapper<?, ?>> {
 		return (TypeMapper<F, T>) super.getMapper(fromClass, targetType);
 	}
 
-	private <T extends IJsonNode> T map(Object from, T to, Type targetType, TypeMapper<Object, T> targetMapper) {
+	private <T extends IJsonNode> T map(Object from, T to, TypeMapper<Object, T> targetMapper) {
 		if (to == null && targetMapper.getDefaultType() != null)
 			to = ReflectUtil.newInstance(targetMapper.getDefaultType());
 

@@ -43,15 +43,17 @@ public class DefaultTypeRegistry extends AbstractSopremoType implements ITypeReg
 
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.packages.IRegistry#put(java.lang.String, java.lang.Object)
+	 * @see eu.stratosphere.sopremo.packages.IRegistry#put(java.lang.String,
+	 * java.lang.Object)
 	 */
 	@Override
 	public void put(String name, Class<? extends IJsonNode> element) {
 		this.elements.put(name, element);
 		this.typeList.add(element);
 	}
-	
-	/* (non-Javadoc)
+
+	/*
+	 * (non-Javadoc)
 	 * @see eu.stratosphere.sopremo.packages.ITypeRegistry#put(java.lang.Class)
 	 */
 	@Override
@@ -70,7 +72,8 @@ public class DefaultTypeRegistry extends AbstractSopremoType implements ITypeReg
 
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.ISopremoType#appendAsString(java.lang.Appendable)
+	 * @see
+	 * eu.stratosphere.sopremo.ISopremoType#appendAsString(java.lang.Appendable)
 	 */
 	@Override
 	public void appendAsString(Appendable appendable) throws IOException {
@@ -93,6 +96,27 @@ public class DefaultTypeRegistry extends AbstractSopremoType implements ITypeReg
 	@Override
 	public List<Class<? extends IJsonNode>> getTypes() {
 		return this.typeList;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + this.elements.hashCode();
+		result = prime * result + this.typeList.hashCode();
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		DefaultTypeRegistry other = (DefaultTypeRegistry) obj;
+		return this.elements.equals(other.elements) && this.typeList.equals(other.typeList);
 	}
 
 }

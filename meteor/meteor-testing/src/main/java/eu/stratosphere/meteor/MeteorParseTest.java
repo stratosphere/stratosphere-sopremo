@@ -14,7 +14,10 @@
  **********************************************************************************************************************/
 package eu.stratosphere.meteor;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.List;
 
 import org.junit.Assert;
@@ -33,7 +36,7 @@ public class MeteorParseTest {
 		// printBeamerSlide(script);
 		SopremoPlan plan = null;
 		try {
-			final QueryParser queryParser = new QueryParser().withInputDirectory(new File("/"));
+			final QueryParser queryParser = new QueryParser().withInputDirectory(new File("."));
 			initParser(queryParser);
 			plan = queryParser.tryParse(script);
 		} catch (final QueryParserException e) {
@@ -49,8 +52,42 @@ public class MeteorParseTest {
 		return plan;
 	}
 
+	public SopremoPlan parseScript(final File script) {
+		// printBeamerSlide(script);
+		SopremoPlan plan = null;
+		try {
+			final QueryParser queryParser = new QueryParser().withInputDirectory(script.getParentFile());
+			initParser(queryParser);
+			plan = queryParser.tryParse(loadScriptFromFile(script));
+		} catch (final QueryParserException e) {
+			final AssertionError error = new AssertionError(String.format("could not parse script: %s",
+				e.getMessage()));
+			error.initCause(e);
+			throw error;
+		}
+
+		Assert.assertNotNull("could not parse script", plan);
+
+		// System.out.println(plan);
+		return plan;
+	}
+
+	private String loadScriptFromFile(File scriptFile) {
+		try {
+			final BufferedReader reader = new BufferedReader(new FileReader(scriptFile));
+			StringBuilder builder = new StringBuilder();
+			int ch;
+			while ((ch = reader.read()) != -1)
+				builder.append((char) ch);
+			return builder.toString();
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+
+	}
+
 	protected void initParser(QueryParser queryParser) {
-		
+
 	}
 
 	public static void assertPlanEquals(final SopremoPlan expectedPlan, final SopremoPlan actualPlan) {

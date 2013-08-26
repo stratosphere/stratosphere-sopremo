@@ -47,7 +47,9 @@ public class DefaultFunctionRegistry extends DefaultRegistry<Callable<?, ?>> imp
 
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.packages.AbstractMethodRegistry#findMethod(java.lang.String)
+	 * @see
+	 * eu.stratosphere.sopremo.packages.AbstractMethodRegistry#findMethod(java
+	 * .lang.String)
 	 */
 	@Override
 	public Callable<?, ?> get(String name) {
@@ -56,8 +58,9 @@ public class DefaultFunctionRegistry extends DefaultRegistry<Callable<?, ?>> imp
 
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.packages.AbstractMethodRegistry#registerMethod(java.lang.String,
-	 * eu.stratosphere.sopremo.function.MeteorMethod)
+	 * @see
+	 * eu.stratosphere.sopremo.packages.AbstractMethodRegistry#registerMethod
+	 * (java.lang.String, eu.stratosphere.sopremo.function.MeteorMethod)
 	 */
 	@Override
 	public void put(String name, Callable<?, ?> method) {
@@ -66,7 +69,8 @@ public class DefaultFunctionRegistry extends DefaultRegistry<Callable<?, ?>> imp
 
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.packages.IMethodRegistry#getRegisteredMethods()
+	 * @see
+	 * eu.stratosphere.sopremo.packages.IMethodRegistry#getRegisteredMethods()
 	 */
 	@Override
 	public Set<String> keySet() {
@@ -75,7 +79,8 @@ public class DefaultFunctionRegistry extends DefaultRegistry<Callable<?, ?>> imp
 
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.ISopremoType#toString(java.lang.StringBuilder)
+	 * @see
+	 * eu.stratosphere.sopremo.ISopremoType#toString(java.lang.StringBuilder)
 	 */
 	@Override
 	public void appendAsString(Appendable appendable) throws IOException {
@@ -101,20 +106,22 @@ public class DefaultFunctionRegistry extends DefaultRegistry<Callable<?, ?>> imp
 		// check if the individual parameters match
 		for (int index = 0; index < parameterTypes.length; index++)
 			if (!IJsonNode.class.isAssignableFrom(parameterTypes[index])
-				&& !(index == parameterTypes.length - 1 && method.isVarArgs() &&
-				IJsonNode.class.isAssignableFrom(parameterTypes[index].getComponentType())))
+				&&
+				!(index == parameterTypes.length - 1 && method.isVarArgs() && IJsonNode.class.isAssignableFrom(parameterTypes[index].getComponentType())))
 				return false;
 		return true;
 	}
 
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.packages.IFunctionRegistry#put(java.lang.String, java.lang.Class, java.lang.String)
+	 * @see
+	 * eu.stratosphere.sopremo.packages.IFunctionRegistry#put(java.lang.String,
+	 * java.lang.Class, java.lang.String)
 	 */
 	@Override
 	public void put(String registeredName, Class<?> clazz, String staticMethodName) {
-		final List<Method> functions = this.getCompatibleMethods(
-			ReflectUtil.getMethods(clazz, staticMethodName, Modifier.STATIC | Modifier.PUBLIC));
+		final List<Method> functions =
+			this.getCompatibleMethods(ReflectUtil.getMethods(clazz, staticMethodName, Modifier.STATIC | Modifier.PUBLIC));
 
 		if (functions.isEmpty())
 			throw new IllegalArgumentException(
@@ -135,8 +142,8 @@ public class DefaultFunctionRegistry extends DefaultRegistry<Callable<?, ?>> imp
 
 	@Override
 	public void put(final Class<?> javaFunctions) {
-		final List<Method> functions = this.getCompatibleMethods(
-			ReflectUtil.getMethods(javaFunctions, null, Modifier.STATIC | Modifier.PUBLIC));
+		final List<Method> functions =
+			this.getCompatibleMethods(ReflectUtil.getMethods(javaFunctions, null, Modifier.STATIC | Modifier.PUBLIC));
 
 		for (final Method method : functions)
 			this.put(method);
@@ -193,9 +200,9 @@ public class DefaultFunctionRegistry extends DefaultRegistry<Callable<?, ?>> imp
 		String name = null;
 		final Name nameAnnotation = object.getAnnotation(Name.class);
 		if (nameAnnotation != null)
-			name = this.nameChooser.choose(nameAnnotation.noun(), nameAnnotation.verb(),
-				nameAnnotation.adjective(),
-				nameAnnotation.preposition());
+			name =
+				this.nameChooser.choose(nameAnnotation.noun(), nameAnnotation.verb(), nameAnnotation.adjective(),
+					nameAnnotation.preposition());
 		return name;
 	}
 
@@ -203,9 +210,9 @@ public class DefaultFunctionRegistry extends DefaultRegistry<Callable<?, ?>> imp
 		String name = null;
 		final Name nameAnnotation = object.getAnnotation(Name.class);
 		if (nameAnnotation != null)
-			name = this.nameChooser.choose(nameAnnotation.noun(), nameAnnotation.verb(),
-				nameAnnotation.adjective(),
-				nameAnnotation.preposition());
+			name =
+				this.nameChooser.choose(nameAnnotation.noun(), nameAnnotation.verb(), nameAnnotation.adjective(),
+					nameAnnotation.preposition());
 		return name;
 	}
 
@@ -231,5 +238,26 @@ public class DefaultFunctionRegistry extends DefaultRegistry<Callable<?, ?>> imp
 				functions.add(method);
 		}
 		return functions;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + this.methods.hashCode();
+		result = prime * result + this.nameChooser.hashCode();
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		DefaultFunctionRegistry other = (DefaultFunctionRegistry) obj;
+		return this.methods.equals(other.methods) && this.nameChooser.equals(other.nameChooser);
 	}
 }
