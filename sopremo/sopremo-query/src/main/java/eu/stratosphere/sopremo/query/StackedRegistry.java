@@ -86,7 +86,7 @@ public class StackedRegistry<T, R extends IRegistry<T>> extends AbstractSopremoT
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((registryStack == null) ? 0 : registryStack.hashCode());
+		result = prime * result + this.registryStack.hashCode();
 		return result;
 	}
 
@@ -98,12 +98,7 @@ public class StackedRegistry<T, R extends IRegistry<T>> extends AbstractSopremoT
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		StackedRegistry other = (StackedRegistry) obj;
-		if (registryStack == null) {
-			if (other.registryStack != null)
-				return false;
-		} else if (!registryStack.equals(other.registryStack))
-			return false;
-		return true;
+		StackedRegistry<?, ?> other = (StackedRegistry<?, ?>) obj;
+		return this.registryStack.equals(other.registryStack);
 	}
 }

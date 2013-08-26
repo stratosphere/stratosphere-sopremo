@@ -17,8 +17,6 @@ package eu.stratosphere.sopremo.expressions;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.List;
-import java.util.Map;
-import java.util.WeakHashMap;
 
 import javolution.text.TypeFormat;
 import eu.stratosphere.sopremo.operator.JsonStream;

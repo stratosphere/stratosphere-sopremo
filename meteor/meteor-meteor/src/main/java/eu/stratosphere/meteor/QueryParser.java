@@ -6,10 +6,7 @@ import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Deque;
 import java.util.IdentityHashMap;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 
 import org.antlr.runtime.ANTLRInputStream;

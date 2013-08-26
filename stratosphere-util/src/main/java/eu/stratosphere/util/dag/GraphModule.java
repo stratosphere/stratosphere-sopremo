@@ -244,18 +244,16 @@ public abstract class GraphModule<Node, InputNode extends Node, OutputNode exten
 		return this.getUnmatchingNodes(other).isEmpty();
 	}
 
+	/**
+	 * Returns the nodes 
+	 */
 	public List<Node> getUnmatchingNodes(final GraphModule<Node, InputNode, OutputNode> other) {
 		final IdentitySet<Node> seen = new IdentitySet<Node>();
 
 		return this.getUnmatchingNode(this.getAllOutputs(), other.getAllOutputs(), seen);
 	}
 
-	/**
-	 * @param allOutputs
-	 * @param allOutputs2
-	 * @param seen
-	 * @return
-	 */
+	@SuppressWarnings("unchecked")
 	private List<Node> getUnmatchingNode(final Iterable<? extends Node> nodes1, final Iterable<? extends Node> nodes2,
 			final IdentitySet<Node> seen) {
 		final Iterator<? extends Node> iterator1 = nodes1.iterator();

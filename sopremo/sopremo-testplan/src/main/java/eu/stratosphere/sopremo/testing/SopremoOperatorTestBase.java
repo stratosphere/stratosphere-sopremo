@@ -15,7 +15,8 @@
 package eu.stratosphere.sopremo.testing;
 
 import java.io.ByteArrayInputStream;
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.junit.Assert;
@@ -25,7 +26,6 @@ import org.junit.Test;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
-import com.google.common.collect.Iterables;
 
 import eu.stratosphere.sopremo.EqualCloneTest;
 import eu.stratosphere.sopremo.io.Sink;
@@ -42,7 +42,7 @@ public abstract class SopremoOperatorTestBase<T extends Operator<T>> extends Equ
 	public void testPlanSerialization() {
 		final Kryo k = new Kryo();
 
-		for (T original : Iterables.concat(Arrays.asList(this.first, this.second), this.more)) {
+		for (T original : getInstances()) {
 			final SopremoPlan plan = new SopremoPlan();
 			plan.setSinks(new Sink("file:///dummy").withInputs(original));
 			
@@ -56,10 +56,18 @@ public abstract class SopremoOperatorTestBase<T extends Operator<T>> extends Equ
 			Assert.assertEquals(plan, deserialized);
 		}
 	}
+
+	protected List<T> getInstances() {
+		List<T> instances = new ArrayList<T>();
+		instances.add(this.first);
+		instances.add(this.second);
+		instances.addAll(this.more);
+		return instances;
+	}
 	
 	@Test
 	public void testPlanClone() throws IllegalAccessException {
-		for (T original : Iterables.concat(Arrays.asList(this.first, this.second), this.more)) {
+		for (T original : getInstances()) {
 			final SopremoPlan plan = new SopremoPlan();
 			plan.setSinks(new Sink("file:///dummy").withInputs(original));
 			final Object clone = plan.clone();

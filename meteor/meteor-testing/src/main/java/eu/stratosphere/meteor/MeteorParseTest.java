@@ -79,6 +79,7 @@ public class MeteorParseTest {
 			int ch;
 			while ((ch = reader.read()) != -1)
 				builder.append((char) ch);
+			reader.close();
 			return builder.toString();
 		} catch (IOException e) {
 			throw new RuntimeException(e);
@@ -86,6 +87,7 @@ public class MeteorParseTest {
 
 	}
 
+	@SuppressWarnings("unused")
 	protected void initParser(QueryParser queryParser) {
 
 	}
