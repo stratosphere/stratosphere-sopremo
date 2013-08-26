@@ -69,6 +69,10 @@ public class ArrayCreation extends EvaluationExpression {
 	public int size() {
 		return this.elements.size();
 	}
+	
+	public EvaluationExpression get(int index) {
+		return elements.get(index);
+	}
 
 	@Override
 	public boolean equals(final Object obj) {
