@@ -164,8 +164,8 @@ public class MultiOutputTest extends MeteorParseTest {
 		final MultiOutputOp multi = new MultiOutputOp().withInputs(input1, input2);
 		Grouping grouping1 = new Grouping().withGroupingKey(JsonUtil.createPath("0", "key")).withResultProjection(
 			new ObjectCreation().addMapping("name", JsonUtil.createPath("0", "name")));
-		Grouping grouping2 = new Grouping().withGroupingKey(JsonUtil.createPath("0", "key2")).withResultProjection(
-			new ObjectCreation().addMapping("name2", JsonUtil.createPath("0", "name2")));
+		Grouping grouping2 = new Grouping().withGroupingKey(JsonUtil.createPath("1", "key2")).withResultProjection(
+			new ObjectCreation().addMapping("name2", JsonUtil.createPath("1", "name2")));
 		multi.setProjection(new ArrayCreation(new NestedOperatorExpression(grouping1),
 			new NestedOperatorExpression(grouping2)));
 
@@ -201,7 +201,7 @@ public class MultiOutputTest extends MeteorParseTest {
 			withResultProjection(new ObjectCreation().addMapping("name",
 				new ObjectAccess("name").withInputExpression(new JsonStreamExpression(multi.getOutput(1)))));
 		Grouping grouping2 = new Grouping().
-			withGroupingKey(JsonUtil.createPath("0", "key2")).
+			withGroupingKey(JsonUtil.createPath("1", "key2")).
 			withResultProjection(new ObjectCreation().addMapping("name2",
 				new ObjectAccess("name2").withInputExpression(new JsonStreamExpression(multi.getOutput(0)))));
 		multi.setProjection(new ArrayCreation(new NestedOperatorExpression(grouping1),

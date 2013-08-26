@@ -376,8 +376,10 @@ input	[ConfObjectInfo<?> info, Operator<?> object]
   JsonStreamExpression input = getVariableSafely(from);
   object.setInput(inputIndex, input.getStream());
   
-  JsonStreamExpression inputExpression = new JsonStreamExpression(input.getStream(), inputIndex);
-  putVariable(name != null ? name : from, inputExpression);
+  if($operator.size() == 1) {
+	  JsonStreamExpression inputExpression = new JsonStreamExpression(input.getStream(), inputIndex);
+	  putVariable(name != null ? name : from, inputExpression);
+  }
 } 
 ({ (findInputPropertyRelunctantly(info, input.LT(1), false) != null) }?=>
   { inputProperty = findInputPropertyRelunctantly(info, input.LT(1), true); }
