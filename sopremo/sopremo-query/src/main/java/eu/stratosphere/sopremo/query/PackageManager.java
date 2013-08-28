@@ -16,9 +16,6 @@ package eu.stratosphere.sopremo.query;
 
 import java.io.File;
 import java.io.FilenameFilter;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -48,7 +45,8 @@ public class PackageManager implements ParsingScope {
 
 	public final static IConfObjectRegistry<Operator<?>> IORegistry = new DefaultConfObjectRegistry<Operator<?>>();
 
-	public final static IConfObjectRegistry<SopremoFormat> DefaultFormatRegistry = new DefaultConfObjectRegistry<SopremoFormat>();
+	public final static IConfObjectRegistry<SopremoFormat> DefaultFormatRegistry =
+		new DefaultConfObjectRegistry<SopremoFormat>();
 
 	static {
 		IORegistry.put(Sink.class);
@@ -71,7 +69,8 @@ public class PackageManager implements ParsingScope {
 
 	private StackedConfObjectRegistry<Operator<?>> operatorRegistries = new StackedConfObjectRegistry<Operator<?>>();
 
-	private StackedConfObjectRegistry<SopremoFormat> fileFormatRegistries = new StackedConfObjectRegistry<SopremoFormat>();
+	private StackedConfObjectRegistry<SopremoFormat> fileFormatRegistries =
+		new StackedConfObjectRegistry<SopremoFormat>();
 
 	/**
 	 * Imports sopremo-&lt;packageName&gt;.jar or returns a cached package
@@ -97,11 +96,7 @@ public class PackageManager implements ParsingScope {
 				File jarLocation = this.findPackageInJarPathLocations(packageName);
 				if (jarLocation == null)
 					throw new IllegalArgumentException(String.format("no package %s found", packageName));
-				try {
-					packageInfo = new PackageInfo(packageName, new URLClassLoader(new URL[] { jarLocation.toURI().toURL() }));
-				} catch (MalformedURLException e) {
-					throw new IllegalStateException(e);
-				}
+				packageInfo = new PackageInfo(packageName);
 				packagePath = Arrays.asList(jarLocation);
 			}
 			QueryUtil.LOG.debug("adding package " + packagePath);
@@ -109,8 +104,9 @@ public class PackageManager implements ParsingScope {
 				for (File path : packagePath)
 					packageInfo.importFrom(path, packageName);
 			} catch (Exception e) {
-				throw new IllegalArgumentException(String.format("could not load package %s; please make sure that sopremo-%s.jar is in classpath",
-						packagePath, packageName), e);
+				throw new IllegalArgumentException(String.format(
+					"could not load package %s; please make sure that sopremo-%s.jar is in classpath",
+					packagePath, packageName), e);
 			}
 			this.packages.put(packageName, packageInfo);
 		}
@@ -179,7 +175,8 @@ public class PackageManager implements ParsingScope {
 				continue;
 			int nextIndex = pathIndex + sopremoPackage.length();
 			// next character must be '.', '-', or file separator
-			if (nextIndex < path.length() && path.charAt(nextIndex) != File.separatorChar && path.charAt(nextIndex) != '.' && path.charAt(nextIndex) != '-')
+			if (nextIndex < path.length() && path.charAt(nextIndex) != File.separatorChar &&
+				path.charAt(nextIndex) != '.' && path.charAt(nextIndex) != '-')
 				continue;
 			paths.add(new File(path));
 		}
@@ -212,16 +209,16 @@ public class PackageManager implements ParsingScope {
 		}
 		return null;
 	}
-	
-	protected static String getJarFileNameForPackageName(String packageName){
-		return "sopremo-"+packageName;
+
+	protected static String getJarFileNameForPackageName(String packageName) {
+		return "sopremo-" + packageName;
 	}
 
 	/**
 	 * Sets the defaultJarPath to the specified value.
 	 * 
 	 * @param defaultJarPath
-	 *            the defaultJarPath to set
+	 *        the defaultJarPath to set
 	 */
 	public void addJarPathLocation(File jarPathLocation) {
 		if (jarPathLocation == null)
@@ -243,10 +240,10 @@ public class PackageManager implements ParsingScope {
 		this.importPackage(this.getPackageInfo(packageName));
 	}
 
-	public void importPackageFrom(String packageName, File directory) {
+	public void importPackageFrom(String packageName, File jarFile) {
 		try {
-			PackageInfo packageInfo = new PackageInfo(packageName, new URLClassLoader(new URL[] { directory.getAbsoluteFile().toURI().toURL() }));
-			packageInfo.importFrom(directory, packageName);
+			PackageInfo packageInfo = new PackageInfo(packageName);
+			packageInfo.importFrom(jarFile, packageName);
 			this.packages.put(packageName, packageInfo);
 			this.importPackage(packageInfo);
 		} catch (Exception e) {
@@ -264,7 +261,6 @@ public class PackageManager implements ParsingScope {
 
 	/*
 	 * (non-Javadoc)
-	 * 
 	 * @see java.lang.Object#toString()
 	 */
 	@Override

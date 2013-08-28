@@ -113,7 +113,7 @@ public abstract class GenericSopremoCoGroup<LeftElem extends IJsonNode, RightEle
 	public void open(final Configuration parameters) throws Exception {
 		// We need to pass our class loader since the default class loader is
 		// not able to resolve classes coming from the Sopremo user jar file.
-		SopremoEnvironment.getInstance().setClassLoader(getClass().getClassLoader());
+		SopremoEnvironment.getInstance().setClassLoader(parameters.getClassLoader());
 		this.context = SopremoUtil.getEvaluationContext(parameters);
 		this.collector = createCollector(SopremoUtil.getLayout(parameters));
 		this.cachedIterator1 = new RecordToJsonIterator<LeftElem>();

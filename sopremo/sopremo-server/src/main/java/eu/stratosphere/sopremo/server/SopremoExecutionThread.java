@@ -108,10 +108,6 @@ public class SopremoExecutionThread implements Runnable {
 
 	private long executePlan(SopremoPlan plan) {
 		final Plan pactPlan = plan.asPactPlan();
-		
-		// TODO mleich: re-enable when JSONGenerator works again?
-//		String preOptimizedPlan = new JSONGenerator().compilePlanToJSON(PactCompiler.createPreOptimizedPlan(pactPlan));
-//		this.jobInfo.setMetaData(SopremoJobInfo.PREOPTMIZEDPACTPLANJSON, preOptimizedPlan);
 
 		JobGraph jobGraph;
 		try {
@@ -124,11 +120,18 @@ public class SopremoExecutionThread implements Runnable {
 		}
 
 		try {
-			for (String requiredPackage : this.jobInfo.getInitialRequest().getQuery().getRequiredPackages())
-				jobGraph.addJar(LibraryCacheManager.contains(requiredPackage));
+			for (String requiredPackage : this.jobInfo.getInitialRequest().getQuery().getRequiredPackages()) {
+				final Path libPath = LibraryCacheManager.contains(requiredPackage);
+				if(libPath == null ) {
+					LOG.error("Could not find associated packages " + requiredPackage + " of job " + this.jobInfo.getJobId());
+					this.jobInfo.setStatusAndDetail(ExecutionState.ERROR, "Could not find associated packages: " + requiredPackage);
+					return -1;
+				}
+				jobGraph.addJar(libPath);
+			}
 		} catch (Exception e) {
-			LOG.error("Could not find associated packages " + this.jobInfo.getJobId(), e);
-			this.jobInfo.setStatusAndDetail(ExecutionState.ERROR, "Could not find associated packages: "
+			LOG.error("Could not find retrieve package information from library manager " + this.jobInfo.getJobId(), e);
+			this.jobInfo.setStatusAndDetail(ExecutionState.ERROR, "Could not find retrieve package information from library manager: "
 				+ StringUtils.stringifyException(e));
 			return -1;
 		}
@@ -157,16 +160,11 @@ public class SopremoExecutionThread implements Runnable {
 	}
 
 	JobGraph getJobGraph(final Plan pactPlan) {
-		PactCompiler compiler =
+		final PactCompiler compiler =
 			new PactCompiler(new DataStatistics(), new DefaultCostEstimator(), this.jobManagerAddress);
 
 		final OptimizedPlan optPlan = compiler.compile(pactPlan);
-		
-		// TODO mleich: re-enable when JSONGenerator works again?
-//		String optmizedPlanJSON =  new JSONGenerator().compilePlanToJSON(optPlan);
-//		this.jobInfo.setMetaData(SopremoJobInfo.OPTMIZEDPACTPLANJSON, optmizedPlanJSON);
-		
-		NepheleJobGraphGenerator gen = new NepheleJobGraphGenerator();
+		final NepheleJobGraphGenerator gen = new NepheleJobGraphGenerator();
 		return gen.compileJobGraph(optPlan);
 	}
 

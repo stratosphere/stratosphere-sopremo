@@ -30,7 +30,7 @@ public abstract class GenericSopremoMatch<Left extends IJsonNode, Right extends 
 	public void open(final Configuration parameters) throws Exception {
 		// We need to pass our class loader since the default class loader is
 		// not able to resolve classes coming from the Sopremo user jar file.
-		SopremoEnvironment.getInstance().setClassLoader(getClass().getClassLoader());
+		SopremoEnvironment.getInstance().setClassLoader(parameters.getClassLoader());
 		this.context = SopremoUtil.getEvaluationContext(parameters);
 		this.collector = createCollector(SopremoUtil.getLayout(parameters));
 		SopremoUtil.configureWithTransferredState(this, GenericSopremoMatch.class, parameters);

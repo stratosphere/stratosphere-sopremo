@@ -61,7 +61,7 @@ script
 	:	 (statement ';')+ ->;
 
 statement
-	:	(operator | packageImport | functionDefinition | javaudf
+	:	(operator | packageImport | functionDefinition | javaudf | adhocSource
 // configuration function call 
 	| m=functionCall { $m.tree.evaluate(MissingNode.getInstance()); }) ->;
 	
@@ -85,7 +85,7 @@ inlineFunction returns [ExpressionFunction func]
   } 
   '{' def=expression '}'
   { 
-    $func = new ExpressionFunction(params.size(), def.tree);
+    $func = new ExpressionFunction(params.size(), $def.tree);
     removeConstantScope(); 
   } -> ; 
 
@@ -112,12 +112,12 @@ ternaryExpression
 orExpression
   : exprs+=andExpression ((OR | '||') exprs+=andExpression)*
   -> { $exprs.size() == 1 }? { $exprs.get(0) }
-  -> { OrExpression.valueOf($exprs) };
+  -> { OrExpression.valueOf((List) $exprs) };
 	
 andExpression
   : exprs+=elementExpression ((AND | '&&') exprs+=elementExpression)*
   -> { $exprs.size() == 1 }? { $exprs.get(0) }
-  -> { AndExpression.valueOf($exprs) };
+  -> { AndExpression.valueOf((List) $exprs) };
   
 elementExpression
 	:	elem=comparisonExpression (not=NOT? IN set=comparisonExpression)? 
@@ -282,6 +282,13 @@ scope {
 }:	readOperator { $op = $readOperator.source; }
  |  writeOperator { $op = $writeOperator.sink; }
  |  genericOperator { $op = $genericOperator.op; }; 
+
+adhocSource:
+  output=VAR '=' exp=arrayCreation 
+{ 
+  Source source = new Source($exp.tree);
+  putVariable(output, new JsonStreamExpression(source));
+} -> ;
 
 // read <format> from <path> options*
 readOperator returns [Source source]

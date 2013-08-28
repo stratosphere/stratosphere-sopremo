@@ -25,7 +25,7 @@ public abstract class GenericSopremoMap<In extends IJsonNode, Out extends IJsonN
 	public void open(final Configuration parameters) {
 		// We need to pass our class loader since the default class loader is
 		// not able to resolve classes coming from the Sopremo user jar file.
-		SopremoEnvironment.getInstance().setClassLoader(getClass().getClassLoader());
+		SopremoEnvironment.getInstance().setClassLoader(parameters.getClassLoader());
 		this.context = SopremoUtil.getEvaluationContext(parameters);
 		this.collector = createCollector(SopremoUtil.getLayout(parameters));
 		SopremoUtil.configureWithTransferredState(this, GenericSopremoMap.class, parameters);
