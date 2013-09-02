@@ -94,6 +94,10 @@ public abstract class MeteorParserBase extends QueryWithVariablesParser<JsonStre
 	protected void putVariable(Token name, JsonStreamExpression expression) {
 		this.getVariableRegistry().put(name.getText(), expression);
 	}
+	
+	protected void putVariable(Token name, JsonStreamExpression expression, int depth) {
+		this.getVariableRegistry().getRegistry(depth).put(name.getText(), expression);
+	}
 
 	private void init() {
 		this.getPackageManager().importPackage("base");

@@ -352,17 +352,19 @@ genericOperator returns [Operator<?> op]
 }	:	
 (targets+=VAR (',' targets+=VAR)* '=')? 
 (packageName=ID ':')? name=ID { (operatorInfo = findOperatorGreedily($packageName.text, $name)) != null  }?=> 
+//operatorFlag[operatorInfo, $op]*
 { 
   $operator::result = $op = operatorInfo.newInstance(); 
-  if($targets != null)
-	  for(int index = 0; index < $targets.size(); index++)
-	    putVariable((Token) $targets.get(index), new JsonStreamExpression($op.getOutput(index)));
-	// add scope for input variables and recursive definition
+  // add scope for input variables and recursive definition
   if(state.backtracking == 0) 
     addScope();   
 } 
-//operatorFlag[operatorInfo, $op]*
 ((VAR)=> input[operatorInfo, $op] ((',')=> ',' input[operatorInfo, $op])*)?
+{ // register output names for explicit references to output 
+  if($targets != null)
+    for(int index = 0; index < $targets.size(); index++)
+      putVariable((Token) $targets.get(index), new JsonStreamExpression($op.getOutput(index)), 1);   
+} 
 confOption[operatorInfo, $op]* 
 ->; 
 	
