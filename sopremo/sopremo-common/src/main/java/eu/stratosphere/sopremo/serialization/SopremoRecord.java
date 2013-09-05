@@ -197,21 +197,22 @@ public final class SopremoRecord extends AbstractSopremoType implements ISopremo
 			this.binaryRepresentation.clear();
 			writeRecursivelyToBuffer(this.node, this.layout.getExpressionIndex());
 			this.output.flush();
+			final EvaluationExpression[] calculatedKeyExpressions = this.layout.getCalculatedKeyExpressions();
+			for (int index = 0; index < calculatedKeyExpressions.length; index++) {
+				this.offsets[index + this.layout.getNumDirectDataKeys()] = this.binaryRepresentation.size();
+				final IJsonNode calculatedValue = calculatedKeyExpressions[index].evaluate(this.node);
+				this.kryo.writeClass(this.output, calculatedValue.getType());
+				this.kryo.writeObject(this.output, calculatedValue);
+				this.output.flush();
+			}
 		} else if (SopremoUtil.DEBUG && this.binaryRepresentation.size() == 0)
 			throw new IllegalStateException("Attempt to write zero length binary representation");
 
-		final EvaluationExpression[] calculatedKeyExpressions = this.layout.getCalculatedKeyExpressions();
-		for (int index = 0; index < calculatedKeyExpressions.length; index++) {
-			this.offsets[index + this.layout.getNumDirectDataKeys()] = this.binaryRepresentation.size();
-			this.kryo.writeClassAndObject(this.output, calculatedKeyExpressions[index].evaluate(this.node));
-			this.output.flush();
-		}
 		for (int index = 0; index < this.offsets.length; index++) {
 			if (SopremoUtil.DEBUG && this.offsets[index] == 0)
 				throw new IllegalStateException();
 			out.writeInt(this.offsets[index]);
 		}
-
 		final int size = this.binaryRepresentation.size();
 		out.writeInt(size);
 		out.write(this.binaryRepresentation.elements(), 0, size);
@@ -222,21 +223,24 @@ public final class SopremoRecord extends AbstractSopremoType implements ISopremo
 			Arrays.fill(this.offsets, MISSING);
 			writeRecursivelyToBuffer(this.node, this.layout.getExpressionIndex());
 			this.output.flush();
+			
+			final EvaluationExpression[] calculatedKeyExpressions = this.layout.getCalculatedKeyExpressions();
+			for (int index = 0; index < calculatedKeyExpressions.length; index++) {
+				this.offsets[index + this.layout.getNumDirectDataKeys()] = this.binaryRepresentation.size();
+				final IJsonNode calculatedValue = calculatedKeyExpressions[index].evaluate(this.node);
+				this.kryo.writeClass(this.output, calculatedValue.getType());
+				this.kryo.writeObject(this.output, calculatedValue);
+				this.output.flush();
+			}
 		} else if (SopremoUtil.DEBUG && this.binaryRepresentation.size() == 0)
 			throw new IllegalStateException("Attempt to write zero length binary representation");
 
-		final EvaluationExpression[] calculatedKeyExpressions = this.layout.getCalculatedKeyExpressions();
-		for (int index = 0; index < calculatedKeyExpressions.length; index++) {
-			this.offsets[index + this.layout.getNumDirectDataKeys()] = this.binaryRepresentation.size();
-			this.kryo.writeClassAndObject(this.output, calculatedKeyExpressions[index].evaluate(this.node));
-			this.output.flush();
-		}
+
 		for (int index = 0; index < this.offsets.length; index++) {
 			if (SopremoUtil.DEBUG && this.offsets[index] == 0)
 				throw new IllegalStateException();
 			out.writeInt(this.offsets[index], true);
 		}
-
 		final int size = this.binaryRepresentation.size();
 		out.writeInt(size, true);
 		out.write(this.binaryRepresentation.elements(), 0, size);
