@@ -41,6 +41,55 @@ public class CsvInputFormatTest extends InputFormatTest {
 		Assert.assertEquals(expected, actual);
 	}
 
+	/**
+	 * Tests if line breaks "\n" are handled correctly.
+	 * 
+	 * @throws IOException
+	 */
+	@Test
+	public void shouldParseCsvWithoutTrailingNewline() throws IOException {
+		final File source = new File(this.getResource("CsvInputFormat/trailNewLines.csv"));
+
+		final CsvFormat format = new CsvFormat();
+		format.setFieldDelimiter(",");
+		final Collection<IJsonNode> actual = readFromFile(source, format, NULL_LAYOUT);
+
+		final List<ObjectNode> expected = Arrays.asList(
+			JsonUtil.createObjectNode("a", "1", "b", "2"),
+			JsonUtil.createObjectNode("a", "3", "b", "4"));
+
+		Assert.assertEquals(expected, actual);
+	}
+
+	/**
+	 * Tests if input containing multibytes is handled properly.
+	 * 
+	 * @throws IOException
+	 */
+	@Test
+	public void shouldParseCsvWithMultibyte() throws IOException {
+		final File source = new File(this.getResource("CsvInputFormat/multibyte.csv"));
+
+		final CsvFormat format = new CsvFormat();
+		format.setFieldDelimiter(",");
+		final Collection<IJsonNode> actual = readFromFile(source, format, NULL_LAYOUT);
+
+		final List<ObjectNode> expected =
+			Arrays.asList(
+				JsonUtil.createObjectNode(
+					"a",
+					"1",
+					"b",
+					"€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€"),
+				JsonUtil.createObjectNode(
+					"a",
+					"2",
+					"b",
+					"€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€"));
+
+		Assert.assertEquals(expected, actual);
+	}
+
 	private String getResource(final String name) throws IOException {
 		return JsonInputFormatTest.class.getClassLoader().getResources(name)
 			.nextElement().getFile();

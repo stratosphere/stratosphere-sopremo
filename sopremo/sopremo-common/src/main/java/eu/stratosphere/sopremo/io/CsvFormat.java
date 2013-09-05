@@ -14,6 +14,7 @@ import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
+import java.nio.charset.CoderResult;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Deque;
@@ -539,19 +540,20 @@ public class CsvFormat extends SopremoFormat {
 		@Override
 		public IJsonNode nextValue() throws IOException {
 			int lastCharacter, fieldIndex = 0;
+			this.objectNode.clear();
 			do {
 				lastCharacter = this.fillBuilderWithNextField();
 				// ignore empty line
-				if (lastCharacter == 0 && fieldIndex == 0 && this.builder.length() == 0)
+				if (lastCharacter <= 0 && fieldIndex == 0 && this.builder.length() == 0)
 					break;
 				this.addToObject(fieldIndex++, this.builder.toString());
 				this.builder.setLength(0);
 			} while (lastCharacter != -1 && lastCharacter != '\n');
 
+			if (lastCharacter == -1)
+				this.endReached();
 			if (this.objectNode.size() == 0)
 				return null;
-			if (lastCharacter == -1 || this.reader.reachedLimit())
-				this.endReached();
 			return this.objectNode;
 		}
 
@@ -657,19 +659,22 @@ public class CsvFormat extends SopremoFormat {
 	public static class CountingReader extends Reader {
 		private long start = 0, relativePos = 0, limit = 0;
 
-		private boolean reachedLimit = false;
+		private boolean reachedLimit = false, eos = false;
 
-		private ByteBuffer streamBuffer = ByteBuffer.allocate(100);
+		private final ByteBuffer streamBuffer = ByteBuffer.allocate(100);
 
-		private CharBuffer charBuffer = CharBuffer.allocate(100);
+		private final CharBuffer charBuffer = CharBuffer.allocate(100);
 
-		private FSDataInputStream stream;
+		private final FSDataInputStream stream;
 
-		protected CharsetDecoder decoder;
+		private CharsetDecoder decoder;
+
+		private final Charset cs;
 
 		public CountingReader(FSDataInputStream stream, String charset, long start, long limit) {
 			this.stream = stream;
-			this.decoder = Charset.forName(charset).newDecoder();
+			this.cs = Charset.forName(charset);
+			this.decoder = this.cs.newDecoder();
 			this.start = start;
 			this.limit = limit;
 			// mark as empty
@@ -694,6 +699,9 @@ public class CsvFormat extends SopremoFormat {
 			this.stream.seek(absolutePos);
 			// mark as empty
 			this.charBuffer.limit(0);
+			this.streamBuffer.clear();
+			this.reachedLimit = this.eos = false;
+			this.decoder = this.cs.newDecoder();
 		}
 
 		/*
@@ -713,28 +721,32 @@ public class CsvFormat extends SopremoFormat {
 		}
 
 		private void fillCharBufferIfEmpty() throws IOException {
-			if (this.charBuffer.remaining() == 0) {
-				final int maxLen = this.streamBuffer.capacity();
-				this.streamBuffer.clear();
-				if (this.reachedLimit) {
-					final int read = this.stream.read(this.streamBuffer.array(), 0, maxLen);
-					this.streamBuffer.limit(read);
-				} else {
-					final int read = this.stream.read(this.streamBuffer.array(), 0,
-						(int) Math.min(maxLen, this.limit - this.relativePos));
-					if (read == -1)
-						this.reachedLimit = true;
-					else {
-						this.relativePos += read;
-						this.streamBuffer.limit(read);
-						this.reachedLimit = this.limit <= this.relativePos;
-					}
-				}
-
-				this.charBuffer.clear();
-				this.decoder.decode(this.streamBuffer, this.charBuffer, false);
-				this.charBuffer.flip();
+			final int maxLen = this.streamBuffer.capacity();
+			final int position = this.streamBuffer.position();
+			final byte[] array = this.streamBuffer.array();
+			final int read = this.stream.read(array, position,
+				(int) Math.min(maxLen - position, this.limit - this.relativePos));
+			if (read <= 0)
+				this.reachedLimit = this.eos = true;
+			else {
+				this.relativePos += read;
+				this.streamBuffer.position(0);
+				this.streamBuffer.limit(position + read);
+				this.reachedLimit = this.limit <= this.relativePos;
 			}
+
+			this.charBuffer.clear();
+			final CoderResult coderResult = this.decoder.decode(this.streamBuffer, this.charBuffer, this.eos);
+			this.charBuffer.flip();
+			int undecodedBytes;
+			if (coderResult == CoderResult.UNDERFLOW  && !this.eos && (undecodedBytes = (maxLen - this.streamBuffer.position())) > 0) {
+				System.arraycopy(array, maxLen - undecodedBytes, array, 0, undecodedBytes);
+				this.streamBuffer.limit(maxLen);
+				this.streamBuffer.position(undecodedBytes);
+				this.relativePos -= undecodedBytes;
+				// this.charBuffer.limit(this.charBuffer.limit() - 1);
+			} else
+				this.streamBuffer.clear();
 		}
 
 		/*
@@ -743,9 +755,12 @@ public class CsvFormat extends SopremoFormat {
 		 */
 		@Override
 		public int read() throws IOException {
-			this.fillCharBufferIfEmpty();
-			if (this.charBuffer.remaining() == 0)
-				return -1;
+			if (this.charBuffer.remaining() == 0) {
+				if (!this.eos)
+					this.fillCharBufferIfEmpty();
+				if (this.eos)
+					return -1;
+			}
 			return this.charBuffer.get();
 		}
 
