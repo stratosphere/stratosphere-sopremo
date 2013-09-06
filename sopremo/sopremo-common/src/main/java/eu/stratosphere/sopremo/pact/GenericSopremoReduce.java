@@ -36,14 +36,11 @@ public abstract class GenericSopremoReduce<Elem extends IJsonNode, Out extends I
 	 */
 	@Override
 	public void open(final Configuration parameters) {
-		// We need to pass our class loader since the default class loader is
-		// not able to resolve classes coming from the Sopremo user jar file.
-		SopremoEnvironment.getInstance().setClassLoader(parameters.getClassLoader());
-		this.context = SopremoUtil.getEvaluationContext(parameters);
+		SopremoEnvironment.getInstance().setConfiguration(parameters);
+		this.context = SopremoEnvironment.getInstance().getEvaluationContext();
 		this.iterator = createIterator();
-		this.collector = createCollector(SopremoUtil.getLayout(parameters));
+		this.collector = createCollector(SopremoEnvironment.getInstance().getLayout());
 		SopremoUtil.configureWithTransferredState(this, GenericSopremoReduce.class, parameters);
-		SopremoEnvironment.getInstance().setEvaluationContext(this.getContext());
 		this.array.setNodeIterator(this.iterator);
 	}
 

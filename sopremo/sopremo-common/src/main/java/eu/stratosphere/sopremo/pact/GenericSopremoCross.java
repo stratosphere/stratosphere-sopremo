@@ -28,13 +28,10 @@ public abstract class GenericSopremoCross<Left extends IJsonNode, Right extends 
 	 */
 	@Override
 	public void open(final Configuration parameters) throws Exception {
-		// We need to pass our class loader since the default class loader is
-		// not able to resolve classes coming from the Sopremo user jar file.
-		SopremoEnvironment.getInstance().setClassLoader(parameters.getClassLoader());
-		this.context = SopremoUtil.getEvaluationContext(parameters);
-		this.collector = createCollector(SopremoUtil.getLayout(parameters));
+		SopremoEnvironment.getInstance().setConfiguration(parameters);
+		this.context = SopremoEnvironment.getInstance().getEvaluationContext();
+		this.collector = createCollector(SopremoEnvironment.getInstance().getLayout());
 		SopremoUtil.configureWithTransferredState(this, GenericSopremoCross.class, parameters);
-		SopremoEnvironment.getInstance().setEvaluationContext(this.getContext());
 	}
 
 	protected JsonCollector<Out> createCollector(final SopremoRecordLayout layout) {

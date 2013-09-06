@@ -9,13 +9,16 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.logging.LogFactory;
 
 import eu.stratosphere.nephele.configuration.Configuration;
 import eu.stratosphere.pact.common.IdentityMap;
 import eu.stratosphere.pact.common.contract.MapContract;
+import eu.stratosphere.pact.common.contract.Ordering;
 import eu.stratosphere.pact.common.plan.PactModule;
 import eu.stratosphere.pact.common.stubs.Stub;
 import eu.stratosphere.pact.generic.contract.Contract;
@@ -28,7 +31,10 @@ import eu.stratosphere.pact.generic.contract.GenericReduceContract;
 import eu.stratosphere.sopremo.EvaluationContext;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
 import eu.stratosphere.sopremo.expressions.InputSelection;
+import eu.stratosphere.sopremo.expressions.OrderingExpression;
 import eu.stratosphere.sopremo.expressions.UnevaluableExpression;
+import eu.stratosphere.sopremo.pact.SopremoCoGroupContract;
+import eu.stratosphere.sopremo.pact.SopremoReduceContract;
 import eu.stratosphere.sopremo.pact.SopremoUtil;
 import eu.stratosphere.sopremo.serialization.SopremoRecordLayout;
 import eu.stratosphere.util.CollectionUtil;
@@ -81,6 +87,9 @@ public abstract class ElementaryOperator<Self extends ElementaryOperator<Self>>
 
 	private final List<List<? extends EvaluationExpression>> keyExpressions =
 		new ArrayList<List<? extends EvaluationExpression>>();
+
+	private final List<List<OrderingExpression>> innerGroupOrders =
+		new ArrayList<List<OrderingExpression>>();
 
 	private EvaluationExpression resultProjection = EvaluationExpression.VALUE;
 
@@ -139,6 +148,8 @@ public abstract class ElementaryOperator<Self extends ElementaryOperator<Self>>
 	{
 		for (int index = 0; index < this.getMinInputs(); index++)
 			this.keyExpressions.add(new ArrayList<EvaluationExpression>());
+		for (int index = 0; index < this.getMinInputs(); index++)
+			this.innerGroupOrders.add(new ArrayList<OrderingExpression>());
 	}
 
 	/**
@@ -176,6 +187,54 @@ public abstract class ElementaryOperator<Self extends ElementaryOperator<Self>>
 	}
 
 	/**
+	 * Returns the innerGroupOrder expressions of the given input.
+	 * 
+	 * @param inputIndex
+	 *        the index of the input
+	 * @return the secondarySortKey expressions of the given input
+	 */
+	@SuppressWarnings("unchecked")
+	public List<OrderingExpression> getInnerGroupOrder(final int inputIndex) {
+		if (inputIndex >= this.innerGroupOrders.size())
+			return Collections.EMPTY_LIST;
+		final List<OrderingExpression> innerGroupOrder = this.innerGroupOrders.get(inputIndex);
+		if (innerGroupOrder == null)
+			return Collections.EMPTY_LIST;
+		return innerGroupOrder;
+	}
+
+	/**
+	 * Sets the innerGroupOrder to the specified value.
+	 * 
+	 * @param innerGroupOrder
+	 *        the innerGroupOrder to set
+	 * @param inputIndex
+	 *        the index of the input
+	 */
+	// @Property(hidden = true)
+	public void setInnerGroupOrder(final int inputIndex, final List<OrderingExpression> innerGroupOrder) {
+		if (innerGroupOrder == null)
+			throw new NullPointerException("innerGroupOrders must not be null");
+		CollectionUtil.ensureSize(this.innerGroupOrders, inputIndex + 1);
+		this.innerGroupOrders.set(inputIndex, new ArrayList<OrderingExpression>(innerGroupOrder));
+	}
+
+	/**
+	 * Sets the innerGroupOrder to the specified value.
+	 * 
+	 * @param innerGroupOrder
+	 *        the innerGroupOrder to set
+	 * @param inputIndex
+	 *        the index of the input
+	 */
+	// @Property(hidden = true)
+	public void setInnerGroupOrder(final int inputIndex, final OrderingExpression... innerGroupOrder) {
+		if (innerGroupOrder == null)
+			throw new NullPointerException("innerGroupOrders must not be null");
+		setInnerGroupOrder(inputIndex, innerGroupOrder);
+	}
+
+	/**
 	 * Sets the keyExpressions of the given input to the specified value.
 	 * 
 	 * @param keyExpressions
@@ -187,6 +246,33 @@ public abstract class ElementaryOperator<Self extends ElementaryOperator<Self>>
 				"keyExpressions must not be null");
 
 		this.setKeyExpressions(index, Arrays.asList(keyExpressions));
+	}
+
+	/**
+	 * Sets the innerGroupOrder to the specified value.
+	 * 
+	 * @param innerGroupOrder
+	 *        the innerGroupOrder to set
+	 * @param inputIndex
+	 *        the index of the input
+	 */
+	public Self withInnerGroupOrdering(final int index, final OrderingExpression... innerGroupOrder) {
+		this.setInnerGroupOrder(index, innerGroupOrder);
+		return this.self();
+	}
+
+	/**
+	 * Sets the innerGroupOrder of the given input to the specified value.
+	 * 
+	 * @param innerGroupOrder
+	 *        the innerGroupOrder to set
+	 * @param inputIndex
+	 *        the index of the input
+	 * @return this
+	 */
+	public Self withInnerGroupOrdering(final int index, final List<OrderingExpression> innerGroupOrder) {
+		this.setInnerGroupOrder(index, innerGroupOrder);
+		return this.self();
 	}
 
 	/**
@@ -337,12 +423,21 @@ public abstract class ElementaryOperator<Self extends ElementaryOperator<Self>>
 		try {
 			if (contractClass == GenericReduceContract.class) {
 				int[] keyIndices = this.getKeyIndices(layout, this.getKeyExpressions(0));
-				return new GenericReduceContract(stubClass, keyIndices, name);
+				final SopremoReduceContract contract = new SopremoReduceContract(this, stubClass, keyIndices, name);
+				if (!getInnerGroupOrder(0).isEmpty())
+					contract.setInnerGroupOrder(createOrdering(layout, getInnerGroupOrder(0)));
+				return contract;
 			}
 			else if (contractClass == GenericCoGroupContract.class) {
 				int[] keyIndices1 = this.getKeyIndices(layout, this.getKeyExpressions(0));
 				int[] keyIndices2 = this.getKeyIndices(layout, this.getKeyExpressions(1));
-				return new GenericCoGroupContract(stubClass, keyIndices1, keyIndices2, name);
+				final SopremoCoGroupContract contract =
+					new SopremoCoGroupContract(this, stubClass, keyIndices1, keyIndices2, name);
+				if (!getInnerGroupOrder(0).isEmpty())
+					contract.setFirstInnerGroupOrdering(createOrdering(layout, getInnerGroupOrder(0)));
+				if (!getInnerGroupOrder(1).isEmpty())
+					contract.setFirstInnerGroupOrdering(createOrdering(layout, getInnerGroupOrder(1)));
+				return contract;
 			}
 			else if (contractClass == GenericMatchContract.class) {
 				int[] keyIndices1 = this.getKeyIndices(layout, this.getKeyExpressions(0));
@@ -362,12 +457,54 @@ public abstract class ElementaryOperator<Self extends ElementaryOperator<Self>>
 		}
 	}
 
-	public List<List<? extends EvaluationExpression>> getAllKeyExpressions() {
-		final ArrayList<List<? extends EvaluationExpression>> allKeys =
-			new ArrayList<List<? extends EvaluationExpression>>();
+	protected Ordering createOrdering(SopremoRecordLayout layout, List<OrderingExpression> innerGroupOrder) {
+		List<EvaluationExpression> paths = new ArrayList<EvaluationExpression>();
+		for (OrderingExpression orderingExpression : innerGroupOrder) 
+			paths.add(orderingExpression.getPath());
+		int[] keyIndices = this.getKeyIndices(layout, paths);
+		final Ordering ordering = new Ordering();
+		for (int index = 0; index < keyIndices.length; index++) 
+			ordering.appendOrdering(keyIndices[index], null, innerGroupOrder.get(index).getOrder());
+		return ordering;
+	}
+
+	/**
+	 * Returns true, if the implementing stub is combinable. This method will only be invoked for Reduce stubs.
+	 * 
+	 * @see eu.stratosphere.pact.generic.contract.GenericReduceContract.Combinable
+	 */
+	public boolean isCombinable() {
+		return false;
+	}
+
+	/**
+	 * Returns true, if the implementing stub is combinable for left input. This method will only be invoked for CoGroup
+	 * stubs.
+	 * 
+	 * @see eu.stratosphere.pact.generic.contract.GenericCoGroupContract.CombinableFirst
+	 */
+	public boolean isCombinableFirst() {
+		return false;
+	}
+
+	/**
+	 * Returns true, if the implementing stub is combinable for right input. This method will only be invoked for
+	 * CoGroup stubs.
+	 * 
+	 * @see eu.stratosphere.pact.generic.contract.GenericCoGroupContract.CombinableSecond
+	 */
+	public boolean isCombinableSecond() {
+		return false;
+	}
+
+	public Set<EvaluationExpression> getAllKeyExpressions() {
+		final Set<EvaluationExpression> allKeys = new HashSet<EvaluationExpression>();
 		final List<JsonStream> inputs = this.getInputs();
-		for (int index = 0; index < inputs.size(); index++)
-			allKeys.add(this.getKeyExpressions(index));
+		for (int index = 0; index < inputs.size(); index++) {
+			allKeys.addAll(this.getKeyExpressions(index));
+			for (OrderingExpression orderingExpression : this.getInnerGroupOrder(index))
+				allKeys.add(orderingExpression.getPath());
+		}
 		return allKeys;
 	}
 
@@ -376,6 +513,7 @@ public abstract class ElementaryOperator<Self extends ElementaryOperator<Self>>
 		final int prime = 31;
 		int result = super.hashCode();
 		result = prime * result + this.keyExpressions.hashCode();
+		result = prime * result + this.innerGroupOrders.hashCode();
 		result = prime * result + this.resultProjection.hashCode();
 		return result;
 	}
@@ -389,7 +527,9 @@ public abstract class ElementaryOperator<Self extends ElementaryOperator<Self>>
 		if (this.getClass() != obj.getClass())
 			return false;
 		final ElementaryOperator<?> other = (ElementaryOperator<?>) obj;
-		return this.keyExpressions.equals(other.keyExpressions) && this.resultProjection.equals(other.resultProjection);
+		return this.keyExpressions.equals(other.keyExpressions) &&
+			this.innerGroupOrders.equals(other.innerGroupOrders) &&
+			this.resultProjection.equals(other.resultProjection);
 	}
 
 	/*

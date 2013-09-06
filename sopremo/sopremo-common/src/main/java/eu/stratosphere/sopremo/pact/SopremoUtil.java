@@ -279,7 +279,7 @@ public class SopremoUtil {
 			else if (object instanceof Character)
 				appendable.append((Character) object);
 			else
-				appendable.append(object.toString());
+				appendable.append(String.valueOf(object));
 	}
 
 	// Hack found in http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6400767

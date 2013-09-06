@@ -4,8 +4,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import eu.stratosphere.pact.common.contract.ReduceContract.Combinable;
-import eu.stratosphere.pact.common.stubs.Stub;
 import eu.stratosphere.sopremo.EvaluationContext;
 import eu.stratosphere.sopremo.expressions.ConstantExpression;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
@@ -215,24 +213,6 @@ public class Grouping extends CompositeOperator<Grouping> {
 		/* (non-Javadoc)
 		 * @see eu.stratosphere.sopremo.operator.ElementaryOperator#getStubClass()
 		 */
-		@Override
-		protected Class<? extends Stub> getStubClass() {
-			return this.isCombinable() ? CombinableImplementation.class : Implementation.class;
-		}
-
-		private boolean isCombinable() {
-			// TODO: make grouping combinable if all functions are transitive
-			return false;
-		}
-
-		@Combinable
-		public static class CombinableImplementation extends SopremoReduce {
-			@Override
-			protected void reduce(final IStreamNode<IJsonNode> values, final JsonCollector<IJsonNode> out) {
-				out.collect(values);
-			}
-		}
-
 		public static class Implementation extends SopremoReduce {
 			@Override
 			protected void reduce(final IStreamNode<IJsonNode> values, final JsonCollector<IJsonNode> out) {

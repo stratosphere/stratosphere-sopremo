@@ -23,6 +23,8 @@ import com.google.common.collect.Iterables;
 import com.google.common.reflect.TypeToken;
 
 import eu.stratosphere.nephele.configuration.Configuration;
+import eu.stratosphere.pact.common.contract.GenericDataSink;
+import eu.stratosphere.pact.common.contract.Ordering;
 import eu.stratosphere.pact.common.util.FieldList;
 import eu.stratosphere.pact.common.util.Visitor;
 import eu.stratosphere.pact.compiler.plan.candidate.Channel;
@@ -30,9 +32,12 @@ import eu.stratosphere.pact.compiler.plan.candidate.DualInputPlanNode;
 import eu.stratosphere.pact.compiler.plan.candidate.OptimizedPlan;
 import eu.stratosphere.pact.compiler.plan.candidate.PlanNode;
 import eu.stratosphere.pact.compiler.plan.candidate.SingleInputPlanNode;
+import eu.stratosphere.pact.compiler.plan.candidate.SinkPlanNode;
 import eu.stratosphere.pact.compiler.plan.candidate.SourcePlanNode;
 import eu.stratosphere.pact.compiler.postpass.OptimizerPostPass;
 import eu.stratosphere.pact.generic.stub.AbstractStub;
+import eu.stratosphere.sopremo.pact.SopremoCoGroupContract;
+import eu.stratosphere.sopremo.pact.SopremoReduceContract;
 import eu.stratosphere.sopremo.pact.SopremoStub;
 import eu.stratosphere.sopremo.pact.SopremoUtil;
 import eu.stratosphere.sopremo.type.IJsonNode;
@@ -77,6 +82,14 @@ public class SopremoRecordPostPass implements OptimizerPostPass {
 				sn.setComparator(createComparator(sn.getKeys(), sn.getSortOrders(), layout));
 			}
 			// processChannel(layout, sn.getInput());
+
+			if (node instanceof SinkPlanNode)
+				setOrdering(((SingleInputPlanNode) node).getInput(),
+					((GenericDataSink) node.getPactContract()).getLocalOrder());
+			else if (node.getPactContract() instanceof SopremoReduceContract)
+				setOrdering(((SingleInputPlanNode) node).getInput(),
+					((SopremoReduceContract) node.getPactContract()).getInnerGroupOrder());
+
 		} else if (node instanceof DualInputPlanNode) {
 			DualInputPlanNode dn = (DualInputPlanNode) node;
 			// parameterize the node's driver strategy
@@ -87,6 +100,13 @@ public class SopremoRecordPostPass implements OptimizerPostPass {
 			}
 			// processChannel(layout, dn.getInput1());
 			// processChannel(layout, dn.getInput2());
+			if (node.getPactContract() instanceof SopremoCoGroupContract) {
+				setOrdering(((DualInputPlanNode) node).getInput1(),
+					((SopremoCoGroupContract) node.getPactContract()).getFirstInnerGroupOrdering());
+				setOrdering(((DualInputPlanNode) node).getInput2(),
+					((SopremoCoGroupContract) node.getPactContract()).getSecondInnerGroupOrdering());
+			}
+
 		} else if (node instanceof SourcePlanNode) {
 			((SourcePlanNode) node).setSerializer(new SopremoRecordSerializerFactory(layout));
 		}
@@ -96,7 +116,8 @@ public class SopremoRecordPostPass implements OptimizerPostPass {
 
 		if (SopremoStub.class.isAssignableFrom(userCodeClass)) {
 			final List<Type> hierarchy = ReflectUtil.getHierarchy(AbstractStub.class, userCodeClass);
-			final Class genericSopremoStubClass = (Class) ((ParameterizedType) hierarchy.get(hierarchy.size() - 2)).getRawType();
+			final Class genericSopremoStubClass =
+				(Class) ((ParameterizedType) hierarchy.get(hierarchy.size() - 2)).getRawType();
 			final ParameterizedType boundType =
 				(ParameterizedType) TypeToken.of(userCodeClass).getSupertype(genericSopremoStubClass).getType();
 			for (int index = 0; inputs.hasNext(); index++)
@@ -104,6 +125,11 @@ public class SopremoRecordPostPass implements OptimizerPostPass {
 		} else
 			while (inputs.hasNext())
 				processChannel(layout, inputs.next(), IJsonNode.class);
+	}
+
+	private void setOrdering(Channel input, Ordering localOrder) {
+		if (localOrder != null)
+			input.getLocalProperties().setOrdering(localOrder);
 	}
 
 	private void processChannel(SopremoRecordLayout layout, Channel channel, Type type) {

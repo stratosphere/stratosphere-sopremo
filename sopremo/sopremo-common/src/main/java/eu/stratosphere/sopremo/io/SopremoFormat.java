@@ -257,10 +257,9 @@ public abstract class SopremoFormat extends ConfigurableSopremoType {
 		public void configure(final Configuration parameters) {
 			super.configure(parameters);
 
-			SopremoEnvironment.getInstance().setClassLoader(getClass().getClassLoader());
-			this.context = SopremoUtil.getEvaluationContext(parameters);
-			this.layout = SopremoUtil.getLayout(parameters);
-			SopremoEnvironment.getInstance().setEvaluationContext(this.context);
+			SopremoEnvironment.getInstance().setConfiguration(parameters);
+			this.context = SopremoEnvironment.getInstance().getEvaluationContext();
+			this.layout = SopremoEnvironment.getInstance().getLayout();
 			SopremoUtil.configureWithTransferredState(this, SopremoFileInputFormat.class, parameters);
 			if (this.layout == null)
 				throw new IllegalStateException("Could not deserialize input schema");
@@ -366,10 +365,9 @@ public abstract class SopremoFormat extends ConfigurableSopremoType {
 
 		@Override
 		public void configure(final Configuration parameters) {
-			SopremoEnvironment.getInstance().setClassLoader(getClass().getClassLoader());
-			this.context = SopremoUtil.getEvaluationContext(parameters);
-			this.layout = SopremoUtil.getLayout(parameters);
-			SopremoEnvironment.getInstance().setEvaluationContext(this.context);
+			SopremoEnvironment.getInstance().setConfiguration(parameters);
+			this.context = SopremoEnvironment.getInstance().getEvaluationContext();
+			this.layout = SopremoEnvironment.getInstance().getLayout();
 			SopremoUtil.configureWithTransferredState(this, SopremoFileInputFormat.class, parameters);
 			if (this.layout == null)
 				throw new IllegalStateException("Could not deserialize layout");
@@ -514,10 +512,9 @@ public abstract class SopremoFormat extends ConfigurableSopremoType {
 		public void configure(final Configuration parameters) {
 			super.configure(parameters);
 
-			SopremoEnvironment.getInstance().setClassLoader(getClass().getClassLoader());
-			this.context = SopremoUtil.getEvaluationContext(parameters);
-			this.layout = SopremoUtil.getLayout(parameters);
-			SopremoEnvironment.getInstance().setEvaluationContext(this.context);
+			SopremoEnvironment.getInstance().setConfiguration(parameters);
+			this.context = SopremoEnvironment.getInstance().getEvaluationContext();
+			this.layout = SopremoEnvironment.getInstance().getLayout();
 			SopremoUtil.configureWithTransferredState(this, SopremoFileInputFormat.class, parameters);
 			if (this.layout == null)
 				throw new IllegalStateException("Could not deserialize layout");
@@ -531,10 +528,12 @@ public abstract class SopremoFormat extends ConfigurableSopremoType {
 		public boolean nextRecord(final SopremoRecord record) throws IOException {
 			if (!this.end) {
 				final IJsonNode value = this.nextValue();
-				if (SopremoUtil.DEBUG && SopremoUtil.LOG.isTraceEnabled())
-					SopremoUtil.LOG.trace(String.format("%s input %s", this.context.getOperatorDescription(), value));
-				record.setNode(this.projection.evaluate(value));
-				return true;
+				if (value != null) {
+					if (SopremoUtil.DEBUG && SopremoUtil.LOG.isTraceEnabled())
+						SopremoUtil.LOG.trace(String.format("%s input %s", this.context.getOperatorDescription(), value));
+					record.setNode(this.projection.evaluate(value));
+					return true;
+				}
 			}
 
 			return false;

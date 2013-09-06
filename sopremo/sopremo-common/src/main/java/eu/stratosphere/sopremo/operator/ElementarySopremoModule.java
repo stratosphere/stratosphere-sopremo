@@ -259,10 +259,8 @@ public class ElementarySopremoModule extends SopremoModule {
 	 */
 	public void inferSchema() {
 		final Set<EvaluationExpression> keyExpressions = new HashSet<EvaluationExpression>();
-		for (final ElementaryOperator<?> operator : this.getReachableNodes()) {
-			for (final List<? extends EvaluationExpression> expressions : operator.getAllKeyExpressions())
-				keyExpressions.addAll(expressions);
-		}
+		for (final ElementaryOperator<?> operator : this.getReachableNodes()) 
+			keyExpressions.addAll(operator.getAllKeyExpressions());
 
 		this.schema = new Schema(new ArrayList<EvaluationExpression>(keyExpressions));
 	}

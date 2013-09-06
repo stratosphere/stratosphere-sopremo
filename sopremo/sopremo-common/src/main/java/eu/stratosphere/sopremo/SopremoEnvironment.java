@@ -14,6 +14,10 @@
  **********************************************************************************************************************/
 package eu.stratosphere.sopremo;
 
+import eu.stratosphere.nephele.configuration.Configuration;
+import eu.stratosphere.sopremo.pact.SopremoUtil;
+import eu.stratosphere.sopremo.serialization.SopremoRecordLayout;
+
 /**
  * @author Arvid Heise
  */
@@ -31,7 +35,11 @@ public class SopremoEnvironment {
 	private EvaluationContext evaluationContext = new EvaluationContext();
 
 	private ClassLoader classLoader = getClass().getClassLoader();
-	
+
+	private Configuration configuration;
+
+	private SopremoRecordLayout layout;
+
 	public static SopremoEnvironment getInstance() {
 		return INSTANCE.get();
 	}
@@ -46,19 +54,6 @@ public class SopremoEnvironment {
 	}
 
 	/**
-	 * Sets the evaluationContext to the specified value.
-	 * 
-	 * @param evaluationContext
-	 *        the evaluationContext to set
-	 */
-	public void setEvaluationContext(EvaluationContext currentEvaluationContext) {
-		if (currentEvaluationContext == null)
-			throw new NullPointerException("evaluationContext must not be null");
-
-		this.evaluationContext = currentEvaluationContext;
-	}
-
-	/**
 	 * Returns the classLoader.
 	 * 
 	 * @return the classLoader
@@ -66,16 +61,51 @@ public class SopremoEnvironment {
 	public ClassLoader getClassLoader() {
 		return this.classLoader;
 	}
-	
+
+	/**
+	 * Returns the configuration.
+	 * 
+	 * @return the configuration
+	 */
+	public Configuration getConfiguration() {
+		return this.configuration;
+	}
+
+	/**
+	 * Returns the layout.
+	 * 
+	 * @return the layout
+	 */
+	public SopremoRecordLayout getLayout() {
+		return this.layout;
+	}
+
+	/**
+	 * Sets the evaluationContext to the specified value.
+	 * 
+	 * @param evaluationContext
+	 *        the evaluationContext to set
+	 */
+	public void setEvaluationContext(EvaluationContext evaluationContext) {
+		if (evaluationContext == null)
+			throw new NullPointerException("evaluationContext must not be null");
+
+		this.evaluationContext = evaluationContext;
+	}
+
 	/**
 	 * Sets the classLoader to the specified value.
-	 *
-	 * @param classLoader the classLoader to set
+	 * 
+	 * @param classLoader
+	 *        the classLoader to set
 	 */
-	public void setClassLoader(ClassLoader classLoader) {
-		if (classLoader == null)
-			throw new NullPointerException("classLoader must not be null");
+	public void setConfiguration(Configuration configuration) {
+		if (configuration == null)
+			throw new NullPointerException("configuration must not be null");
 
-		this.classLoader = classLoader;
+		this.configuration = configuration;
+		this.classLoader = configuration.getClassLoader();
+		this.evaluationContext = SopremoUtil.getEvaluationContext(configuration);
+		this.layout = SopremoUtil.getLayout(configuration);
 	}
 }

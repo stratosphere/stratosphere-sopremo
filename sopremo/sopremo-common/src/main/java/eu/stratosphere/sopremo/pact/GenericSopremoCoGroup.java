@@ -28,7 +28,7 @@ public abstract class GenericSopremoCoGroup<LeftElem extends IJsonNode, RightEle
 	private JsonCollector<Out> collector;
 
 	private RecordToJsonIterator<LeftElem> cachedIterator1;
-	
+
 	private RecordToJsonIterator<RightElem> cachedIterator2;
 
 	private final StreamNode<LeftElem> leftArray = new StreamNode<LeftElem>();
@@ -111,19 +111,16 @@ public abstract class GenericSopremoCoGroup<LeftElem extends IJsonNode, RightEle
 	 */
 	@Override
 	public void open(final Configuration parameters) throws Exception {
-		// We need to pass our class loader since the default class loader is
-		// not able to resolve classes coming from the Sopremo user jar file.
-		SopremoEnvironment.getInstance().setClassLoader(parameters.getClassLoader());
-		this.context = SopremoUtil.getEvaluationContext(parameters);
-		this.collector = createCollector(SopremoUtil.getLayout(parameters));
+		SopremoEnvironment.getInstance().setConfiguration(parameters);
+		this.context = SopremoEnvironment.getInstance().getEvaluationContext();
+		this.collector = createCollector(SopremoEnvironment.getInstance().getLayout());
 		this.cachedIterator1 = new RecordToJsonIterator<LeftElem>();
 		this.cachedIterator2 = new RecordToJsonIterator<RightElem>();
 		SopremoUtil.configureWithTransferredState(this, GenericSopremoCoGroup.class, parameters);
-		SopremoEnvironment.getInstance().setEvaluationContext(this.getContext());
 		this.leftArray.setNodeIterator(this.cachedIterator1);
 		this.rightArray.setNodeIterator(this.cachedIterator2);
 	}
-	
+
 	protected JsonCollector<Out> createCollector(final SopremoRecordLayout layout) {
 		return new JsonCollector<Out>(layout);
 	}
@@ -138,7 +135,8 @@ public abstract class GenericSopremoCoGroup<LeftElem extends IJsonNode, RightEle
 	 * @param out
 	 *        a collector that collects all output pairs
 	 */
-	protected abstract void coGroup(IStreamNode<LeftElem> values1, IStreamNode<RightElem> values2, JsonCollector<Out> out);
+	protected abstract void coGroup(IStreamNode<LeftElem> values1, IStreamNode<RightElem> values2,
+			JsonCollector<Out> out);
 
 	@Override
 	public final EvaluationContext getContext() {

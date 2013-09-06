@@ -3,11 +3,16 @@ package eu.stratosphere.sopremo.io;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 import eu.stratosphere.pact.common.contract.GenericDataSink;
 import eu.stratosphere.pact.common.plan.PactModule;
 import eu.stratosphere.pact.generic.io.OutputFormat;
 import eu.stratosphere.sopremo.EvaluationContext;
+import eu.stratosphere.sopremo.expressions.EvaluationExpression;
+import eu.stratosphere.sopremo.expressions.OrderingExpression;
 import eu.stratosphere.sopremo.operator.ElementaryOperator;
 import eu.stratosphere.sopremo.operator.ElementarySopremoModule;
 import eu.stratosphere.sopremo.operator.InputCardinality;
@@ -27,6 +32,9 @@ public class Sink extends ElementaryOperator<Sink> {
 	private String outputPath;
 
 	private SopremoFormat format;
+
+	private List<OrderingExpression> globalSortingKey = new ArrayList<OrderingExpression>(),
+			localSortingKey = new ArrayList<OrderingExpression>();
 
 	/**
 	 * Initializes a Sink with the given {@link FileOutputFormat} and the given path.
@@ -98,6 +106,74 @@ public class Sink extends ElementaryOperator<Sink> {
 		this.format = format;
 	}
 
+	/**
+	 * Sets the globalSortingKey to the specified value.
+	 * 
+	 * @param globalSortingKey
+	 *        the globalSortingKey to set
+	 */
+	public void setGlobalSortingKey(List<OrderingExpression> globalSortingKey) {
+		if (globalSortingKey == null)
+			throw new NullPointerException("globalSortingKey must not be null");
+
+		this.globalSortingKey = globalSortingKey;
+	}
+
+	/**
+	 * Sets the localSortingKey to the specified value.
+	 * 
+	 * @param localSortingKey
+	 *        the localSortingKey to set
+	 */
+	public void setLocalSortingKey(List<OrderingExpression> localSortingKey) {
+		if (localSortingKey == null)
+			throw new NullPointerException("localSortingKey must not be null");
+
+		this.localSortingKey = localSortingKey;
+	}
+
+	/**
+	 * Returns the localSortingKey.
+	 * 
+	 * @return the localSortingKey
+	 */
+	public List<OrderingExpression> getLocalSortingKey() {
+		return this.localSortingKey;
+	}
+
+	/**
+	 * Returns the globalSortingKey.
+	 * 
+	 * @return the globalSortingKey
+	 */
+	public List<OrderingExpression> getGlobalSortingKey() {
+		return this.globalSortingKey;
+	}
+
+	public Sink withLocalSortingKey(List<OrderingExpression> localSortingKey) {
+		setLocalSortingKey(localSortingKey);
+		return this;
+	}
+
+	public Sink withGlobalSortingKey(List<OrderingExpression> sortingKey) {
+		setGlobalSortingKey(sortingKey);
+		return this;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.operator.ElementaryOperator#getAllKeyExpressions()
+	 */
+	@Override
+	public Set<EvaluationExpression> getAllKeyExpressions() {
+		final Set<EvaluationExpression> allKeyExpressions = super.getAllKeyExpressions();
+		for (OrderingExpression ordering : this.globalSortingKey)
+			allKeyExpressions.add(ordering.getPath());
+		for (OrderingExpression ordering : this.localSortingKey)
+			allKeyExpressions.add(ordering.getPath());
+		return allKeyExpressions;
+	}
+
 	@Override
 	public Output getSource() {
 		throw new UnsupportedOperationException("Sink has not output");
@@ -115,6 +191,10 @@ public class Sink extends ElementaryOperator<Sink> {
 		contract.setDegreeOfParallelism(getDegreeOfParallelism());
 
 		contract.setInput(pactModule.getInput(0));
+		if(this.globalSortingKey.isEmpty())
+			contract.setGlobalOrder(createOrdering(layout, this.globalSortingKey));
+		if(this.localSortingKey.isEmpty())
+			contract.setLocalOrder(createOrdering(layout, this.localSortingKey));
 		pactModule.addInternalOutput(contract);
 		return pactModule;
 	}

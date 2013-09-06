@@ -71,7 +71,7 @@ public class ArrayCreation extends EvaluationExpression {
 	}
 	
 	public EvaluationExpression get(int index) {
-		return elements.get(index);
+		return this.elements.get(index);
 	}
 
 	@Override
@@ -119,6 +119,8 @@ public class ArrayCreation extends EvaluationExpression {
 
 	@Override
 	public void appendAsString(final Appendable appendable) throws IOException {
+		appendable.append('[');
 		this.append(appendable, this.elements, ", ");
+		appendable.append(']');
 	}
 }
