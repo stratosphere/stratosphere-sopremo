@@ -37,7 +37,7 @@ public class NullNode extends AbstractJsonNode implements IPrimitiveNode {
 
 	@Override
 	public void appendAsString(final Appendable sb) throws IOException {
-		sb.append("null");
+		sb.append("Null");
 	}
 
 	@Override

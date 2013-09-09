@@ -14,15 +14,21 @@
  **********************************************************************************************************************/
 package eu.stratosphere.sopremo.expressions;
 
-import eu.stratosphere.pact.common.contract.Order;
+import java.util.Comparator;
 
-public class OrderingExpression extends UnevaluableExpression {
+import eu.stratosphere.pact.common.contract.Order;
+import eu.stratosphere.sopremo.type.IArrayNode;
+import eu.stratosphere.sopremo.type.IJsonNode;
+import eu.stratosphere.sopremo.type.IntNode;
+
+public class OrderingExpression extends EvaluationExpression {
 	private final Order order;
 
 	private final PathSegmentExpression path;
 
+	private final IntNode result = new IntNode();
+
 	public OrderingExpression(Order order, PathSegmentExpression path) {
-		super("Ordering must be interpreted by operator");
 		this.order = order;
 		this.path = path;
 	}
@@ -31,7 +37,7 @@ public class OrderingExpression extends UnevaluableExpression {
 	 * Initializes OrderingExpression.
 	 */
 	public OrderingExpression() {
-		this(null, null);
+		this(Order.ASCENDING, EvaluationExpression.VALUE);
 	}
 
 	/**
@@ -50,5 +56,37 @@ public class OrderingExpression extends UnevaluableExpression {
 	 */
 	public PathSegmentExpression getPath() {
 		return this.path;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.expressions.EvaluationExpression#evaluate(eu.stratosphere.sopremo.type.IJsonNode)
+	 */
+	@Override
+	public IntNode evaluate(IJsonNode node) {
+		@SuppressWarnings("unchecked")
+		final IArrayNode<IJsonNode> pair = (IArrayNode<IJsonNode>) node;
+		this.result.setValue(compare(pair.get(0), pair.get(1)));
+		return this.result;
+	}
+
+	public int compare(IJsonNode node1, IJsonNode node2) {
+		final int result = this.path.evaluate(node1).compareTo(this.path.evaluate(node2));
+		return this.order == Order.DESCENDING ? -result : result;
+	}
+
+	public Comparator<IJsonNode> asComparator() {
+		return new Comparator<IJsonNode>() {
+			/*
+			 * (non-Javadoc)
+			 * @see java.util.Comparator#compare(java.lang.Object, java.lang.Object)
+			 */
+			@Override
+			public int compare(IJsonNode node1, IJsonNode node2) {
+				final int result =
+					OrderingExpression.this.path.evaluate(node1).compareTo(OrderingExpression.this.path.evaluate(node2));
+				return OrderingExpression.this.order == Order.DESCENDING ? -result : result;
+			}
+		};
 	}
 }

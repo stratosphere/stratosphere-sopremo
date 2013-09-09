@@ -100,7 +100,7 @@ public class SortTest extends SopremoOperatorTestBase<Sort> {
 				return o1.get(1).compareTo(o2.get(1));
 			}
 		});
-		final List<IJsonNode> actual = Lists.newArrayList(sopremoPlan.getActualOutput(0));
+		final List<IJsonNode> actual = Lists.newArrayList(sopremoPlan.getActualOutput(0).unsortedIterator());
 		Assert.assertEquals(expected, actual);
 	}
 

@@ -61,7 +61,7 @@ public class ReflectUtil {
 			annotation = t.getAnnotation(annotationType);
 		return annotation;
 	}
-	
+
 	/**
 	 * Returns the first annotation of the specified annotation type for the given field.<br>
 	 * If no annotation is found for the type, the hierarchical ancestors are examined.
@@ -169,7 +169,7 @@ public class ReflectUtil {
 		} while (superClass != rawType);
 		return hierarchy;
 	}
-	
+
 	/**
 	 * Checks dynamically whether the object has the specified function, which takes the given parameters.
 	 * 

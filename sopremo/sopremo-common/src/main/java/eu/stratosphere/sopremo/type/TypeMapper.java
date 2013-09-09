@@ -15,6 +15,7 @@
 package eu.stratosphere.sopremo.type;
 
 import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.Arrays;
 
 import com.google.common.reflect.TypeToken;
@@ -22,8 +23,13 @@ import com.google.common.reflect.TypeToken;
 public abstract class TypeMapper<From, To> {
 	private final Class<? extends To> defaultType;
 
+	private final Class<?> toType;
+
 	public TypeMapper(final Class<? extends To> defaultType) {
 		this.defaultType = defaultType;
+		final Type toBinding =
+			((ParameterizedType) TypeToken.of(getClass()).getSupertype(TypeMapper.class).getType()).getActualTypeArguments()[1];
+		this.toType = TypeToken.of(toBinding).getRawType();
 	}
 
 	public abstract To mapTo(From from, To target);
@@ -35,6 +41,10 @@ public abstract class TypeMapper<From, To> {
 	 */
 	public Class<? extends To> getDefaultType() {
 		return this.defaultType;
+	}
+
+	public boolean isValidTarget(Object possibleTarget) {
+		return this.toType.isInstance(possibleTarget);
 	}
 
 	/*

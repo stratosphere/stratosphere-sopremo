@@ -520,12 +520,20 @@ public class SopremoTestPlan {
 			this.actualRecords = testPlan.getActualOutput(this.getIndex());
 		}
 
+		public Iterator<IJsonNode> unsortedIterator() {
+			if (this.actualRecords == null)
+				throw new IllegalStateException("Can only access actual output after a complete test run");
+			final RecordToJsonIterator<IJsonNode> iterator = new RecordToJsonIterator<IJsonNode>();
+			iterator.setIterator(this.actualRecords.unsortedIterator());
+			return iterator;
+		}
+		
 		@Override
 		public Iterator<IJsonNode> iterator() {
 			if (this.actualRecords == null)
 				throw new IllegalStateException("Can only access actual output after a complete test run");
 			final RecordToJsonIterator<IJsonNode> iterator = new RecordToJsonIterator<IJsonNode>();
-			iterator.setIterator(this.actualRecords.iterator());
+			iterator.setIterator(this.actualRecords.sortedIterator());
 			return iterator;
 		}
 	}
@@ -643,7 +651,7 @@ public class SopremoTestPlan {
 				return Collections.EMPTY_LIST.iterator();
 			if (this.testRecords != null) {
 				final RecordToJsonIterator<IJsonNode> recordToJsonIterator = new RecordToJsonIterator<IJsonNode>();
-				recordToJsonIterator.setIterator(this.testRecords.iterator());
+				recordToJsonIterator.setIterator(this.testRecords.sortedIterator());
 				return recordToJsonIterator;
 			}
 			if (this.file != null)

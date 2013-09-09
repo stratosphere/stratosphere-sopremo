@@ -50,7 +50,7 @@ public class JavaToJsonMapper extends AbstractTypeMapper<TypeMapper<?, ?>> {
 			final Iterator iterator = from.iterator();
 			((AbstractArrayNode) target).setSize(targetSize);
 
-			for (int index = 0; index < targetSize; index++)
+			for (int index = 0; index < targetSize; index++) 
 				target.set(index, INSTANCE.map(iterator.next(), target.get(index), this.elemType));
 			return target;
 		}
@@ -70,7 +70,8 @@ public class JavaToJsonMapper extends AbstractTypeMapper<TypeMapper<?, ?>> {
 	static final TypeMapper<?, ?> SelfMapper = new TypeMapper<Object, Object>(null) {
 		/*
 		 * (non-Javadoc)
-		 * @see eu.stratosphere.sopremo.type.TypeMapper#mapTo(java.lang.Object, java.lang.Object, java.lang.reflect.Type)
+		 * @see eu.stratosphere.sopremo.type.TypeMapper#mapTo(java.lang.Object, java.lang.Object,
+		 * java.lang.reflect.Type)
 		 */
 		@Override
 		public Object mapTo(Object from, Object target) {
@@ -148,24 +149,25 @@ public class JavaToJsonMapper extends AbstractTypeMapper<TypeMapper<?, ?>> {
 
 	@SuppressWarnings("rawtypes")
 	private void addToObjectMapper() {
-		final TypeMapper<Map<?, ?>, IObjectNode> toObjectMapper = new TypeMapper<Map<?, ?>, IObjectNode>(ObjectNode.class) {
-			Set<String> unusedKeys = new HashSet<String>();
+		final TypeMapper<Map<?, ?>, IObjectNode> toObjectMapper =
+			new TypeMapper<Map<?, ?>, IObjectNode>(ObjectNode.class) {
+				Set<String> unusedKeys = new HashSet<String>();
 
-			@Override
-			public IObjectNode mapTo(Map<?, ?> from, IObjectNode target) {
-				this.unusedKeys.addAll(target.getFieldNames());
+				@Override
+				public IObjectNode mapTo(Map<?, ?> from, IObjectNode target) {
+					this.unusedKeys.addAll(target.getFieldNames());
 
-				for (Map.Entry entry : from.entrySet()) {
-					final String targetKey = entry.getKey().toString();
-					target.put(targetKey, INSTANCE.map(entry.getValue()));
-					this.unusedKeys.remove(targetKey);
+					for (Map.Entry entry : from.entrySet()) {
+						final String targetKey = entry.getKey().toString();
+						target.put(targetKey, INSTANCE.map(entry.getValue()));
+						this.unusedKeys.remove(targetKey);
+					}
+
+					for (String key : this.unusedKeys)
+						target.remove(key);
+					return target;
 				}
-
-				for (String key : this.unusedKeys)
-					target.remove(key);
-				return target;
-			}
-		};
+			};
 		addMapper(Map.class, ObjectNode.class, toObjectMapper);
 	}
 
@@ -202,7 +204,7 @@ public class JavaToJsonMapper extends AbstractTypeMapper<TypeMapper<?, ?>> {
 			if (target instanceof AbstractArrayNode) {
 				((AbstractArrayNode) target).setSize(targetSize);
 
-				for (int index = 0; index < targetSize; index++)
+				for (int index = 0; index < targetSize; index++) 
 					target.set(index, INSTANCE.map(Array.get(from, index), target.get(index), this.elemType));
 			}
 			return target;
@@ -210,13 +212,14 @@ public class JavaToJsonMapper extends AbstractTypeMapper<TypeMapper<?, ?>> {
 	};
 
 	private void addToStringMapper() {
-		final TypeMapper<CharSequence, TextNode> charSeqToTextMapper = new TypeMapper<CharSequence, TextNode>(TextNode.class) {
-			@Override
-			public TextNode mapTo(CharSequence from, TextNode target) {
-				target.setValue(from);
-				return target;
-			}
-		};
+		final TypeMapper<CharSequence, TextNode> charSeqToTextMapper =
+			new TypeMapper<CharSequence, TextNode>(TextNode.class) {
+				@Override
+				public TextNode mapTo(CharSequence from, TextNode target) {
+					target.setValue(from);
+					return target;
+				}
+			};
 		addMapper(CharSequence.class, TextNode.class, charSeqToTextMapper);
 		final TypeMapper<Object, TextNode> anyToTextMapper = new TypeMapper<Object, TextNode>(TextNode.class) {
 			@Override
@@ -332,10 +335,15 @@ public class JavaToJsonMapper extends AbstractTypeMapper<TypeMapper<?, ?>> {
 	}
 
 	private <T extends IJsonNode> T map(Object from, T to, TypeMapper<Object, T> targetMapper) {
-		if (to == null && targetMapper.getDefaultType() != null)
-			to = ReflectUtil.newInstance(targetMapper.getDefaultType());
+		final T initializedTo;
+		if (to != null && targetMapper.isValidTarget(to))
+			initializedTo = to;
+		else if (targetMapper.getDefaultType() != null)
+			initializedTo = ReflectUtil.newInstance(targetMapper.getDefaultType());
+		else
+			initializedTo = null;
 
-		return targetMapper.mapTo(from, to);
+		return targetMapper.mapTo(from, initializedTo);
 	}
 
 	public IJsonNode map(final Object value) {

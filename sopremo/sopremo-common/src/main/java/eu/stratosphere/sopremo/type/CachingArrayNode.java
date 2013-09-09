@@ -30,7 +30,7 @@ public class CachingArrayNode<T extends IJsonNode> extends ArrayNode<T> {
 	public T reuseUnusedNode() {
 		return ((CachingList<T>) this.getChildren()).reuseUnusedElement();
 	}
-	
+
 	public T getUnusedNode() {
 		return ((CachingList<T>) this.getChildren()).getUnusedElement();
 	}
@@ -59,9 +59,10 @@ public class CachingArrayNode<T extends IJsonNode> extends ArrayNode<T> {
 		super.clear();
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public void setSize(int size) {
-		((CachingList<T>) this.getChildren()).setSize(size);
+		((CachingList<T>) this.getChildren()).size(size, (T) MissingNode.getInstance());
 	}
 
 	/*

@@ -14,73 +14,45 @@
  **********************************************************************************************************************/
 package eu.stratosphere.util;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
-import java.util.AbstractList;
-import java.util.ArrayList;
-import java.util.List;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.fastutil.objects.ObjectArrays;
 
 /**
  * A list implementation that does not release removed elements but allows them to be reused.
  * 
  * @author Arvid Heise
  */
-public class CachingList<T> extends AbstractList<T> implements Serializable {
+public class CachingList<T> extends ObjectArrayList<T> {
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = 3096573686030611189L;
+	private static final long serialVersionUID = 7946169971753399385L;
 
-	private List<T> backingList = new ArrayList<T>();
-
-	private int size;
+	private int usedElements;
 
 	@Override
 	public void add(int index, T element) {
-		this.checkRange(index, this.size + 1);
+		this.checkRange(index, this.usedElements + 1);
 
-		if (index < this.size) // insert
-			this.backingList.add(index, element);
-		else if (this.size == this.backingList.size()) // append
-			this.backingList.add(element);
+		if (index < this.usedElements) // insert
+			super.add(index, element);
+		else if (this.usedElements == super.size()) // append
+			super.add(element);
 		else
-			this.backingList.set(index, element);
+			super.set(index, element);
 
-		this.size++;
+		this.usedElements++;
 	}
 
 	@Override
 	public boolean add(T element) {
-		if (this.size == this.backingList.size()) // append
-			this.backingList.add(element);
+		if (this.usedElements == super.size()) // append
+			super.add(element);
 		else
-			this.backingList.set(this.size, element);
+			super.set(this.usedElements, element);
 
-		this.size++;
+		this.usedElements++;
 		return true;
-	}
-
-	@SuppressWarnings("unchecked")
-	private void readObject(ObjectInputStream ois) throws IOException, ClassNotFoundException {
-		this.backingList = (List<T>) ois.readObject();
-	}
-
-	private void writeObject(ObjectOutputStream oos) throws IOException {
-		if (this.size == this.backingList.size())
-			oos.writeObject(this.backingList);
-		else
-			oos.writeObject(new ArrayList<T>(this.backingList.subList(0, this.size)));
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see java.util.AbstractList#set(int, java.lang.Object)
-	 */
-	@Override
-	public T set(int index, T element) {
-		return this.backingList.set(index, element);
 	}
 
 	/*
@@ -89,16 +61,16 @@ public class CachingList<T> extends AbstractList<T> implements Serializable {
 	 */
 	@Override
 	public void clear() {
-		this.size = 0;
+		this.usedElements = 0;
 	}
 
 	@Override
 	public T remove(int index) {
-		this.checkRange(index, this.size);
+		this.checkRange(index, this.usedElements);
 
-		final T oldObject = this.backingList.remove(index);
-		this.backingList.add(oldObject);
-		this.size--;
+		final T oldObject = super.remove(index);
+		super.add(oldObject);
+		this.usedElements--;
 		return oldObject;
 	}
 
@@ -113,9 +85,9 @@ public class CachingList<T> extends AbstractList<T> implements Serializable {
 	 */
 	@Override
 	public T get(int index) {
-		this.checkRange(index, this.size);
+		this.checkRange(index, this.usedElements);
 
-		return this.backingList.get(index);
+		return super.get(index);
 	}
 
 	/**
@@ -125,29 +97,15 @@ public class CachingList<T> extends AbstractList<T> implements Serializable {
 	 * @return a reactivated element or null
 	 */
 	public T reuseUnusedElement() {
-		if (this.backingList.size() == this.size)
+		if (super.size() == this.usedElements)
 			return null;
-		return this.backingList.get(this.size++);
+		return super.get(this.usedElements++);
 	}
 
 	public T getUnusedElement() {
-		if (this.backingList.size() == this.size)
+		if (super.size() == this.usedElements)
 			return null;
-		return this.backingList.get(this.size);
-	}
-	
-	/**
-	 * Sets the size to the specified value.
-	 * 
-	 * @param size
-	 *        the size to set
-	 */
-	public void setSize(int size) {
-		if (size < 0)
-			throw new NullPointerException("size must not be non-negative");
-
-		CollectionUtil.ensureSize(this.backingList, size);
-		this.size = size;
+		return super.get(this.usedElements);
 	}
 
 	/*
@@ -156,7 +114,35 @@ public class CachingList<T> extends AbstractList<T> implements Serializable {
 	 */
 	@Override
 	public int size() {
-		return this.size;
+		return this.usedElements;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see it.unimi.dsi.fastutil.objects.ObjectArrayList#size(int)
+	 */
+	@Override
+	public void size(int size) {
+		if (size > this.a.length)
+			ensureCapacity(size);
+		if (size > this.size) {
+			ObjectArrays.fill(this.a, this.size, size, null);
+			this.size = size;
+		}
+		this.usedElements = size;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see it.unimi.dsi.fastutil.objects.ObjectArrayList#size(int)
+	 */
+	public void size(int size, T defaultElement) {
+		if (size > this.a.length)
+			ensureCapacity(size);
+		if (size > this.size) {
+			ObjectArrays.fill(this.a, this.size, size, defaultElement);
+			this.size = size;
+		}
+		this.usedElements = size;
+	}
 }

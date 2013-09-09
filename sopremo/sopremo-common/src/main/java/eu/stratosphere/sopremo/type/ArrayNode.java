@@ -1,7 +1,10 @@
 package eu.stratosphere.sopremo.type;
 
+import it.unimi.dsi.fastutil.objects.AbstractObjectList;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+
+import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -20,17 +23,18 @@ import eu.stratosphere.util.CollectionUtil;
  */
 @DefaultSerializer(AbstractArrayNode.ArraySerializer.class)
 public class ArrayNode<T extends IJsonNode> extends AbstractArrayNode<T> {
-	private final List<T> children;
+	private final ObjectArrayList<T> children;
 
 	@SuppressWarnings("unchecked")
 	public final static IArrayNode<?> EMPTY = new ArrayNode<IJsonNode>(
-			Collections.EMPTY_LIST);
+		Collections.EMPTY_LIST);
 
 	/**
 	 * Initializes an empty ArrayNode.
 	 */
+	@SuppressWarnings("unchecked")
 	public ArrayNode() {
-		this(new ArrayList<T>());
+		this((Class<T>) IJsonNode.class);
 	}
 
 	/**
@@ -47,8 +51,16 @@ public class ArrayNode<T extends IJsonNode> extends AbstractArrayNode<T> {
 	/**
 	 * Initializes an empty ArrayNode<T> directly with the given list.
 	 */
-	protected ArrayNode(List<T> children) {
+	protected ArrayNode(ObjectArrayList<T> children) {
 		this.children = children;
+	}
+
+	/**
+	 * Initializes an empty ArrayNode<T> directly with the given list.
+	 */
+	@SuppressWarnings("unchecked")
+	protected ArrayNode(Class<T> elemType) {
+		this(ObjectArrayList.wrap((T[]) Array.newInstance(elemType, 0)));
 	}
 
 	/**
@@ -56,10 +68,11 @@ public class ArrayNode<T extends IJsonNode> extends AbstractArrayNode<T> {
 	 * in proper sequence.
 	 * 
 	 * @param nodes
-	 *            the nodes that should be added to this ArrayNode
+	 *        the nodes that should be added to this ArrayNode
 	 */
+	@SuppressWarnings("unchecked")
 	public ArrayNode(final T... nodes) {
-		this();
+		this((Class<T>) nodes.getClass().getComponentType());
 		for (final T node : nodes) {
 			if (node == null)
 				throw new NullPointerException();
@@ -72,7 +85,7 @@ public class ArrayNode<T extends IJsonNode> extends AbstractArrayNode<T> {
 	 * the given Iterable in proper sequence.
 	 * 
 	 * @param nodes
-	 *            a Collection of nodes that should be added to this ArrayNode
+	 *        a Collection of nodes that should be added to this ArrayNode
 	 */
 	public ArrayNode(final Iterable<? extends T> nodes) {
 		this();
@@ -88,7 +101,7 @@ public class ArrayNode<T extends IJsonNode> extends AbstractArrayNode<T> {
 	 * the given stream array node in proper sequence.
 	 * 
 	 * @param nodes
-	 *            a Collection of nodes that should be added to this ArrayNode
+	 *        a Collection of nodes that should be added to this ArrayNode
 	 */
 	@SuppressWarnings("unchecked")
 	public static <T extends IJsonNode> ArrayNode<T> deepClone(final IStreamNode<? extends T> nodes) {
@@ -100,7 +113,6 @@ public class ArrayNode<T extends IJsonNode> extends AbstractArrayNode<T> {
 
 	/*
 	 * (non-Javadoc)
-	 * 
 	 * @see eu.stratosphere.sopremo.type.AbstractJsonNode#clone()
 	 */
 	@Override
@@ -108,33 +120,39 @@ public class ArrayNode<T extends IJsonNode> extends AbstractArrayNode<T> {
 		return (ArrayNode<T>) super.clone();
 	}
 
+	/**
+	 * Returns the backing array for access intensive-operations.<br>
+	 * Note that the array is usually large than the size of this array. All values after {@link #size()} elements are
+	 * undefined.
+	 */
+	public IJsonNode[] getBackingArray() {
+		return this.children.elements();
+	}
+
 	/*
 	 * (non-Javadoc)
-	 * 
 	 * @see eu.stratosphere.sopremo.type.IArrayNode#asCollection()
 	 */
 	@Override
-	public Collection<T> asCollection() {
+	public List<T> asList() {
 		return this.children;
 	}
 
 	/*
 	 * (non-Javadoc)
-	 * 
 	 * @see eu.stratosphere.sopremo.type.JsonArray#size()
 	 */
 	@Override
 	public int size() {
 		int size = this.children.size();
 		while (size > 0
-				&& this.children.get(size - 1) == MissingNode.getInstance())
+			&& this.children.get(size - 1) == MissingNode.getInstance())
 			size--;
 		return size;
 	}
 
 	/*
 	 * (non-Javadoc)
-	 * 
 	 * @see
 	 * eu.stratosphere.sopremo.type.JsonArray#add(eu.stratosphere.sopremo.type
 	 * .IJsonNode)
@@ -154,13 +172,12 @@ public class ArrayNode<T extends IJsonNode> extends AbstractArrayNode<T> {
 	 * 
 	 * @return the children
 	 */
-	protected List<T> getChildren() {
+	protected AbstractObjectList<T> getChildren() {
 		return this.children;
 	}
 
 	/*
 	 * (non-Javadoc)
-	 * 
 	 * @see eu.stratosphere.sopremo.type.JsonArray#add(int,
 	 * eu.stratosphere.sopremo.type.IJsonNode)
 	 */
@@ -176,7 +193,6 @@ public class ArrayNode<T extends IJsonNode> extends AbstractArrayNode<T> {
 
 	/*
 	 * (non-Javadoc)
-	 * 
 	 * @see
 	 * eu.stratosphere.sopremo.type.AbstractArrayNode#contains(eu.stratosphere
 	 * .sopremo.type.IJsonNode)
@@ -188,7 +204,6 @@ public class ArrayNode<T extends IJsonNode> extends AbstractArrayNode<T> {
 
 	/*
 	 * (non-Javadoc)
-	 * 
 	 * @see eu.stratosphere.sopremo.type.JsonArray#get(int)
 	 */
 	@SuppressWarnings("unchecked")
@@ -201,7 +216,6 @@ public class ArrayNode<T extends IJsonNode> extends AbstractArrayNode<T> {
 
 	/*
 	 * (non-Javadoc)
-	 * 
 	 * @see eu.stratosphere.sopremo.type.JsonArray#set(int,
 	 * eu.stratosphere.sopremo.type.IJsonNode)
 	 */
@@ -211,7 +225,7 @@ public class ArrayNode<T extends IJsonNode> extends AbstractArrayNode<T> {
 		if (node == null)
 			throw new NullPointerException();
 		CollectionUtil.ensureSize(this.children, index + 1,
-				(T) MissingNode.getInstance());
+			(T) MissingNode.getInstance());
 		this.children.set(index, node);
 	}
 
@@ -223,7 +237,6 @@ public class ArrayNode<T extends IJsonNode> extends AbstractArrayNode<T> {
 
 	/*
 	 * (non-Javadoc)
-	 * 
 	 * @see eu.stratosphere.sopremo.type.JsonArray#clear()
 	 */
 	@Override
@@ -236,7 +249,7 @@ public class ArrayNode<T extends IJsonNode> extends AbstractArrayNode<T> {
 		final int prime = 31;
 		int result = super.hashCode();
 		result = prime * result
-				+ (this.children == null ? 0 : this.children.hashCode());
+			+ (this.children == null ? 0 : this.children.hashCode());
 		return result;
 	}
 
@@ -274,8 +287,8 @@ public class ArrayNode<T extends IJsonNode> extends AbstractArrayNode<T> {
 	 * the provided Iterator.
 	 * 
 	 * @param iterator
-	 *            an Iterator over IJsonNodes that should be added to the new
-	 *            ArrayNode
+	 *        an Iterator over IJsonNodes that should be added to the new
+	 *        ArrayNode
 	 * @return the created ArrayNode
 	 */
 	public static <T extends IJsonNode> ArrayNode<T> valueOf(
@@ -288,7 +301,6 @@ public class ArrayNode<T extends IJsonNode> extends AbstractArrayNode<T> {
 
 	/*
 	 * (non-Javadoc)
-	 * 
 	 * @see
 	 * eu.stratosphere.sopremo.type.AbstractArrayNode#fillArray(eu.stratosphere
 	 * .sopremo.type.IJsonNode[])
@@ -296,7 +308,7 @@ public class ArrayNode<T extends IJsonNode> extends AbstractArrayNode<T> {
 	@Override
 	protected void fillArray(IJsonNode[] result) {
 		IJsonNode[] array = this.children.toArray(new IJsonNode[this.children
-				.size()]);
+			.size()]);
 		for (int i = 0; i < this.children.size(); i++)
 			result[i] = array[i];
 	}
@@ -323,9 +335,9 @@ public class ArrayNode<T extends IJsonNode> extends AbstractArrayNode<T> {
 	 * are equal, the returned ArrayNode<T> is empty.)
 	 * 
 	 * @param fromIndex
-	 *            the index where the new ArrayNode<T> should start (inclusive)
+	 *        the index where the new ArrayNode<T> should start (inclusive)
 	 * @param toIndex
-	 *            the index where the new ArrayNode<T> should stop (exclusive)
+	 *        the index where the new ArrayNode<T> should stop (exclusive)
 	 * @return the new ArrayNode<T> (subarray)
 	 */
 	public IJsonNode subArray(final int fromIndex, final int toIndex) {

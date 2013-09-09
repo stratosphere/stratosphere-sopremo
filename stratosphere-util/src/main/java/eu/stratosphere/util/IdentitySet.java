@@ -3,6 +3,8 @@ package eu.stratosphere.util;
 import java.util.AbstractSet;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Provides a {@link Set} that uses reference-equality and thus intentionally violates the general Set contract.
@@ -14,7 +16,16 @@ import java.util.Iterator;
  * @see IdentityHashMap
  */
 public class IdentitySet<E> extends AbstractSet<E> {
-	private final IdentityHashMap<E, Object> backing = new IdentityHashMap<E, Object>();
+	private final Map<E, Object> backing = new IdentityHashMap<E, Object>();
+
+	public IdentitySet() {
+		super();
+	}
+
+	public IdentitySet(Set<? extends E> set) {
+		for (E e : set)
+			this.backing.put(e, null);
+	}
 
 	@Override
 	public boolean add(final E e) {

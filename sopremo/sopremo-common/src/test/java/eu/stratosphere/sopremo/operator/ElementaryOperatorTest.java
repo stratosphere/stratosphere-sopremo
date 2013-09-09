@@ -18,6 +18,7 @@ import eu.stratosphere.sopremo.expressions.ObjectAccess;
 import eu.stratosphere.sopremo.pact.JsonCollector;
 import eu.stratosphere.sopremo.pact.SopremoMap;
 import eu.stratosphere.sopremo.pact.SopremoReduce;
+import eu.stratosphere.sopremo.pact.SopremoReduceContract;
 import eu.stratosphere.sopremo.serialization.SopremoRecordLayout;
 import eu.stratosphere.sopremo.type.IJsonNode;
 import eu.stratosphere.sopremo.type.IStreamNode;
@@ -58,7 +59,7 @@ public class ElementaryOperatorTest {
 	public void getContractShouldReturnTheMatchingContractToTheFirstStub() {
 		final SopremoRecordLayout layout = SopremoRecordLayout.create(new ObjectAccess("someField"));
 		final Contract contract = new OperatorWithTwoStubs().getContract(layout);
-		assertEquals(GenericReduceContract.class, contract.getClass());
+		assertEquals(SopremoReduceContract.class, contract.getClass());
 		assertTrue(Arrays.asList(OperatorWithTwoStubs.Implementation1.class,
 			OperatorWithTwoStubs.Implementation2.class).contains(contract.getUserCodeClass()));
 	}

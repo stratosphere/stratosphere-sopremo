@@ -16,9 +16,11 @@ package eu.stratosphere.sopremo.type;
 
 import java.io.IOException;
 import java.util.AbstractCollection;
+import java.util.AbstractList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 
 import com.esotericsoftware.kryo.DefaultSerializer;
 import com.esotericsoftware.kryo.Kryo;
@@ -121,8 +123,8 @@ public abstract class AbstractArrayNode<T extends IJsonNode> extends AbstractJso
 		return (AbstractArrayNode<T>) super.clone();
 	}
 
-	public Collection<T> asCollection() {
-		return new AbstractCollection<T>() {
+	public List<T> asList() {
+		return new AbstractList<T>() {
 			@Override
 			public Iterator<T> iterator() {
 				return this.iterator();
@@ -131,6 +133,11 @@ public abstract class AbstractArrayNode<T extends IJsonNode> extends AbstractJso
 			@Override
 			public int size() {
 				return AbstractArrayNode.this.size();
+			}
+
+			@Override
+			public T get(int index) {
+				return AbstractArrayNode.this.get(index);
 			}
 		};
 	}

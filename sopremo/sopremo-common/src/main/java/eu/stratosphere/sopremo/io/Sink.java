@@ -191,9 +191,9 @@ public class Sink extends ElementaryOperator<Sink> {
 		contract.setDegreeOfParallelism(getDegreeOfParallelism());
 
 		contract.setInput(pactModule.getInput(0));
-		if(this.globalSortingKey.isEmpty())
+		if(!this.globalSortingKey.isEmpty())
 			contract.setGlobalOrder(createOrdering(layout, this.globalSortingKey));
-		if(this.localSortingKey.isEmpty())
+		if(!this.localSortingKey.isEmpty())
 			contract.setLocalOrder(createOrdering(layout, this.localSortingKey));
 		pactModule.addInternalOutput(contract);
 		return pactModule;
