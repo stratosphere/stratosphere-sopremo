@@ -13,7 +13,7 @@ import java.lang.annotation.Target;
 public @interface OutputCardinality {
 	int min() default 1;
 
-	int max() default 1;
+	int max() default Integer.MAX_VALUE;
 
 	int value() default -1;
 }
