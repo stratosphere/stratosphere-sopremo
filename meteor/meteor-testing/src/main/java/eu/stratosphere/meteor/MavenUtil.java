@@ -59,6 +59,7 @@ public class MavenUtil {
 			BufferedReader bri = new BufferedReader(new InputStreamReader(p.getInputStream()));
 			while ((line = bri.readLine()) != null) {
 				System.out.println(line);
+				//FIXME hacky
 				if(line.contains("BUILD SUCCESS"))
 					success = true;
 			}
