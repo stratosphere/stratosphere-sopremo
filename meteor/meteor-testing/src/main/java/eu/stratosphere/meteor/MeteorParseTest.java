@@ -40,8 +40,7 @@ public class MeteorParseTest {
 			initParser(queryParser);
 			plan = queryParser.tryParse(script);
 		} catch (final QueryParserException e) {
-			final AssertionError error = new AssertionError(String.format("could not parse script: %s",
-				e.getMessage()));
+			final AssertionError error = new AssertionError(String.format("could not parse script: %s", e.getMessage()));
 			error.initCause(e);
 			throw error;
 		}
@@ -53,7 +52,22 @@ public class MeteorParseTest {
 	}
 
 	public SopremoPlan parseScript(final File script) {
-		return parseScript(loadScriptFromFile(script));
+		// printBeamerSlide(script);
+		SopremoPlan plan = null;
+		try {
+			final QueryParser queryParser = new QueryParser().withInputDirectory(script.getParentFile());
+			initParser(queryParser);
+			plan = queryParser.tryParse(loadScriptFromFile(script));
+		} catch (final QueryParserException e) {
+			final AssertionError error = new AssertionError(String.format("could not parse script: %s", e.getMessage()));
+			error.initCause(e);
+			throw error;
+		}
+
+		Assert.assertNotNull("could not parse script", plan);
+
+		// System.out.println(plan);
+		return plan;
 	}
 
 	private String loadScriptFromFile(File scriptFile) {
@@ -80,8 +94,7 @@ public class MeteorParseTest {
 		final List<Operator<?>> unmatchingOperators = actualPlan.getUnmatchingOperators(expectedPlan);
 		if (!unmatchingOperators.isEmpty())
 			if (unmatchingOperators.get(0).getClass() == unmatchingOperators.get(1).getClass())
-				Assert.fail("operators are different\nexpected: " + unmatchingOperators.get(1) + "\nbut was: "
-					+ unmatchingOperators.get(0));
+				Assert.fail("operators are different\nexpected: " + unmatchingOperators.get(1) + "\nbut was: " + unmatchingOperators.get(0));
 			else
 				Assert.fail("plans are different\nexpected: " + expectedPlan + "\nbut was: " + actualPlan);
 	}
