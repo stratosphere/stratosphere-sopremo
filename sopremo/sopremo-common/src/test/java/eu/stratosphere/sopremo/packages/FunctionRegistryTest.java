@@ -115,7 +115,6 @@ public class FunctionRegistryTest {
 		Assert.assertSame(ONE_INT_VARARG_NODE, this.evaluate("count", new IntNode(1)));
 	}
 
-	@SuppressWarnings("unused")
 	public static class JavaFunctions {
 
 		public static IJsonNode count(final IArrayNode<IJsonNode> node) {

@@ -622,7 +622,7 @@ public final class RPCService {
 		}
 	}
 
-	void processIncomingRPCCleanup(@SuppressWarnings("unused") final InetSocketAddress remoteSocketAddress, final RPCCleanup rpcCleanup) {
+	void processIncomingRPCCleanup(final InetSocketAddress remoteSocketAddress, final RPCCleanup rpcCleanup) {
 
 		this.cachedResponses.remove(Integer.valueOf(rpcCleanup.getMessageID()));
 	}

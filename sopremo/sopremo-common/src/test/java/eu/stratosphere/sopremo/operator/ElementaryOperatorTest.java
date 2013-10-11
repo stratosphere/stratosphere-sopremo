@@ -11,7 +11,6 @@ import eu.stratosphere.nephele.configuration.Configuration;
 import eu.stratosphere.pact.common.stubs.Stub;
 import eu.stratosphere.pact.generic.contract.Contract;
 import eu.stratosphere.pact.generic.contract.GenericMapContract;
-import eu.stratosphere.pact.generic.contract.GenericReduceContract;
 import eu.stratosphere.pact.generic.contract.SingleInputContract;
 import eu.stratosphere.pact.generic.stub.AbstractStub;
 import eu.stratosphere.sopremo.expressions.ObjectAccess;
