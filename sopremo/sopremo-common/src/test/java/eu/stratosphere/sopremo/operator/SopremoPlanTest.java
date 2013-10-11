@@ -72,7 +72,7 @@ public class SopremoPlanTest extends EqualCloneTest<SopremoPlan> {
 		Assert.assertTrue(Iterables.removeIf(pacts, Predicates.instanceOf(GenericDataSink.class)));
 		final Contract contract = Iterables.find(pacts, Predicates.instanceOf(Contract.class));
 		Assert.assertNotNull(contract);
-		Assert.assertSame(pactStub, contract.getUserCodeClass());
+		Assert.assertSame(pactStub, contract.getUserCodeWrapper().getUserCodeObject().getClass());
 	}
 }
 

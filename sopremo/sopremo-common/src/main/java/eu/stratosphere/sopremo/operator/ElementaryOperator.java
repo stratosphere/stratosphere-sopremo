@@ -356,7 +356,7 @@ public abstract class ElementaryOperator<Self extends ElementaryOperator<Self>>
 	 */
 	protected void configureContract(final Contract contract, final Configuration stubConfiguration,
 			final EvaluationContext context, SopremoRecordLayout layout) {
-		for (final Field stubField : contract.getUserCodeClass()
+		for (final Field stubField : contract.getUserCodeWrapper().getUserCodeObject().getClass()
 			.getDeclaredFields())
 			if ((stubField.getModifiers() & (Modifier.TRANSIENT | Modifier.FINAL | Modifier.STATIC)) == 0) {
 				Class<?> clazz = this.getClass();
