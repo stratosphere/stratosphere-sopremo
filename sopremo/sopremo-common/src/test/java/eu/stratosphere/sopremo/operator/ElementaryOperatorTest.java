@@ -117,8 +117,8 @@ public class ElementaryOperatorTest {
 	}
 
 	@InputCardinality(1)
-	public static class OperatorWithOneStub extends ElementaryOperator<OperatorWithOneStub> {
-		public static class Implementation extends SopremoMap {
+	static class OperatorWithOneStub extends ElementaryOperator<OperatorWithOneStub> {
+		static class Implementation extends SopremoMap {
 			/*
 			 * (non-Javadoc)
 			 * @see eu.stratosphere.sopremo.pact.SopremoMap#map(eu.stratosphere.sopremo.type.IJsonNode,
@@ -131,7 +131,7 @@ public class ElementaryOperatorTest {
 	}
 
 	@InputCardinality(1)
-	public static class OperatorWithTwoStubs extends ElementaryOperator<OperatorWithTwoStubs> {
+	static class OperatorWithTwoStubs extends ElementaryOperator<OperatorWithTwoStubs> {
 		/**
 		 * Initializes ElementaryOperatorTest.OperatorWithTwoStubs.
 		 */
@@ -139,7 +139,7 @@ public class ElementaryOperatorTest {
 			this.setKeyExpressions(0, new ObjectAccess("someField"));
 		}
 
-		public static class Implementation1 extends SopremoReduce {
+		static class Implementation1 extends SopremoReduce {
 			
 			/*
 			 * (non-Javadoc)
@@ -151,7 +151,7 @@ public class ElementaryOperatorTest {
 			}
 		}
 
-		public static class Implementation2 extends SopremoReduce {
+		static class Implementation2 extends SopremoReduce {
 			/*
 			 * (non-Javadoc)
 			 * @see eu.stratosphere.sopremo.pact.SopremoReduce#reduce(eu.stratosphere.sopremo.type.ArrayNode,
