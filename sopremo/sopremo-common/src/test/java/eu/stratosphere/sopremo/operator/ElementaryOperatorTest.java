@@ -61,14 +61,14 @@ public class ElementaryOperatorTest {
 		final Contract contract = new OperatorWithTwoStubs().getContract(layout);
 		assertEquals(SopremoReduceContract.class, contract.getClass());
 		assertTrue(Arrays.asList(OperatorWithTwoStubs.Implementation1.class,
-			OperatorWithTwoStubs.Implementation2.class).contains(contract.getUserCodeWrapper().getUserCodeObject().getClass()));
+			OperatorWithTwoStubs.Implementation2.class).contains(contract.getUserCodeWrapper().getUserCodeClass()));
 	}
 
 	@Test
 	public void getContractShouldReturnTheMatchingContractToTheOnlyStub() {
 		final Contract contract = new OperatorWithOneStub().getContract(LAYOUT);
 		assertEquals(GenericMapContract.class, contract.getClass());
-		assertEquals(OperatorWithOneStub.Implementation.class, contract.getUserCodeWrapper().getUserCodeObject().getClass());
+		assertEquals(OperatorWithOneStub.Implementation.class, contract.getUserCodeWrapper().getUserCodeClass());
 	}
 
 	@SuppressWarnings({ "rawtypes" })
@@ -117,8 +117,8 @@ public class ElementaryOperatorTest {
 	}
 
 	@InputCardinality(1)
-	static class OperatorWithOneStub extends ElementaryOperator<OperatorWithOneStub> {
-		static class Implementation extends SopremoMap {
+	public static class OperatorWithOneStub extends ElementaryOperator<OperatorWithOneStub> {
+		public static class Implementation extends SopremoMap {
 			/*
 			 * (non-Javadoc)
 			 * @see eu.stratosphere.sopremo.pact.SopremoMap#map(eu.stratosphere.sopremo.type.IJsonNode,
@@ -131,7 +131,7 @@ public class ElementaryOperatorTest {
 	}
 
 	@InputCardinality(1)
-	static class OperatorWithTwoStubs extends ElementaryOperator<OperatorWithTwoStubs> {
+	public static class OperatorWithTwoStubs extends ElementaryOperator<OperatorWithTwoStubs> {
 		/**
 		 * Initializes ElementaryOperatorTest.OperatorWithTwoStubs.
 		 */
@@ -139,7 +139,8 @@ public class ElementaryOperatorTest {
 			this.setKeyExpressions(0, new ObjectAccess("someField"));
 		}
 
-		static class Implementation1 extends SopremoReduce {
+		public static class Implementation1 extends SopremoReduce {
+			
 			/*
 			 * (non-Javadoc)
 			 * @see eu.stratosphere.sopremo.pact.SopremoReduce#reduce(eu.stratosphere.sopremo.type.ArrayNode,
@@ -150,7 +151,7 @@ public class ElementaryOperatorTest {
 			}
 		}
 
-		static class Implementation2 extends SopremoReduce {
+		public static class Implementation2 extends SopremoReduce {
 			/*
 			 * (non-Javadoc)
 			 * @see eu.stratosphere.sopremo.pact.SopremoReduce#reduce(eu.stratosphere.sopremo.type.ArrayNode,

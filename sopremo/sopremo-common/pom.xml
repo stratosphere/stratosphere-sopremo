@@ -5,7 +5,7 @@
 	<parent>
 		<artifactId>sopremo</artifactId>
 		<groupId>eu.stratosphere</groupId>
-		<version>0.3-SNAPSHOT</version>
+		<version>0.4-ozone-SNAPSHOT</version>
 	</parent>
 	<artifactId>sopremo-common</artifactId>
 	<name>sopremo-common</name>
@@ -25,7 +25,7 @@
 		<dependency>
 			<groupId>eu.stratosphere</groupId>
 			<artifactId>pact-testplan</artifactId>
-			<version>${ozone-testing.version}</version>
+			<version>${ozone.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
