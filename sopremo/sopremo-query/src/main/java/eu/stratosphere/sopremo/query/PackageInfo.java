@@ -18,6 +18,8 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.lang.reflect.Modifier;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.LinkedList;
@@ -46,7 +48,7 @@ import eu.stratosphere.util.reflect.ReflectUtil;
  * @author Arvid Heise
  */
 public class PackageInfo extends AbstractSopremoType implements ISopremoType, ParsingScope {
-	private final transient ClassLoader classLoader;
+	private final transient PackageClassLoader classLoader;
 
 	/**
 	 * Initializes PackageInfo.
@@ -56,7 +58,7 @@ public class PackageInfo extends AbstractSopremoType implements ISopremoType, Pa
 	 */
 	public PackageInfo(String packageName, ClassLoader classLoader) {
 		this.packageName = packageName;
-		this.classLoader = classLoader;
+		this.classLoader = new PackageClassLoader(classLoader);
 	}
 
 	/**
@@ -121,7 +123,7 @@ public class PackageInfo extends AbstractSopremoType implements ISopremoType, Pa
 	private void importClass(String className) {
 		Class<?> clazz;
 		try {
-			clazz = Class.forName(className, false, this.classLoader);
+			clazz = this.classLoader.loadClass(className);
 			if (Operator.class.isAssignableFrom(clazz) && (clazz.getModifiers() & Modifier.ABSTRACT) == 0) {
 				clazz = Class.forName(className, true, this.classLoader);
 				QueryUtil.LOG.trace("adding operator " + clazz);
@@ -169,22 +171,7 @@ public class PackageInfo extends AbstractSopremoType implements ISopremoType, Pa
 	public void importFromJar(File jarFileLocation) throws IOException {
 		final JarFile jarFile = new JarFile(jarFileLocation);
 		try {
-			if (this.classLoader instanceof PackageClassLoader) {
-				((PackageClassLoader) this.classLoader).addJar(jarFileLocation);
-				// Enumeration<JarEntry> entries = jarFile.entries();
-				// while (entries.hasMoreElements()) {
-				// JarEntry jarEntry = entries.nextElement();
-				// final String entryName = jarEntry.getName();
-				// if (entryName.endsWith(".jar"))
-				// try {
-				// ((PackageClassLoader) this.classLoader).addJar(new
-				// URI("jar:file:/home/arv/workspace/cleansing/target/sopremo-cleansing-0.1.jar!/" +
-				// jarEntry.getName()).toURL());
-				// } catch (URISyntaxException e) {
-				// e.printStackTrace();
-				// }
-				// }
-			}
+			this.classLoader.addJar(jarFileLocation);
 
 			Enumeration<JarEntry> entries = jarFile.entries();
 			while (entries.hasMoreElements()) {

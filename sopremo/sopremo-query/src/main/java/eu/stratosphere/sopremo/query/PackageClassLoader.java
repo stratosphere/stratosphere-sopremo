@@ -52,6 +52,29 @@ public class PackageClassLoader extends ClassLoader {
 		super(parent);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.ClassLoader#loadClass(java.lang.String, boolean)
+	 */
+	@Override
+	protected synchronized Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
+
+		// First, check if the class has already been loaded
+		Class<?> c = findLoadedClass(name);
+		if (c == null) {
+			try {
+				c = findClass(name);
+			} catch (ClassNotFoundException e) {
+				if (getParent() != null)
+					c = getParent().loadClass(name);
+			}
+		}
+		if (resolve) {
+			resolveClass(c);
+		}
+		return c;
+	}
+
 	@Override
 	protected Class<?> findClass(String name) throws ClassNotFoundException {
 		for (JarInfo jarInfo : this.jarInfos) {
