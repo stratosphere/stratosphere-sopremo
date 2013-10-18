@@ -110,6 +110,20 @@ public class ArrayNode<T extends IJsonNode> extends AbstractArrayNode<T> {
 			clone.children.add((T) node.clone());
 		return clone;
 	}
+	/**
+	 * Creates an ArrayNode<T> which contains clones of all {@link IJsonNode}s from
+	 * the given stream array node in proper sequence.
+	 * 
+	 * @param nodes
+	 *        a Collection of nodes that should be added to this ArrayNode
+	 */
+	@SuppressWarnings("unchecked")
+	public static <T extends IJsonNode> ArrayNode<T> deepClone(final Class<T> elemType, final IStreamNode<? extends T> nodes) {
+		ArrayNode<T> clone = new ArrayNode<T>(elemType);
+		for (final T node : nodes)
+			clone.children.add((T) node.clone());
+		return clone;
+	}
 
 	/*
 	 * (non-Javadoc)
@@ -125,7 +139,7 @@ public class ArrayNode<T extends IJsonNode> extends AbstractArrayNode<T> {
 	 * Note that the array is usually large than the size of this array. All values after {@link #size()} elements are
 	 * undefined.
 	 */
-	public IJsonNode[] getBackingArray() {
+	public T[] getBackingArray() {
 		return this.children.elements();
 	}
 
