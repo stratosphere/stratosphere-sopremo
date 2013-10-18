@@ -12,6 +12,7 @@ import eu.stratosphere.pact.common.stubs.Stub;
 import eu.stratosphere.pact.generic.contract.Contract;
 import eu.stratosphere.pact.generic.contract.GenericMapContract;
 import eu.stratosphere.pact.generic.contract.SingleInputContract;
+import eu.stratosphere.pact.generic.contract.UserCodeClassWrapper;
 import eu.stratosphere.pact.generic.stub.AbstractStub;
 import eu.stratosphere.sopremo.expressions.ObjectAccess;
 import eu.stratosphere.sopremo.pact.JsonCollector;
@@ -60,14 +61,14 @@ public class ElementaryOperatorTest {
 		final Contract contract = new OperatorWithTwoStubs().getContract(layout);
 		assertEquals(SopremoReduceContract.class, contract.getClass());
 		assertTrue(Arrays.asList(OperatorWithTwoStubs.Implementation1.class,
-			OperatorWithTwoStubs.Implementation2.class).contains(contract.getUserCodeClass()));
+			OperatorWithTwoStubs.Implementation2.class).contains(contract.getUserCodeWrapper().getUserCodeClass()));
 	}
 
 	@Test
 	public void getContractShouldReturnTheMatchingContractToTheOnlyStub() {
 		final Contract contract = new OperatorWithOneStub().getContract(LAYOUT);
 		assertEquals(GenericMapContract.class, contract.getClass());
-		assertEquals(OperatorWithOneStub.Implementation.class, contract.getUserCodeClass());
+		assertEquals(OperatorWithOneStub.Implementation.class, contract.getUserCodeWrapper().getUserCodeClass());
 	}
 
 	@SuppressWarnings({ "rawtypes" })
@@ -139,6 +140,7 @@ public class ElementaryOperatorTest {
 		}
 
 		static class Implementation1 extends SopremoReduce {
+			
 			/*
 			 * (non-Javadoc)
 			 * @see eu.stratosphere.sopremo.pact.SopremoReduce#reduce(eu.stratosphere.sopremo.type.ArrayNode,
@@ -189,7 +191,7 @@ public class ElementaryOperatorTest {
 		static class UninstanceableContract extends SingleInputContract<Stub> {
 
 			public UninstanceableContract(final Class<? extends Stub> clazz, final String name) {
-				super(clazz, name);
+				super (new UserCodeClassWrapper<Stub> (clazz), name);
 				throw new IllegalStateException("not instanceable");
 			}
 

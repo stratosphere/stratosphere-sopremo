@@ -13,7 +13,7 @@
 
 	<groupId>eu.stratosphere</groupId>
 	<artifactId>hll</artifactId>
-	<version>0.3-SNAPSHOT</version>
+	<version>0.4-ozone-SNAPSHOT</version>
 
 	<name>hll</name>
 	<packaging>pom</packaging>
@@ -51,7 +51,7 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-		<ozone.version>0.3-SNAPSHOT</ozone.version>
+		<ozone.version>0.4-ozone-SNAPSHOT</ozone.version>
 	</properties>
 
 	<dependencies>

@@ -112,7 +112,7 @@ public class SopremoRecordPostPass implements OptimizerPostPass {
 		}
 
 		final Iterator<Channel> inputs = node.getInputs();
-		final Class<?> userCodeClass = node.getPactContract().getUserCodeClass();
+		final Class<?> userCodeClass = node.getPactContract().getUserCodeWrapper().getUserCodeClass();
 
 		if (SopremoStub.class.isAssignableFrom(userCodeClass)) {
 			final List<Type> hierarchy = ReflectUtil.getHierarchy(AbstractStub.class, userCodeClass);
