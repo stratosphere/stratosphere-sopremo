@@ -34,7 +34,6 @@ import eu.stratosphere.nephele.fs.Path;
 import eu.stratosphere.nephele.io.GateID;
 import eu.stratosphere.nephele.io.channels.ChannelID;
 import eu.stratosphere.nephele.io.channels.ChannelType;
-import eu.stratosphere.nephele.io.compression.CompressionLevel;
 import eu.stratosphere.nephele.jobgraph.JobGraph;
 import eu.stratosphere.nephele.jobgraph.JobID;
 import eu.stratosphere.nephele.jobgraph.JobStatus;
@@ -66,7 +65,6 @@ public class CommonTypeUtils {
 		types.add(AbstractJobResult.ReturnCode.class);
 		types.add(ChannelID.class);
 		types.add(ChannelType.class);
-		types.add(CompressionLevel.class);
 		types.add(ExecutionState.class);
 		types.add(GateID.class);
 		types.add(HashMap.class);
