@@ -32,7 +32,7 @@ public final class SopremoRecordComparator extends TypeComparator<SopremoRecord>
 
 	private final NodeCache[] nodeCache1, nodeCache2;
 
-	private final IJsonNode[] keys, keys2;
+	private final IJsonNode[] keys;
 
 	private final SopremoRecord temp1, temp2;
 
@@ -56,7 +56,6 @@ public final class SopremoRecordComparator extends TypeComparator<SopremoRecord>
 		this.layout = layout;
 		this.keyExpressionIndices = keyExpressionIndices;
 		this.keys = new IJsonNode[this.keyExpressionIndices.length];
-		this.keys2 = new IJsonNode[this.keyExpressionIndices.length];
 		this.nodeCache1 = new NodeCache[this.keyExpressionIndices.length];
 		this.nodeCache2 = new NodeCache[this.keyExpressionIndices.length];
 		for (int index = 0; index < this.keyExpressionIndices.length; index++) {
@@ -131,7 +130,7 @@ public final class SopremoRecordComparator extends TypeComparator<SopremoRecord>
 	public int compareToReference(TypeComparator<SopremoRecord> referencedComparator) {
 		SopremoRecordComparator other = (SopremoRecordComparator) referencedComparator;
 		for (int index = 0; index < this.nodeCache1.length; index++) {
-			int comparison = other.keys[index].compareTo(this.keys2[index]);
+			int comparison = other.keys[index].compareTo(this.keys[index]);
 			if (comparison != 0)
 				return comparison;
 		}
