@@ -242,10 +242,9 @@ public class SopremoModule extends GraphModule<Operator<?>, Source, Sink> implem
 		int sinkIndex = 0;
 		for (final Operator<?> sink : sinks) {
 			if (sink instanceof Sink)
-				module.setOutput(sinkIndex, (Sink) sink);
-			else
-				module.getOutput(sinkIndex).setInput(0, sink);
-			sinkIndex++;
+				module.setOutput(sinkIndex++, (Sink) sink);
+			else for (JsonStream output : sink.getOutputs()) 
+				module.getOutput(sinkIndex++).setInput(0, output);
 		}
 	}
 

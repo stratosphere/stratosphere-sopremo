@@ -270,7 +270,7 @@ public class EvaluationContext extends AbstractSopremoType implements ISopremoTy
 	}
 
 	@SuppressWarnings("unchecked")
-	public <Type> Type getParameter(String key, @SuppressWarnings("unused") Class<Type> type) {
+	public <Type> Type getParameter(String key, Class<Type> type) {
 		Object value = this.contextParameters.get(key);
 		return (Type) value;
 	}

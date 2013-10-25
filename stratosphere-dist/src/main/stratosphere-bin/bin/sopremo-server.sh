@@ -32,77 +32,6 @@ fi
 
 JVM_ARGS="$JVM_ARGS -Xmx512m"
 
-# auxilliary function to construct a lightweight classpath for the Sopremo server
-constructSopremoClassPath() {
-
-	for jarfile in $NEPHELE_LIB_DIR/*.jar ; do
-
-		add=0
-
-		if [[ "$jarfile" =~ 'nephele-common' ]]; then
-			add=1
-		elif [[ "$jarfile" =~ 'nephele-management' ]]; then
-			add=1
-		elif [[ "$jarfile" =~ 'pact-common' ]]; then
-			add=1
-		elif [[ "$jarfile" =~ 'pact-compiler' ]]; then
-			add=1
-		elif [[ "$jarfile" =~ 'pact-clients' ]]; then
-			add=1
-		elif [[ "$jarfile" =~ 'pact-runtime' ]]; then
-			add=1
-		elif [[ "$jarfile" =~ 'sopremo-common' ]]; then
-			add=1
-		elif [[ "$jarfile" =~ 'sopremo-server' ]]; then
-			add=1
-		elif [[ "$jarfile" =~ 'stratosphere-util' ]]; then
-			add=1
-		elif [[ "$jarfile" =~ 'commons-codec' ]]; then
-			add=1
-		elif [[ "$jarfile" =~ 'commons-httpclient' ]]; then
-			add=1
-		elif [[ "$jarfile" =~ 'commons-cli' ]]; then
-			add=1
-		elif [[ "$jarfile" =~ 'commons-logging' ]]; then
-			add=1
-		elif [[ "$jarfile" =~ 'commons-configuration' ]]; then
-			add=1
-		elif [[ "$jarfile" =~ 'commons-lang' ]]; then
-                        add=1
-		elif [[ "$jarfile" =~ 'log4j' ]]; then
-			add=1
-		elif [[ "$jarfile" =~ 'guava' ]]; then
-			add=1
-		elif [[ "$jarfile" =~ 'kryo' ]]; then
-			add=1
-		elif [[ "$jarfile" =~ 'reflectasm' ]]; then
-			add=1
-		elif [[ "$jarfile" =~ 'minlog' ]]; then
-			add=1
-		elif [[ "$jarfile" =~ 'asm' ]]; then
-			add=1
-		elif [[ "$jarfile" =~ 'objenesis' ]]; then
-			add=1
-		elif [[ "$jarfile" =~ 'fastutil' ]]; then
-			add=1
-		elif [[ "$jarfile" =~ 'javolution' ]]; then
-			add=1
-		fi
-
-		if [[ "$add" = "1" ]]; then
-			if [[ $PACT_WF_CLASSPATH = "" ]]; then
-				PACT_WF_CLASSPATH=$jarfile;
-			else
-				PACT_WF_CLASSPATH=$PACT_WF_CLASSPATH:$jarfile
-			fi
-		fi
-	done
-
-	echo $PACT_WF_CLASSPATH
-}
-
-SOPREMO_SERVER_CLASSPATH=$(constructSopremoClassPath)
-
 log=$NEPHELE_LOG_DIR/sopremo.log
 pid=$NEPHELE_PID_DIR/sopremo-server.pid
 log_setting="-Dlog.file="$log" -Dlog4j.configuration=file://"$NEPHELE_CONF_DIR"/log4j.properties"
@@ -118,7 +47,7 @@ case $STARTSTOP in
                         fi
                 fi
                 echo Starting Sopremo server
-		$JAVA_HOME/bin/java $JVM_ARGS $log_setting -classpath $SOPREMO_SERVER_CLASSPATH eu.stratosphere.sopremo.server.SopremoServer -configDir $NEPHELE_CONF_DIR &
+		$JAVA_HOME/bin/java $JVM_ARGS $log_setting -classpath $CLASSPATH eu.stratosphere.sopremo.server.SopremoServer -configDir $NEPHELE_CONF_DIR &
 		echo $! > $pid
 	;;
 

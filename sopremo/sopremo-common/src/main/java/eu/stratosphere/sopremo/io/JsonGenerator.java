@@ -14,6 +14,7 @@ import eu.stratosphere.sopremo.type.IArrayNode;
 import eu.stratosphere.sopremo.type.IJsonNode;
 import eu.stratosphere.sopremo.type.IObjectNode;
 import eu.stratosphere.sopremo.type.IStreamNode;
+import eu.stratosphere.sopremo.type.NullNode;
 import eu.stratosphere.sopremo.type.TextNode;
 
 /**
@@ -161,6 +162,20 @@ public class JsonGenerator {
 			writer.append('\"');
 		}
 	}
+	/**
+	 * This class implements the JSON-Serialization for TextNodes
+	 * 
+	 * @param <T>
+	 */
+	private static class NullNodeTypeWriter implements JsonTypeWriter<NullNode> {
+
+		private static NullNodeTypeWriter Instance = new NullNodeTypeWriter();
+
+		@Override
+		public void write(NullNode node, Writer writer) throws IOException {
+			writer.append("null");
+		}
+	}
 
 	/**
 	 * This class implements the JSON-Serialization for TextNodes
@@ -248,6 +263,7 @@ public class JsonGenerator {
 			writerMap.put(IObjectNode.class, (JsonTypeWriter) ObjectNodeTypeWriter.Instance);
 			writerMap.put(IStreamNode.class, (JsonTypeWriter) ArrayNodeTypeWriter.Instance);
 			writerMap.put(IArrayNode.class, (JsonTypeWriter) ArrayNodeTypeWriter.Instance);
+			writerMap.put(NullNode.class, (JsonTypeWriter) NullNodeTypeWriter.Instance);
 		}
 
 		/**

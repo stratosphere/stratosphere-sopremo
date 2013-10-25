@@ -27,6 +27,13 @@
 			<artifactId>antlr-runtime</artifactId>
 			<version>3.5</version>
 			<type>jar</type>
+			<exclusions>
+		<!-- exclude unused tranistive dependency -->
+        <exclusion>
+          <groupId>antlr</groupId>
+          <artifactId>antlr</artifactId>
+        </exclusion>
+      </exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.commons</groupId>

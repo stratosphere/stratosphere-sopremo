@@ -16,11 +16,10 @@ package eu.stratosphere.sopremo.function;
 
 import java.io.IOException;
 
-import com.esotericsoftware.kryo.DefaultSerializer;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.Serializer;
 import com.esotericsoftware.kryo.io.Input;
-import com.esotericsoftware.kryo.io.Output;
+import com.esotericsoftware.kryo.serializers.FieldSerializer;
 
 import eu.stratosphere.sopremo.type.AbstractJsonNode;
 import eu.stratosphere.sopremo.type.IJsonNode;
@@ -28,7 +27,7 @@ import eu.stratosphere.sopremo.type.IJsonNode;
 /**
  * @author Arvid Heise
  */
-@DefaultSerializer(FunctionNode.FunctionNodeSerializer.class)
+//@DefaultSerializer(FunctionNode.FunctionNodeSerializer.class)
 public class FunctionNode extends AbstractJsonNode {
 	private SopremoFunction function;
 
@@ -129,25 +128,27 @@ public class FunctionNode extends AbstractJsonNode {
 		this.function = function;
 	}
 
-	static class FunctionNodeSerializer extends Serializer<FunctionNode> {
-		/*
-		 * (non-Javadoc)
-		 * @see com.esotericsoftware.kryo.Serializer#write(com.esotericsoftware.kryo.Kryo,
-		 * com.esotericsoftware.kryo.io.Output, java.lang.Object)
-		 */
+	public static class FunctionNodeSerializer extends Serializer<FunctionNode>{
+		FieldSerializer<FunctionNode> fieldSerializer;
+		
+		public FunctionNodeSerializer(Kryo kryo, Class<FunctionNode> type) {
+			fieldSerializer = new FieldSerializer<FunctionNode>(kryo, type);
+		}
+		
 		@Override
-		public void write(Kryo kryo, Output output, FunctionNode object) {
-			throw new UnsupportedOperationException("Internal error: a function node should never be serialized");
+		public void write(Kryo kryo, com.esotericsoftware.kryo.io.Output output, FunctionNode object) {
+			fieldSerializer.write(kryo, output, object);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see com.esotericsoftware.kryo.Serializer#read(com.esotericsoftware.kryo.Kryo,
-		 * com.esotericsoftware.kryo.io.Input, java.lang.Class)
-		 */
 		@Override
 		public FunctionNode read(Kryo kryo, Input input, Class<FunctionNode> type) {
-			throw new UnsupportedOperationException();
+			FunctionNode object =  fieldSerializer.read(kryo, input, type);
+			return object;
+		}
+		@Override
+		public FunctionNode copy (Kryo kryo, FunctionNode original) {
+			FunctionNode copy = this.fieldSerializer.copy(kryo, original);
+			return copy;
 		}
 	}
 }

@@ -475,7 +475,6 @@ public abstract class SopremoFormat extends ConfigurableSopremoType {
 				getAverageRecordBytes(FileSystem.get(this.filePath.toUri()), files, len));
 		}
 
-		@SuppressWarnings("unused")
 		protected float getAverageRecordBytes(FileSystem fileSystem, ArrayList<FileStatus> files, long fileSize)
 				throws IOException {
 			return BaseStatistics.AVG_RECORD_BYTES_UNKNOWN;

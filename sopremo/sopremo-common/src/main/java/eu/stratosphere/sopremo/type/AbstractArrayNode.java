@@ -15,10 +15,8 @@
 package eu.stratosphere.sopremo.type;
 
 import java.io.IOException;
-import java.util.AbstractCollection;
 import java.util.AbstractList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
