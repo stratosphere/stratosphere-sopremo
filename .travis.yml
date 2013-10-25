@@ -2,7 +2,7 @@ language: java
 jdk: 
 - oraclejdk7
  
--script: mvn clean package
+-script: mvn verify
 
 # deploy if the first job is successful; should be replaced by an after_all_success if travis finally supports it
 after_success: 
