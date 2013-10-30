@@ -21,6 +21,8 @@ import eu.stratosphere.sopremo.type.IJsonNode;
 import eu.stratosphere.sopremo.type.IStreamNode;
 
 /**
+ * AggregationFunction allows {@link Aggregation} to be called inside regular transformations.
+ * 
  * @author Arvid Heise
  */
 public class AggregationFunction extends SopremoFunction1<IStreamNode<?>> {

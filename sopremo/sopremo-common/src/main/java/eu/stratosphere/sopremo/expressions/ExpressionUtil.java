@@ -22,8 +22,10 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.google.common.base.Function;
 import com.google.common.base.Predicates;
 
+import eu.stratosphere.sopremo.CoreFunctions;
 import eu.stratosphere.sopremo.aggregation.Aggregation;
 import eu.stratosphere.sopremo.aggregation.AggregationFunction;
 import eu.stratosphere.sopremo.aggregation.ArrayAccessAsAggregation;
@@ -80,11 +82,15 @@ public class ExpressionUtil {
 				if (arrayAccess.getStartIndex() > arrayAccess.getEndIndex())
 					throw new IllegalArgumentException("Array inversion is not directly supported");
 
-				final FunctionCall aggregation = new FunctionCall("array access",
-					new AggregationFunction(new ArrayAccessAsAggregation(arrayAccess.getStartIndex(),
-						arrayAccess.getEndIndex(), arrayAccess.isSelectingRange())),
-					arrayAccess.getInputExpression().clone());
-				return aggregation;
+				if (arrayAccess.getStartIndex() == 0 && arrayAccess.getEndIndex() == 0)
+					return new AggregationExpression(CoreFunctions.FIRST).withInputExpression(arrayAccess.getInputExpression());
+				return new AggregationExpression(new ArrayAccessAsAggregation(arrayAccess.getStartIndex(),
+					arrayAccess.getEndIndex(), arrayAccess.isSelectingRange())).withInputExpression(arrayAccess.getInputExpression());
+				// final FunctionCall aggregation = new FunctionCall("array access",
+				// new AggregationexFunction(new ArrayAccessAsAggregation(arrayAccess.getStartIndex(),
+				// arrayAccess.getEndIndex(), arrayAccess.isSelectingRange())),
+				// arrayAccess.getInputExpression().clone());
+				// return aggregation;
 			}
 		});
 	}
@@ -92,9 +98,11 @@ public class ExpressionUtil {
 	public static EvaluationExpression replaceAggregationWithBatchAggregation(EvaluationExpression baseExpression) {
 		final Map<FunctionCall, EvaluationExpression> aggregatingFunctionCalls =
 			new IdentityHashMap<FunctionCall, EvaluationExpression>();
-		findAggregatingFunctionCalls(baseExpression, aggregatingFunctionCalls, null);
+		final Map<AggregationExpression, EvaluationExpression> aggregatingExpressions =
+			new IdentityHashMap<AggregationExpression, EvaluationExpression>();
+		findAggregatingFunctionCalls(baseExpression, aggregatingFunctionCalls, aggregatingExpressions, null);
 
-		if (aggregatingFunctionCalls.isEmpty())
+		if (aggregatingFunctionCalls.isEmpty() && aggregatingExpressions.isEmpty())
 			return baseExpression;
 
 		EvaluationExpression result = baseExpression;
@@ -114,9 +122,6 @@ public class ExpressionUtil {
 					throw new IllegalArgumentException("Cannot batch process aggregations with multiple inputs");
 
 			final List<EvaluationExpression> parameters = functionCall.getParameters();
-			if (parameters.size() > 1)
-				throw new IllegalStateException("Cannot batch process aggregations with multiple parameters");
-
 			// all expressions within this function call are from the same input
 			BatchAggregationExpression batch = aggregationPerInput.get(input);
 			if (batch == null) {
@@ -125,26 +130,55 @@ public class ExpressionUtil {
 			}
 
 			final EvaluationExpression parent = aggregatingFunctionCalls.get(functionCall);
-			final EvaluationExpression partial = batch.add(aggregation, adjustAggregationParameters(parameters.get(0)));
+			final EvaluationExpression partial = batch.add(aggregation, replaceArrayProjections(parameters.get(0)));
 			if (parent == null)
 				result = partial;
 			else
 				parent.replace(functionCall, partial);
 		}
+		for (AggregationExpression expression : aggregatingExpressions.keySet()) {
+			final Aggregation aggregation = expression.getAggregation();
+
+			final List<InputSelection> inputs = expression.getInputExpression().findAll(InputSelection.class);
+			if (inputs.isEmpty())
+				// if no input selection, it is probably some constant calculation, ignore function call
+				continue;
+			int input = inputs.get(0).getIndex();
+			for (int index = 1; index < inputs.size(); index++)
+				if (inputs.get(index).getIndex() != input)
+					throw new IllegalArgumentException("Cannot batch process aggregations with multiple inputs");
+
+			// all expressions within this function call are from the same input
+			BatchAggregationExpression batch = aggregationPerInput.get(input);
+			if (batch == null) {
+				aggregationPerInput.put(input, batch = new BatchAggregationExpression());
+				batch.setInputExpression(new InputSelection(input));
+			}
+
+			final EvaluationExpression parent = aggregatingExpressions.get(expression);
+			final EvaluationExpression partial = batch.add(aggregation, replaceArrayProjections(expression.getInputExpression()));
+			if (parent == null)
+				result = partial;
+			else
+				parent.replace(expression, partial);
+		}
 		return result;
 	}
 
 	private static void findAggregatingFunctionCalls(EvaluationExpression expression,
-			Map<FunctionCall, EvaluationExpression> aggregatingFunctionCalls, EvaluationExpression parent) {
+			Map<FunctionCall, EvaluationExpression> aggregatingFunctionCalls,
+			Map<AggregationExpression, EvaluationExpression> aggregatingExpressions, EvaluationExpression parent) {
 		if (expression instanceof FunctionCall &&
 			((FunctionCall) expression).getFunction() instanceof AggregationFunction)
 			aggregatingFunctionCalls.put((FunctionCall) expression, parent);
+		else if (expression instanceof AggregationExpression)
+			aggregatingExpressions.put((AggregationExpression) expression, parent);
 
 		for (EvaluationExpression child : expression)
-			findAggregatingFunctionCalls(child, aggregatingFunctionCalls, expression);
+			findAggregatingFunctionCalls(child, aggregatingFunctionCalls, aggregatingExpressions, expression);
 	}
 
-	private static EvaluationExpression adjustAggregationParameters(final EvaluationExpression evaluationExpression) {
+	private static EvaluationExpression replaceArrayProjections(final EvaluationExpression evaluationExpression) {
 		return evaluationExpression.clone().remove(InputSelection.class).replace(
 			Predicates.instanceOf(ArrayProjection.class), new TransformFunction() {
 				@Override

@@ -37,7 +37,6 @@ public class CoreFunctionsTest {
 	/**
 	 * 
 	 */
-	@Test(expected = ClassCastException.class)
 	public void shouldNotConcatenateObjects() {
 		assertAggregate("bla1blu2", CoreFunctions.CONCAT, "bla", 1, "blu", 2);
 	}
@@ -55,7 +54,7 @@ public class CoreFunctionsTest {
 	 */
 	@Test
 	public void shouldCountNormalArray() {
-		assertAggregate(3, CoreFunctions.COUNT, 1, 2, 3);
+		assertReturn(3, CoreFunctions.COUNT, 1, 2, 3);
 	}
 
 	/**
@@ -63,7 +62,7 @@ public class CoreFunctionsTest {
 	 */
 	@Test
 	public void shouldCountZeroForEmptyArray() {
-		assertAggregate(0, CoreFunctions.COUNT);
+		assertReturn(0, CoreFunctions.COUNT);
 	}
 
 	/**
@@ -90,7 +89,7 @@ public class CoreFunctionsTest {
 		final IArrayNode<?> expected =
 			createArrayNode(new Number[] { 1, 2.4 }, new Number[] { 1, 3.4 }, new Number[] { 2, 2.4 },
 				new Number[] { 2, 2.4, 3 });
-		assertAggregate(expected, CoreFunctions.SORT, new Number[] { 1, 3.4 }, new Number[] { 2, 2.4 },
+		assertReturn(expected, CoreFunctions.SORT, new Number[] { 1, 3.4 }, new Number[] { 2, 2.4 },
 			new Number[] { 1, 2.4 }, new Number[] { 2, 2.4, 3 });
 	}
 
@@ -99,7 +98,7 @@ public class CoreFunctionsTest {
 	 */
 	@Test
 	public void shouldSortDoubles() {
-		assertAggregate(createArrayNode(1.2, 2.0, 3.14, 4.5), CoreFunctions.SORT, 3.14, 4.5, 1.2, 2.0);
+		assertReturn(createArrayNode(1.2, 2.0, 3.14, 4.5), CoreFunctions.SORT, 3.14, 4.5, 1.2, 2.0);
 	}
 
 	/**
@@ -107,7 +106,7 @@ public class CoreFunctionsTest {
 	 */
 	@Test
 	public void shouldSortEmptyArray() {
-		assertAggregate(createArrayNode(), CoreFunctions.SORT);
+		assertReturn(createArrayNode(), CoreFunctions.SORT);
 	}
 
 	/**
@@ -115,7 +114,7 @@ public class CoreFunctionsTest {
 	 */
 	@Test
 	public void shouldSortIntegers() {
-		assertAggregate(createArrayNode(1, 2, 3, 4), CoreFunctions.SORT, 3, 4, 1, 2);
+		assertReturn(createArrayNode(1, 2, 3, 4), CoreFunctions.SORT, 3, 4, 1, 2);
 	}
 
 	/**

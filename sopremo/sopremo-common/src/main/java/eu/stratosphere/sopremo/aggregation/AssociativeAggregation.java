@@ -1,27 +1,18 @@
 package eu.stratosphere.sopremo.aggregation;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-
 import eu.stratosphere.sopremo.type.IJsonNode;
 import eu.stratosphere.util.reflect.ReflectUtil;
 
-public abstract class TransitiveAggregation<ElementType extends IJsonNode> extends Aggregation {
+public abstract class AssociativeAggregation<ElementType extends IJsonNode> extends Aggregation {
 	protected final ElementType initialAggregate;
 
 	protected transient ElementType aggregator;
 
 	@SuppressWarnings("unchecked")
-	public TransitiveAggregation(final String name, final ElementType initialAggregate) {
+	public AssociativeAggregation(final String name, final ElementType initialAggregate) {
 		super(name);
 		this.initialAggregate = initialAggregate;
 		this.aggregator = (ElementType) initialAggregate.clone();
-	}
-
-	@SuppressWarnings("unchecked")
-	private void readObject(ObjectInputStream ois) throws IOException, ClassNotFoundException {
-		ois.defaultReadObject();
-		this.aggregator = (ElementType) this.initialAggregate.clone();
 	}
 
 	/*
@@ -31,7 +22,7 @@ public abstract class TransitiveAggregation<ElementType extends IJsonNode> exten
 	 * eu.stratosphere.sopremo.type.IJsonNode)
 	 */
 	@Override
-	public ElementType getFinalAggregate() {
+	public IJsonNode getFinalAggregate() {
 		return this.aggregator;
 	}
 

@@ -3,7 +3,7 @@ package eu.stratosphere.sopremo.aggregation;
 import eu.stratosphere.sopremo.type.CachingArrayNode;
 import eu.stratosphere.sopremo.type.IJsonNode;
 
-public class MaterializingAggregation extends Aggregation {
+public class MaterializingAggregation extends AssociativeAggregation<CachingArrayNode<IJsonNode>> {
 
 	/**
 	 * Initializes a new MaterializingAggregation with the given name.
@@ -12,10 +12,8 @@ public class MaterializingAggregation extends Aggregation {
 	 *        the name that should be used
 	 */
 	protected MaterializingAggregation(final String name) {
-		super(name);
+		super(name, new CachingArrayNode<IJsonNode>());
 	}
-
-	protected transient final CachingArrayNode<IJsonNode> aggregator = new CachingArrayNode<IJsonNode>();
 
 	/*
 	 * (non-Javadoc)
@@ -33,6 +31,15 @@ public class MaterializingAggregation extends Aggregation {
 	@Override
 	public void aggregate(IJsonNode element) {
 		this.aggregator.addClone(element);
+	}
+	
+	/* (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.aggregation.AssociativeAggregation#aggregate(eu.stratosphere.sopremo.type.IJsonNode, eu.stratosphere.sopremo.type.IJsonNode)
+	 */
+	@Override
+	protected CachingArrayNode<IJsonNode> aggregate(CachingArrayNode<IJsonNode> aggregator, IJsonNode element) {
+		this.aggregator.addClone(element);
+		return this.aggregator;
 	}
 
 	/*

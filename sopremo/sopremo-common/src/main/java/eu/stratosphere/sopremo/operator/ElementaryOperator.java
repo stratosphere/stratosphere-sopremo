@@ -459,14 +459,16 @@ public abstract class ElementaryOperator<Self extends ElementaryOperator<Self>>
 
 	protected Ordering createOrdering(SopremoRecordLayout layout, List<OrderingExpression> innerGroupOrder) {
 		List<EvaluationExpression> paths = new ArrayList<EvaluationExpression>();
-		for (OrderingExpression orderingExpression : innerGroupOrder) 
+		for (OrderingExpression orderingExpression : innerGroupOrder)
 			paths.add(orderingExpression.getPath());
 		int[] keyIndices = this.getKeyIndices(layout, paths);
 		final Ordering ordering = new Ordering();
-		for (int index = 0; index < keyIndices.length; index++) 
+		for (int index = 0; index < keyIndices.length; index++)
 			ordering.appendOrdering(keyIndices[index], null, innerGroupOrder.get(index).getOrder());
 		return ordering;
 	}
+
+	private boolean combinable = false, combinableFirst = false, combinableSecond = false;
 
 	/**
 	 * Returns true, if the implementing stub is combinable. This method will only be invoked for Reduce stubs.
@@ -474,7 +476,30 @@ public abstract class ElementaryOperator<Self extends ElementaryOperator<Self>>
 	 * @see eu.stratosphere.pact.generic.contract.GenericReduceContract.Combinable
 	 */
 	public boolean isCombinable() {
-		return false;
+		return this.combinable;
+	}
+
+	/**
+	 * Sets the combinable to the specified value. This method has only effects for Reduce stubs.
+	 * 
+	 * @param combinable
+	 *        the combinable to set
+	 * @see eu.stratosphere.pact.generic.contract.GenericReduceContract.Combinable
+	 */
+	public void setCombinable(boolean combinable) {
+		this.combinable = combinable;
+	}
+
+	/**
+	 * Sets the combinable to the specified value. This method has only effects for Reduce stubs.
+	 * 
+	 * @param combinable
+	 *        the combinable to set
+	 * @see eu.stratosphere.pact.generic.contract.GenericReduceContract.Combinable
+	 */
+	public Self withCombinable(boolean combinable) {
+		setCombinable(combinable);
+		return self();
 	}
 
 	/**
@@ -484,7 +509,30 @@ public abstract class ElementaryOperator<Self extends ElementaryOperator<Self>>
 	 * @see eu.stratosphere.pact.generic.contract.GenericCoGroupContract.CombinableFirst
 	 */
 	public boolean isCombinableFirst() {
-		return false;
+		return this.combinableFirst;
+	}
+
+	/**
+	 * Sets the combinableFirst to the specified value. This method has only effects for CoGroup stubs.
+	 * 
+	 * @param combinableFirst
+	 *        the combinableFirst to set
+	 * @see eu.stratosphere.pact.generic.contract.GenericCoGroupContract.CombinableFirst
+	 */
+	public void setCombinableFirst(boolean combinableFirst) {
+		this.combinableFirst = combinableFirst;
+	}
+
+	/**
+	 * Sets the combinableFirst to the specified value. This method has only effects for CoGroup stubs.
+	 * 
+	 * @param combinableFirst
+	 *        the combinableFirst to set
+	 * @see eu.stratosphere.pact.generic.contract.GenericCoGroupContract.CombinableFirst
+	 */
+	public Self withCombinableFirst(boolean combinableFirst) {
+		this.combinableFirst = combinableFirst;
+		return self();
 	}
 
 	/**
@@ -494,7 +542,29 @@ public abstract class ElementaryOperator<Self extends ElementaryOperator<Self>>
 	 * @see eu.stratosphere.pact.generic.contract.GenericCoGroupContract.CombinableSecond
 	 */
 	public boolean isCombinableSecond() {
-		return false;
+		return this.combinableSecond;
+	}
+
+	/**
+	 * Sets the combinableSecond to the specified value. This method has only effects for CoGroup stubs.
+	 * 
+	 * @param combinableSecond
+	 *        the combinableSecond to set
+	 * @see eu.stratosphere.pact.generic.contract.GenericCoGroupContract.CombinableSecond
+	 */
+	public void setCombinableSecond(boolean combinableSecond) {
+		this.combinableSecond = combinableSecond;
+	}
+
+	/**
+	 * Sets the combinableSecond to the specified value. This method has only effects for CoGroup stubs.
+	 * 
+	 * @param combinableSecond
+	 *        the combinableSecond to set
+	 * @see eu.stratosphere.pact.generic.contract.GenericCoGroupContract.CombinableSecond
+	 */
+	public void withCombinableSecond(boolean combinableSecond) {
+		this.combinableSecond = combinableSecond;
 	}
 
 	public Set<EvaluationExpression> getAllKeyExpressions() {

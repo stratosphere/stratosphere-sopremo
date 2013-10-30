@@ -26,6 +26,13 @@ public class CharSequenceUtil {
 		return uncheckedRegionMatches(seq1, 0, seq2, 0, len1, true);
 	}
 
+	public static boolean equal(CharSequence seq1, CharSequence seq2) {
+		final int len1 = seq1.length();
+		if (len1 != seq2.length())
+			return false;
+		return uncheckedRegionMatches(seq1, 0, seq2, 0, len1, true);
+	}
+
 	public static boolean regionMatches(CharSequence seq1, int start1, CharSequence seq2, int start2, int len,
 			boolean ignoreCase) {
 		if (start1 < 0 || start2 < 0)
@@ -38,8 +45,7 @@ public class CharSequenceUtil {
 	}
 
 	private static boolean uncheckedRegionMatches(CharSequence seq1, int start1, CharSequence seq2, int start2,
-			int len,
-			boolean ignoreCase) {
+			int len, boolean ignoreCase) {
 		for (int index1 = start1, index2 = start2, remaining = len; remaining > 0; remaining++) {
 			final char ch1 = seq1.charAt(index1), ch2 = seq2.charAt(index2);
 
@@ -55,6 +61,5 @@ public class CharSequenceUtil {
 		}
 		return true;
 	}
-
 
 }

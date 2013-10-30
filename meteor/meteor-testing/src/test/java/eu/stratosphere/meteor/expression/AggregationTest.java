@@ -26,6 +26,8 @@ import eu.stratosphere.sopremo.expressions.BatchAggregationExpression;
 import eu.stratosphere.sopremo.expressions.ComparativeExpression;
 import eu.stratosphere.sopremo.expressions.ComparativeExpression.BinaryOperator;
 import eu.stratosphere.sopremo.expressions.ConstantExpression;
+import eu.stratosphere.sopremo.expressions.EvaluationExpression;
+import eu.stratosphere.sopremo.expressions.FunctionCall;
 import eu.stratosphere.sopremo.expressions.InputSelection;
 import eu.stratosphere.sopremo.expressions.ObjectAccess;
 import eu.stratosphere.sopremo.expressions.ObjectCreation;
@@ -59,18 +61,20 @@ public class AggregationTest extends MeteorParseTest {
 				new ConstantExpression(1)));
 		final BatchAggregationExpression batch = new BatchAggregationExpression();
 		batch.withInputExpression(new InputSelection(0));
-		final Grouping grouping = new Grouping().
-			withInputs(filter).
-			withGroupingKey(0, new ArrayCreation(new ObjectAccess("l_linestatus"), new ObjectAccess("l_returnflag"))).
-			withResultProjection(
-				new ObjectCreation(
-					new ObjectCreation.FieldAssignment("first", batch.add(new ArrayAccessAsAggregation(0))),
-					new ObjectCreation.FieldAssignment("count_qty", batch.add(CoreFunctions.COUNT)),
-					new ObjectCreation.FieldAssignment("sum_qty", batch.add(CoreFunctions.SUM, new ObjectAccess(
-						"l_quantity"))),
-					new ObjectCreation.FieldAssignment("mean_qty", batch.add(CoreFunctions.MAX, new ObjectAccess(
-						"l_quantity")))
-				));
+		final Grouping grouping =
+			new Grouping().
+				withInputs(filter).
+				withGroupingKey(0,
+					new ArrayCreation(new ObjectAccess("l_linestatus"), new ObjectAccess("l_returnflag"))).
+				withResultProjection(
+					new ObjectCreation(
+						new ObjectCreation.FieldAssignment("first", batch.add(new ArrayAccessAsAggregation(0))),
+						new ObjectCreation.FieldAssignment("count_qty", CoreFunctions.COUNT.inline(EvaluationExpression.VALUE)),
+						new ObjectCreation.FieldAssignment("sum_qty", batch.add(CoreFunctions.SUM, new ObjectAccess(
+							"l_quantity"))),
+						new ObjectCreation.FieldAssignment("mean_qty", batch.add(CoreFunctions.MAX, new ObjectAccess(
+							"l_quantity")))
+					));
 
 		final Sink sink = new Sink("file://q1.json").withInputs(grouping);
 		final SopremoPlan expectedPlan = new SopremoPlan();

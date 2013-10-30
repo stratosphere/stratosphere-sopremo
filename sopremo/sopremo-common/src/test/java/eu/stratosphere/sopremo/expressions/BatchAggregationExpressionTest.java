@@ -26,11 +26,11 @@ public class BatchAggregationExpressionTest extends EvaluableExpressionTest<Batc
 		case 0:
 			return new BatchAggregationExpression(CoreFunctions.MAX);
 		case 1:
-			return new BatchAggregationExpression(CoreFunctions.COUNT);
+			return new BatchAggregationExpression(CoreFunctions.CONCAT);
 		case 2:
 			return new BatchAggregationExpression(CoreFunctions.FIRST);
 		default:
-			return new BatchAggregationExpression(CoreFunctions.ALL);
+			return new BatchAggregationExpression(CoreFunctions.MIN);
 		}
 	}
 

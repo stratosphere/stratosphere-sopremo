@@ -322,7 +322,7 @@ public class CsvFormat extends SopremoFormat {
 				this.write(array.get(0));
 				for (int index = 1; index < array.size(); index++) {
 					this.writeSeparator();
-					this.write(array.get(0));
+					this.write(array.get(index));
 				}
 			}
 			this.writeLineTerminator();

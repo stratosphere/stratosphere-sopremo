@@ -5,6 +5,8 @@ import java.io.IOException;
 import eu.stratosphere.sopremo.AbstractSopremoType;
 import eu.stratosphere.sopremo.ISopremoType;
 import eu.stratosphere.sopremo.expressions.AggregationExpression;
+import eu.stratosphere.sopremo.expressions.ArrayCreation;
+import eu.stratosphere.sopremo.expressions.EvaluationExpression;
 import eu.stratosphere.sopremo.type.IJsonNode;
 
 public abstract class Aggregation extends AbstractSopremoType implements ISopremoType {
@@ -24,6 +26,14 @@ public abstract class Aggregation extends AbstractSopremoType implements ISoprem
 	public AggregationExpression asExpression() {
 		return new AggregationExpression(this);
 	}
+//
+//	/**
+//	 * @param arrayCreation
+//	 * @return
+//	 */
+//	public EvaluationExpression asExpression(EvaluationExpression preprocessing) {
+//		return new AggregationExpression(this, preprocessing);
+//	}
 
 	@Override
 	public int hashCode() {
@@ -61,8 +71,7 @@ public abstract class Aggregation extends AbstractSopremoType implements ISoprem
 
 	public abstract IJsonNode getFinalAggregate();
 
-	public void initialize() {
-	}
+	public abstract void initialize();
 
 	@Override
 	public void appendAsString(final Appendable appendable) throws IOException {

@@ -103,8 +103,10 @@ public class DelimiterTokenizer extends AbstractTokenizer implements Tokenizer {
 			if (this.delimiters.contains(ch))
 				if (textIndex == tokenStart)
 					tokenStart++;
-				else
+				else {
 					this.addToken(tokens, text, tokenStart, textIndex);
+					tokenStart = textIndex + 1;
+				}
 		}
 
 		if (textIndex != tokenStart)

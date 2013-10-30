@@ -19,9 +19,9 @@ import eu.stratosphere.sopremo.type.IJsonNode;
 /**
  * @author Arvid Heise
  */
-public abstract class FixedTypeTransitiveAggregation<ElementType extends IJsonNode> extends
-		TransitiveAggregation<ElementType> {
-	public FixedTypeTransitiveAggregation(String name, ElementType initialAggregate) {
+public abstract class FixedTypeAssociativeAggregation<ElementType extends IJsonNode> extends
+		AssociativeAggregation<ElementType> {
+	public FixedTypeAssociativeAggregation(String name, ElementType initialAggregate) {
 		super(name, initialAggregate);
 	}
 
@@ -43,7 +43,7 @@ public abstract class FixedTypeTransitiveAggregation<ElementType extends IJsonNo
 
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.aggregation.TransitiveAggregation#aggregate(eu.stratosphere.sopremo.type.IJsonNode,
+	 * @see eu.stratosphere.sopremo.aggregation.AssociativeAggregation#aggregate(eu.stratosphere.sopremo.type.IJsonNode,
 	 * eu.stratosphere.sopremo.type.IJsonNode)
 	 */
 	@Override

@@ -15,13 +15,13 @@
 package eu.stratosphere.sopremo.base;
 
 import eu.stratosphere.sopremo.aggregation.Aggregation;
-import eu.stratosphere.sopremo.aggregation.FixedTypeTransitiveAggregation;
+import eu.stratosphere.sopremo.aggregation.FixedTypeAssociativeAggregation;
 import eu.stratosphere.sopremo.type.ArrayNode;
 import eu.stratosphere.sopremo.type.IArrayNode;
 import eu.stratosphere.sopremo.type.IJsonNode;
 import eu.stratosphere.sopremo.type.MissingNode;
 
-public final class ArrayUnion extends FixedTypeTransitiveAggregation<ArrayNode<IJsonNode>> {
+public final class ArrayUnion extends FixedTypeAssociativeAggregation<ArrayNode<IJsonNode>> {
 	public ArrayUnion() {
 		super("U<values>", new ArrayNode<IJsonNode>());
 	}
@@ -29,7 +29,7 @@ public final class ArrayUnion extends FixedTypeTransitiveAggregation<ArrayNode<I
 	/*
 	 * (non-Javadoc)
 	 * @see
-	 * eu.stratosphere.sopremo.aggregation.FixedTypeTransitiveAggregation#aggregateInto(eu.stratosphere.sopremo.type
+	 * eu.stratosphere.sopremo.aggregation.FixedTypeAssociativeAggregation#aggregateInto(eu.stratosphere.sopremo.type
 	 * .IJsonNode, eu.stratosphere.sopremo.type.IJsonNode)
 	 */
 	@Override
@@ -42,7 +42,7 @@ public final class ArrayUnion extends FixedTypeTransitiveAggregation<ArrayNode<I
 
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.aggregation.TransitiveAggregation#clone()
+	 * @see eu.stratosphere.sopremo.aggregation.AssociativeAggregation#clone()
 	 */
 	@Override
 	public Aggregation clone() {

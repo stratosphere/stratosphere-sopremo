@@ -8,6 +8,7 @@ import eu.stratosphere.sopremo.expressions.ObjectAccess;
 import eu.stratosphere.sopremo.expressions.PathSegmentExpression;
 import eu.stratosphere.sopremo.operator.ElementaryOperator;
 import eu.stratosphere.sopremo.operator.InputCardinality;
+import eu.stratosphere.sopremo.operator.Name;
 import eu.stratosphere.sopremo.operator.Property;
 import eu.stratosphere.sopremo.pact.JsonCollector;
 import eu.stratosphere.sopremo.pact.SopremoMap;
@@ -22,6 +23,7 @@ import eu.stratosphere.sopremo.type.LongNode;
 import eu.stratosphere.sopremo.type.ObjectNode;
 import eu.stratosphere.sopremo.type.TextNode;
 
+@Name(verb = "enumerate")
 @InputCardinality(1)
 public class GlobalEnumeration extends ElementaryOperator<GlobalEnumeration> {
 	public static final EvaluationExpression CONCATENATION = new ConcatenatingExpression();
@@ -51,21 +53,26 @@ public class GlobalEnumeration extends ElementaryOperator<GlobalEnumeration> {
 	public ObjectAccess getIdAccess() {
 		return new ObjectAccess(this.idFieldName);
 	}
-	
-	/* (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.operator.ElementaryOperator#configureContract(eu.stratosphere.pact.generic.contract.Contract, eu.stratosphere.nephele.configuration.Configuration, eu.stratosphere.sopremo.EvaluationContext, eu.stratosphere.sopremo.serialization.SopremoRecordLayout)
+
+	/*
+	 * (non-Javadoc)
+	 * @see
+	 * eu.stratosphere.sopremo.operator.ElementaryOperator#configureContract(eu.stratosphere.pact.generic.contract.Contract
+	 * , eu.stratosphere.nephele.configuration.Configuration, eu.stratosphere.sopremo.EvaluationContext,
+	 * eu.stratosphere.sopremo.serialization.SopremoRecordLayout)
 	 */
 	@Override
 	protected void configureContract(Contract contract, Configuration stubConfiguration, EvaluationContext context,
 			SopremoRecordLayout layout) {
-		if(this.enumerationExpression == AUTO_ENUMERATION)
+		if (this.enumerationExpression == AUTO_ENUMERATION)
 			this.enumerationExpression = new AutoProjection(this.idFieldName, this.valueFieldName);
 		super.configureContract(contract, stubConfiguration, context, layout);
-		if(this.enumerationExpression instanceof AutoProjection)
+		if (this.enumerationExpression instanceof AutoProjection)
 			this.enumerationExpression = AUTO_ENUMERATION;
 	}
 
 	@Property
+	@Name(preposition = "by")
 	public void setEnumerationExpression(final EvaluationExpression enumerationExpression) {
 		if (enumerationExpression == null)
 			throw new NullPointerException();
@@ -74,6 +81,7 @@ public class GlobalEnumeration extends ElementaryOperator<GlobalEnumeration> {
 	}
 
 	@Property
+	@Name(preposition = "with key")
 	public void setIdFieldName(final String enumerationFieldName) {
 		if (enumerationFieldName == null)
 			throw new NullPointerException();
@@ -102,6 +110,7 @@ public class GlobalEnumeration extends ElementaryOperator<GlobalEnumeration> {
 	}
 
 	@Property
+	@Name(preposition = "by")
 	public void setIdGeneration(final EvaluationExpression idGeneration) {
 		if (idGeneration == null)
 			throw new NullPointerException("idGeneration must not be null");
@@ -114,6 +123,7 @@ public class GlobalEnumeration extends ElementaryOperator<GlobalEnumeration> {
 	}
 
 	@Property
+	@Name(verb = "retain value in")
 	public void setValueFieldName(String valueFieldName) {
 		if (valueFieldName == null)
 			throw new NullPointerException("valueFieldName must not be null");

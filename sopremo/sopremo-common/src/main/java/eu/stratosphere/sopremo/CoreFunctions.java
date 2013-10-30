@@ -1,6 +1,7 @@
 package eu.stratosphere.sopremo;
 
 import java.io.File;
+import java.io.IOException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -13,17 +14,21 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import eu.stratosphere.nephele.fs.Path;
-import eu.stratosphere.sopremo.aggregation.FixedTypeTransitiveAggregation;
-import eu.stratosphere.sopremo.aggregation.MaterializingAggregation;
-import eu.stratosphere.sopremo.aggregation.TransitiveAggregation;
+import eu.stratosphere.sopremo.aggregation.AssociativeAggregation;
+import eu.stratosphere.sopremo.aggregation.FixedTypeAssociativeAggregation;
 import eu.stratosphere.sopremo.cache.ArrayCache;
 import eu.stratosphere.sopremo.cache.NodeCache;
 import eu.stratosphere.sopremo.cache.PatternCache;
+import eu.stratosphere.sopremo.expressions.AggregationExpression;
 import eu.stratosphere.sopremo.expressions.ArithmeticExpression;
 import eu.stratosphere.sopremo.expressions.ArithmeticExpression.ArithmeticOperator;
+import eu.stratosphere.sopremo.expressions.ArrayCreation;
+import eu.stratosphere.sopremo.expressions.ArrayProjection;
+import eu.stratosphere.sopremo.expressions.ChainedSegmentExpression;
 import eu.stratosphere.sopremo.expressions.ComparativeExpression;
 import eu.stratosphere.sopremo.expressions.ConstantExpression;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
+import eu.stratosphere.sopremo.expressions.InputSelection;
 import eu.stratosphere.sopremo.expressions.TernaryExpression;
 import eu.stratosphere.sopremo.function.ExpressionFunction;
 import eu.stratosphere.sopremo.function.SopremoFunction;
@@ -47,7 +52,6 @@ import eu.stratosphere.sopremo.type.MissingNode;
 import eu.stratosphere.sopremo.type.NullNode;
 import eu.stratosphere.sopremo.type.TextNode;
 
-
 /**
  * Core functions.
  * 
@@ -57,14 +61,48 @@ public class CoreFunctions implements BuiltinProvider {
 	public static final CONCAT CONCAT = new CONCAT();
 
 	@Name(verb = "concat", noun = "concatenation")
-	public static class CONCAT extends FixedTypeTransitiveAggregation<TextNode> {
+	public static class CONCAT extends FixedTypeAssociativeAggregation<TextNode> {
 		CONCAT() {
 			super("concat", new TextNode());
 		}
 
 		@Override
 		protected void aggregateInto(TextNode aggregator, IJsonNode element) {
-			aggregator.append((TextNode) element);
+			try {
+				element.appendAsString(aggregator);
+			} catch (IOException e) {
+			}
+		}
+	};
+
+	public static final ARRAY_CONCAT ARRAY_CONCAT = new ARRAY_CONCAT();
+
+	@Name(verb = "array_concat")
+	public static class ARRAY_CONCAT extends FixedTypeAssociativeAggregation<CachingArrayNode<IJsonNode>> {
+		ARRAY_CONCAT() {
+			super("array_concat", new CachingArrayNode<IJsonNode>());
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see eu.stratosphere.sopremo.aggregation.Aggregation#initialize()
+		 */
+		@Override
+		public void initialize() {
+			this.aggregator.setSize(0);
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see
+		 * eu.stratosphere.sopremo.aggregation.FixedTypeAssociativeAggregation#aggregateInto(eu.stratosphere.sopremo
+		 * .type.IJsonNode, eu.stratosphere.sopremo.type.IJsonNode)
+		 */
+		@SuppressWarnings("unchecked")
+		@Override
+		protected void aggregateInto(CachingArrayNode<IJsonNode> aggregator, IJsonNode array) {
+			for (IJsonNode element : (IArrayNode<IJsonNode>) array)
+				aggregator.addClone(element);
 		}
 	};
 
@@ -75,7 +113,7 @@ public class CoreFunctions implements BuiltinProvider {
 	public static final SUM SUM = new SUM();
 
 	@Name(verb = "sum", noun = "sum")
-	public static class SUM extends TransitiveAggregation<INumericNode> {
+	public static class SUM extends AssociativeAggregation<INumericNode> {
 		SUM() {
 			super("sum", IntNode.ZERO);
 		}
@@ -86,28 +124,19 @@ public class CoreFunctions implements BuiltinProvider {
 		protected INumericNode aggregate(INumericNode aggregator,
 				IJsonNode element) {
 			return ArithmeticExpression.ArithmeticOperator.ADDITION.evaluate(
-					aggregator, (INumericNode) element, this.nodeCache);
+				aggregator, (INumericNode) element, this.nodeCache);
 		}
 	};
 
-	public static final COUNT COUNT = new COUNT();
-
-	@Name(verb = "count", noun = "count")
-	public static class COUNT extends FixedTypeTransitiveAggregation<IntNode> {
-		COUNT() {
-			super("count", IntNode.ZERO);
-		}
-
-		@Override
-		protected void aggregateInto(IntNode aggregator, IJsonNode element) {
-			aggregator.increment();
-		}
-	};
+	@Name(noun = "count")
+	public static final ExpressionFunction COUNT =
+		new ExpressionFunction(1, new AggregationExpression(SUM).withInputExpression(
+			new ArrayProjection(new ConstantExpression(1)).withInputExpression(new InputSelection(0))));
 
 	public static final FIRST FIRST = new FIRST();
 
 	@Name(noun = "first")
-	public static class FIRST extends TransitiveAggregation<IJsonNode> {
+	public static class FIRST extends AssociativeAggregation<IJsonNode> {
 		FIRST() {
 			super("first", NullNode.getInstance());
 		}
@@ -118,45 +147,39 @@ public class CoreFunctions implements BuiltinProvider {
 		}
 	};
 
-	public static final SORT SORT = new SORT();
+	@Name(noun = "all")
+	public static final ExpressionFunction ALL = new ExpressionFunction(1,
+		ARRAY_CONCAT.asExpression().withInputExpression(new ArrayProjection(new ArrayCreation(new InputSelection(0))))
+		);
 
 	@Name(verb = "sort")
-	public static class SORT extends MaterializingAggregation {
-		SORT() {
-			super("sort");
-		}
+	public static final ExpressionFunction SORT = new ExpressionFunction(1,
+		new ChainedSegmentExpression(ALL.inline(new InputSelection(0)), new EvaluationExpression() {
+			@Override
+			public void appendAsString(Appendable appendable) throws IOException {
+				appendable.append("sort");
+			}
 
-		private final transient ArrayCache<IJsonNode> arrayCache = new ArrayCache<IJsonNode>(
-				IJsonNode.class);
-
-		@Override
-		protected IJsonNode processNodes(
-				final CachingArrayNode<IJsonNode> nodeArray) {
-			final IJsonNode[] nodes = nodeArray.toArray(this.arrayCache);
-			Arrays.sort(nodes);
-			nodeArray.setAll(nodes);
-			return nodeArray;
-		}
-	};
-
-	public static final ALL ALL = new ALL();
-
-	@Name(adjective = "all")
-	public static class ALL extends MaterializingAggregation {
-		ALL() {
-			super("all");
-		}
-	};
+			@Override
+			public IJsonNode evaluate(IJsonNode node) {
+				final ArrayNode<?> arrayNode = (ArrayNode<?>) node;
+				Object[] elements = arrayNode.getBackingArray();
+				Arrays.sort(elements, 0, arrayNode.size());
+				return node;
+			}
+		}));
 
 	@Name(noun = "mean")
-	public static final SopremoFunction MEAN = new ExpressionFunction(1, new TernaryExpression(EvaluationExpression.VALUE,
-			new ArithmeticExpression(SUM.asExpression(),ArithmeticOperator.DIVISION, COUNT.asExpression()),
-			ConstantExpression.MISSING));
+	public static final ExpressionFunction MEAN = new ExpressionFunction(1, new TernaryExpression(
+		EvaluationExpression.VALUE,
+		new ArithmeticExpression(SUM.asExpression(), ArithmeticOperator.DIVISION,
+			CoreFunctions.COUNT.inline(EvaluationExpression.VALUE)),
+		ConstantExpression.MISSING));
 
 	public static final MIN MIN = new MIN();
 
 	@Name(noun = "min")
-	public static class MIN extends TransitiveAggregation<IJsonNode> {
+	public static class MIN extends AssociativeAggregation<IJsonNode> {
 		MIN() {
 			super("min", NullNode.getInstance());
 		}
@@ -167,7 +190,7 @@ public class CoreFunctions implements BuiltinProvider {
 			if (aggregator == NullNode.getInstance())
 				return node.clone();
 			else if (ComparativeExpression.BinaryOperator.LESS.evaluate(node,
-					aggregator))
+				aggregator))
 				return node;
 			return aggregator;
 		}
@@ -176,7 +199,7 @@ public class CoreFunctions implements BuiltinProvider {
 	public static final MAX MAX = new MAX();
 
 	@Name(noun = "max")
-	public static class MAX extends TransitiveAggregation<IJsonNode> {
+	public static class MAX extends AssociativeAggregation<IJsonNode> {
 		MAX() {
 			super("max", NullNode.getInstance());
 		}
@@ -187,7 +210,7 @@ public class CoreFunctions implements BuiltinProvider {
 			if (aggregator == NullNode.getInstance())
 				return node.clone();
 			else if (ComparativeExpression.BinaryOperator.LESS.evaluate(
-					aggregator, node))
+				aggregator, node))
 				aggregator.copyValueFrom(node);
 			return aggregator;
 		}
@@ -202,7 +225,7 @@ public class CoreFunctions implements BuiltinProvider {
 
 	@Name(verb = "assemble")
 	public static class ASSEMBLE_ARRAY extends
-			FixedTypeTransitiveAggregation<ArrayNode<IJsonNode>> {
+			FixedTypeAssociativeAggregation<ArrayNode<IJsonNode>> {
 		ASSEMBLE_ARRAY() {
 			super("assemble", new ArrayNode<IJsonNode>());
 		}
@@ -212,7 +235,7 @@ public class CoreFunctions implements BuiltinProvider {
 				IJsonNode element) {
 			IArrayNode<?> part = (IArrayNode<?>) element;
 			aggregator.add(((INumericNode) part.get(0)).getIntValue(),
-					part.get(1));
+				part.get(1));
 		}
 	};
 
@@ -220,11 +243,11 @@ public class CoreFunctions implements BuiltinProvider {
 	 * Adds the specified node to the array at the given index
 	 * 
 	 * @param array
-	 *            the array that should be extended
+	 *        the array that should be extended
 	 * @param index
-	 *            the position of the insert
+	 *        the position of the insert
 	 * @param node
-	 *            the node to add
+	 *        the node to add
 	 * @return array with the added node
 	 */
 	public static final ADD ADD = new ADD();
@@ -238,7 +261,6 @@ public class CoreFunctions implements BuiltinProvider {
 
 		/*
 		 * (non-Javadoc)
-		 * 
 		 * @see
 		 * eu.stratosphere.sopremo.function.SopremoFunction3#call(eu.stratosphere
 		 * .sopremo.type.IJsonNode, eu.stratosphere.sopremo.type.IJsonNode,
@@ -266,7 +288,6 @@ public class CoreFunctions implements BuiltinProvider {
 
 		/*
 		 * (non-Javadoc)
-		 * 
 		 * @see
 		 * eu.stratosphere.sopremo.function.SopremoFunction3#call(eu.stratosphere
 		 * .sopremo.type.IJsonNode, eu.stratosphere.sopremo.type.IJsonNode,
@@ -296,7 +317,7 @@ public class CoreFunctions implements BuiltinProvider {
 	};
 
 	public static final SopremoFunction EXTRACT = new EXTRACT()
-			.withDefaultParameters(NullNode.getInstance());
+		.withDefaultParameters(NullNode.getInstance());
 
 	@Name(verb = "extract")
 	public static class EXTRACT extends
@@ -313,7 +334,6 @@ public class CoreFunctions implements BuiltinProvider {
 
 		/*
 		 * (non-Javadoc)
-		 * 
 		 * @see
 		 * eu.stratosphere.sopremo.function.SopremoFunction3#call(eu.stratosphere
 		 * .sopremo.type.IJsonNode, eu.stratosphere.sopremo.type.IJsonNode,
@@ -323,9 +343,9 @@ public class CoreFunctions implements BuiltinProvider {
 		protected IJsonNode call(final TextNode input, final TextNode pattern,
 				final IJsonNode defaultValue) {
 			final Pattern compiledPattern = this.patternCache
-					.getPatternOf(pattern);
+				.getPatternOf(pattern);
 			final Matcher matcher = compiledPattern.matcher(input
-					);
+				);
 
 			if (!matcher.find())
 				return defaultValue;
@@ -362,11 +382,10 @@ public class CoreFunctions implements BuiltinProvider {
 		private final transient TextNode result = new TextNode();
 
 		private final transient ArrayCache<Object> arrayCache = new ArrayCache<Object>(
-				Object.class);
+			Object.class);
 
 		/*
 		 * (non-Javadoc)
-		 * 
 		 * @see eu.stratosphere.sopremo.function.SopremoVarargFunction1#call(eu.
 		 * stratosphere.sopremo.type.IJsonNode,
 		 * eu.stratosphere.sopremo.type.IArrayNode<IJsonNode>)
@@ -374,13 +393,13 @@ public class CoreFunctions implements BuiltinProvider {
 		@Override
 		protected IJsonNode call(TextNode format, IArrayNode<IJsonNode> varargs) {
 			final Object[] paramsAsObjects = this.arrayCache.getArray(varargs
-					.size());
+				.size());
 			for (int index = 0; index < paramsAsObjects.length; index++)
 				paramsAsObjects[index] = varargs.get(index).toString();
 
 			this.result.clear();
 			this.result.asFormatter().format(format.toString(),
-					paramsAsObjects);
+				paramsAsObjects);
 			return this.result;
 		}
 	};
@@ -400,7 +419,6 @@ public class CoreFunctions implements BuiltinProvider {
 
 		/*
 		 * (non-Javadoc)
-		 * 
 		 * @see eu.stratosphere.sopremo.function.SopremoVarargFunction1#call(eu.
 		 * stratosphere.sopremo.type.IJsonNode,
 		 * eu.stratosphere.sopremo.type.IArrayNode<IJsonNode>)
@@ -442,7 +460,7 @@ public class CoreFunctions implements BuiltinProvider {
 		}
 
 	};
-	
+
 	public static final LENGTH LENGTH = new LENGTH();
 
 	@Name(noun = "length")
@@ -461,7 +479,7 @@ public class CoreFunctions implements BuiltinProvider {
 	};
 
 	public static final SopremoFunction REPLACE = new REPLACE()
-			.withDefaultParameters(TextNode.EMPTY_STRING);
+		.withDefaultParameters(TextNode.EMPTY_STRING);
 
 	@Name(verb = "replace")
 	public static class REPLACE extends
@@ -476,7 +494,6 @@ public class CoreFunctions implements BuiltinProvider {
 
 		/*
 		 * (non-Javadoc)
-		 * 
 		 * @see
 		 * eu.stratosphere.sopremo.function.SopremoFunction3#call(eu.stratosphere
 		 * .sopremo.type.IJsonNode, eu.stratosphere.sopremo.type.IJsonNode,
@@ -486,19 +503,19 @@ public class CoreFunctions implements BuiltinProvider {
 		protected IJsonNode call(final TextNode input, final TextNode search,
 				final TextNode replace) {
 			final Pattern compiledPattern = this.patternCache
-					.getPatternOf(search);
+				.getPatternOf(search);
 			final Matcher matcher = compiledPattern.matcher(input
-					);
+				);
 			this.result.setValue(matcher.replaceAll(replace.toString()));
 			return this.result;
 		}
 	};
 
 	private static final TextNode WHITESPACES = TextNode
-			.valueOf("\\p{javaWhitespace}+");
+		.valueOf("\\p{javaWhitespace}+");
 
 	public static final SopremoFunction SPLIT = new SPLIT()
-			.withDefaultParameters(WHITESPACES);
+		.withDefaultParameters(WHITESPACES);
 
 	@Name(verb = "split")
 	public static class SPLIT extends SopremoFunction2<TextNode, TextNode> {
@@ -515,7 +532,6 @@ public class CoreFunctions implements BuiltinProvider {
 
 		/*
 		 * (non-Javadoc)
-		 * 
 		 * @see
 		 * eu.stratosphere.sopremo.function.SopremoFunction3#call(eu.stratosphere
 		 * .sopremo.type.IJsonNode, eu.stratosphere.sopremo.type.IJsonNode,
@@ -525,21 +541,21 @@ public class CoreFunctions implements BuiltinProvider {
 		protected IJsonNode call(final TextNode input,
 				final TextNode splitString) {
 			final Pattern searchPattern = this.patternCache
-					.getPatternOf(splitString);
+				.getPatternOf(splitString);
 			RegexTokenizer regexTokenizer = this.tokenizers.get(searchPattern);
 			if (regexTokenizer == null)
 				this.tokenizers.put(searchPattern,
-						regexTokenizer = new RegexTokenizer(searchPattern));
+					regexTokenizer = new RegexTokenizer(searchPattern));
 			regexTokenizer.tokenizeInto(input, this.result);
 			return this.result;
 		}
 	};
 
 	public static final SopremoFunction SUBSTRING = new SUBSTRING()
-			.withDefaultParameters(new IntNode(-1));;
+		.withDefaultParameters(new IntNode(-1));;
 
 	@Name(noun = "substring")
-	public static class SUBSTRING extends			SopremoFunction3<TextNode, IntNode, IntNode> {
+	public static class SUBSTRING extends SopremoFunction3<TextNode, IntNode, IntNode> {
 		SUBSTRING() {
 			super("substring");
 		}
@@ -548,7 +564,6 @@ public class CoreFunctions implements BuiltinProvider {
 
 		/*
 		 * (non-Javadoc)
-		 * 
 		 * @see
 		 * eu.stratosphere.sopremo.function.SopremoFunction3#call(eu.stratosphere
 		 * .sopremo.type.IJsonNode, eu.stratosphere.sopremo.type.IJsonNode,
@@ -641,7 +656,7 @@ public class CoreFunctions implements BuiltinProvider {
 			int sumcount = 0;
 			for (IJsonNode node : input) {
 				if (node instanceof TextNode) {
-					String findStr = ((TextNode)node).toString().toLowerCase();
+					String findStr = ((TextNode) node).toString().toLowerCase();
 					int lastIndex = 0;
 					int count = 0;
 					while (lastIndex != -1) {
@@ -660,7 +675,7 @@ public class CoreFunctions implements BuiltinProvider {
 			return this.result;
 		}
 	};
-	
+
 	public static final WEEK_OF_YEAR WEEK_OF_YEAR = new WEEK_OF_YEAR();
 
 	@Name(noun = "weekOfYear")
@@ -678,7 +693,7 @@ public class CoreFunctions implements BuiltinProvider {
 			wov(this.result, tmpIn, dateformat.toString());
 			return this.result;
 		}
-		
+
 		private void wov(IntNode output, String input, String dateformat) {
 			// other format for given Date will be illegal
 			DateFormat formatter = new SimpleDateFormat(dateformat);
@@ -702,12 +717,11 @@ public class CoreFunctions implements BuiltinProvider {
 			} catch (ParseException e1) {
 				System.out.println("Exception :" + e1);
 				System.out
-						.println("Exception : Given Text does not fit our Date-Format.");
+					.println("Exception : Given Text does not fit our Date-Format.");
 			}
 		}
 	};
-	
-	
+
 	public static final GET_YEAR GET_YEAR = new GET_YEAR();
 
 	@Name(noun = "getYear")
@@ -743,7 +757,7 @@ public class CoreFunctions implements BuiltinProvider {
 			return this.result;
 		}
 	};
-	
+
 	public static final FORMAT_DATE FORMAT_DATE = new FORMAT_DATE();
 
 	@Name(noun = "formatDate")

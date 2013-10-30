@@ -55,10 +55,6 @@ public class ArrayAccessAsAggregation extends Aggregation {
 
 	private transient final CachingArrayNode<IJsonNode> arrayResult = new CachingArrayNode<IJsonNode>();
 
-	// private void readObject(ObjectInputStream ois) throws IOException, ClassNotFoundException {
-	// ois.defaultReadObject();
-	// aggregator = new ArrayNode<IJsonNode> ();
-	// }
 	/*
 	 * (non-Javadoc)
 	 * @see eu.stratosphere.sopremo.aggregation.Aggregation#initialize()

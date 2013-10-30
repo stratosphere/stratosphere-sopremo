@@ -10,6 +10,7 @@ import eu.stratosphere.sopremo.EvaluationContext;
 import eu.stratosphere.sopremo.expressions.ArrayAccess;
 import eu.stratosphere.sopremo.expressions.ArrayProjection;
 import eu.stratosphere.sopremo.expressions.ConstantExpression;
+import eu.stratosphere.sopremo.expressions.EvaluationExpression;
 import eu.stratosphere.sopremo.expressions.FunctionCall;
 import eu.stratosphere.sopremo.expressions.InputSelection;
 import eu.stratosphere.sopremo.expressions.ObjectAccess;
@@ -92,13 +93,13 @@ public class GroupingTest extends SopremoOperatorTestBase<Grouping> {
 		context.getFunctionRegistry().put(CoreFunctions.class);
 
 		final ObjectCreation transformation = new ObjectCreation();
+		transformation.addMapping("emps", CoreFunctions.SORT.inline(
+			makePath(new InputSelection(0), new ArrayProjection(new ObjectAccess("id")))));
 		transformation.addMapping("dept",
 			makePath(new InputSelection(0), new ArrayAccess(0), new ObjectAccess("dept")));
 		transformation.addMapping("deptName",
 			makePath(new InputSelection(1), new ArrayAccess(0), new ObjectAccess("name")));
-		transformation.addMapping("emps", new FunctionCall("sort", context,
-			makePath(new InputSelection(0), new ArrayProjection(new ObjectAccess("id")))));
-		transformation.addMapping("numEmps", new FunctionCall("count", context, new InputSelection(0)));
+		transformation.addMapping("numEmps", CoreFunctions.COUNT.inline(new InputSelection(0)));
 
 		final Grouping aggregation = new Grouping().withResultProjection(transformation);
 		aggregation.setInputs(sopremoPlan.getInputOperators(0, 2));
@@ -108,11 +109,11 @@ public class GroupingTest extends SopremoOperatorTestBase<Grouping> {
 		sopremoPlan.getOutputOperator(0).setInputs(aggregation);
 		sopremoPlan.getInput(0).
 			addObject("id", 1, "dept", 1, "income", 12000).
+			addObject("id", 4, "dept", 1, "income", 10000).
+			addObject("id", 6, "dept", 2, "income", 5000).
+			addObject("id", 5, "dept", 3, "income", 8000).
 			addObject("id", 2, "dept", 1, "income", 13000).
 			addObject("id", 3, "dept", 2, "income", 15000).
-			addObject("id", 4, "dept", 1, "income", 10000).
-			addObject("id", 5, "dept", 3, "income", 8000).
-			addObject("id", 6, "dept", 2, "income", 5000).
 			addObject("id", 7, "dept", 1, "income", 24000);
 		sopremoPlan.getInput(1).
 			addObject("did", 1, "name", "development").
@@ -123,6 +124,7 @@ public class GroupingTest extends SopremoOperatorTestBase<Grouping> {
 			addObject("dept", 2, "deptName", "marketing", "emps", new int[] { 3, 6 }, "numEmps", 2).
 			addObject("dept", 3, "deptName", "sales", "emps", new int[] { 5 }, "numEmps", 1);
 
+		sopremoPlan.trace();
 		sopremoPlan.run();
 	}
 
@@ -237,7 +239,7 @@ public class GroupingTest extends SopremoOperatorTestBase<Grouping> {
 		final SopremoTestPlan sopremoPlan = new SopremoTestPlan(1, 1);
 		sopremoPlan.getEvaluationContext().getFunctionRegistry().put(CoreFunctions.class);
 
-		final Grouping aggregation = new Grouping().withResultProjection(CoreFunctions.COUNT.asExpression());
+		final Grouping aggregation = new Grouping().withResultProjection(CoreFunctions.COUNT.inline(EvaluationExpression.VALUE));
 		aggregation.setInputs(sopremoPlan.getInputOperator(0));
 		sopremoPlan.getOutputOperator(0).setInputs(aggregation);
 		sopremoPlan.getInput(0).

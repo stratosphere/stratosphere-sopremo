@@ -1,12 +1,18 @@
 package eu.stratosphere.sopremo.function;
 
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+
 import java.io.IOException;
 
+import com.google.common.base.Predicates;
+
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
+import eu.stratosphere.sopremo.expressions.InputSelection;
+import eu.stratosphere.sopremo.expressions.TransformFunction;
 import eu.stratosphere.sopremo.type.IArrayNode;
 import eu.stratosphere.sopremo.type.IJsonNode;
 
-public class ExpressionFunction extends SopremoFunction implements Inlineable {
+public class ExpressionFunction extends SopremoFunction {
 	private final EvaluationExpression definition;
 
 	public ExpressionFunction(final int numParams, final EvaluationExpression definition) {
@@ -20,6 +26,16 @@ public class ExpressionFunction extends SopremoFunction implements Inlineable {
 	public ExpressionFunction() {
 		super("Sopremo function", 0, 0);
 		this.definition = null;
+	}
+	
+	public EvaluationExpression inline(final EvaluationExpression... paramList ) {
+		return getDefinition().clone().replace(Predicates.instanceOf(InputSelection.class),
+			new TransformFunction() {
+				@Override
+				public EvaluationExpression apply(EvaluationExpression in) {
+					return paramList[((InputSelection) in).getIndex()].clone();
+				}
+			});
 	}
 
 	/*
@@ -61,13 +77,6 @@ public class ExpressionFunction extends SopremoFunction implements Inlineable {
 		return this.definition.equals(other.definition);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see
-	 * eu.stratosphere.sopremo.function.Inlineable#getDefinition(eu.stratosphere.sopremo.expressions.EvaluationExpression
-	 * [])
-	 */
-	@Override
 	public EvaluationExpression getDefinition() {
 		return this.definition;
 	}

@@ -18,11 +18,11 @@ public class AggregationExpressionTest extends EvaluableExpressionTest<Aggregati
 		case 0:
 			return new AggregationExpression(CoreFunctions.MAX);
 		case 1:
-			return new AggregationExpression(CoreFunctions.COUNT);
+			return new AggregationExpression(CoreFunctions.CONCAT);
 		case 2:
 			return new AggregationExpression(CoreFunctions.FIRST);
 		default:
-			return new AggregationExpression(CoreFunctions.ALL);
+			return new AggregationExpression(CoreFunctions.MIN);
 		}
 	}
 

@@ -20,6 +20,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
+import eu.stratosphere.sopremo.expressions.tree.ChildIterator;
+import eu.stratosphere.sopremo.expressions.tree.ListChildIterator;
 import eu.stratosphere.sopremo.pact.SopremoUtil;
 import eu.stratosphere.sopremo.type.IJsonNode;
 
@@ -86,6 +88,14 @@ public class ChainedSegmentExpression extends PathSegmentExpression {
 		return result;
 	}
 
+	/* (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.expressions.PathSegmentExpression#iterator()
+	 */
+	@Override
+	public ChildIterator iterator() {
+		return new ListChildIterator(this.expressions.listIterator());
+	}
+	
 	/**
 	 * Returns the expressions.
 	 * 
@@ -98,6 +108,6 @@ public class ChainedSegmentExpression extends PathSegmentExpression {
 	@Override
 	public void appendAsString(final Appendable appendable) throws IOException {
 		this.appendInputAsString(appendable);
-		SopremoUtil.append(appendable, "[", this.expressions, "]");
+		this.append(appendable, this.expressions, "->");
 	}
 }

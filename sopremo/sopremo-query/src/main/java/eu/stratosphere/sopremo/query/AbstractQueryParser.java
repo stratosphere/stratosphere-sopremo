@@ -25,7 +25,6 @@ import org.antlr.runtime.TokenStream;
 import org.antlr.runtime.UnwantedTokenException;
 
 import com.google.common.base.CharMatcher;
-import com.google.common.base.Predicates;
 
 import eu.stratosphere.nephele.fs.Path;
 import eu.stratosphere.sopremo.CoreFunctions;
@@ -36,11 +35,8 @@ import eu.stratosphere.sopremo.SopremoEnvironment;
 import eu.stratosphere.sopremo.expressions.CoerceExpression;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
 import eu.stratosphere.sopremo.expressions.FunctionCall;
-import eu.stratosphere.sopremo.expressions.InputSelection;
-import eu.stratosphere.sopremo.expressions.TransformFunction;
 import eu.stratosphere.sopremo.function.Callable;
 import eu.stratosphere.sopremo.function.ExpressionFunction;
-import eu.stratosphere.sopremo.function.Inlineable;
 import eu.stratosphere.sopremo.function.MacroBase;
 import eu.stratosphere.sopremo.function.SopremoFunction;
 import eu.stratosphere.sopremo.io.Sink;
@@ -194,19 +190,16 @@ public abstract class AbstractQueryParser extends Parser implements ParsingScope
 		if (!(callable instanceof SopremoFunction))
 			throw new QueryParserException(String.format("Unknown callable %s", callable));
 
-		final ObjectArrayList<EvaluationExpression> paramList = ObjectArrayList.wrap(params);
-		if (object != null)
-			paramList.add(0, object);
+		if (object != null) {
+			EvaluationExpression[] shiftedParams = new EvaluationExpression[params.length + 1];
+			System.arraycopy(params, 0, shiftedParams, 1, params.length);
+			params = shiftedParams;
+			params[0] = object;
+		}
 
-		if (callable instanceof Inlineable)
-			return ((Inlineable) callable).getDefinition().clone().replace(Predicates.instanceOf(InputSelection.class),
-				new TransformFunction() {
-					@Override
-					public EvaluationExpression apply(EvaluationExpression in) {
-						return paramList.get(((InputSelection) in).getIndex()).clone();
-					}
-				});
-		return new FunctionCall(name.getText(), (SopremoFunction) callable, paramList.elements());
+		if (callable instanceof ExpressionFunction)
+			return ((ExpressionFunction) callable).inline(params);
+		return new FunctionCall(name.getText(), (SopremoFunction) callable, params);
 	}
 
 	protected SopremoFunction getSopremoFunction(String packageName, Token name) {

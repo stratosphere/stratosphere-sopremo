@@ -19,6 +19,7 @@ import java.util.List;
 import com.google.common.base.Predicates;
 
 import eu.stratosphere.sopremo.EvaluationContext;
+import eu.stratosphere.sopremo.base.join.ThetaJoin;
 import eu.stratosphere.sopremo.expressions.AggregationExpression;
 import eu.stratosphere.sopremo.expressions.AndExpression;
 import eu.stratosphere.sopremo.expressions.ArrayAccess;
@@ -27,11 +28,13 @@ import eu.stratosphere.sopremo.expressions.BinaryBooleanExpression;
 import eu.stratosphere.sopremo.expressions.BooleanExpression;
 import eu.stratosphere.sopremo.expressions.ComparativeExpression;
 import eu.stratosphere.sopremo.expressions.ComparativeExpression.BinaryOperator;
+import eu.stratosphere.sopremo.expressions.ConstantExpression;
 import eu.stratosphere.sopremo.expressions.ElementInSetExpression;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
 import eu.stratosphere.sopremo.expressions.ExpressionUtil;
 import eu.stratosphere.sopremo.expressions.InputSelection;
 import eu.stratosphere.sopremo.expressions.TransformFunction;
+import eu.stratosphere.sopremo.expressions.UnaryExpression;
 import eu.stratosphere.sopremo.io.Source;
 import eu.stratosphere.sopremo.operator.CompositeOperator;
 import eu.stratosphere.sopremo.operator.InputCardinality;
@@ -72,7 +75,11 @@ public class Join extends CompositeOperator<Join> {
 	public void addImplementation(SopremoModule module, EvaluationContext context) {
 		switch (this.binaryConditions.size()) {
 		case 0:
-			throw new IllegalStateException("No join condition specified");
+			final ThetaJoin cross = new ThetaJoin().withCondition(new UnaryExpression(new ConstantExpression(true))).
+				withInputs(module.getInputs()).
+				withResultProjection(this.getResultProjection());
+			module.getOutput(0).setInput(0, cross);
+			break;
 		case 1:
 			// only two way join
 			final TwoSourceJoin join = new TwoSourceJoin().
@@ -209,7 +216,8 @@ public class Join extends CompositeOperator<Join> {
 
 	private LinkedList<Object2IntMap.Entry<BinaryBooleanExpression>> weightEdges(
 			List<BinaryBooleanExpression> someBinaryConditions) {
-		LinkedList<Object2IntMap.Entry<BinaryBooleanExpression>> edgesWithWeight = new LinkedList<Object2IntMap.Entry<BinaryBooleanExpression>>();
+		LinkedList<Object2IntMap.Entry<BinaryBooleanExpression>> edgesWithWeight =
+			new LinkedList<Object2IntMap.Entry<BinaryBooleanExpression>>();
 		for (BinaryBooleanExpression expression : someBinaryConditions) {
 			// TODO better weighting schema required
 			int weight;

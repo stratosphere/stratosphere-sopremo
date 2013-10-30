@@ -55,6 +55,54 @@ public class CachingList<T> extends ObjectArrayList<T> {
 		return true;
 	}
 
+	/**
+	 * Wraps a given array into an array list of given size.
+	 * 
+	 * @param a
+	 *        an array to wrap.
+	 * @param length
+	 *        the length of the resulting array list.
+	 * @return a new array list of the given size, wrapping the given array.
+	 */
+	public static <K> CachingList<K> wrap(final K a[], final int length) {
+		if (length > a.length)
+			throw new IllegalArgumentException("The specified length (" + length +
+				") is greater than the array size (" + a.length + ")");
+		final CachingList<K> l = new CachingList<K>(a, false);
+		l.size = length;
+		return l;
+	}
+	
+	/**
+	 * Initializes CachingList.
+	 *
+	 */
+	public CachingList() {
+	}
+
+	/**
+	 * Creates a new array list using a given array.
+	 * <P>
+	 * This constructor is only meant to be used by the wrapping methods.
+	 * 
+	 * @param a
+	 *        the array that will be used to back this array list.
+	 */
+	protected CachingList(final T a[], boolean dummy) {
+		super(a, dummy);
+	}
+
+	/**
+	 * Wraps a given array into an array list.
+	 * 
+	 * @param a
+	 *        an array to wrap.
+	 * @return a new array list wrapping the given array.
+	 */
+	public static <K> CachingList<K> wrap(final K a[]) {
+		return wrap(a, a.length);
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * @see java.util.AbstractList#clear()

@@ -14,6 +14,12 @@
  **********************************************************************************************************************/
 package eu.stratosphere.sopremo.type;
 
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+
+import java.lang.reflect.Array;
+
+import com.esotericsoftware.kryo.Kryo;
+
 import eu.stratosphere.util.CachingList;
 
 /**
@@ -23,8 +29,21 @@ public class CachingArrayNode<T extends IJsonNode> extends ArrayNode<T> {
 	/**
 	 * Initializes CachingArrayNode.
 	 */
+	public CachingArrayNode(CachingList<T> objectArrayList) {
+		super(objectArrayList);
+	}
+
+	@SuppressWarnings("unchecked")
+	public CachingArrayNode(Class<T> elemType) {
+		this(CachingList.wrap((T[]) Array.newInstance(elemType, 0)));
+	}
+
+	/**
+	 * Initializes CachingArrayNode.
+	 */
+	@SuppressWarnings("unchecked")
 	public CachingArrayNode() {
-		super(new CachingList<T>());
+		this((Class<T>) IJsonNode.class);
 	}
 
 	public T reuseUnusedNode() {
@@ -74,5 +93,16 @@ public class CachingArrayNode<T extends IJsonNode> extends ArrayNode<T> {
 		for (int index = 0; index < nodes.length; index++)
 			this.set(index, nodes[index]);
 		this.setSize(nodes.length);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see com.esotericsoftware.kryo.KryoCopyable#copy(com.esotericsoftware.kryo.Kryo)
+	 */
+	@Override
+	public AbstractArrayNode<T> copy(Kryo kryo) {
+		final CachingArrayNode<T> node = new CachingArrayNode<T>();
+		node.copyValueFrom(this);
+		return node;
 	}
 }
