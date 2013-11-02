@@ -18,6 +18,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import eu.stratosphere.meteor.MeteorParseTest;
+import eu.stratosphere.sopremo.CoreFunctions;
 import eu.stratosphere.sopremo.base.Projection;
 import eu.stratosphere.sopremo.expressions.ArrayProjection;
 import eu.stratosphere.sopremo.expressions.ConstantExpression;
@@ -54,11 +55,11 @@ public class MethodTest extends MeteorParseTest {
 			withInputs(input).
 			withResultProjection(new ObjectCreation(
 				new ObjectCreation.FieldAssignment("result",
-					new FunctionCall("count", expectedPlan, new InputSelection(0)))));
+					createFunctionCall(CoreFunctions.COUNT, new InputSelection(0)))));
 		final Sink sink = new Sink("file://output.json").withInputs(projection);
 		expectedPlan.setSinks(sink);
 
-		Assert.assertEquals("unexpectedPlan", expectedPlan, actualPlan);
+		assertPlanEquals(expectedPlan, actualPlan);
 	}
 
 	@Test
@@ -74,12 +75,12 @@ public class MethodTest extends MeteorParseTest {
 			withInputs(input).
 			withResultProjection(new ObjectCreation(
 				new ObjectCreation.FieldAssignment("result",
-					new FunctionCall("count", expectedPlan,
-						new FunctionCall("all", expectedPlan, new InputSelection(0))))));
+					createFunctionCall(CoreFunctions.COUNT,
+						createFunctionCall(CoreFunctions.ALL, new InputSelection(0))))));
 		final Sink sink = new Sink("file://output.json").withInputs(projection);
 		expectedPlan.setSinks(sink);
 
-		Assert.assertEquals("unexpectedPlan", expectedPlan, actualPlan);
+		assertPlanEquals(expectedPlan, actualPlan);
 	}
 
 	@Test
@@ -96,13 +97,13 @@ public class MethodTest extends MeteorParseTest {
 				withInputs(input).
 				withResultProjection(new ObjectCreation(
 					new ObjectCreation.FieldAssignment("result",
-						new FunctionCall("count", expectedPlan,
-							new FunctionCall("all", expectedPlan,
+						createFunctionCall(CoreFunctions.COUNT,
+							createFunctionCall(CoreFunctions.ALL,
 								new ObjectAccess("addresses").withInputExpression(new InputSelection(0)))))));
 		final Sink sink = new Sink("file://output.json").withInputs(projection);
 		expectedPlan.setSinks(sink);
 
-		Assert.assertEquals("unexpectedPlan", expectedPlan, actualPlan);
+		assertPlanEquals(expectedPlan, actualPlan);
 	}
 
 	@Test
@@ -121,13 +122,13 @@ public class MethodTest extends MeteorParseTest {
 					new TernaryExpression(
 						new NotNullOrMissingBooleanExpression().withInputExpression(
 							new ObjectAccess("addresses").withInputExpression(new InputSelection(0))),
-						new FunctionCall("count", expectedPlan,
+						createFunctionCall(CoreFunctions.COUNT,
 							new ObjectAccess("addresses").withInputExpression(new InputSelection(0))),
 						new ObjectAccess("addresses").withInputExpression(new InputSelection(0))));
 		final Sink sink = new Sink("file://output.json").withInputs(projection);
 		expectedPlan.setSinks(sink);
 
-		Assert.assertEquals("unexpectedPlan", expectedPlan, actualPlan);
+		assertPlanEquals(expectedPlan, actualPlan);
 
 		Assert.assertEquals(IntNode.valueOf(3),
 			projection.getResultProjection().evaluate(
@@ -142,15 +143,15 @@ public class MethodTest extends MeteorParseTest {
 	public void testMethodCallWithComplexExpression() {
 		final SopremoPlan actualPlan =
 			parseScript(
-				"$input = read from 'file://input.json';\n"
-					+
-					"$result = transform $input into { result: $input.addresses.replace($input.city, '').street.count() };\n"
-					+
-					"write $result to 'file://output.json'; ");
+			"$input = read from 'file://input.json';\n"
+				+
+				"$result = transform $input into { result: $input.addresses.replace($input.city, '').street.count() };\n"
+				+
+				"write $result to 'file://output.json'; ");
 
 		final SopremoPlan expectedPlan = new SopremoPlan();
 		final Source input = new Source("file://input.json");
-		final EvaluationExpression replaceExpression = new FunctionCall("replace", expectedPlan,
+		final EvaluationExpression replaceExpression = createFunctionCall(CoreFunctions.REPLACE,
 			new ObjectAccess("addresses").withInputExpression(new InputSelection(0)),
 			new ObjectAccess("city").withInputExpression(new InputSelection(0)),
 			new ConstantExpression(""));
@@ -158,27 +159,27 @@ public class MethodTest extends MeteorParseTest {
 			withInputs(input).
 			withResultProjection(new ObjectCreation(
 				new ObjectCreation.FieldAssignment("result",
-					new FunctionCall("count", expectedPlan,
+					createFunctionCall(CoreFunctions.COUNT,
 						new ObjectAccess("street").withInputExpression(replaceExpression)))));
 		final Sink sink = new Sink("file://output.json").withInputs(projection);
 		expectedPlan.setSinks(sink);
 
-		Assert.assertEquals("unexpectedPlan", expectedPlan, actualPlan);
+		assertPlanEquals(expectedPlan, actualPlan);
 	}
 
 	@Test
 	public void testMethodCallWithComplexExpression2() {
 		final SopremoPlan actualPlan =
 			parseScript(
-				"$input = read from 'file://input.json';\n"
-					+
-					"$result = transform $input into { result: $input.addresses.replace($input.city, '')[*].street.count() };\n"
-					+
-					"write $result to 'file://output.json'; ");
+			"$input = read from 'file://input.json';\n"
+				+
+				"$result = transform $input into { result: $input.addresses.replace($input.city, '')[*].street.count() };\n"
+				+
+				"write $result to 'file://output.json'; ");
 
 		final SopremoPlan expectedPlan = new SopremoPlan();
 		final Source input = new Source("file://input.json");
-		final EvaluationExpression replaceExpression = new FunctionCall("replace", expectedPlan,
+		final EvaluationExpression replaceExpression = createFunctionCall(CoreFunctions.REPLACE,
 			new ObjectAccess("addresses").withInputExpression(new InputSelection(0)),
 			new ObjectAccess("city").withInputExpression(new InputSelection(0)),
 			new ConstantExpression(""));
@@ -186,13 +187,13 @@ public class MethodTest extends MeteorParseTest {
 			withInputs(input).
 			withResultProjection(new ObjectCreation(
 				new ObjectCreation.FieldAssignment("result",
-					new FunctionCall("count", expectedPlan,
+					createFunctionCall(CoreFunctions.COUNT,
 						new ArrayProjection(new ObjectAccess("street")).
 							withInputExpression(replaceExpression)))));
 		final Sink sink = new Sink("file://output.json").withInputs(projection);
 		expectedPlan.setSinks(sink);
 
-		Assert.assertEquals("unexpectedPlan", expectedPlan, actualPlan);
+		assertPlanEquals(expectedPlan, actualPlan);
 	}
 
 }

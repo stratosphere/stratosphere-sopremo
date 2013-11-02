@@ -6,10 +6,19 @@ import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.IdentityHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Map;
 
 import javolution.text.TypeFormat;
+
+import com.esotericsoftware.kryo.DefaultSerializer;
+import com.esotericsoftware.kryo.Kryo;
+import com.esotericsoftware.kryo.io.Input;
+import com.esotericsoftware.kryo.serializers.FieldSerializer;
+
 import eu.stratosphere.pact.common.plan.PactModule;
 import eu.stratosphere.sopremo.AbstractSopremoType;
 import eu.stratosphere.sopremo.EvaluationContext;
@@ -89,7 +98,7 @@ public abstract class Operator<Self extends Operator<Self>> extends Configurable
 	public Operator(final int minInputs, final int maxInputs, final int minOutputs, final int maxOutputs) {
 		this.setNumberOfInputs(minInputs, maxInputs);
 		this.setNumberOfOutputs(minOutputs, maxOutputs);
-		
+
 		final DegreeOfParallelism degreeOfParallelism =
 			ReflectUtil.getAnnotation(this.getClass(), DegreeOfParallelism.class);
 		if (degreeOfParallelism == null)
@@ -623,4 +632,73 @@ public abstract class Operator<Self extends Operator<Self>> extends Configurable
 		}
 	}
 
+	public static class OperatorSerializer extends com.esotericsoftware.kryo.Serializer<Operator<?>> {
+		private final FieldSerializer<Operator<?>> fieldSerializer;
+
+		private final static ThreadLocal<OperatorSerializationStack> OperatorSerializationStack =
+			new ThreadLocal<OperatorSerializationStack>() {
+				@Override
+				protected OperatorSerializationStack initialValue() {
+					return new OperatorSerializationStack();
+				};
+			};
+
+		private static class OperatorSerializationStack {
+			private final Map<Operator<?>, Integer> operatorSerializedAt = new IdentityHashMap<Operator<?>, Integer>();
+
+			private final LinkedList<Operator<?>> operatorDeserializedAt = new LinkedList<Operator<?>>();
+		}
+
+		public OperatorSerializer(Kryo kryo, Class<Operator<?>> type) {
+			this.fieldSerializer = new FieldSerializer<Operator<?>>(kryo, type);
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see com.esotericsoftware.kryo.Serializer#read(com.esotericsoftware.kryo.Kryo,
+		 * com.esotericsoftware.kryo.io.Input, java.lang.Class)
+		 */
+		@Override
+		public Operator<?> read(Kryo kryo, Input input, Class<Operator<?>> type) {
+			LinkedList<Operator<?>> operatorDeserializedAt = OperatorSerializationStack.get().operatorDeserializedAt;
+			if (input.readBoolean())
+				return operatorDeserializedAt.get(input.readByteUnsigned());
+			Operator<?> object = kryo.newInstance(type);
+			operatorDeserializedAt.push(object);
+			@SuppressWarnings("unchecked")
+			FieldSerializer<Operator<?>>.CachedField<?>[] fields = this.fieldSerializer.getFields();
+			for (int i = 0, n = fields.length; i < n; i++)
+				fields[i].read(input, object);
+			operatorDeserializedAt.pop();
+			return object;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see com.esotericsoftware.kryo.Serializer#copy(com.esotericsoftware.kryo.Kryo, java.lang.Object)
+		 */
+		@Override
+		public Operator<?> copy(Kryo kryo, Operator<?> original) {
+			return this.fieldSerializer.copy(kryo, original);
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see com.esotericsoftware.kryo.Serializer#write(com.esotericsoftware.kryo.Kryo,
+		 * com.esotericsoftware.kryo.io.Output, java.lang.Object)
+		 */
+		@Override
+		public void write(Kryo kryo, com.esotericsoftware.kryo.io.Output output, Operator<?> object) {
+			Map<Operator<?>, Integer> operatorSerializedAt = OperatorSerializationStack.get().operatorSerializedAt;
+			Integer alreadySerializedAt = operatorSerializedAt.get(object);
+			output.writeBoolean(alreadySerializedAt != null);
+			if (alreadySerializedAt != null) {
+				output.writeByte(alreadySerializedAt);
+			} else {
+				operatorSerializedAt.put(object, operatorSerializedAt.size());
+				this.fieldSerializer.write(kryo, output, object);
+				operatorSerializedAt.remove(object);
+			}
+		}
+	}
 }

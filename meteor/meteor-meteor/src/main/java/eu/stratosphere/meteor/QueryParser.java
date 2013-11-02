@@ -25,13 +25,12 @@ import eu.stratosphere.sopremo.query.ConfObjectInfo.ConfObjectIndexedPropertyInf
 import eu.stratosphere.sopremo.query.ConfObjectInfo.ConfObjectPropertyInfo;
 import eu.stratosphere.sopremo.query.IConfObjectRegistry;
 import eu.stratosphere.sopremo.query.PackageManager;
-import eu.stratosphere.sopremo.query.PlanCreator;
 import eu.stratosphere.sopremo.query.QueryParserException;
 import eu.stratosphere.util.StringUtil;
 
-public class QueryParser extends PlanCreator {
+public class QueryParser {
 	private File inputDirectory = new File(".");
-	
+
 	private PackageManager packageManager = new PackageManager();
 
 	private void appendExpression(final Object value, final JavaRenderInfo renderInfo) {
@@ -111,15 +110,6 @@ public class QueryParser extends PlanCreator {
 		return this.inputDirectory;
 	}
 
-	@Override
-	public SopremoPlan getPlan(final InputStream stream) {
-		try {
-			return this.tryParse(stream);
-		} catch (final Exception e) {
-			return null;
-		}
-	}
-
 	/**
 	 * Sets the inputDirectory to the specified value.
 	 * 
@@ -160,8 +150,20 @@ public class QueryParser extends PlanCreator {
 		return this.toSopremoCode(new ANTLRStringStream(script));
 	}
 
-	protected SopremoPlan tryParse(final CharStream tryParse) {
-		final MeteorLexer lexer = new MeteorLexer(tryParse);
+	public SopremoPlan tryParse(final CharStream charStream) {
+		return getParser(charStream).parse();
+	}
+
+	public MeteorParser getParser(final String script) {
+		return this.getParser(new ANTLRStringStream(script));
+	}
+
+	public MeteorParser getParser(final InputStream stream) throws IOException {
+		return this.getParser(new ANTLRInputStream(stream));
+	}
+
+	public MeteorParser getParser(final CharStream charStream) {
+		final MeteorLexer lexer = new MeteorLexer(charStream);
 		final CommonTokenStream tokens = new CommonTokenStream();
 		tokens.setTokenSource(lexer);
 		final MeteorParser parser = new MeteorParser(tokens);
@@ -170,9 +172,9 @@ public class QueryParser extends PlanCreator {
 		parser.getPackageManager().addAll(this.packageManager);
 		parser.getPackageManager().addJarPathLocation(this.inputDirectory);
 		parser.setTreeAdaptor(new SopremoTreeAdaptor());
-		return parser.parse();
+		return parser;
 	}
-	
+
 	/**
 	 * Returns the packageManager.
 	 * 

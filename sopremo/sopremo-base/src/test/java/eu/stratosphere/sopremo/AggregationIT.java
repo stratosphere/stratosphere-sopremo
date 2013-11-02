@@ -6,6 +6,7 @@ import eu.stratosphere.sopremo.base.Grouping;
 import eu.stratosphere.sopremo.expressions.ArrayAccess;
 import eu.stratosphere.sopremo.expressions.ArrayProjection;
 import eu.stratosphere.sopremo.expressions.ExpressionUtil;
+import eu.stratosphere.sopremo.expressions.InputSelection;
 import eu.stratosphere.sopremo.expressions.ObjectAccess;
 import eu.stratosphere.sopremo.expressions.ObjectCreation;
 import eu.stratosphere.sopremo.testing.SopremoTestPlan;
@@ -17,10 +18,10 @@ public class AggregationIT {
 	@Test
 	public void shouldGroupAll() {
 		ObjectCreation resultProjection = new ObjectCreation();
-		resultProjection.addMapping("id", ExpressionUtil.makePath(new ArrayAccess(0), new ObjectAccess("id")));
-		resultProjection.addMapping("values1", CoreFunctions.ALL.inline(new ArrayProjection(new ObjectAccess("value"))));
-		resultProjection.addMapping("values2", CoreFunctions.ALL.inline(new ArrayProjection(new ObjectAccess("value"))));
-		resultProjection.addMapping("sorted", CoreFunctions.SORT.inline(new ArrayProjection(new ObjectAccess("value"))));
+		resultProjection.addMapping("id", ExpressionUtil.makePath(new InputSelection(0), new ArrayAccess(0), new ObjectAccess("id")));
+		resultProjection.addMapping("values1", CoreFunctions.ALL.inline(new ArrayProjection( ExpressionUtil.makePath(new InputSelection(0),new ObjectAccess("value")))));
+		resultProjection.addMapping("values2", CoreFunctions.ALL.inline(new ArrayProjection( ExpressionUtil.makePath(new InputSelection(0),new ObjectAccess("value")))));
+		resultProjection.addMapping("sorted", CoreFunctions.SORT.inline(new ArrayProjection( ExpressionUtil.makePath(new InputSelection(0),new ObjectAccess("value")))));
 		Grouping grouping = new Grouping().
 			withGroupingKey(new ObjectAccess("id")).
 			withResultProjection(resultProjection);

@@ -27,14 +27,14 @@ import eu.stratosphere.sopremo.expressions.ComparativeExpression;
 import eu.stratosphere.sopremo.expressions.ComparativeExpression.BinaryOperator;
 import eu.stratosphere.sopremo.expressions.ConstantExpression;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
-import eu.stratosphere.sopremo.expressions.FunctionCall;
+import eu.stratosphere.sopremo.expressions.ExpressionUtil;
 import eu.stratosphere.sopremo.expressions.InputSelection;
 import eu.stratosphere.sopremo.expressions.ObjectAccess;
 import eu.stratosphere.sopremo.expressions.ObjectCreation;
 import eu.stratosphere.sopremo.io.Sink;
 import eu.stratosphere.sopremo.io.Source;
 import eu.stratosphere.sopremo.operator.SopremoPlan;
-import eu.stratosphere.sopremo.testing.SopremoTestUtil;
+import eu.stratosphere.sopremo.type.JsonUtil;
 
 /**
  * @author Arvid Heise
@@ -65,30 +65,19 @@ public class AggregationTest extends MeteorParseTest {
 			new Grouping().
 				withInputs(filter).
 				withGroupingKey(0,
-					new ArrayCreation(new ObjectAccess("l_linestatus"), new ObjectAccess("l_returnflag"))).
+					new ArrayCreation(JsonUtil.createPath("0", "l_linestatus"), JsonUtil.createPath("0", "l_returnflag"))).
 				withResultProjection(
 					new ObjectCreation(
-						new ObjectCreation.FieldAssignment("first", batch.add(new ArrayAccessAsAggregation(0))),
-						new ObjectCreation.FieldAssignment("count_qty", CoreFunctions.COUNT.inline(EvaluationExpression.VALUE)),
-						new ObjectCreation.FieldAssignment("sum_qty", batch.add(CoreFunctions.SUM, new ObjectAccess(
-							"l_quantity"))),
-						new ObjectCreation.FieldAssignment("mean_qty", batch.add(CoreFunctions.MAX, new ObjectAccess(
-							"l_quantity")))
+						new ObjectCreation.FieldAssignment("first", addToBatch(batch, CoreFunctions.FIRST)),
+						new ObjectCreation.FieldAssignment("count_qty", addToBatch(batch, CoreFunctions.COUNT)),
+						new ObjectCreation.FieldAssignment("sum_qty", addToBatch(batch, CoreFunctions.SUM, new ObjectAccess("l_quantity"))),
+						new ObjectCreation.FieldAssignment("mean_qty", addToBatch(batch, CoreFunctions.MAX, new ObjectAccess("l_quantity")))
 					));
 
 		final Sink sink = new Sink("file://q1.json").withInputs(grouping);
 		final SopremoPlan expectedPlan = new SopremoPlan();
 		expectedPlan.setSinks(sink);
-		SopremoTestUtil.assertPlanEquals(expectedPlan, actualPlan);
 
-		// final Iterable<? extends Operator<?>> containedOperators = actualPlan.getContainedOperators();
-		// final ArrayList<Operator> ops = new ArrayList<Operator>();
-		// for (Operator<?> operator : containedOperators)
-		// ops.add(operator);
-		// final Grouping grouping = (Grouping) ops.get(1);
-		// System.out.println(grouping.getResultProjection().printAsTree());
-		// System.out.println();
-		// System.out.println(ExpressionUtil.replaceAggregationWithBatchAggregation(
-		// grouping.getResultProjection()).printAsTree());
+		assertPlanEquals(expectedPlan, actualPlan);
 	}
 }

@@ -97,7 +97,7 @@ public class ArrayProjection extends PathSegmentExpression {
 	 */
 	@Override
 	public boolean equalsSameClass(PathSegmentExpression other) {
-		return this.projection.equals(((ArrayProjection)other).projection);
+		return this.projection.equals(((ArrayProjection) other).projection);
 	}
 
 	/*
@@ -140,11 +140,26 @@ public class ArrayProjection extends PathSegmentExpression {
 		return arrayNode;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.expressions.EvaluationExpression#simplify()
+	 */
+	@Override
+	public EvaluationExpression simplify() {
+		if (getInputExpression() instanceof ArrayProjection) {
+			ArrayProjection arrayProjection = (ArrayProjection) getInputExpression();
+			return new ArrayProjection(new ChainedSegmentExpression(arrayProjection.getProjection(), getProjection())).withInputExpression(
+				arrayProjection.getInputExpression()).simplify();
+		}
+		return super.simplify();
+	}
+
 	@Override
 	public void appendAsString(final Appendable appendable) throws IOException {
+		appendable.append("proj(x in ");
 		this.getInputExpression().appendAsString(appendable);
-		appendable.append("[*]");
-		if (this.projection != EvaluationExpression.VALUE)
-			this.projection.appendAsString(appendable);
+		appendable.append(", ");
+		this.projection.appendAsString(appendable);
+		appendable.append(")");
 	}
 }

@@ -135,13 +135,13 @@ public class GroupingTest extends SopremoOperatorTestBase<Grouping> {
 		context.getFunctionRegistry().put(CoreFunctions.class);
 
 		final ObjectCreation transformation = new ObjectCreation();
+		transformation.addMapping("emps", CoreFunctions.SORT.inline(
+			makePath(new InputSelection(0), new ArrayProjection(new ObjectAccess("id")))));
 		transformation.addMapping("dept",
 			makePath(new InputSelection(0), new ArrayAccess(0), new ObjectAccess("dept")));
 		transformation.addMapping("deptName",
 			makePath(new InputSelection(1), new ArrayAccess(0), new ObjectAccess("name")));
-		transformation.addMapping("emps", new FunctionCall("sort", context,
-			makePath(new InputSelection(0), new ArrayProjection(new ObjectAccess("id")))));
-		transformation.addMapping("numEmps", new FunctionCall("count", context, new InputSelection(0)));
+		transformation.addMapping("numEmps", CoreFunctions.COUNT.inline(new InputSelection(0)));
 
 		final Grouping aggregation = new Grouping().withResultProjection(transformation);
 		aggregation.setInputs(sopremoPlan.getInputOperators(0, 2));
@@ -239,7 +239,7 @@ public class GroupingTest extends SopremoOperatorTestBase<Grouping> {
 		final SopremoTestPlan sopremoPlan = new SopremoTestPlan(1, 1);
 		sopremoPlan.getEvaluationContext().getFunctionRegistry().put(CoreFunctions.class);
 
-		final Grouping aggregation = new Grouping().withResultProjection(CoreFunctions.COUNT.inline(EvaluationExpression.VALUE));
+		final Grouping aggregation = new Grouping().withResultProjection(CoreFunctions.COUNT.inline(new InputSelection(0)));
 		aggregation.setInputs(sopremoPlan.getInputOperator(0));
 		sopremoPlan.getOutputOperator(0).setInputs(aggregation);
 		sopremoPlan.getInput(0).

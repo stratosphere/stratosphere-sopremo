@@ -53,7 +53,7 @@ public class FunctionTest extends MeteorParseTest {
 		final Sink sink = new Sink("file://output.json").withInputs(projection);
 		expectedPlan.setSinks(sink);
 
-		Assert.assertEquals("unexpectedPlan", expectedPlan, actualPlan);
+		assertPlanEquals(expectedPlan, actualPlan);
 	}
 
 	@Test
@@ -77,7 +77,7 @@ public class FunctionTest extends MeteorParseTest {
 		final Sink sink = new Sink("file://output.json").withInputs(projection);
 		expectedPlan.setSinks(sink);
 
-		Assert.assertEquals("unexpectedPlan", expectedPlan, actualPlan);
+		assertPlanEquals(expectedPlan, actualPlan);
 	}
 
 	public static IJsonNode udfTest(final IJsonNode... nodes) {

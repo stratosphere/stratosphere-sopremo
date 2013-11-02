@@ -34,6 +34,8 @@ import eu.stratosphere.sopremo.type.NullNode;
  * @author Arvid Heise
  */
 public class SecondOrderFunctions implements BuiltinProvider {
+	public final static SopremoFunction MAP = new MAP(), FILTER = new FILTER(), FOLD = new FOLD(), FIND = new FIND();
+
 	@Name(verb = "map")
 	public static class MAP extends SopremoFunction2<IArrayNode<IJsonNode>, FunctionNode> {
 		public MAP() {

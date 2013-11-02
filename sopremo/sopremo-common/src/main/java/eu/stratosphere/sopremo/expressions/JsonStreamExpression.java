@@ -65,6 +65,15 @@ public class JsonStreamExpression extends UnevaluableExpression {
 	}
 
 	/**
+	 * Initializes JsonStreamExpression.
+	 */
+	JsonStreamExpression() {
+		super("JsonStream placeholder");
+		this.stream = null;
+		this.inputIndex = 0;
+	}
+
+	/**
 	 * Returns the inputIndex.
 	 * 
 	 * @return the inputIndex
@@ -138,10 +147,10 @@ public class JsonStreamExpression extends UnevaluableExpression {
 		final JsonStreamExpression other = (JsonStreamExpression) obj;
 		Output thisSource = this.stream.getSource();
 		Output otherSource = other.stream.getSource();
-		if( thisSource.getIndex() != otherSource.getIndex())
+		if (thisSource.getIndex() != otherSource.getIndex())
 			return false;
 		// at this point we assume that both stream expression could be equal
-		if(this.equalStream != null && this.equalStream.get() == other)
+		if (this.equalStream != null && this.equalStream.get() == other)
 			return true;
 
 		this.equalStream = new WeakReference<JsonStreamExpression>(other);

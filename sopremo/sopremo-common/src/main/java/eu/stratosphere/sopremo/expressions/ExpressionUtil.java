@@ -178,7 +178,7 @@ public class ExpressionUtil {
 			findAggregatingFunctionCalls(child, aggregatingFunctionCalls, aggregatingExpressions, expression);
 	}
 
-	private static EvaluationExpression replaceArrayProjections(final EvaluationExpression evaluationExpression) {
+	public static EvaluationExpression replaceArrayProjections(final EvaluationExpression evaluationExpression) {
 		return evaluationExpression.clone().remove(InputSelection.class).replace(
 			Predicates.instanceOf(ArrayProjection.class), new TransformFunction() {
 				@Override

@@ -41,7 +41,7 @@ public abstract class EvaluationExpression extends AbstractSopremoType implement
 
 	@DefaultSerializer(ValueSerializer.class)
 	@Immutable
-	public static final class ValueExpression extends PathSegmentExpression  {
+	public static final class ValueExpression extends PathSegmentExpression {
 		/**
 		 * Initializes ValueExpression.
 		 * 
@@ -401,12 +401,10 @@ public abstract class EvaluationExpression extends AbstractSopremoType implement
 	}
 
 	public EvaluationExpression simplify() {
-		{
-			final ChildIterator iterator = this.iterator();
-			while (iterator.hasNext()) {
-				EvaluationExpression evaluationExpression = iterator.next();
-				iterator.set(evaluationExpression.simplify());
-			}
+		final ChildIterator iterator = this.iterator();
+		while (iterator.hasNext()) {
+			EvaluationExpression evaluationExpression = iterator.next();
+			iterator.set(evaluationExpression.simplify());
 		}
 		return this;
 	}

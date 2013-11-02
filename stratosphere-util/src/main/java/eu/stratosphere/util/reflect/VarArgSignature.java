@@ -23,6 +23,13 @@ public class VarArgSignature extends Signature {
 	public VarArgSignature(final Class<?>[] parameterTypes) {
 		super(parameterTypes);
 	}
+	
+	/**
+	 * Initializes VarArgSignature.
+	 *
+	 */
+	VarArgSignature() {
+	}
 
 	@Override
 	public int getDistance(final Signature actualSignature) {

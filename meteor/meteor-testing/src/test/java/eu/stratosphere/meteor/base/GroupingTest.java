@@ -61,7 +61,7 @@ public class GroupingTest extends MeteorParseTest {
 				new ObjectCreation.FieldAssignment("deptName", JsonUtil.createPath("1", "[0]", "name")),
 				new ObjectCreation.FieldAssignment("emps", JsonUtil.createPath("0", "[*]", "id")),
 				new ObjectCreation.FieldAssignment("numEmps",
-					new FunctionCall("count", context, JsonUtil.createPath("0")))));
+					createFunctionCall(CoreFunctions.COUNT, JsonUtil.createPath("0")))));
 		final Sink output = new Sink("file://output.json").withInputs(selection);
 		expectedPlan.setSinks(output);
 
@@ -96,7 +96,7 @@ public class GroupingTest extends MeteorParseTest {
 				new ObjectCreation.FieldAssignment("deptName", JsonUtil.createPath("1", "[0]", "name")),
 				new ObjectCreation.FieldAssignment("emps", JsonUtil.createPath("0", "[*]", "id")),
 				new ObjectCreation.FieldAssignment("numEmps",
-					new FunctionCall("count", context, JsonUtil.createPath("0")))));
+					createFunctionCall(CoreFunctions.COUNT, JsonUtil.createPath("0")))));
 		final Sink output = new Sink("file://output.json").withInputs(selection);
 		expectedPlan.setSinks(output);
 
@@ -114,7 +114,7 @@ public class GroupingTest extends MeteorParseTest {
 		context.getFunctionRegistry().put(CoreFunctions.class);
 		final Source input = new Source("file://employees.json");
 		final Grouping selection = new Grouping().
-			withResultProjection(new FunctionCall("count", context, new InputSelection(0))).
+			withResultProjection(createFunctionCall(CoreFunctions.COUNT, new InputSelection(0))).
 			withInputs(input);
 		final Sink output = new Sink("file://output.json").withInputs(selection);
 		expectedPlan.setSinks(output);
@@ -136,13 +136,15 @@ public class GroupingTest extends MeteorParseTest {
 		context.getFunctionRegistry().put(CoreFunctions.class);
 
 		final Source input = new Source("file://employees.json");
-		final Grouping selection = new Grouping().
-			withInputs(input).
-			withGroupingKey(JsonUtil.createPath("0", "dept")).
-			withResultProjection(new ObjectCreation(
-				new ObjectCreation.FieldAssignment("dept", JsonUtil.createPath("0", "[0]", "dept")),
-				new ObjectCreation.FieldAssignment("total",
-					new FunctionCall("sum", context, JsonUtil.createPath("0", "[*]", "income")))));
+		final Grouping selection =
+			new Grouping().
+				withInputs(input).
+				withGroupingKey(JsonUtil.createPath("0", "dept")).
+				withResultProjection(
+					new ObjectCreation(
+						new ObjectCreation.FieldAssignment("dept", JsonUtil.createPath("0", "[0]", "dept")),
+						new ObjectCreation.FieldAssignment("total",
+							createFunctionCall(CoreFunctions.SUM, JsonUtil.createPath("0", "[*]", "income")))));
 		final Sink output = new Sink("file://output.json").withInputs(selection);
 		expectedPlan.setSinks(output);
 
@@ -169,7 +171,7 @@ public class GroupingTest extends MeteorParseTest {
 			withResultProjection(new ObjectCreation(
 				new ObjectCreation.FieldAssignment("dept", JsonUtil.createPath("0", "[0]", "dept")),
 				new ObjectCreation.FieldAssignment("total",
-					new FunctionCall("sum", context, JsonUtil.createPath("0", "[*]", "income")))));
+					createFunctionCall(CoreFunctions.SUM, JsonUtil.createPath("0", "[*]", "income")))));
 		final Sink output = new Sink("file://output.json").withInputs(selection);
 		expectedPlan.setSinks(output);
 

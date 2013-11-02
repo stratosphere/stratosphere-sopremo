@@ -147,14 +147,18 @@ public class CoreFunctions implements BuiltinProvider {
 		}
 	};
 
+	// naive: all = fn(array) { array }
+	// combinable: all = fn(array) { array_concat(map(array, fn(x) { [x] })) }
 	@Name(noun = "all")
 	public static final ExpressionFunction ALL = new ExpressionFunction(1,
-		ARRAY_CONCAT.asExpression().withInputExpression(new ArrayProjection(new ArrayCreation(new InputSelection(0))))
+		ARRAY_CONCAT.asExpression().withInputExpression(
+			// optimized version of map(array, fn(x) { [x] })
+			new ArrayProjection(new ArrayCreation(EvaluationExpression.VALUE)).withInputExpression(new InputSelection(0)))
 		);
 
 	@Name(verb = "sort")
 	public static final ExpressionFunction SORT = new ExpressionFunction(1,
-		new ChainedSegmentExpression(ALL.inline(new InputSelection(0)), new EvaluationExpression() {
+		new ChainedSegmentExpression(ALL.getDefinition(), new EvaluationExpression() {
 			@Override
 			public void appendAsString(Appendable appendable) throws IOException {
 				appendable.append("sort");

@@ -49,7 +49,7 @@ public class AssignmentTest extends MeteorParseTest {
 		final Sink sink = new Sink("file://q1.json").withInputs(filter);
 		final SopremoPlan expectedPlan = new SopremoPlan();
 		expectedPlan.setSinks(sink);
-		SopremoTestUtil.assertPlanEquals(expectedPlan, actualPlan);
-
+		
+		assertPlanEquals(expectedPlan, actualPlan);
 	}
 }

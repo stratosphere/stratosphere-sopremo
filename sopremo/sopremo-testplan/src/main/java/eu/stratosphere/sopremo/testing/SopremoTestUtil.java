@@ -14,6 +14,7 @@
  **********************************************************************************************************************/
 package eu.stratosphere.sopremo.testing;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -21,6 +22,11 @@ import java.util.Enumeration;
 import java.util.List;
 
 import org.junit.Assert;
+
+import com.esotericsoftware.kryo.Kryo;
+import com.esotericsoftware.kryo.io.Input;
+import com.esotericsoftware.kryo.io.Output;
+
 import eu.stratosphere.sopremo.operator.Operator;
 import eu.stratosphere.sopremo.operator.SopremoPlan;
 
@@ -37,11 +43,22 @@ public class SopremoTestUtil {
 	}
 
 	public static void assertPlanEquals(SopremoPlan expectedPlan, SopremoPlan actualPlan) {
-		final List<Operator<?>> unmatchingOperators = expectedPlan.getUnmatchingOperators(actualPlan);
-
+		// actualPlan may contain operators from loaded packages with their own classloaders
+		// thus, these operators are not equal to the expected plan as the operators are loaded by the default classloader
+		// one solution is to use the serializer/deserializer trick to transfer the classes to the default classloader
+		Kryo kryo = expectedPlan.getEvaluationContext().getKryo();
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		Output output = new Output(baos);
+		kryo.writeObject(output, actualPlan);
+		output.close();
+		actualPlan = kryo.readObject(new Input(baos.toByteArray()), SopremoPlan.class);
+		
+		final List<Operator<?>> unmatchingOperators = actualPlan.getUnmatchingOperators(expectedPlan);
 		if (!unmatchingOperators.isEmpty())
-			Assert.fail(String.format("At least two operators do not match expected %s, but was %s",
-				unmatchingOperators.get(0), unmatchingOperators.get(1)));
+			if (unmatchingOperators.get(0).getClass() == unmatchingOperators.get(1).getClass())
+				Assert.fail("operators are different\nexpected: " + unmatchingOperators.get(1) + "\nbut was: " + unmatchingOperators.get(0));
+			else
+				Assert.fail("plans are different\nexpected: " + expectedPlan + "\nbut was: " + actualPlan);
 	}
 
 	public static String createTemporaryFile(String prefix) {

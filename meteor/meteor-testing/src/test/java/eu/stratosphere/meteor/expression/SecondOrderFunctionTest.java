@@ -14,7 +14,6 @@
  **********************************************************************************************************************/
 package eu.stratosphere.meteor.expression;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 import eu.stratosphere.meteor.MeteorParseTest;
@@ -63,11 +62,11 @@ public class SecondOrderFunctionTest extends MeteorParseTest {
 			withGroupingKey(0, JsonUtil.createPath("0", "key")).
 			withResultProjection(new ObjectCreation(
 				new ObjectCreation.FieldAssignment("squared",
-					new FunctionCall("map", context, new InputSelection(0), functionNode))));
+					createFunctionCall(SecondOrderFunctions.MAP, new InputSelection(0), functionNode))));
 		final Sink sink = new Sink("file://output.json").withInputs(projection);
 		expectedPlan.setSinks(sink);
 
-		Assert.assertEquals("unexpectedPlan", expectedPlan, actualPlan);
+		assertPlanEquals(expectedPlan, actualPlan);
 	}
 
 	@Test
@@ -89,11 +88,11 @@ public class SecondOrderFunctionTest extends MeteorParseTest {
 		final Grouping projection = new Grouping().
 			withInputs(input).
 			withGroupingKey(0, JsonUtil.createPath("0", "key")).
-			withResultProjection(new FunctionCall("map", context, new InputSelection(0), functionNode));
+			withResultProjection(createFunctionCall(SecondOrderFunctions.MAP, new InputSelection(0), functionNode));
 		final Sink sink = new Sink("file://output.json").withInputs(projection);
 		expectedPlan.setSinks(sink);
 
-		Assert.assertEquals("unexpectedPlan", expectedPlan, actualPlan);
+		assertPlanEquals(expectedPlan, actualPlan);
 	}
 
 	@Test
@@ -116,11 +115,11 @@ public class SecondOrderFunctionTest extends MeteorParseTest {
 			withInputs(input).
 			withGroupingKey(0, JsonUtil.createPath("0", "key")).
 			withResultProjection(new ArrayCreation(
-				new FunctionCall("map", context, new InputSelection(0), functionNode)));
+				createFunctionCall(SecondOrderFunctions.MAP, new InputSelection(0), functionNode)));
 		final Sink sink = new Sink("file://output.json").withInputs(projection);
 		expectedPlan.setSinks(sink);
 
-		Assert.assertEquals("unexpectedPlan", expectedPlan, actualPlan);
+		assertPlanEquals(expectedPlan, actualPlan);
 	}
 
 	public static IJsonNode udfTest(final IJsonNode... nodes) {

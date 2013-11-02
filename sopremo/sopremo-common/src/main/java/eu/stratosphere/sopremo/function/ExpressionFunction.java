@@ -35,7 +35,7 @@ public class ExpressionFunction extends SopremoFunction {
 				public EvaluationExpression apply(EvaluationExpression in) {
 					return paramList[((InputSelection) in).getIndex()].clone();
 				}
-			});
+			}).simplify();
 	}
 
 	/*

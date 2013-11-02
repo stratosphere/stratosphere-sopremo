@@ -52,7 +52,8 @@ public abstract class DynamicInvokable<MemberType extends Member, DeclaringType,
 		this.originalSignatures = new HashMap<Signature, MemberType>();
 		for (int index = 0; index < size; index++)
 			try {
-				Signature signature = kryo.readObject(input, Signature.class);
+				final int signatureType = input.readByte();
+				Signature signature = kryo.readObject(input, SignatureTypes.get(signatureType));
 				String name = kryo.readObject(input, String.class);
 				Class<DeclaringType> clazz = kryo.readObject(input, Class.class);
 				Class<?>[] params = kryo.readObject(input, Class[].class);
@@ -62,6 +63,9 @@ public abstract class DynamicInvokable<MemberType extends Member, DeclaringType,
 			}
 	}
 
+	@SuppressWarnings("unchecked")
+	private final static List<Class<? extends Signature>> SignatureTypes = Arrays.asList(Signature.class, ArraySignature.class, VarArgSignature.class);
+	
 	/*
 	 * (non-Javadoc)
 	 * @see com.esotericsoftware.kryo.KryoSerializable#write(com.esotericsoftware.kryo.Kryo,
@@ -72,6 +76,7 @@ public abstract class DynamicInvokable<MemberType extends Member, DeclaringType,
 		kryo.writeObject(output, this.name);
 		output.writeInt(this.originalSignatures.size());
 		for (final Entry<Signature, MemberType> entry : this.originalSignatures.entrySet()) {
+			output.writeByte(SignatureTypes.indexOf(entry.getKey().getClass()));
 			kryo.writeObject(output, entry.getKey());
 			kryo.writeObject(output, entry.getValue().getName());
 			kryo.writeObject(output, entry.getValue().getDeclaringClass());

@@ -22,6 +22,13 @@ public class ArraySignature extends Signature {
 		if (!arrayType.isArray())
 			throw new IllegalArgumentException();
 	}
+	
+	/**
+	 * Initializes ArraySignature.
+	 *
+	 */
+	ArraySignature() {
+	}
 
 	/**
 	 * Returns the sum of the distance of all types of the actual signature to the array component type of this

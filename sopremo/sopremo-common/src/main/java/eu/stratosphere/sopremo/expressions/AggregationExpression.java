@@ -24,8 +24,16 @@ import eu.stratosphere.sopremo.type.IJsonNode;
 import eu.stratosphere.sopremo.type.IStreamNode;
 
 /**
- * Returns an aggregate of the elements of a {@link IArrayNode}.
- * The result is calculated with help of the specified {@link AggregationExpression}.
+ * Aggregates a {@link eu.stratosphere.sopremo.type.IStreamNode} with a given {@link Aggregation}.<br/>
+ * <br/>
+ * Given a (stream) array node [x<sub>1</sub>, x<sub>2</sub>, ..., x<sub>n</sub>], the following three steps are
+ * performed.
+ * <ol>
+ * <li>The aggregator is intialized once by invoking {@link Aggregation#initialize()}.
+ * <li>For each element {@link Aggregation#aggregate(IJsonNode)} is invoked, which combines the aggregator with the new
+ * element.
+ * <li>Finally, the aggregator is retrieved with {@link Aggregation#getFinalAggregate()}.
+ * </ol>
  */
 public class AggregationExpression extends PathSegmentExpression {
 	private final Aggregation aggregation;
@@ -100,28 +108,28 @@ public class AggregationExpression extends PathSegmentExpression {
 	// }
 	// });
 	// }
-//
-//	/**
-//	 * Returns the preprocessing.
-//	 * 
-//	 * @return the preprocessing
-//	 */
-//	public EvaluationExpression getPreprocessing() {
-//		return this.preprocessing;
-//	}
-//
-//	/**
-//	 * Sets the preprocessing to the specified value.
-//	 * 
-//	 * @param preprocessing
-//	 *        the preprocessing to set
-//	 */
-//	public void setPreprocessing(EvaluationExpression elementInputSelection) {
-//		if (elementInputSelection == null)
-//			throw new NullPointerException("preprocessing must not be null");
-//
-//		this.preprocessing = elementInputSelection;
-//	}
+	//
+	// /**
+	// * Returns the preprocessing.
+	// *
+	// * @return the preprocessing
+	// */
+	// public EvaluationExpression getPreprocessing() {
+	// return this.preprocessing;
+	// }
+	//
+	// /**
+	// * Sets the preprocessing to the specified value.
+	// *
+	// * @param preprocessing
+	// * the preprocessing to set
+	// */
+	// public void setPreprocessing(EvaluationExpression elementInputSelection) {
+	// if (elementInputSelection == null)
+	// throw new NullPointerException("preprocessing must not be null");
+	//
+	// this.preprocessing = elementInputSelection;
+	// }
 
 	/**
 	 * Returns the aggregation.
@@ -169,8 +177,8 @@ public class AggregationExpression extends PathSegmentExpression {
 		appendable.append('(');
 		if (this.getInputExpression() != EvaluationExpression.VALUE)
 			this.getInputExpression().appendAsString(appendable);
-//		if (this.getPreprocessing() != EvaluationExpression.VALUE)
-//			this.getPreprocessing().appendAsString(appendable);
+		// if (this.getPreprocessing() != EvaluationExpression.VALUE)
+		// this.getPreprocessing().appendAsString(appendable);
 		appendable.append(')');
 	}
 }

@@ -59,7 +59,7 @@ public class ChainedSegmentExpression extends PathSegmentExpression {
 	public void addExpression(EvaluationExpression expression) {
 		this.expressions.add(expression);
 	}
-	
+
 	/*
 	 * (non-Javadoc)
 	 * @see eu.stratosphere.sopremo.expressions.PathSegmentExpression#segmentHashCode()
@@ -88,14 +88,32 @@ public class ChainedSegmentExpression extends PathSegmentExpression {
 		return result;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.expressions.EvaluationExpression#simplify()
+	 */
+	@Override
+	public EvaluationExpression simplify() {
+		this.expressions.removeAll(Arrays.asList(EvaluationExpression.VALUE));
+		switch (this.expressions.size()) {
+		case 0:
+			return EvaluationExpression.VALUE;
+		case 1:
+			return this.expressions.get(0).simplify();
+		default:
+			return super.simplify();
+		}
+	}
+
+	/*
+	 * (non-Javadoc)
 	 * @see eu.stratosphere.sopremo.expressions.PathSegmentExpression#iterator()
 	 */
 	@Override
 	public ChildIterator iterator() {
 		return new ListChildIterator(this.expressions.listIterator());
 	}
-	
+
 	/**
 	 * Returns the expressions.
 	 * 

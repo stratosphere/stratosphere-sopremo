@@ -99,8 +99,7 @@ public class Grouping extends CompositeOperator<Grouping> {
 		final ArrayCreation aggregatedValues = new ArrayCreation();
 		aggregatedValues.add(this.getGroupingKey(0).clone().remove(new InputSelection(0)));
 		for (AggregationExpression aggregationExpression : aggregations)
-			aggregatedValues.add(new ChainedSegmentExpression(new ArrayCreation(EvaluationExpression.VALUE),
-				aggregationExpression));
+			aggregatedValues.add(aggregationExpression.getInputExpression());
 		final Projection initialValues = new Projection().withResultProjection(aggregatedValues).
 			withInputs(module.getInputs());
 

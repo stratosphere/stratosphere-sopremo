@@ -127,28 +127,4 @@ public class FunctionNode extends AbstractJsonNode {
 
 		this.function = function;
 	}
-
-	public static class FunctionNodeSerializer extends Serializer<FunctionNode>{
-		FieldSerializer<FunctionNode> fieldSerializer;
-		
-		public FunctionNodeSerializer(Kryo kryo, Class<FunctionNode> type) {
-			fieldSerializer = new FieldSerializer<FunctionNode>(kryo, type);
-		}
-		
-		@Override
-		public void write(Kryo kryo, com.esotericsoftware.kryo.io.Output output, FunctionNode object) {
-			fieldSerializer.write(kryo, output, object);
-		}
-
-		@Override
-		public FunctionNode read(Kryo kryo, Input input, Class<FunctionNode> type) {
-			FunctionNode object =  fieldSerializer.read(kryo, input, type);
-			return object;
-		}
-		@Override
-		public FunctionNode copy (Kryo kryo, FunctionNode original) {
-			FunctionNode copy = this.fieldSerializer.copy(kryo, original);
-			return copy;
-		}
-	}
 }
