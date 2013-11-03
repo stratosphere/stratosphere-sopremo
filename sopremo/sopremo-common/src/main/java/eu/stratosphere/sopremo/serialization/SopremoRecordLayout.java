@@ -287,13 +287,14 @@ public class SopremoRecordLayout extends AbstractSopremoType {
 
 		ExpressionIndex expressionIndex = new ExpressionIndex();
 		for (EvaluationExpression keyExpression : keyExpressions) {
+			if (keyExpression == EvaluationExpression.VALUE)
+				continue;
 			if (expressionIndex.add(keyExpression, directDataExpression.size()))
 				directDataExpression.add(keyExpression);
 			else
 				calculatedKeyExpressions.add(keyExpression);
 		}
 
-		directDataExpression.remove(EvaluationExpression.VALUE);
 		return new SopremoRecordLayout(expressionIndex,
 			directDataExpression.toArray(new EvaluationExpression[directDataExpression.size()]),
 			calculatedKeyExpressions.toArray(new EvaluationExpression[calculatedKeyExpressions.size()]));

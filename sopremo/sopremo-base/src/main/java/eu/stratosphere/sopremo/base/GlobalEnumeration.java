@@ -253,7 +253,7 @@ public class GlobalEnumeration extends ElementaryOperator<GlobalEnumeration> {
 		@Override
 		public void open(Configuration parameters) {
 			super.open(parameters);
-			final IntNode taskId = new IntNode(parameters.getInteger("pact.parallel.task.id", 0));
+			final IntNode taskId = new IntNode(parameters.getInteger("pact.parallel.task.id", -1));
 			this.counter = LongNode.valueOf(0);
 			this.params = new ArrayNode<INumericNode>(taskId, this.counter);
 		}

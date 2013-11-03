@@ -27,11 +27,14 @@ import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import com.esotericsoftware.kryo.serializers.FieldSerializer;
+import com.google.common.base.Function;
+import com.google.common.base.Predicates;
 
 import eu.stratosphere.sopremo.EvaluationException;
 import eu.stratosphere.sopremo.aggregation.Aggregation;
 import eu.stratosphere.sopremo.expressions.tree.ChildIterator;
 import eu.stratosphere.sopremo.expressions.tree.ConcatenatingChildIterator;
+import eu.stratosphere.sopremo.function.ExpressionFunction;
 import eu.stratosphere.sopremo.type.ArrayNode;
 import eu.stratosphere.sopremo.type.IArrayNode;
 import eu.stratosphere.sopremo.type.IJsonNode;
@@ -215,6 +218,22 @@ public class BatchAggregationExpression extends PathSegmentExpression {
 			.withInputExpression(preprocessing);
 		this.partials.add(partial);
 		return partial;
+	}
+	
+	public EvaluationExpression add(ExpressionFunction aggregation) {
+		return add(aggregation, EvaluationExpression.VALUE);
+	}
+
+	public EvaluationExpression add(ExpressionFunction aggregation, final EvaluationExpression preprocessing) {
+		return aggregation.inline(preprocessing).replace(Predicates.instanceOf(AggregationExpression.class),
+			new Function<EvaluationExpression, EvaluationExpression>() {
+				@Override
+				public EvaluationExpression apply(EvaluationExpression expression) {
+					AggregationExpression ae = (AggregationExpression) expression;
+					return BatchAggregationExpression.this.add(ae.getAggregation(),
+						ExpressionUtil.replaceArrayProjections(ae.getInputExpression()));
+				}
+			});
 	}
 
 	/**

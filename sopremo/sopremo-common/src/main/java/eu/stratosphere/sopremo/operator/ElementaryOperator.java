@@ -231,7 +231,7 @@ public abstract class ElementaryOperator<Self extends ElementaryOperator<Self>>
 	public void setInnerGroupOrder(final int inputIndex, final OrderingExpression... innerGroupOrder) {
 		if (innerGroupOrder == null)
 			throw new NullPointerException("innerGroupOrders must not be null");
-		setInnerGroupOrder(inputIndex, innerGroupOrder);
+		setInnerGroupOrder(inputIndex, Arrays.asList(innerGroupOrder));
 	}
 
 	/**

@@ -65,7 +65,7 @@ public abstract class GenericSopremoReduce<Elem extends IJsonNode, Out extends I
 	 * @param out
 	 *        a collector that collects all output nodes
 	 */
-	protected abstract void reduce(IStreamNode<Elem> values, JsonCollector<Out> out);
+	protected abstract void reduce(IStreamNode<Elem> values, JsonCollector<Out> collector);
 
 	/*
 	 * (non-Javadoc)
@@ -73,8 +73,8 @@ public abstract class GenericSopremoReduce<Elem extends IJsonNode, Out extends I
 	 * eu.stratosphere.pact.common.stubs.Collector)
 	 */
 	@Override
-	public void combine(Iterator<SopremoRecord> records, Collector<SopremoRecord> out) throws Exception {
-		this.collector.configure(out, this.context);
+	public void combine(Iterator<SopremoRecord> records, Collector<SopremoRecord> collector) throws Exception {
+		this.collector.configure(collector, this.context);
 		this.iterator.setIterator(records);
 
 		try {

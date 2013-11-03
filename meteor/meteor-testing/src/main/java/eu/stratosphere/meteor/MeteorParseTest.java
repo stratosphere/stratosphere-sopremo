@@ -112,7 +112,7 @@ public class MeteorParseTest {
 				public EvaluationExpression apply(EvaluationExpression expression) {
 					AggregationExpression ae = (AggregationExpression) expression;
 					return bae.add(ae.getAggregation(),
-						ExpressionUtil.replaceArrayProjections(new ChainedSegmentExpression(ae.getInputExpression(), preprocessing).simplify()));
+						ExpressionUtil.replaceArrayProjections(ae.getInputExpression()));
 				}
 			});
 	}
