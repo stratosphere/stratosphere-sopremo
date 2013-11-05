@@ -242,6 +242,11 @@ public abstract class SopremoFormat extends ConfigurableSopremoType {
 	public static abstract class SopremoFileOutputFormat extends FileOutputFormat<SopremoRecord> implements
 			SopremoOutputFormat {
 
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 4820322749775824947L;
+
 		private SopremoRecordLayout layout;
 
 		private EvaluationContext context;
@@ -326,24 +331,16 @@ public abstract class SopremoFormat extends ConfigurableSopremoType {
 	public static abstract class AbstractSopremoInputFormat<T extends InputSplit> implements
 			SopremoInputFormat<T> {
 
-		private boolean end;
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = -7383077858448406898L;
 
-		private EvaluationContext context;
+		private boolean end;
 
 		private String encoding;
 
 		private EvaluationExpression projection;
-
-		private SopremoRecordLayout layout;
-
-		/**
-		 * Returns the context.
-		 * 
-		 * @return the context
-		 */
-		protected EvaluationContext getContext() {
-			return this.context;
-		}
 
 		/**
 		 * Returns the encoding.
@@ -366,11 +363,7 @@ public abstract class SopremoFormat extends ConfigurableSopremoType {
 		@Override
 		public void configure(final Configuration parameters) {
 			SopremoEnvironment.getInstance().setConfiguration(parameters);
-			this.context = SopremoEnvironment.getInstance().getEvaluationContext();
-			this.layout = SopremoEnvironment.getInstance().getLayout();
 			SopremoUtil.configureWithTransferredState(this, SopremoFileInputFormat.class, parameters);
-			if (this.layout == null)
-				throw new IllegalStateException("Could not deserialize layout");
 		}
 
 		protected String getDefaultEncoding() {
@@ -382,7 +375,8 @@ public abstract class SopremoFormat extends ConfigurableSopremoType {
 			if (!this.end) {
 				final IJsonNode value = this.nextValue();
 				if (SopremoUtil.DEBUG && SopremoUtil.LOG.isTraceEnabled())
-					SopremoUtil.LOG.trace(String.format("%s input %s", this.context.getOperatorDescription(), value));
+					SopremoUtil.LOG.trace(String.format("%s input %s",
+						SopremoEnvironment.getInstance().getEvaluationContext().getOperatorDescription(), value));
 				record.setNode(this.projection.evaluate(value));
 				return true;
 			}
@@ -406,24 +400,16 @@ public abstract class SopremoFormat extends ConfigurableSopremoType {
 	public static abstract class SopremoFileInputFormat extends FileInputFormat<SopremoRecord> implements
 			SopremoInputFormat<FileInputSplit> {
 
-		private boolean end;
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = -4311506385230408263L;
 
-		private EvaluationContext context;
+		private boolean end;
 
 		private String encoding;
 
 		private EvaluationExpression projection;
-
-		private SopremoRecordLayout layout;
-
-		/**
-		 * Returns the context.
-		 * 
-		 * @return the context
-		 */
-		protected EvaluationContext getContext() {
-			return this.context;
-		}
 
 		/**
 		 * Returns the encoding.
@@ -512,11 +498,7 @@ public abstract class SopremoFormat extends ConfigurableSopremoType {
 			super.configure(parameters);
 
 			SopremoEnvironment.getInstance().setConfiguration(parameters);
-			this.context = SopremoEnvironment.getInstance().getEvaluationContext();
-			this.layout = SopremoEnvironment.getInstance().getLayout();
 			SopremoUtil.configureWithTransferredState(this, SopremoFileInputFormat.class, parameters);
-			if (this.layout == null)
-				throw new IllegalStateException("Could not deserialize layout");
 		}
 
 		protected String getDefaultEncoding() {
@@ -529,7 +511,8 @@ public abstract class SopremoFormat extends ConfigurableSopremoType {
 				final IJsonNode value = this.nextValue();
 				if (value != null) {
 					if (SopremoUtil.DEBUG && SopremoUtil.LOG.isTraceEnabled())
-						SopremoUtil.LOG.trace(String.format("%s input %s", this.context.getOperatorDescription(), value));
+						SopremoUtil.LOG.trace(String.format("%s input %s",
+							SopremoEnvironment.getInstance().getEvaluationContext().getOperatorDescription(), value));
 					record.setNode(this.projection.evaluate(value));
 					return true;
 				}

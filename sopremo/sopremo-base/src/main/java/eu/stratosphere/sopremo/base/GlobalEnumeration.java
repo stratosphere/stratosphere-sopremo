@@ -18,6 +18,7 @@ import eu.stratosphere.sopremo.pact.SopremoMap;
 import eu.stratosphere.sopremo.serialization.SopremoRecordLayout;
 import eu.stratosphere.sopremo.type.IJsonNode;
 import eu.stratosphere.sopremo.type.IObjectNode;
+import eu.stratosphere.sopremo.type.IntNode;
 import eu.stratosphere.sopremo.type.LongNode;
 import eu.stratosphere.sopremo.type.ObjectNode;
 import eu.stratosphere.sopremo.type.TextNode;
@@ -118,7 +119,7 @@ public class GlobalEnumeration extends ElementaryOperator<GlobalEnumeration> {
 	}
 
 	public enum IdGeneration {
-		LONG(new LongGenerator()), STRING(new StringGenerator());
+		LONG(new LongGenerator()), STRING(new StringGenerator()), MAPPER(new MapperNumberGenerator());
 
 		private final IdGenerator generator;
 
@@ -194,6 +195,28 @@ public class GlobalEnumeration extends ElementaryOperator<GlobalEnumeration> {
 		public void setup(int taskId, int numTasks) {
 			int freeBits = Long.numberOfLeadingZeros(numTasks);
 			this.prefix = taskId << (64 - freeBits);
+		}
+	}
+
+	public static class MapperNumberGenerator extends AbstractIdGenerator {
+		private final IntNode result = new IntNode();
+
+		/*
+		 * (non-Javadoc)
+		 * @see eu.stratosphere.sopremo.base.GlobalEnumeration.IdGenerator#generate(long)
+		 */
+		@Override
+		public IJsonNode generate(long localId) {
+			return this.result;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see eu.stratosphere.sopremo.base.GlobalEnumeration.IdGenerator#setup(int, int)
+		 */
+		@Override
+		public void setup(int taskId, int numTasks) {
+			this.result.setValue(taskId);
 		}
 	}
 
@@ -339,11 +362,13 @@ public class GlobalEnumeration extends ElementaryOperator<GlobalEnumeration> {
 		private IdGenerator idGenerator;
 
 		private long counter;
+
 		@Override
 		public void open(Configuration parameters) {
 			super.open(parameters);
 			this.counter = 0;
-			this.idGenerator.setup(getRuntimeContext().getIndexOfThisSubtask(), getRuntimeContext().getNumberOfParallelSubtasks());
+			this.idGenerator.setup(getRuntimeContext().getIndexOfThisSubtask(),
+				getRuntimeContext().getNumberOfParallelSubtasks());
 		}
 
 		@Override

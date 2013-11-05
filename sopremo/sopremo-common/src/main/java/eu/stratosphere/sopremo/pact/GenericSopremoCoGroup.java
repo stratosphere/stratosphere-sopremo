@@ -111,7 +111,7 @@ public abstract class GenericSopremoCoGroup<LeftElem extends IJsonNode, RightEle
 	 */
 	@Override
 	public void open(final Configuration parameters) throws Exception {
-		SopremoEnvironment.getInstance().setConfiguration(parameters);
+		SopremoEnvironment.getInstance().setConfigurationAndContext(parameters, getRuntimeContext());
 		this.context = SopremoEnvironment.getInstance().getEvaluationContext();
 		this.collector = createCollector(SopremoEnvironment.getInstance().getLayout());
 		this.cachedIterator1 = new RecordToJsonIterator<LeftElem>();

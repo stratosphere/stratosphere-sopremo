@@ -23,7 +23,7 @@ public abstract class GenericSopremoMap<In extends IJsonNode, Out extends IJsonN
 
 	@Override
 	public void open(final Configuration parameters) {
-		SopremoEnvironment.getInstance().setConfiguration(parameters);
+		SopremoEnvironment.getInstance().setConfigurationAndContext(parameters, getRuntimeContext());
 		this.context = SopremoEnvironment.getInstance().getEvaluationContext();
 		this.collector = createCollector(SopremoEnvironment.getInstance().getLayout());
 		SopremoUtil.configureWithTransferredState(this, GenericSopremoMap.class, parameters);

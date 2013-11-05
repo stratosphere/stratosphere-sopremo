@@ -15,6 +15,7 @@
 package eu.stratosphere.sopremo;
 
 import eu.stratosphere.nephele.configuration.Configuration;
+import eu.stratosphere.pact.common.stubs.RuntimeContext;
 import eu.stratosphere.sopremo.pact.SopremoUtil;
 import eu.stratosphere.sopremo.serialization.SopremoRecordLayout;
 
@@ -37,6 +38,8 @@ public class SopremoEnvironment {
 	private ClassLoader classLoader = getClass().getClassLoader();
 
 	private Configuration configuration;
+
+	private RuntimeContext runtimeContext;
 
 	private SopremoRecordLayout layout;
 
@@ -94,6 +97,28 @@ public class SopremoEnvironment {
 	}
 
 	/**
+	 * Sets the runtimeContext to the specified value.
+	 * 
+	 * @param runtimeContext
+	 *        the runtimeContext to set
+	 */
+	public void setRuntimeContext(RuntimeContext context) {
+		if (context == null)
+			throw new NullPointerException("runtimeContext must not be null");
+
+		this.runtimeContext = context;
+	}
+
+	/**
+	 * Returns the runtimeContext.
+	 * 
+	 * @return the runtimeContext
+	 */
+	public RuntimeContext getRuntimeContext() {
+		return this.runtimeContext;
+	}
+
+	/**
 	 * Sets the classLoader to the specified value.
 	 * 
 	 * @param classLoader
@@ -107,5 +132,10 @@ public class SopremoEnvironment {
 		this.classLoader = configuration.getClassLoader();
 		this.evaluationContext = SopremoUtil.getEvaluationContext(configuration);
 		this.layout = SopremoUtil.getLayout(configuration);
+	}
+
+	public void setConfigurationAndContext(Configuration parameters, RuntimeContext runtimeContext) {
+		setConfiguration(parameters);
+		setRuntimeContext(runtimeContext);
 	}
 }
