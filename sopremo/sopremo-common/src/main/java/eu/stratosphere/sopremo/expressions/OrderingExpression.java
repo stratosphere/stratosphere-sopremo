@@ -14,6 +14,7 @@
  **********************************************************************************************************************/
 package eu.stratosphere.sopremo.expressions;
 
+import java.io.IOException;
 import java.util.Comparator;
 
 import eu.stratosphere.pact.common.contract.Order;
@@ -26,7 +27,7 @@ public class OrderingExpression extends EvaluationExpression {
 
 	private final PathSegmentExpression path;
 
-	private final IntNode result = new IntNode();
+	private final transient IntNode result = new IntNode();
 
 	public OrderingExpression(Order order, PathSegmentExpression path) {
 		this.order = order;
@@ -38,6 +39,15 @@ public class OrderingExpression extends EvaluationExpression {
 	 */
 	public OrderingExpression() {
 		this(Order.ASCENDING, EvaluationExpression.VALUE);
+	}
+	
+	/* (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.expressions.EvaluationExpression#appendAsString(java.lang.Appendable)
+	 */
+	@Override
+	public void appendAsString(Appendable appendable) throws IOException {
+		appendable.append(this.order.toString()).append(' ');
+		this.path.appendAsString(appendable);
 	}
 
 	/**

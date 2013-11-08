@@ -4,7 +4,6 @@ import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -28,11 +27,11 @@ import eu.stratosphere.pact.generic.contract.GenericCrossContract;
 import eu.stratosphere.pact.generic.contract.GenericMapContract;
 import eu.stratosphere.pact.generic.contract.GenericMatchContract;
 import eu.stratosphere.pact.generic.contract.GenericReduceContract;
+import eu.stratosphere.pact.generic.stub.AbstractStub;
 import eu.stratosphere.sopremo.EvaluationContext;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
 import eu.stratosphere.sopremo.expressions.InputSelection;
 import eu.stratosphere.sopremo.expressions.OrderingExpression;
-import eu.stratosphere.sopremo.expressions.UnevaluableExpression;
 import eu.stratosphere.sopremo.pact.SopremoCoGroupContract;
 import eu.stratosphere.sopremo.pact.SopremoReduceContract;
 import eu.stratosphere.sopremo.pact.SopremoUtil;
@@ -354,37 +353,12 @@ public abstract class ElementaryOperator<Self extends ElementaryOperator<Self>>
 	 *        the context in which the {@link PactModule} is created and
 	 *        evaluated
 	 */
+	@SuppressWarnings("unchecked")
 	protected void configureContract(final Contract contract, final Configuration stubConfiguration,
 			final EvaluationContext context, SopremoRecordLayout layout) {
-		for (final Field stubField : contract.getUserCodeWrapper().getUserCodeClass()
-			.getDeclaredFields())
-			if ((stubField.getModifiers() & (Modifier.TRANSIENT | Modifier.FINAL | Modifier.STATIC)) == 0) {
-				Class<?> clazz = this.getClass();
-				do {
-					Field thisField;
-					try {
-						thisField = clazz.getDeclaredField(stubField.getName());
-						thisField.setAccessible(true);
-						final Object value = thisField.get(this);
-						if (SopremoUtil.DEBUG && value instanceof EvaluationExpression &&
-							((EvaluationExpression) value).findFirst(UnevaluableExpression.class) != null)
-							throw new IllegalStateException(String.format(
-								"Cannot serialize field %s with unevaluable expressions %s",
-								thisField.getName(), value));
-						SopremoUtil.setObject(stubConfiguration, stubField.getName(), value);
-					} catch (final NoSuchFieldException e) {
-						// ignore field of stub if the field does not exist in
-						// this operator
-					} catch (final Exception e) {
-						LOG.error(String.format(
-							"Could not serialize field %s of class %s: %s",
-							stubField.getName(), this.getClass().getSimpleName(), e));
-						throw new RuntimeException(String.format(
-							"Could not serialize field %s of class %s: %s",
-							stubField.getName(), this.getClass().getSimpleName(), e));
-					}
-				} while ((clazz = clazz.getSuperclass()) != ElementaryOperator.class);
-			}
+
+		SopremoUtil.transferFieldsToConfiguration(this, ElementaryOperator.class, stubConfiguration,
+			(Class<? extends AbstractStub>) contract.getUserCodeWrapper().getUserCodeClass(), AbstractStub.class);
 
 		contract.setDegreeOfParallelism(this.getDegreeOfParallelism());
 		SopremoUtil.setEvaluationContext(stubConfiguration, context);

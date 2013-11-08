@@ -24,6 +24,9 @@ import org.junit.Assert;
 import org.junit.Before;
 
 import eu.stratosphere.sopremo.client.DefaultClient;
+import eu.stratosphere.sopremo.client.ProgressListener;
+import eu.stratosphere.sopremo.execution.ExecutionResponse.ExecutionState;
+import eu.stratosphere.sopremo.operator.SopremoPlan;
 import eu.stratosphere.sopremo.server.SopremoTestServer;
 
 /**
@@ -51,6 +54,20 @@ public abstract class MeteorIT extends MeteorParseTest {
 		this.projectJar = ProjectJars.get(this.projectName);
 		if (this.projectJar == null)
 			ProjectJars.put(this.projectName, this.projectJar = build(this.projectName));
+	}
+
+	protected void execute(SopremoPlan plan) {
+		final String[] messageHolder = new String[1];
+
+		this.client.submit(plan, new ProgressListener() {
+			@Override
+			public void progressUpdate(ExecutionState state, String detail) {
+				if (state == ExecutionState.ERROR)
+					messageHolder[0] = detail;
+			}
+		}, true);
+		if (messageHolder[0] != null)
+			Assert.fail(messageHolder[0]);
 	}
 
 	@Before

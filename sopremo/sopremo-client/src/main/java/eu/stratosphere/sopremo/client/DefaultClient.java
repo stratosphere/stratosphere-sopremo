@@ -51,7 +51,7 @@ public class DefaultClient implements Closeable {
 	 * 
 	 * @author Arvid Heise
 	 */
-	private static class DummyListener implements ProgressListener {
+	private static class ThrowingListener implements ProgressListener {
 		/*
 		 * (non-Javadoc)
 		 * @see eu.stratosphere.sopremo.client.ProgressListener#progressUpdate(eu.stratosphere.sopremo.execution.
@@ -59,6 +59,8 @@ public class DefaultClient implements Closeable {
 		 */
 		@Override
 		public void progressUpdate(ExecutionState state, String detail) {
+			if (state == ExecutionState.ERROR)
+				throw new RuntimeException(detail);
 		}
 	}
 
@@ -182,7 +184,7 @@ public class DefaultClient implements Closeable {
 			throw new NullPointerException();
 
 		if (progressListener == null)
-			progressListener = new DummyListener();
+			progressListener = new ThrowingListener();
 		this.initConnection(progressListener);
 		if (!this.transferLibraries(plan, progressListener)) {
 			dealWithError(progressListener, null, "Could not transfer libraries - aborting");

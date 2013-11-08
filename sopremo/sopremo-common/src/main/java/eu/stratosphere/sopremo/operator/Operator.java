@@ -563,6 +563,7 @@ public abstract class Operator<Self extends Operator<Self>> extends Configurable
 	 * 
 	 * @author Arvid Heise
 	 */
+	@DefaultSerializer(OperatorOutputSerializer.class)
 	public static class Output extends AbstractSopremoType implements JsonStream {
 		private final int index;
 
@@ -700,5 +701,44 @@ public abstract class Operator<Self extends Operator<Self>> extends Configurable
 				operatorSerializedAt.remove(object);
 			}
 		}
+	}
+
+	public static class OperatorOutputSerializer extends com.esotericsoftware.kryo.Serializer<Output> {
+		/**
+		 * Initializes Operator.OperatorOutputSerializer.
+		 */
+		public OperatorOutputSerializer() {
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see com.esotericsoftware.kryo.Serializer#write(com.esotericsoftware.kryo.Kryo,
+		 * com.esotericsoftware.kryo.io.Output, java.lang.Object)
+		 */
+		@Override
+		public void write(Kryo kryo, com.esotericsoftware.kryo.io.Output output, Output object) {
+			kryo.writeClassAndObject(output, object.getOperator());
+			output.writeInt(object.getIndex(), true);
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see com.esotericsoftware.kryo.Serializer#copy(com.esotericsoftware.kryo.Kryo, java.lang.Object)
+		 */
+		@Override
+		public Output copy(Kryo kryo, Output original) {
+			return new Output(kryo.copy(original.getOperator()), original.getIndex());
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see com.esotericsoftware.kryo.Serializer#read(com.esotericsoftware.kryo.Kryo,
+		 * com.esotericsoftware.kryo.io.Input, java.lang.Class)
+		 */
+		@Override
+		public Output read(Kryo kryo, Input input, Class<Output> type) {
+			return (Output) ((Operator<?>) kryo.readClassAndObject(input)).getOutput(input.readInt(true));
+		}
+
 	}
 }

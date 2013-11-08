@@ -36,7 +36,7 @@ import eu.stratosphere.sopremo.operator.SopremoPlan;
  * 
  */
 @Ignore
-public abstract class SopremoOperatorTestBase<T extends Operator<T>> extends EqualCloneTest<T>{
+public abstract class SopremoOperatorTestBase<T extends Operator<T>> extends EqualCloneTest<T> {
 
 	@Test
 	public void testPlanSerialization() {
@@ -45,7 +45,7 @@ public abstract class SopremoOperatorTestBase<T extends Operator<T>> extends Equ
 		for (T original : getInstances()) {
 			final SopremoPlan plan = new SopremoPlan();
 			plan.setSinks(new Sink("file:///dummy").withInputs(original));
-			
+
 			final ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			final Output output = new Output(baos);
 			k.writeClassAndObject(output, plan);
@@ -64,12 +64,19 @@ public abstract class SopremoOperatorTestBase<T extends Operator<T>> extends Equ
 		instances.addAll(this.more);
 		return instances;
 	}
-	
+
 	@Test
 	public void testPlanClone() throws IllegalAccessException {
 		for (T original : getInstances()) {
 			final SopremoPlan plan = new SopremoPlan();
-			plan.setSinks(new Sink("file:///dummy").withInputs(original));
+			final int numOutputs = original.getNumOutputs();
+			if (numOutputs == 0)
+				continue;
+			List<Sink> sinks = new ArrayList<Sink>();
+			for (int index = 0; index < numOutputs; index++) {
+				sinks.add(new Sink("file:///out" + index).withInputs(original.getOutput(index)));
+			}
+			plan.setSinks(sinks);
 			final Object clone = plan.clone();
 			this.testPropertyClone(SopremoPlan.class, plan, clone);
 		}
