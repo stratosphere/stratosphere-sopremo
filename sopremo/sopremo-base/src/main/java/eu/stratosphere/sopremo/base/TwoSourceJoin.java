@@ -60,9 +60,11 @@ public class TwoSourceJoin extends TwoSourceJoinBase<TwoSourceJoin> {
 			this.getResultProjection().appendAsString(appendable);
 		}
 	}
-	
-	/* (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.operator.ElementaryOperator#asPactModule(eu.stratosphere.sopremo.EvaluationContext, eu.stratosphere.sopremo.serialization.SopremoRecordLayout)
+
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.operator.ElementaryOperator#asPactModule(eu.stratosphere.sopremo.EvaluationContext,
+	 * eu.stratosphere.sopremo.serialization.SopremoRecordLayout)
 	 */
 	@Override
 	public PactModule asPactModule(EvaluationContext context, SopremoRecordLayout layout) {
@@ -80,9 +82,10 @@ public class TwoSourceJoin extends TwoSourceJoinBase<TwoSourceJoin> {
 			((EquiJoin) this.strategy).withMode(
 				this.outerJoinSources.contains(this.inverseInputs ? 1 : 0),
 				this.outerJoinSources.contains(this.inverseInputs ? 0 : 1));
-		
-		this.strategy.setDegreeOfParallelism(this.getDegreeOfParallelism());
-		
+
+		if (this.getDegreeOfParallelism() != STANDARD_DEGREE_OF_PARALLELISM)
+			this.strategy.setDegreeOfParallelism(this.getDegreeOfParallelism());
+
 		final PactModule pactModule = this.strategy.asPactModule(context, layout);
 		if (this.inverseInputs)
 			ContractUtil.swapInputs(pactModule.getOutput(0).getInputs().get(0), 0, 1);
@@ -135,8 +138,8 @@ public class TwoSourceJoin extends TwoSourceJoinBase<TwoSourceJoin> {
 		}
 		return new ArrayCreation(expressions);
 	}
-	
-	//TODO name inconsistency with Join.setJoinCondition()
+
+	// TODO name inconsistency with Join.setJoinCondition()
 	@Property
 	public void setCondition(BinaryBooleanExpression condition) {
 		if (condition == null)

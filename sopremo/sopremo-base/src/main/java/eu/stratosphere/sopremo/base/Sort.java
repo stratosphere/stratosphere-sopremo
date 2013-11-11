@@ -43,6 +43,7 @@ public class Sort extends ElementaryOperator<Sort> {
 	 */
 	public Sort() {
 		this.setKeyExpressions(0, ConstantExpression.NULL);
+		setInnerGroupOrder(0, this.sortingExpression);
 	}
 
 	/**
@@ -55,7 +56,7 @@ public class Sort extends ElementaryOperator<Sort> {
 		if (sortingExpression == null)
 			throw new NullPointerException("sortingExpression must not be null");
 
-		this.sortingExpression = sortingExpression;
+		setInnerGroupOrder(0, sortingExpression);
 	}
 
 	/**
@@ -64,7 +65,7 @@ public class Sort extends ElementaryOperator<Sort> {
 	 * @return the sortingExpression
 	 */
 	public EvaluationExpression getSortingExpression() {
-		return this.sortingExpression;
+		return this.getInnerGroupOrder(0).get(0);
 	}
 
 	public Sort withSortingExpression(OrderingExpression sortingExpression) {
@@ -73,23 +74,6 @@ public class Sort extends ElementaryOperator<Sort> {
 	}
 
 	public static class Implementation extends SopremoReduce {
-		private OrderingExpression sortingExpression;
-
-		private final ArrayNode<IJsonNode> cached = new ArrayNode<IJsonNode>();
-
-		private Comparator<IJsonNode> comparator;
-
-		/*
-		 * (non-Javadoc)
-		 * @see
-		 * eu.stratosphere.sopremo.pact.GenericSopremoReduce#open(eu.stratosphere.nephele.configuration.Configuration)
-		 */
-		@Override
-		public void open(Configuration parameters) {
-			super.open(parameters);
-			this.comparator = this.sortingExpression.asComparator();
-		}
-
 		/*
 		 * (non-Javadoc)
 		 * @see eu.stratosphere.sopremo.pact.GenericSopremoReduce#reduce(eu.stratosphere.sopremo.type.IStreamNode,
@@ -97,13 +81,8 @@ public class Sort extends ElementaryOperator<Sort> {
 		 */
 		@Override
 		protected void reduce(IStreamNode<IJsonNode> values, JsonCollector<IJsonNode> out) {
-			this.cached.addAll(values);
-			final int size = this.cached.size();
-			final IJsonNode[] array = this.cached.getBackingArray();
-			Arrays.sort(array, 0, size, this.comparator);
-			for (int index = 0; index < size; index++)
-				out.collect(array[index]);
-			this.cached.clear();
+			for (IJsonNode value : values)
+				out.collect(value);
 		}
 	}
 }

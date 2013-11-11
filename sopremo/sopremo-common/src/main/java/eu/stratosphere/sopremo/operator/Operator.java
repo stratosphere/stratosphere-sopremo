@@ -44,7 +44,7 @@ public abstract class Operator<Self extends Operator<Self>> extends Configurable
 	public final static List<? extends EvaluationExpression> ALL_KEYS =
 		Collections.singletonList(EvaluationExpression.VALUE);
 
-	public final static int STANDARD_DEGREE_OF_PARALLELISM = 1;
+	public final static int STANDARD_DEGREE_OF_PARALLELISM = -1;
 
 	private List<JsonStream> inputs = new ArrayList<JsonStream>();
 
@@ -541,6 +541,8 @@ public abstract class Operator<Self extends Operator<Self>> extends Configurable
 	@Property
 	@Name(adjective = "parallel")
 	public void setDegreeOfParallelism(int degree) {
+		if (this.degreeOfParallelism == degree)
+			return;
 		if (degree < 1)
 			throw new RuntimeException("Degree of Parallelism cannot be set below 1");
 		if (this.fixedDegreeOfParallelism)

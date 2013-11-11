@@ -25,8 +25,6 @@ import com.google.common.collect.Lists;
 
 import eu.stratosphere.pact.common.contract.Order;
 import eu.stratosphere.sopremo.expressions.ArrayAccess;
-import eu.stratosphere.sopremo.expressions.ArrayCreation;
-import eu.stratosphere.sopremo.expressions.ConstantExpression;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
 import eu.stratosphere.sopremo.expressions.OrderingExpression;
 import eu.stratosphere.sopremo.operator.Operator;
@@ -109,12 +107,13 @@ public class SortTest extends SopremoOperatorTestBase<Sort> {
 	 * @return
 	 */
 	private Operator<?> ensureUnordered(Sort sort) {
-		final Projection arrayWrap =
-			new Projection().withInputs(sort).withResultProjection(
-				new ArrayCreation(ConstantExpression.MISSING, EvaluationExpression.VALUE));
-		final GlobalEnumeration ge =
-			new GlobalEnumeration().withEnumerationExpression(new ArrayAccess(0)).withInputs(arrayWrap);
-		return new Grouping().withGroupingKey(0, new ArrayAccess(0)).withInputs(ge).withResultProjection(
-			new ArrayAccess(1).withInputExpression(new ArrayAccess(0)));
+//		final Projection arrayWrap =
+//			new Projection().withInputs(sort).withResultProjection(
+//				new ArrayCreation(ConstantExpression.MISSING, EvaluationExpression.VALUE));
+//		final GlobalEnumeration ge =
+//			new GlobalEnumeration().withEnumerationExpression(new ArrayAccess(0)).withInputs(arrayWrap);
+//		return new Grouping().withGroupingKey(0, new ArrayAccess(0)).withInputs(ge).withResultProjection(
+//			new ArrayAccess(1).withInputExpression(new ArrayAccess(0)));
+		return sort;
 	}
 }

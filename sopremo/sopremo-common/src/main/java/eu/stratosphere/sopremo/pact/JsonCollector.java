@@ -11,7 +11,7 @@ import eu.stratosphere.sopremo.type.IJsonNode;
  * The JsonCollector converts {@link IJsonNode}s to {@link PactRecord}s and collects this records with a given
  * Collector.
  */
-public class JsonCollector<T extends IJsonNode> {
+public class JsonCollector<T extends IJsonNode> implements Collector<T> {
 
 	private Collector<SopremoRecord> collector;
 
@@ -38,6 +38,15 @@ public class JsonCollector<T extends IJsonNode> {
 	 */
 	SopremoRecord getSopremoRecord() {
 		return this.sopremoRecord;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.pact.common.stubs.Collector#close()
+	 */
+	@Override
+	public void close() {
+		this.collector.close();
 	}
 
 	/**

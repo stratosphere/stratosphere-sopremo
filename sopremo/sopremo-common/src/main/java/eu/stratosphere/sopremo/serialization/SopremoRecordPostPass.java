@@ -14,6 +14,11 @@
  **********************************************************************************************************************/
 package eu.stratosphere.sopremo.serialization;
 
+import it.unimi.dsi.fastutil.booleans.BooleanArrayList;
+import it.unimi.dsi.fastutil.booleans.BooleanList;
+import it.unimi.dsi.fastutil.ints.IntArrayList;
+import it.unimi.dsi.fastutil.ints.IntList;
+
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Iterator;
@@ -121,10 +126,10 @@ public class SopremoRecordPostPass implements OptimizerPostPass {
 			final ParameterizedType boundType =
 				(ParameterizedType) TypeToken.of(userCodeClass).getSupertype(genericSopremoStubClass).getType();
 			for (int index = 0; inputs.hasNext(); index++)
-				processChannel(layout, inputs.next(), boundType.getActualTypeArguments()[index]);
+				processChannel(node, layout, inputs.next(), boundType.getActualTypeArguments()[index]);
 		} else
 			while (inputs.hasNext())
-				processChannel(layout, inputs.next(), IJsonNode.class);
+				processChannel(node, layout, inputs.next(), IJsonNode.class);
 	}
 
 	private void setOrdering(Channel input, Ordering localOrder) {
@@ -132,13 +137,24 @@ public class SopremoRecordPostPass implements OptimizerPostPass {
 			input.getLocalProperties().setOrdering(localOrder);
 	}
 
-	private void processChannel(SopremoRecordLayout layout, Channel channel, Type type) {
+	private void processChannel(PlanNode node, SopremoRecordLayout layout, Channel channel, Type type) {
 		if (!type.equals(layout.getTargetType())) {
 			layout = layout.copy();
 			layout.setTargetType(type);
 		}
 		channel.setSerializer(new SopremoRecordSerializerFactory(layout));
-		if (channel.getLocalStrategy().requiresComparator())
+		// FIXME: workaround for Stratosphere #206
+		if (node.getPactContract() instanceof SopremoReduceContract &&
+			((SopremoReduceContract) node.getPactContract()).getInnerGroupOrder() != null) {
+			final Ordering innerGroupOrder = ((SopremoReduceContract) node.getPactContract()).getInnerGroupOrder();
+			IntList keyIndices = new IntArrayList(channel.getLocalStrategyKeys().toArray());
+			BooleanList sortDirections = new BooleanArrayList(channel.getLocalStrategySortOrder());
+			keyIndices.addElements(keyIndices.size(), innerGroupOrder.getFieldPositions());
+			sortDirections.addElements(sortDirections.size(), innerGroupOrder.getFieldSortDirections());
+			channel.setLocalStrategyComparator(createComparator(new FieldList(keyIndices.toIntArray()),
+				sortDirections.toBooleanArray(), layout));
+		}
+		else if (channel.getLocalStrategy().requiresComparator())
 			channel.setLocalStrategyComparator(createComparator(channel.getLocalStrategyKeys(),
 				channel.getLocalStrategySortOrder(), layout));
 		if (channel.getShipStrategy().requiresComparator())
