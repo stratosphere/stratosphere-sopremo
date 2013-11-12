@@ -34,7 +34,7 @@ public class MathFunctions implements BuiltinProvider {
 	@Name(verb = "sqrt")
 	public static final class SQRT extends SopremoFunction1<INumericNode> {
 		SQRT() {
-			super("sqrt");
+			super();
 		}
 
 		private final DoubleNode result = new DoubleNode();
@@ -49,7 +49,7 @@ public class MathFunctions implements BuiltinProvider {
 	@Name(verb = "sqr")
 	public static final class SQR extends SopremoFunction1<INumericNode> {
 		SQR() {
-			super("sqr");
+			super();
 		}
 
 		private final transient NodeCache cache = new NodeCache();

@@ -29,8 +29,8 @@ public abstract class SopremoVarargFunction1<Arg1 extends IJsonNode> extends Sop
 	 * 
 	 * @param name
 	 */
-	public SopremoVarargFunction1(String name) {
-		super(name, 1);
+	public SopremoVarargFunction1() {
+		super(1);
 	}
 
 	/*

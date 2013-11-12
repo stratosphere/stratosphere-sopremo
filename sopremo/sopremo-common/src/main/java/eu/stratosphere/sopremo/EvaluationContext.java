@@ -15,7 +15,6 @@ import com.esotericsoftware.kryo.Kryo;
 
 import eu.stratosphere.nephele.fs.Path;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
-import eu.stratosphere.sopremo.operator.Operator;
 import eu.stratosphere.sopremo.packages.DefaultConstantRegistry;
 import eu.stratosphere.sopremo.packages.DefaultFunctionRegistry;
 import eu.stratosphere.sopremo.packages.DefaultTypeRegistry;
@@ -31,7 +30,7 @@ import eu.stratosphere.sopremo.type.MissingNode;
 import eu.stratosphere.sopremo.type.NullNode;
 import eu.stratosphere.sopremo.type.TextNode;
 import eu.stratosphere.sopremo.type.TypeCoercer;
-import eu.stratosphere.util.KryoUtil;
+import eu.stratosphere.util.SopremoKryo;
 
 /**
  * Provides additional context to the evaluation of {@link Evaluable}s, such as
@@ -83,7 +82,8 @@ public class EvaluationContext extends AbstractSopremoType implements ISopremoTy
 
 		this.workingPath = new Path(new File(".").toURI().toString()).toString();
 
-		this.kryo = new Kryo();
+		this.kryo = new SopremoKryo();
+		this.kryo.setReferences(false);
 		for (Class<? extends IJsonNode> type : TypeCoercer.NUMERIC_TYPES)
 			register(type);
 		@SuppressWarnings("unchecked")
@@ -96,8 +96,6 @@ public class EvaluationContext extends AbstractSopremoType implements ISopremoTy
 		final List<Class<? extends IJsonNode>> types = typeRegistry.getTypes();
 		for (Class<? extends IJsonNode> type : types)
 			register(type);
-		this.kryo.setReferences(false);
-		this.kryo.addDefaultSerializer(Operator.class, Operator.OperatorSerializer.class);
 	}
 
 	private void register(Class<?> type) {

@@ -3,6 +3,7 @@ package eu.stratosphere.sopremo.packages;
 import java.util.Set;
 
 import eu.stratosphere.sopremo.ISopremoType;
+import eu.stratosphere.sopremo.operator.Name;
 
 /**
  * A registry to manage elements, such as constants, methods, and operators.
@@ -34,6 +35,31 @@ public interface IRegistry<T> extends ISopremoType /* , Map<String, T> */{
 	 *        the element itself
 	 */
 	public void put(String name, T element);
+
+	/**
+	 * Registers a new element with the given name.<br>
+	 * If there is already an element with the given name, this method may throw an {@link IllegalArgumentException}.
+	 * 
+	 * @param name
+	 *        the name of the element
+	 * @param element
+	 *        the element itself
+	 */
+	public void put(Name name, T element);
+
+	/**
+	 * Returns the elements which is registered with the given name or {@code null}.
+	 * 
+	 * @param name
+	 *        the name of the element
+	 * @return the elements or {@code null}
+	 */
+	public T get(Name name);
+
+	/**
+	 * Return the lookup name for the given {@link Name} annotation.
+	 */
+	public String getName(Name name);
 
 	/**
 	 * Returns the set of all names.

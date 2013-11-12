@@ -16,11 +16,6 @@ package eu.stratosphere.sopremo.function;
 
 import java.io.IOException;
 
-import com.esotericsoftware.kryo.Kryo;
-import com.esotericsoftware.kryo.Serializer;
-import com.esotericsoftware.kryo.io.Input;
-import com.esotericsoftware.kryo.serializers.FieldSerializer;
-
 import eu.stratosphere.sopremo.type.AbstractJsonNode;
 import eu.stratosphere.sopremo.type.IJsonNode;
 
@@ -65,7 +60,7 @@ public class FunctionNode extends AbstractJsonNode {
 	 */
 	@Override
 	public int compareToSameType(IJsonNode other) {
-		return this.function.getName().compareTo(((FunctionNode) other).function.getName());
+		return 0;
 	}
 
 	/*

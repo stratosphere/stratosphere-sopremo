@@ -34,10 +34,10 @@ public class SopremoFunctionWithDefaultParameters extends SopremoFunction {
 	 * @param maximumNumberOfParameters
 	 */
 	public SopremoFunctionWithDefaultParameters(SopremoFunction originalFunction, int minimumNumberOfParameters) {
-		super(originalFunction.getName(), minimumNumberOfParameters, originalFunction.getMaximumNumberOfParameters());
+		super(minimumNumberOfParameters, originalFunction.getMaximumNumberOfParameters());
 		this.originalFunction = originalFunction;
 	}
-	
+
 	/**
 	 * Initializes SopremoFunctionWithDefaultParameters.
 	 * 
@@ -45,8 +45,9 @@ public class SopremoFunctionWithDefaultParameters extends SopremoFunction {
 	 * @param minimumNumberOfParameters
 	 * @param maximumNumberOfParameters
 	 */
-	public SopremoFunctionWithDefaultParameters(SopremoFunction originalFunction, int minimumNumberOfParameters, int maximumNumberOfParameters) {
-		super(originalFunction.getName(), minimumNumberOfParameters, maximumNumberOfParameters);
+	public SopremoFunctionWithDefaultParameters(SopremoFunction originalFunction, int minimumNumberOfParameters,
+			int maximumNumberOfParameters) {
+		super(minimumNumberOfParameters, maximumNumberOfParameters);
 		this.originalFunction = originalFunction;
 	}
 
@@ -54,7 +55,7 @@ public class SopremoFunctionWithDefaultParameters extends SopremoFunction {
 	 * Initializes SopremoFunctionWithDefaultParameters.
 	 */
 	SopremoFunctionWithDefaultParameters() {
-		super("", 0, 0);
+		super(0, 0);
 		this.originalFunction = null;
 	}
 

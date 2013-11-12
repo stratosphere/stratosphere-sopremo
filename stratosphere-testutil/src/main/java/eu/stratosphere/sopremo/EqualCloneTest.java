@@ -47,10 +47,6 @@ public abstract class EqualCloneTest<T extends ICloneable> extends EqualVerifyTe
 			this.testPropertyClone(type.getSuperclass(), original, clone);
 	}
 
-	/**
-	 * @param type
-	 * @return
-	 */
 	private boolean isImmutable(Class<?> type) {
 		return type == String.class
 			|| type.isEnum()

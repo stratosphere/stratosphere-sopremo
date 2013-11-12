@@ -21,8 +21,8 @@ import eu.stratosphere.sopremo.type.IJsonNode;
  */
 public abstract class FixedTypeAssociativeAggregation<ElementType extends IJsonNode> extends
 		AssociativeAggregation<ElementType> {
-	public FixedTypeAssociativeAggregation(String name, ElementType initialAggregate) {
-		super(name, initialAggregate);
+	public FixedTypeAssociativeAggregation(ElementType initialAggregate) {
+		super(initialAggregate);
 	}
 
 	/*

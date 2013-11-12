@@ -70,6 +70,11 @@
 		<!-- <artifactId>automaton</artifactId> -->
 		<!-- <version>1.11-8</version> -->
 		<!-- </dependency> -->
+		<dependency>
+			<groupId>org.ow2.asm</groupId>
+			<artifactId>asm</artifactId>
+			<version>4.2</version>
+		</dependency>
 	</dependencies>
 	<reporting>
 		<plugins>

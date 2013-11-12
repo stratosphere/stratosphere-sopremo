@@ -1,7 +1,5 @@
 package eu.stratosphere.sopremo.function;
 
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-
 import java.io.IOException;
 
 import com.google.common.base.Predicates;
@@ -16,7 +14,7 @@ public class ExpressionFunction extends SopremoFunction {
 	private final EvaluationExpression definition;
 
 	public ExpressionFunction(final int numParams, final EvaluationExpression definition) {
-		super("Sopremo function", numParams, numParams);
+		super(numParams, numParams);
 		this.definition = definition;
 	}
 
@@ -24,7 +22,7 @@ public class ExpressionFunction extends SopremoFunction {
 	 * Initializes ExpressionFunction.
 	 */
 	public ExpressionFunction() {
-		super("Sopremo function", 0, 0);
+		super(0, 0);
 		this.definition = null;
 	}
 	

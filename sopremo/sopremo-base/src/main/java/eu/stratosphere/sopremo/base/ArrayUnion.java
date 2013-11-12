@@ -14,6 +14,8 @@
  **********************************************************************************************************************/
 package eu.stratosphere.sopremo.base;
 
+import java.io.IOException;
+
 import eu.stratosphere.sopremo.aggregation.Aggregation;
 import eu.stratosphere.sopremo.aggregation.FixedTypeAssociativeAggregation;
 import eu.stratosphere.sopremo.type.ArrayNode;
@@ -23,7 +25,7 @@ import eu.stratosphere.sopremo.type.MissingNode;
 
 public final class ArrayUnion extends FixedTypeAssociativeAggregation<ArrayNode<IJsonNode>> {
 	public ArrayUnion() {
-		super("U<values>", new ArrayNode<IJsonNode>());
+		super(new ArrayNode<IJsonNode>());
 	}
 
 	/*
@@ -40,6 +42,14 @@ public final class ArrayUnion extends FixedTypeAssociativeAggregation<ArrayNode<
 				aggregator.set(index, node.get(index));
 	}
 
+	/* (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.aggregation.Aggregation#appendAsString(java.lang.Appendable)
+	 */
+	@Override
+	public void appendAsString(Appendable appendable) throws IOException {
+		appendable.append("U<values>");
+	}
+	
 	/*
 	 * (non-Javadoc)
 	 * @see eu.stratosphere.sopremo.aggregation.AssociativeAggregation#clone()

@@ -24,7 +24,7 @@ public class KryoUtil {
 	private final static ThreadLocal<Kryo> Serialization = new ThreadLocal<Kryo>() {
 		@Override
 		protected Kryo initialValue() {
-			final Kryo kryo = new Kryo();
+			final Kryo kryo = new SopremoKryo();
 			kryo.setReferences(false);
 			return kryo;
 		};

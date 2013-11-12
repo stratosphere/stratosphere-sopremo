@@ -38,6 +38,11 @@ import eu.stratosphere.sopremo.type.NullNode;
  */
 public class GeneratorInputFormat extends GenericInputFormat<SopremoRecord> {
 	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -353023811572404812L;
+
+	/**
 	 * Config key which describes the adhoc expression.
 	 */
 	public static final String ADHOC_EXPRESSION_PARAMETER_KEY = "sopremo.source.generator.expression";

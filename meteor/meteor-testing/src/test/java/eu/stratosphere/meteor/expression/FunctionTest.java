@@ -72,8 +72,7 @@ public class FunctionTest extends MeteorParseTest {
 			new Projection().
 				withInputs(input).
 				withResultProjection(new ObjectCreation(
-					new ObjectCreation.FieldAssignment("squared", new FunctionCall("testudf", javaMethod,
-						new InputSelection(0)))));
+					new ObjectCreation.FieldAssignment("squared", new FunctionCall(javaMethod, new InputSelection(0)))));
 		final Sink sink = new Sink("file://output.json").withInputs(projection);
 		expectedPlan.setSinks(sink);
 

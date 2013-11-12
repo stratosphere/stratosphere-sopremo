@@ -21,16 +21,28 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import eu.stratosphere.sopremo.AbstractSopremoType;
 import eu.stratosphere.sopremo.type.IJsonNode;
 
 /**
  * @author arv
  */
-public class DefaultTypeRegistry extends AbstractSopremoType implements ITypeRegistry {
+public class DefaultTypeRegistry extends AbstractRegistry<Class<? extends IJsonNode>> implements ITypeRegistry {
 	private Map<String, Class<? extends IJsonNode>> elements = new HashMap<String, Class<? extends IJsonNode>>();
 
 	private List<Class<? extends IJsonNode>> typeList = new ArrayList<Class<? extends IJsonNode>>();
+
+	/**
+	 * Initializes DefaultTypeRegistry.
+	 */
+	public DefaultTypeRegistry(NameChooser typeNameChooser) {
+		super(typeNameChooser);
+	}
+
+	/**
+	 * Initializes DefaultTypeRegistry.
+	 */
+	public DefaultTypeRegistry() {
+	}
 
 	/*
 	 * (non-Javadoc)

@@ -6,11 +6,21 @@ import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Set;
 
-import eu.stratosphere.sopremo.AbstractSopremoType;
+import eu.stratosphere.sopremo.packages.AbstractRegistry;
 import eu.stratosphere.sopremo.packages.IRegistry;
+import eu.stratosphere.sopremo.packages.NameChooser;
 
-public class StackedRegistry<T, R extends IRegistry<T>> extends AbstractSopremoType implements IRegistry<T> {
+public class StackedRegistry<T, R extends IRegistry<T>> extends AbstractRegistry<T> implements IRegistry<T> {
 	private LinkedList<R> registryStack = new LinkedList<R>();
+
+	StackedRegistry() {
+		super();
+	}
+
+	public StackedRegistry(NameChooser nameChooser, R defaultRegistry) {
+		super(nameChooser);
+		this.registryStack.add(defaultRegistry);
+	}
 
 	public StackedRegistry(R defaultRegistry) {
 		this.registryStack.add(defaultRegistry);

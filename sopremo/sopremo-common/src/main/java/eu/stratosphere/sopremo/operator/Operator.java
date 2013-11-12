@@ -38,6 +38,7 @@ import eu.stratosphere.util.reflect.ReflectUtil;
  * 
  * @author Arvid Heise
  */
+@DefaultSerializer(Operator.OperatorSerializer.class)
 public abstract class Operator<Self extends Operator<Self>> extends ConfigurableSopremoType implements
 		ISopremoType, JsonStream, Cloneable {
 
@@ -668,8 +669,7 @@ public abstract class Operator<Self extends Operator<Self>> extends Configurable
 				return operatorDeserializedAt.get(input.readByteUnsigned());
 			Operator<?> object = kryo.newInstance(type);
 			operatorDeserializedAt.push(object);
-			@SuppressWarnings("unchecked")
-			FieldSerializer<Operator<?>>.CachedField<?>[] fields = this.fieldSerializer.getFields();
+			FieldSerializer<?>.CachedField<?>[] fields = this.fieldSerializer.getFields();
 			for (int i = 0, n = fields.length; i < n; i++)
 				fields[i].read(input, object);
 			operatorDeserializedAt.pop();

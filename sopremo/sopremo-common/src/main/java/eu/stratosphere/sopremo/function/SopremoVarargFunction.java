@@ -21,11 +21,10 @@ public abstract class SopremoVarargFunction extends SopremoFunction {
 	/**
 	 * Initializes SopremoVarargFunction.
 	 * 
-	 * @param name
 	 * @param minimumNumberOfParameters
 	 * @param maximumNumberOfParameters
 	 */
-	public SopremoVarargFunction(String name, int minimumNumberOfParameters) {
-		super(name, minimumNumberOfParameters, Integer.MAX_VALUE);
+	public SopremoVarargFunction(int minimumNumberOfParameters) {
+		super(minimumNumberOfParameters, Integer.MAX_VALUE);
 	}
 }

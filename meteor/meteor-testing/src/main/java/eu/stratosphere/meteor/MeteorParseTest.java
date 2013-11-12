@@ -54,7 +54,8 @@ public class MeteorParseTest {
 			initParser(queryParser);
 			plan = queryParser.tryParse(script);
 		} catch (final QueryParserException e) {
-			final AssertionError error = new AssertionError(String.format("could not parse script: %s", e.getMessage()));
+			final AssertionError error =
+				new AssertionError(String.format("could not parse script: %s", e.getMessage()));
 			error.initCause(e);
 			throw error;
 		}
@@ -73,7 +74,8 @@ public class MeteorParseTest {
 			initParser(queryParser);
 			plan = queryParser.tryParse(loadScriptFromFile(script));
 		} catch (final QueryParserException e) {
-			final AssertionError error = new AssertionError(String.format("could not parse script: %s", e.getMessage()));
+			final AssertionError error =
+				new AssertionError(String.format("could not parse script: %s", e.getMessage()));
 			error.initCause(e);
 			throw error;
 		}
@@ -92,7 +94,8 @@ public class MeteorParseTest {
 		return this.createMethodCall(new AggregationFunction(aggregation), null, params);
 	}
 
-	protected EvaluationExpression addToBatch(BatchAggregationExpression bae, Aggregation aggregation, EvaluationExpression preprocessing) {
+	protected EvaluationExpression addToBatch(BatchAggregationExpression bae, Aggregation aggregation,
+			EvaluationExpression preprocessing) {
 		return bae.add(aggregation, preprocessing);
 	}
 
@@ -133,7 +136,7 @@ public class MeteorParseTest {
 
 		if (callable instanceof ExpressionFunction)
 			return ((ExpressionFunction) callable).inline(params);
-		return new FunctionCall(((SopremoFunction) callable).getName(), (SopremoFunction) callable, params);
+		return new FunctionCall((SopremoFunction) callable, params);
 	}
 
 	private String loadScriptFromFile(File scriptFile) {

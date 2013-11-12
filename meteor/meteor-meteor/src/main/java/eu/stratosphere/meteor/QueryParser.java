@@ -17,6 +17,7 @@ import org.antlr.runtime.CommonTokenStream;
 import eu.stratosphere.nephele.fs.Path;
 import eu.stratosphere.sopremo.SopremoEnvironment;
 import eu.stratosphere.sopremo.operator.JsonStream;
+import eu.stratosphere.sopremo.operator.Name;
 import eu.stratosphere.sopremo.operator.Operator;
 import eu.stratosphere.sopremo.operator.SopremoPlan;
 import eu.stratosphere.sopremo.packages.IRegistry;
@@ -31,7 +32,7 @@ import eu.stratosphere.util.StringUtil;
 public class QueryParser {
 	private File inputDirectory = new File(".");
 
-	private PackageManager packageManager = new PackageManager();
+	private PackageManager packageManager = new PackageManager(MeteorParserBase.NameChooserProvider);
 
 	private void appendExpression(final Object value, final JavaRenderInfo renderInfo) {
 		renderInfo.adaptor.addJavaFragment(value, renderInfo.builder);
@@ -68,14 +69,12 @@ public class QueryParser {
 		}
 	}
 
-	@SuppressWarnings("unchecked")
 	protected void appendJavaOperator(final Operator<?> op, final JavaRenderInfo renderInfo) {
 		final String className = op.getClass().getSimpleName();
 		renderInfo.builder.append(String.format("%s %s = new %1$s();\n", className, renderInfo.getVariableName(op)));
 
 		final IConfObjectRegistry<Operator<?>> operatorRegistry = renderInfo.parser.getOperatorRegistry();
-		final String name = operatorRegistry.getName((Class<? extends Operator<?>>) op.getClass());
-		final ConfObjectInfo<Operator<?>> info = operatorRegistry.get(name);
+		final ConfObjectInfo<Operator<?>> info = operatorRegistry.get(op.getClass().getAnnotation(Name.class));
 		final Operator<?> defaultInstance = info.newInstance();
 		this.appendInputs(op, renderInfo, defaultInstance);
 		defaultInstance.setInputs(op.getInputs());

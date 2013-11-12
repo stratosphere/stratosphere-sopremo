@@ -21,8 +21,8 @@ import eu.stratosphere.sopremo.type.IJsonNode;
  * @author Arvid Heise
  */
 public abstract class SopremoFunction0 extends SopremoFunction {
-	public SopremoFunction0(String name) {
-		super(name, 0);
+	public SopremoFunction0() {
+		super(0);
 	}
 
 	/*

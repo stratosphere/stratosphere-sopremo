@@ -36,8 +36,6 @@ import eu.stratosphere.sopremo.type.IJsonNode;
 @OptimizerHints(scope = Scope.ANY, minNodes = 0, maxNodes = OptimizerHints.UNBOUND)
 public class FunctionCall extends EvaluationExpression {
 
-	private final String functionName;
-
 	private final SopremoFunction function;
 
 	private List<EvaluationExpression> paramExprs;
@@ -46,38 +44,30 @@ public class FunctionCall extends EvaluationExpression {
 	 * Initializes a MethodCall with the given function name and expressions
 	 * which evaluate to the method parameters.
 	 * 
-	 * @param functionName
-	 *        the name of the function that should be called
 	 * @param function
 	 *        the function itself
 	 * @param params
 	 *        expressions which evaluate to the method parameters
 	 */
-	public FunctionCall(final String functionName, final SopremoFunction function, final EvaluationExpression... params) {
-		this(functionName, function, Arrays.asList(params));
+	public FunctionCall(final SopremoFunction function, final EvaluationExpression... params) {
+		this(function, Arrays.asList(params));
 	}
 
 	/**
 	 * Initializes a MethodCall with the given function name and expressions
 	 * which evaluate to the method parameters.
 	 * 
-	 * @param functionName
-	 *        the name of the function that should be called
 	 * @param function
 	 *        the function itself
 	 * @param params
 	 *        expressions which evaluate to the method parameters
 	 */
-	public FunctionCall(final String functionName, final SopremoFunction function,
-			final List<EvaluationExpression> params) {
-		if (functionName == null)
-			throw new NullPointerException("Function name must not be null");
+	public FunctionCall(final SopremoFunction function, final List<EvaluationExpression> params) {
 		if (function == null)
 			throw new NullPointerException("Function must not be null");
 		for (EvaluationExpression param : params)
 			if (param == null)
 				throw new NullPointerException("Params must not be null " + params);
-		this.functionName = functionName;
 		this.function = function;
 		this.paramExprs = new ArrayList<EvaluationExpression>(params);
 	}
@@ -96,14 +86,13 @@ public class FunctionCall extends EvaluationExpression {
 	 *        expressions which evaluate to the method parameters
 	 */
 	public FunctionCall(final String functionName, final EvaluationScope scope, final EvaluationExpression... params) {
-		this(functionName, checkIfMethodExists(functionName, scope), Arrays.asList(params));
+		this(checkIfMethodExists(functionName, scope), Arrays.asList(params));
 	}
 
 	/**
 	 * Initializes FunctionCall.
 	 */
 	FunctionCall() {
-		this.functionName = null;
 		this.function = null;
 		this.paramExprs = null;
 	}
@@ -129,7 +118,7 @@ public class FunctionCall extends EvaluationExpression {
 	 *        expressions which evaluate to the method parameters
 	 */
 	public FunctionCall(final String functionName, final EvaluationScope scope, final List<EvaluationExpression> params) {
-		this(functionName, checkIfMethodExists(functionName, scope), params);
+		this(checkIfMethodExists(functionName, scope), params);
 	}
 
 	@Override
@@ -147,15 +136,6 @@ public class FunctionCall extends EvaluationExpression {
 	 */
 	public SopremoFunction getFunction() {
 		return this.function;
-	}
-
-	/**
-	 * Returns the functionName.
-	 * 
-	 * @return the functionName
-	 */
-	public String getFunctionName() {
-		return this.functionName;
 	}
 
 	/**

@@ -11,8 +11,8 @@ public class MaterializingAggregation extends AssociativeAggregation<CachingArra
 	 * @param name
 	 *        the name that should be used
 	 */
-	protected MaterializingAggregation(final String name) {
-		super(name, new CachingArrayNode<IJsonNode>());
+	protected MaterializingAggregation() {
+		super(new CachingArrayNode<IJsonNode>());
 	}
 
 	/*
@@ -32,9 +32,11 @@ public class MaterializingAggregation extends AssociativeAggregation<CachingArra
 	public void aggregate(IJsonNode element) {
 		this.aggregator.addClone(element);
 	}
-	
-	/* (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.aggregation.AssociativeAggregation#aggregate(eu.stratosphere.sopremo.type.IJsonNode, eu.stratosphere.sopremo.type.IJsonNode)
+
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.aggregation.AssociativeAggregation#aggregate(eu.stratosphere.sopremo.type.IJsonNode,
+	 * eu.stratosphere.sopremo.type.IJsonNode)
 	 */
 	@Override
 	protected CachingArrayNode<IJsonNode> aggregate(CachingArrayNode<IJsonNode> aggregator, IJsonNode element) {

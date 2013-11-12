@@ -3,11 +3,19 @@ package eu.stratosphere.sopremo.query;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
 import eu.stratosphere.sopremo.packages.DefaultConstantRegistry;
 import eu.stratosphere.sopremo.packages.IConstantRegistry;
+import eu.stratosphere.sopremo.packages.NameChooser;
 
 public class StackedConstantRegistry extends StackedRegistry<EvaluationExpression, IConstantRegistry> implements
 		IConstantRegistry {
-	public StackedConstantRegistry() {
-		super(new DefaultConstantRegistry());
+	public StackedConstantRegistry(NameChooser constantNameChooser) {
+		super(new DefaultConstantRegistry(constantNameChooser));
+	}
+	
+	/**
+	 * Initializes StackedConstantRegistry.
+	 *
+	 */
+	StackedConstantRegistry() {
 	}
 
 	/*

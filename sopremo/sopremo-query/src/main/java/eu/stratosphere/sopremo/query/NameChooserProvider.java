@@ -12,28 +12,23 @@
  * specific language governing permissions and limitations under the License.
  *
  **********************************************************************************************************************/
-package eu.stratosphere.sopremo.function;
+package eu.stratosphere.sopremo.query;
 
-import eu.stratosphere.sopremo.type.IArrayNode;
-import eu.stratosphere.sopremo.type.IJsonNode;
+import eu.stratosphere.sopremo.packages.NameChooser;
 
 /**
- * @author Arvid Heise
+ * @author arv
  */
-public abstract class SopremoFunction2<Arg1 extends IJsonNode, Arg2 extends IJsonNode> extends SopremoFunction {
-	public SopremoFunction2() {
-		super(2);
-	}
+public interface NameChooserProvider {
+	NameChooser getOperatorNameChooser();
 
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.function.Callable#call(java.lang.Object)
-	 */
-	@SuppressWarnings("unchecked")
-	@Override
-	public IJsonNode call(IArrayNode<IJsonNode> params) {
-		return this.call((Arg1) params.get(0), (Arg2) params.get(1));
-	}
+	NameChooser getPropertyNameChooser();
 
-	protected abstract IJsonNode call(Arg1 arg1, Arg2 arg2);
+	NameChooser getFunctionNameChooser();
+
+	NameChooser getConstantNameChooser();
+	
+	NameChooser getTypeNameChooser();
+	
+	NameChooser getFormatNameChooser();
 }

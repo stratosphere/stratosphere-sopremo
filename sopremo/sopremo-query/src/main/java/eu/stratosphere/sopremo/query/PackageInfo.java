@@ -18,9 +18,6 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.lang.reflect.Modifier;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.util.Collections;
 import java.util.Enumeration;
 import java.util.LinkedList;
 import java.util.List;
@@ -56,30 +53,36 @@ public class PackageInfo extends AbstractSopremoType implements ISopremoType, Pa
 	 * @param packageName
 	 * @param packagePath
 	 */
-	public PackageInfo(String packageName, ClassLoader classLoader) {
+	public PackageInfo(String packageName, ClassLoader classLoader, NameChooserProvider nameChooserProvider) {
 		this.packageName = packageName;
 		this.classLoader = new PackageClassLoader(classLoader);
+		this.operatorRegistry = new DefaultConfObjectRegistry<Operator<?>>(
+			nameChooserProvider.getOperatorNameChooser(), nameChooserProvider.getPropertyNameChooser());
+		this.fileFormatRegistry = new DefaultConfObjectRegistry<SopremoFormat>(
+			nameChooserProvider.getFormatNameChooser(), nameChooserProvider.getPropertyNameChooser());
+		this.constantRegistry = new DefaultConstantRegistry(nameChooserProvider.getConstantNameChooser());
+		this.functionRegistry = new DefaultFunctionRegistry(nameChooserProvider.getFunctionNameChooser());
+		this.typeRegistry = new DefaultTypeRegistry(nameChooserProvider.getTypeNameChooser());
 	}
 
 	/**
-	 * Initializes PackageInfo.
+	 * Initialiszes PackageInfo.
 	 * 
 	 * @param packageName2
 	 */
-	public PackageInfo(String packageName) {
-		this(packageName, new PackageClassLoader(ClassLoader.getSystemClassLoader()));
+	public PackageInfo(String packageName, NameChooserProvider nameChooserProvider) {
+		this(packageName, new PackageClassLoader(ClassLoader.getSystemClassLoader()), nameChooserProvider);
 	}
 
-	private IConfObjectRegistry<Operator<?>> operatorRegistry = new DefaultConfObjectRegistry<Operator<?>>();
+	private final IConfObjectRegistry<Operator<?>> operatorRegistry;
 
-	private IConfObjectRegistry<SopremoFormat> fileFormatRegistry =
-		new DefaultConfObjectRegistry<SopremoFormat>();
+	private final IConfObjectRegistry<SopremoFormat> fileFormatRegistry;
 
-	private IConstantRegistry constantRegistry = new DefaultConstantRegistry();
+	private final IConstantRegistry constantRegistry;
 
-	private IFunctionRegistry functionRegistry = new DefaultFunctionRegistry();
+	private final IFunctionRegistry functionRegistry;
 
-	private ITypeRegistry typeRegistry = new DefaultTypeRegistry();
+	private final ITypeRegistry typeRegistry;
 
 	private String packageName;
 
@@ -94,9 +97,7 @@ public class PackageInfo extends AbstractSopremoType implements ISopremoType, Pa
 	}
 
 	public List<File> getRequiredJarPaths() {
-		if (this.classLoader instanceof PackageClassLoader)
-			return ((PackageClassLoader) this.classLoader).getFiles();
-		return Collections.singletonList(getPackagePath());
+		return this.classLoader.getFiles();
 	}
 
 	/**

@@ -5,12 +5,13 @@ import java.lang.reflect.Method;
 import eu.stratosphere.sopremo.function.Callable;
 import eu.stratosphere.sopremo.packages.DefaultFunctionRegistry;
 import eu.stratosphere.sopremo.packages.IFunctionRegistry;
+import eu.stratosphere.sopremo.packages.NameChooser;
 
 public class StackedFunctionRegistry extends StackedRegistry<Callable<?, ?>, IFunctionRegistry> implements
 		IFunctionRegistry {
 
-	public StackedFunctionRegistry() {
-		super(new DefaultFunctionRegistry());
+	public StackedFunctionRegistry(NameChooser functionNameChooser) {
+		super(functionNameChooser, new DefaultFunctionRegistry(functionNameChooser));
 	}
 
 	@Override

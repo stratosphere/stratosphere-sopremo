@@ -10,6 +10,21 @@ import eu.stratosphere.util.reflect.ReflectUtil;
 
 public class DefaultConstantRegistry extends DefaultRegistry<EvaluationExpression> implements IConstantRegistry {
 
+	/**
+	 * Initializes DefaultConstantRegistry.
+	 * 
+	 * @param nameChooserProvider
+	 */
+	public DefaultConstantRegistry(NameChooser constantNameChooser) {
+		super(constantNameChooser);
+	}
+
+	/**
+	 * Initializes DefaultConstantRegistry.
+	 */
+	public DefaultConstantRegistry() {
+	}
+
 	@Override
 	public void put(final Class<?> javaConstants) {
 		final List<Field> fields =

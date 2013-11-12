@@ -6,15 +6,16 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.junit.Assert;
 import nl.jqno.equalsverifier.EqualsVerifier;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 import eu.stratosphere.sopremo.EvaluationContext;
 import eu.stratosphere.sopremo.function.ExpressionFunction;
 import eu.stratosphere.sopremo.function.SopremoFunction;
+import eu.stratosphere.sopremo.operator.Name;
 import eu.stratosphere.sopremo.type.DoubleNode;
 import eu.stratosphere.sopremo.type.IJsonNode;
 import eu.stratosphere.sopremo.type.INumericNode;
@@ -23,7 +24,7 @@ public class FunctionCallTest extends EvaluableExpressionTest<FunctionCall> {
 
 	@Override
 	protected FunctionCall createDefaultInstance(final int index) {
-		return new FunctionCall(String.valueOf(index), new ExpressionFunction(0, new ConstantExpression(index)));
+		return new FunctionCall(new ExpressionFunction(0, new ConstantExpression(index)));
 	}
 
 	/*
@@ -53,6 +54,7 @@ public class FunctionCallTest extends EvaluableExpressionTest<FunctionCall> {
 		Assert.assertEquals(new DoubleNode(3), result);
 	}
 
+	@Name(verb = "sum")
 	public static DoubleNode sum(final INumericNode... nodes) {
 		double sum = 0.0;
 		for (final INumericNode node : nodes)

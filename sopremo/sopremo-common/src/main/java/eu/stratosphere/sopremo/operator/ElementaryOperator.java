@@ -12,8 +12,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.commons.logging.LogFactory;
-
 import eu.stratosphere.nephele.configuration.Configuration;
 import eu.stratosphere.pact.common.IdentityMap;
 import eu.stratosphere.pact.common.contract.MapContract;
@@ -82,8 +80,6 @@ import eu.stratosphere.util.IdentityList;
 @OutputCardinality(min = 1, max = 1)
 public abstract class ElementaryOperator<Self extends ElementaryOperator<Self>>
 		extends Operator<Self> {
-	private static final org.apache.commons.logging.Log LOG = LogFactory.getLog(ElementaryOperator.class);
-
 	private final List<List<? extends EvaluationExpression>> keyExpressions =
 		new ArrayList<List<? extends EvaluationExpression>>();
 

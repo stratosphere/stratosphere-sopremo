@@ -5,12 +5,16 @@ import java.util.Arrays;
 public class DefaultNameChooser implements NameChooser {
 	private final int[] preferredOrder;
 
-	public DefaultNameChooser() {
-		this(3, 0, 1, 2);
-	}
-
 	public DefaultNameChooser(final int... preferredOrder) {
 		this.preferredOrder = preferredOrder;
+	}
+	
+	/**
+	 * Initializes DefaultNameChooser.
+	 *
+	 */
+	DefaultNameChooser() {
+		this(new int[0]);
 	}
 
 	@Override

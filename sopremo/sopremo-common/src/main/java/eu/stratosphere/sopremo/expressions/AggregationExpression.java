@@ -17,9 +17,6 @@ package eu.stratosphere.sopremo.expressions;
 import java.io.IOException;
 
 import eu.stratosphere.sopremo.aggregation.Aggregation;
-import eu.stratosphere.sopremo.expressions.tree.ChildIterator;
-import eu.stratosphere.sopremo.expressions.tree.ConcatenatingChildIterator;
-import eu.stratosphere.sopremo.expressions.tree.NamedChildIterator;
 import eu.stratosphere.sopremo.type.IJsonNode;
 import eu.stratosphere.sopremo.type.IStreamNode;
 
@@ -38,28 +35,6 @@ import eu.stratosphere.sopremo.type.IStreamNode;
 public class AggregationExpression extends PathSegmentExpression {
 	private final Aggregation aggregation;
 
-	// private EvaluationExpression preprocessing;
-	//
-	// /**
-	// * Initializes an AggregationExpression with the given {@link AggregationFunction} and an additional
-	// preprocessing.
-	// *
-	// * @param aggregation
-	// * the aggregation which will should be used for aggregation
-	// * @param preprocessing
-	// * an {@link EvaluationExpression} which evaluates each element of the input before they are used for
-	// * aggregation.
-	// */
-	// public AggregationExpression(final Aggregation aggregation, final EvaluationExpression preprocessing) {
-	// this.aggregation = aggregation.clone();
-	// final InputSelection inputSelection = preprocessing.findFirst(InputSelection.class);
-	// if (inputSelection != null) {
-	// this.preprocessing = preprocessing.remove(InputSelection.class);
-	// setInputExpression(inputSelection);
-	// } else
-	// this.preprocessing = preprocessing;
-	// }
-
 	/**
 	 * Initializes an AggregationExpression with the given {@link AggregationFunction} and an additional preprocessing.
 	 * 
@@ -68,7 +43,6 @@ public class AggregationExpression extends PathSegmentExpression {
 	 */
 	public AggregationExpression(final Aggregation aggregation) {
 		this.aggregation = aggregation.clone();
-		// this(aggregation, EvaluationExpression.VALUE);
 	}
 
 	/**
@@ -76,7 +50,6 @@ public class AggregationExpression extends PathSegmentExpression {
 	 */
 	AggregationExpression() {
 		this.aggregation = null;
-		// this.preprocessing = null;
 	}
 
 	/*
@@ -88,48 +61,9 @@ public class AggregationExpression extends PathSegmentExpression {
 	protected IJsonNode evaluateSegment(IJsonNode nodes) {
 		this.aggregation.initialize();
 		for (final IJsonNode node : (IStreamNode<?>) nodes)
-			// this.aggregation.aggregate(this.preprocessing.evaluate(node));
 			this.aggregation.aggregate(node);
 		return this.aggregation.getFinalAggregate();
 	}
-
-	//
-	// @Override
-	// public ChildIterator iterator() {
-	// return new ConcatenatingChildIterator(super.iterator(), new NamedChildIterator("inputExpression") {
-	// @Override
-	// protected void set(int index, EvaluationExpression childExpression) {
-	// AggregationExpression.this.preprocessing = childExpression;
-	// }
-	//
-	// @Override
-	// protected EvaluationExpression get(int index) {
-	// return AggregationExpression.this.preprocessing;
-	// }
-	// });
-	// }
-	//
-	// /**
-	// * Returns the preprocessing.
-	// *
-	// * @return the preprocessing
-	// */
-	// public EvaluationExpression getPreprocessing() {
-	// return this.preprocessing;
-	// }
-	//
-	// /**
-	// * Sets the preprocessing to the specified value.
-	// *
-	// * @param preprocessing
-	// * the preprocessing to set
-	// */
-	// public void setPreprocessing(EvaluationExpression elementInputSelection) {
-	// if (elementInputSelection == null)
-	// throw new NullPointerException("preprocessing must not be null");
-	//
-	// this.preprocessing = elementInputSelection;
-	// }
 
 	/**
 	 * Returns the aggregation.
@@ -177,8 +111,6 @@ public class AggregationExpression extends PathSegmentExpression {
 		appendable.append('(');
 		if (this.getInputExpression() != EvaluationExpression.VALUE)
 			this.getInputExpression().appendAsString(appendable);
-		// if (this.getPreprocessing() != EvaluationExpression.VALUE)
-		// this.getPreprocessing().appendAsString(appendable);
 		appendable.append(')');
 	}
 }

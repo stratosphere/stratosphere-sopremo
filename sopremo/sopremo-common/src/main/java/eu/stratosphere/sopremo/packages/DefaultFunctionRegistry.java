@@ -15,7 +15,6 @@
 package eu.stratosphere.sopremo.packages;
 
 import java.io.IOException;
-import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -32,7 +31,6 @@ import eu.stratosphere.sopremo.aggregation.AggregationFunction;
 import eu.stratosphere.sopremo.function.Callable;
 import eu.stratosphere.sopremo.function.JavaMethod;
 import eu.stratosphere.sopremo.function.SopremoFunction;
-import eu.stratosphere.sopremo.operator.Name;
 import eu.stratosphere.sopremo.pact.SopremoUtil;
 import eu.stratosphere.sopremo.type.IJsonNode;
 import eu.stratosphere.util.reflect.ReflectUtil;
@@ -43,7 +41,15 @@ import eu.stratosphere.util.reflect.ReflectUtil;
 public class DefaultFunctionRegistry extends DefaultRegistry<Callable<?, ?>> implements IFunctionRegistry {
 	private Map<String, Callable<?, ?>> methods = new HashMap<String, Callable<?, ?>>();
 
-	private NameChooser nameChooser = new DefaultNameChooser(1, 0, 2, 3);
+	public DefaultFunctionRegistry(NameChooser nameChooser) {
+		super(nameChooser);
+	}
+
+	/**
+	 * Initializes DefaultFunctionRegistry.
+	 */
+	public DefaultFunctionRegistry() {
+	}
 
 	/*
 	 * (non-Javadoc)
@@ -87,12 +93,12 @@ public class DefaultFunctionRegistry extends DefaultRegistry<Callable<?, ?>> imp
 		appendable.append("Method registry: {");
 		boolean first = true;
 		for (final Entry<String, Callable<?, ?>> method : this.methods.entrySet()) {
-			appendable.append(method.getKey()).append(": ");
-			method.getValue().appendAsString(appendable);
 			if (first)
 				first = false;
 			else
 				appendable.append(", ");
+			appendable.append(method.getKey()).append(": ");
+			method.getValue().appendAsString(appendable);
 		}
 		appendable.append("}");
 	}
@@ -155,16 +161,10 @@ public class DefaultFunctionRegistry extends DefaultRegistry<Callable<?, ?>> imp
 				try {
 					if (Aggregation.class.isAssignableFrom(innerClass)) {
 						final Aggregation aggregation = (Aggregation) ReflectUtil.newInstance(innerClass);
-						String name = this.getName(innerClass);
-						if (name == null)
-							name = aggregation.getName();
-						this.put(name, new AggregationFunction(aggregation));
+						this.put(this.getName(innerClass), new AggregationFunction(aggregation));
 					} else if (SopremoFunction.class.isAssignableFrom(innerClass)) {
 						final SopremoFunction function = (SopremoFunction) ReflectUtil.newInstance(innerClass);
-						String name = this.getName(innerClass);
-						if (name == null)
-							name = function.getName();
-						this.put(name, function);
+						this.put(this.getName(innerClass), function);
 					}
 				} catch (Exception e) {
 					SopremoUtil.LOG.warn(String.format("Cannot access inner class %s: %s", innerClass, e));
@@ -177,43 +177,17 @@ public class DefaultFunctionRegistry extends DefaultRegistry<Callable<?, ?>> imp
 			try {
 				if (Aggregation.class.isAssignableFrom(field.getType())) {
 					final Aggregation aggregation = (Aggregation) field.get(null);
-					String name = this.getName(field);
-					if (name == null)
-						name = aggregation.getName();
-					this.put(name, new AggregationFunction(aggregation));
+					this.put(this.getName(field), new AggregationFunction(aggregation));
 				} else if (SopremoFunction.class.isAssignableFrom(field.getType())) {
 					final SopremoFunction function = (SopremoFunction) field.get(null);
-					String name = this.getName(field);
-					if (name == null)
-						name = function.getName();
-					this.put(name, function);
+					this.put(this.getName(field), function);
 				}
-			} catch (Exception e) {
+			} catch (Throwable e) {
 				SopremoUtil.LOG.warn(String.format("Cannot access field %s: %s", field, e));
 			}
 
 		if (FunctionRegistryCallback.class.isAssignableFrom(javaFunctions))
 			((FunctionRegistryCallback) ReflectUtil.newInstance(javaFunctions)).registerFunctions(this);
-	}
-
-	protected String getName(Class<?> object) {
-		String name = null;
-		final Name nameAnnotation = object.getAnnotation(Name.class);
-		if (nameAnnotation != null)
-			name =
-				this.nameChooser.choose(nameAnnotation.noun(), nameAnnotation.verb(), nameAnnotation.adjective(),
-					nameAnnotation.preposition());
-		return name;
-	}
-
-	protected String getName(AccessibleObject object) {
-		String name = null;
-		final Name nameAnnotation = object.getAnnotation(Name.class);
-		if (nameAnnotation != null)
-			name =
-				this.nameChooser.choose(nameAnnotation.noun(), nameAnnotation.verb(), nameAnnotation.adjective(),
-					nameAnnotation.preposition());
-		return name;
 	}
 
 	@Override
@@ -245,7 +219,6 @@ public class DefaultFunctionRegistry extends DefaultRegistry<Callable<?, ?>> imp
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + this.methods.hashCode();
-		result = prime * result + this.nameChooser.hashCode();
 		return result;
 	}
 
@@ -258,6 +231,6 @@ public class DefaultFunctionRegistry extends DefaultRegistry<Callable<?, ?>> imp
 		if (getClass() != obj.getClass())
 			return false;
 		DefaultFunctionRegistry other = (DefaultFunctionRegistry) obj;
-		return this.methods.equals(other.methods) && this.nameChooser.equals(other.nameChooser);
+		return this.methods.equals(other.methods);
 	}
 }

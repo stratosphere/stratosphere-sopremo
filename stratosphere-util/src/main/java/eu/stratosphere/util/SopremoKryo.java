@@ -12,28 +12,30 @@
  * specific language governing permissions and limitations under the License.
  *
  **********************************************************************************************************************/
-package eu.stratosphere.sopremo.function;
+package eu.stratosphere.util;
 
-import eu.stratosphere.sopremo.type.IArrayNode;
-import eu.stratosphere.sopremo.type.IJsonNode;
+import com.esotericsoftware.kryo.DefaultSerializer;
+import com.esotericsoftware.kryo.Kryo;
+import com.esotericsoftware.kryo.Serializer;
 
-/**
- * @author Arvid Heise
- */
-public abstract class SopremoFunction2<Arg1 extends IJsonNode, Arg2 extends IJsonNode> extends SopremoFunction {
-	public SopremoFunction2() {
-		super(2);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.function.Callable#call(java.lang.Object)
+public class SopremoKryo extends Kryo {
+	/**
+	 * Returns the best matching serializer for a class. This method can be overridden to implement custom logic to
+	 * choose a
+	 * serializer.
 	 */
-	@SuppressWarnings("unchecked")
 	@Override
-	public IJsonNode call(IArrayNode<IJsonNode> params) {
-		return this.call((Arg1) params.get(0), (Arg2) params.get(1));
-	}
+	@SuppressWarnings({ "rawtypes", "cast" })
+	public Serializer getDefaultSerializer(Class type) {
+		if (type == null)
+			throw new IllegalArgumentException("type cannot be null.");
 
-	protected abstract IJsonNode call(Arg1 arg1, Arg2 arg2);
+		if (!type.isInterface())
+			for (Class<?> baseType = type; baseType != Object.class; baseType = baseType.getSuperclass())
+				if (baseType.isAnnotationPresent(DefaultSerializer.class))
+					return newSerializer(
+						((DefaultSerializer) baseType.getAnnotation(DefaultSerializer.class)).value(), type);
+
+		return super.getDefaultSerializer(type);
+	}
 }

@@ -1,12 +1,19 @@
 package eu.stratosphere.sopremo.aggregation;
 
 import java.io.IOException;
+import java.util.Set;
+
+import com.esotericsoftware.kryo.Kryo;
+import com.esotericsoftware.kryo.Serializer;
+import com.esotericsoftware.kryo.io.Input;
+import com.esotericsoftware.kryo.io.Output;
 
 import eu.stratosphere.sopremo.AbstractSopremoType;
 import eu.stratosphere.sopremo.ISopremoType;
+import eu.stratosphere.sopremo.SopremoEnvironment;
 import eu.stratosphere.sopremo.expressions.AggregationExpression;
-import eu.stratosphere.sopremo.expressions.ArrayCreation;
-import eu.stratosphere.sopremo.expressions.EvaluationExpression;
+import eu.stratosphere.sopremo.operator.Name;
+import eu.stratosphere.sopremo.packages.IFunctionRegistry;
 import eu.stratosphere.sopremo.type.IJsonNode;
 
 /**
@@ -23,11 +30,6 @@ import eu.stratosphere.sopremo.type.IJsonNode;
  * @author Arvid Heise
  */
 public abstract class Aggregation extends AbstractSopremoType implements ISopremoType {
-	private final transient String name;
-
-	public Aggregation(final String name) {
-		this.name = name;
-	}
 
 	public abstract void aggregate(IJsonNode element);
 
@@ -63,15 +65,6 @@ public abstract class Aggregation extends AbstractSopremoType implements ISoprem
 		return (Aggregation) super.clone();
 	}
 
-	/**
-	 * Returns the name.
-	 * 
-	 * @return the name
-	 */
-	public String getName() {
-		return this.name;
-	}
-
 	@Override
 	public boolean equals(final Object obj) {
 		if (this == obj)
@@ -89,6 +82,19 @@ public abstract class Aggregation extends AbstractSopremoType implements ISoprem
 
 	@Override
 	public void appendAsString(final Appendable appendable) throws IOException {
-		appendable.append(this.name);
+		final IFunctionRegistry functionRegistry =
+			SopremoEnvironment.getInstance().getEvaluationContext().getFunctionRegistry();
+		final Set<String> allFunctions = functionRegistry.keySet();
+		String name = null;
+		for (String function : allFunctions) {
+			if (functionRegistry.get(function).equals(this)) {
+				name = function;
+				break;
+			}
+		}
+		if (name != null) {
+			appendable.append(name);
+		} else
+			appendable.append(this.getClass().getSimpleName());
 	}
 }

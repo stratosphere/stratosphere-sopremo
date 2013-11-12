@@ -30,8 +30,8 @@ public abstract class SopremoVarargFunction2<Arg1 extends IJsonNode, Arg2 extend
 	 * 
 	 * @param name
 	 */
-	public SopremoVarargFunction2(String name) {
-		super(name, 2);
+	public SopremoVarargFunction2() {
+		super(2);
 	}
 
 	/*

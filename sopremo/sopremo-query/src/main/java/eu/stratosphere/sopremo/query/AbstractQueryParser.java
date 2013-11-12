@@ -2,7 +2,6 @@ package eu.stratosphere.sopremo.query;
 
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 
 import java.io.File;
 import java.math.BigInteger;
@@ -41,6 +40,7 @@ import eu.stratosphere.sopremo.function.MacroBase;
 import eu.stratosphere.sopremo.function.SopremoFunction;
 import eu.stratosphere.sopremo.io.Sink;
 import eu.stratosphere.sopremo.io.SopremoFormat;
+import eu.stratosphere.sopremo.operator.Name;
 import eu.stratosphere.sopremo.operator.Operator;
 import eu.stratosphere.sopremo.operator.SopremoPlan;
 import eu.stratosphere.sopremo.packages.IConstantRegistry;
@@ -58,7 +58,7 @@ public abstract class AbstractQueryParser extends Parser implements ParsingScope
 	 */
 	public static final String DEFAULT_ERROR_MESSAGE = "Cannot parse script";
 
-	private PackageManager packageManager = new PackageManager();
+	private PackageManager packageManager = new PackageManager(getNameChooserProvider());
 
 	protected InputSuggestion inputSuggestion = new InputSuggestion().withMaxSuggestions(3).withMinSimilarity(0.5);
 
@@ -75,6 +75,8 @@ public abstract class AbstractQueryParser extends Parser implements ParsingScope
 		super(input);
 		this.init();
 	}
+	
+	protected abstract NameChooserProvider getNameChooserProvider();
 
 	/**
 	 * 
@@ -199,7 +201,7 @@ public abstract class AbstractQueryParser extends Parser implements ParsingScope
 
 		if (callable instanceof ExpressionFunction)
 			return ((ExpressionFunction) callable).inline(params);
-		return new FunctionCall(name.getText(), (SopremoFunction) callable, params);
+		return new FunctionCall((SopremoFunction) callable, params);
 	}
 
 	protected SopremoFunction getSopremoFunction(String packageName, Token name) {
@@ -343,7 +345,7 @@ public abstract class AbstractQueryParser extends Parser implements ParsingScope
 
 			SopremoUtil.LOG.warn("Cannot find file format for " + pathName + " using default " +
 				this.getDefaultFileFormat());
-			return fileFormatRegistry.get(fileFormatRegistry.getName(this.getDefaultFileFormat()));
+			return fileFormatRegistry.get(this.getDefaultFileFormat().getAnnotation(Name.class));
 		}
 		ParsingScope scope = this.getScope(packageName);
 		final ConfObjectInfo<SopremoFormat> format = scope.getFileFormatRegistry().get(name.getText());

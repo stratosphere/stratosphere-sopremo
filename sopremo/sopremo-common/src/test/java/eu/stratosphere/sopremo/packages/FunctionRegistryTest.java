@@ -1,7 +1,6 @@
 package eu.stratosphere.sopremo.packages;
 
 import org.junit.Assert;
-
 import org.junit.Before;
 import org.junit.Test;
 
@@ -9,6 +8,7 @@ import eu.stratosphere.sopremo.EvaluationContext;
 import eu.stratosphere.sopremo.EvaluationException;
 import eu.stratosphere.sopremo.function.JavaMethod;
 import eu.stratosphere.sopremo.function.SopremoFunction;
+import eu.stratosphere.sopremo.operator.Name;
 import eu.stratosphere.sopremo.type.ArrayNode;
 import eu.stratosphere.sopremo.type.IArrayNode;
 import eu.stratosphere.sopremo.type.IJsonNode;
@@ -117,26 +117,32 @@ public class FunctionRegistryTest {
 
 	public static class JavaFunctions {
 
+		@Name(verb = "count")
 		public static IJsonNode count(final IArrayNode<IJsonNode> node) {
 			return ARRAY_NODE;
 		}
 
+		@Name(verb = "count")
 		public static IJsonNode count(final IPrimitiveNode node, final IPrimitiveNode node2) {
 			return TWO_INT_NODE;
 		}
 
+		@Name(verb = "count")
 		public static IJsonNode count(final IPrimitiveNode node, final IPrimitiveNode... nodes) {
 			return ONE_INT_VARARG_NODE;
 		}
 
+		@Name(verb = "count")
 		public static IJsonNode count(final IJsonNode node) {
 			return GENERIC_NODE;
 		}
 
+		@Name(verb = "count")
 		public static IJsonNode count(final IJsonNode... node) {
 			return GENERIC_VARARG_NODE;
 		}
 
+		@Name(verb = "sum")
 		public static IJsonNode sum(final INumericNode... nodes) {
 			return SUM_NODE;
 		}

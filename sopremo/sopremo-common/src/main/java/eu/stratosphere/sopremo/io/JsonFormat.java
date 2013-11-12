@@ -40,6 +40,11 @@ public class JsonFormat extends SopremoFormat {
 
 	public static class JsonInputFormat extends SopremoFileInputFormat {
 
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = -642104267156446471L;
+
 		private JsonParser parser;
 
 		@Override
@@ -129,6 +134,11 @@ public class JsonFormat extends SopremoFormat {
 	 * @author Arvid Heise
 	 */
 	public static class JsonOutputFormat extends SopremoFileOutputFormat {
+
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = -1775609830466072732L;
 
 		private JsonGenerator generator;
 

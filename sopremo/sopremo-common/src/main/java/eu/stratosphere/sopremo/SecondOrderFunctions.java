@@ -34,12 +34,21 @@ import eu.stratosphere.sopremo.type.NullNode;
  * @author Arvid Heise
  */
 public class SecondOrderFunctions implements BuiltinProvider {
-	public final static SopremoFunction MAP = new MAP(), FILTER = new FILTER(), FOLD = new FOLD(), FIND = new FIND();
-
 	@Name(verb = "map")
+	public final static SopremoFunction MAP = new MAP();
+
+	@Name(verb = "filter")
+	public final static SopremoFunction FILTER = new FILTER();
+
+	@Name(verb = { "fold", "reduce" })
+	public final static SopremoFunction FOLD = new FOLD();
+
+	@Name(verb = "find")
+	public final static SopremoFunction FIND = new FIND();
+
 	public static class MAP extends SopremoFunction2<IArrayNode<IJsonNode>, FunctionNode> {
 		public MAP() {
-			super("map");
+			super();
 		}
 
 		private final transient IArrayNode<IJsonNode> result = new ArrayNode<IJsonNode>(),
@@ -61,10 +70,9 @@ public class SecondOrderFunctions implements BuiltinProvider {
 		}
 	};
 
-	@Name(verb = "filter")
 	public static class FILTER extends SopremoFunction2<IArrayNode<IJsonNode>, FunctionNode> {
 		public FILTER() {
-			super("filter");
+			super();
 		}
 
 		private final transient IArrayNode<IJsonNode> result = new ArrayNode<IJsonNode>(),
@@ -85,10 +93,9 @@ public class SecondOrderFunctions implements BuiltinProvider {
 		}
 	};
 
-	@Name(verb = "find")
 	public static class FIND extends SopremoFunction2<IArrayNode<IJsonNode>, FunctionNode> {
 		public FIND() {
-			super("find");
+			super();
 		}
 
 		private final transient IArrayNode<IJsonNode> parameters = new ArrayNode<IJsonNode>(1);
@@ -107,10 +114,9 @@ public class SecondOrderFunctions implements BuiltinProvider {
 		}
 	};
 
-	@Name(verb = { "fold", "reduce" })
 	public static final class FOLD extends SopremoFunction3<IArrayNode<IJsonNode>, IJsonNode, FunctionNode> {
 		public FOLD() {
-			super("fold");
+			super();
 		}
 
 		private final transient NodeCache nodeCache = new NodeCache();

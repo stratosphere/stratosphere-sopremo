@@ -21,7 +21,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import eu.stratosphere.sopremo.AbstractSopremoType;
 import eu.stratosphere.sopremo.ISopremoType;
 
 /**
@@ -29,8 +28,18 @@ import eu.stratosphere.sopremo.ISopremoType;
  * 
  * @author Arvid Heise
  */
-public class DefaultRegistry<T extends ISopremoType> extends AbstractSopremoType implements IRegistry<T> {
-	private Map<String, T> elements = new HashMap<String, T>();
+public class DefaultRegistry<T extends ISopremoType> extends AbstractRegistry<T> implements IRegistry<T> {
+	private final Map<String, T> elements = new HashMap<String, T>();
+
+	public DefaultRegistry(NameChooser nameChooser) {
+		super(nameChooser);
+	}
+
+	/**
+	 * Initializes DefaultRegistry.
+	 */
+	public DefaultRegistry() {		
+	}
 
 	@Override
 	public T get(String name) {
@@ -70,7 +79,7 @@ public class DefaultRegistry<T extends ISopremoType> extends AbstractSopremoType
 	@Override
 	public int hashCode() {
 		final int prime = 31;
-		int result = 1;
+		int result = super.hashCode();
 		result = prime * result + this.elements.hashCode();
 		return result;
 	}
@@ -81,7 +90,7 @@ public class DefaultRegistry<T extends ISopremoType> extends AbstractSopremoType
 			return true;
 		if (obj == null)
 			return false;
-		if (getClass() != obj.getClass())
+		if (!super.equals(obj))
 			return false;
 		DefaultRegistry<?> other = (DefaultRegistry<?>) obj;
 		return this.elements.equals(other.elements);

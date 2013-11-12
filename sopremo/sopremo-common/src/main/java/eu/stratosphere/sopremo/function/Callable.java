@@ -21,5 +21,61 @@ import eu.stratosphere.sopremo.ISopremoType;
  * @author Arvid Heise
  */
 public abstract class Callable<Result, InputType> extends AbstractSopremoType implements ISopremoType {
+
+	private final int minimumNumberOfParameters, maximumNumberOfParameters;
+
+	public Callable(int minimumNumberOfParameters, int maximumNumberOfParameters) {
+		this.minimumNumberOfParameters = minimumNumberOfParameters;
+		this.maximumNumberOfParameters = maximumNumberOfParameters;
+	}
+
+	/**
+	 * Returns true if the function can be called with the given number of parameters.
+	 */
+	public boolean accepts(int numberOfArguments) {
+		return this.minimumNumberOfParameters <= numberOfArguments &&
+			numberOfArguments <= this.maximumNumberOfParameters;
+	}
+
 	public abstract Result call(InputType params);
+
+	/**
+	 * Returns the maximumNumberOfParameters.
+	 * 
+	 * @return the maximumNumberOfParameters
+	 */
+	public int getMaximumNumberOfParameters() {
+		return this.maximumNumberOfParameters;
+	}
+
+	/**
+	 * Returns the minimumNumberOfParameters.
+	 * 
+	 * @return the minimumNumberOfParameters
+	 */
+	public int getMinimumNumberOfParameters() {
+		return this.minimumNumberOfParameters;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + this.maximumNumberOfParameters;
+		result = prime * result + this.minimumNumberOfParameters;
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (this.getClass() != obj.getClass())
+			return false;
+		Callable<?, ?> other = (Callable<?, ?>) obj;
+		return this.maximumNumberOfParameters == other.maximumNumberOfParameters &&
+			this.minimumNumberOfParameters == other.minimumNumberOfParameters;
+	}
 }

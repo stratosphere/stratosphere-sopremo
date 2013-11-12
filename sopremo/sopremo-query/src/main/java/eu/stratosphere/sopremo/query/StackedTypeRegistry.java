@@ -6,13 +6,14 @@ import java.util.Queue;
 
 import eu.stratosphere.sopremo.packages.DefaultTypeRegistry;
 import eu.stratosphere.sopremo.packages.ITypeRegistry;
+import eu.stratosphere.sopremo.packages.NameChooser;
 import eu.stratosphere.sopremo.type.IJsonNode;
 
 public class StackedTypeRegistry extends StackedRegistry<Class<? extends IJsonNode>, ITypeRegistry> implements
 		ITypeRegistry {
 
-	public StackedTypeRegistry() {
-		super(new DefaultTypeRegistry());
+	public StackedTypeRegistry(NameChooser typeNameChooser) {
+		super(typeNameChooser, new DefaultTypeRegistry(typeNameChooser));
 	}
 
 	/* (non-Javadoc)

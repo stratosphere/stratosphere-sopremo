@@ -34,7 +34,6 @@ public class AggregationFunction extends SopremoFunction1<IStreamNode<?>> {
 	 * @param aggregation
 	 */
 	public AggregationFunction(Aggregation aggregation) {
-		super(aggregation.getName());
 		this.aggregation = aggregation.clone();
 	}
 
@@ -42,7 +41,6 @@ public class AggregationFunction extends SopremoFunction1<IStreamNode<?>> {
 	 * Initializes AggregationFunction.
 	 */
 	AggregationFunction() {
-		super("");
 		this.aggregation = null;
 	}
 

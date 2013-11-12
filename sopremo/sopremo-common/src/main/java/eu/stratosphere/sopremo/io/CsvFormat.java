@@ -245,6 +245,11 @@ public class CsvFormat extends SopremoFormat {
 	}
 
 	public static class CsvOutputFormat extends SopremoFileOutputFormat {
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 385038405770899069L;
+
 		private char fieldDelimiter;
 
 		private String[] keyNames;
@@ -393,6 +398,11 @@ public class CsvFormat extends SopremoFormat {
 	 * InputFormat that interpretes the input data as a csv representation.
 	 */
 	public static class CsvInputFormat extends SopremoFileInputFormat {
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = -4999295498719746952L;
+
 		private char fieldDelimiter;
 
 		private Boolean quotation;

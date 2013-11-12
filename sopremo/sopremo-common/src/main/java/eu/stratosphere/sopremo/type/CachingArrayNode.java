@@ -14,8 +14,6 @@
  **********************************************************************************************************************/
 package eu.stratosphere.sopremo.type;
 
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-
 import java.lang.reflect.Array;
 
 import com.esotericsoftware.kryo.Kryo;

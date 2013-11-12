@@ -22,8 +22,8 @@ import eu.stratosphere.sopremo.type.IJsonNode;
  */
 public abstract class SopremoFunction3<Arg1 extends IJsonNode, Arg2 extends IJsonNode, Arg3 extends IJsonNode>
 		extends SopremoFunction {
-	public SopremoFunction3(String name) {
-		super(name, 3);
+	public SopremoFunction3() {
+		super( 3);
 	}
 
 	/*

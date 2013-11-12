@@ -43,34 +43,114 @@ public class PackageManager implements ParsingScope {
 
 	private List<File> jarPathLocations = new ArrayList<File>(Arrays.asList(new File(".")));
 
-	public final static IConfObjectRegistry<Operator<?>> IORegistry = new DefaultConfObjectRegistry<Operator<?>>();
+	private final StackedConstantRegistry constantRegistries;
 
-	public final static IConfObjectRegistry<SopremoFormat> DefaultFormatRegistry =
-		new DefaultConfObjectRegistry<SopremoFormat>();
+	private final StackedFunctionRegistry functionRegistries;
 
-	static {
-		IORegistry.put(Sink.class);
-		IORegistry.put(Source.class);
+	private final StackedTypeRegistry typeRegistries;
 
-		DefaultFormatRegistry.put(CsvFormat.class);
-		DefaultFormatRegistry.put(JsonFormat.class);
+	private final StackedConfObjectRegistry<Operator<?>> operatorRegistries;
+
+	private final StackedConfObjectRegistry<SopremoFormat> fileFormatRegistries;
+
+	private final NameChooserProvider nameChooserProvider;
+
+	public PackageManager(NameChooserProvider nameChooserProvider) {
+		this.nameChooserProvider = nameChooserProvider;
+
+		final IConfObjectRegistry<Operator<?>> ioRegistry = new DefaultConfObjectRegistry<Operator<?>>(
+			nameChooserProvider.getOperatorNameChooser(), nameChooserProvider.getPropertyNameChooser());
+		ioRegistry.put(Sink.class);
+		ioRegistry.put(Source.class);
+		this.operatorRegistries.addLast(ioRegistry);
+
+		final IConfObjectRegistry<SopremoFormat> defaultFormatRegistry = new DefaultConfObjectRegistry<SopremoFormat>(
+			nameChooserProvider.getFormatNameChooser(), nameChooserProvider.getPropertyNameChooser());
+		defaultFormatRegistry.put(CsvFormat.class);
+		defaultFormatRegistry.put(JsonFormat.class);
+		this.fileFormatRegistries.addLast(defaultFormatRegistry);
+
+		this.constantRegistries = new StackedConstantRegistry(nameChooserProvider.getConstantNameChooser());
+		this.functionRegistries = new StackedFunctionRegistry(nameChooserProvider.getFunctionNameChooser());
+
+		this.typeRegistries = new StackedTypeRegistry(nameChooserProvider.getTypeNameChooser());
+
+		this.operatorRegistries = new StackedConfObjectRegistry<Operator<?>>(
+			nameChooserProvider.getOperatorNameChooser(), nameChooserProvider.getPropertyNameChooser());
+
+		this.fileFormatRegistries = new StackedConfObjectRegistry<SopremoFormat>(
+			nameChooserProvider.getFormatNameChooser(), nameChooserProvider.getPropertyNameChooser());
 	}
 
-	public PackageManager() {
-		this.operatorRegistries.addLast(IORegistry);
-		this.fileFormatRegistries.addLast(DefaultFormatRegistry);
+	public void addAll(PackageManager packageManager) {
+		this.constantRegistries.push(packageManager.getConstantRegistry());
+		this.functionRegistries.push(packageManager.getFunctionRegistry());
+		this.operatorRegistries.push(packageManager.getOperatorRegistry());
+		this.fileFormatRegistries.push(packageManager.getFileFormatRegistry());
+		this.typeRegistries.push(packageManager.getTypeRegistry());
+		this.packages.putAll(packageManager.packages);
 	}
 
-	private StackedConstantRegistry constantRegistries = new StackedConstantRegistry();
+	/**
+	 * Sets the defaultJarPath to the specified value.
+	 * 
+	 * @param defaultJarPath
+	 *        the defaultJarPath to set
+	 */
+	public void addJarPathLocation(File jarPathLocation) {
+		if (jarPathLocation == null)
+			throw new NullPointerException("jarPathLocation must not be null");
 
-	private StackedFunctionRegistry functionRegistries = new StackedFunctionRegistry();
+		this.jarPathLocations.add(jarPathLocation);
+	}
 
-	private StackedTypeRegistry typeRegistries = new StackedTypeRegistry();
+	@Override
+	public IConstantRegistry getConstantRegistry() {
+		return this.constantRegistries;
+	}
 
-	private StackedConfObjectRegistry<Operator<?>> operatorRegistries = new StackedConfObjectRegistry<Operator<?>>();
+	/**
+	 * Returns the fileFormatRegistries.
+	 * 
+	 * @return the fileFormatRegistries
+	 */
+	@Override
+	public IConfObjectRegistry<SopremoFormat> getFileFormatRegistry() {
+		return this.fileFormatRegistries;
+	}
 
-	private StackedConfObjectRegistry<SopremoFormat> fileFormatRegistries =
-		new StackedConfObjectRegistry<SopremoFormat>();
+	@Override
+	public IFunctionRegistry getFunctionRegistry() {
+		return this.functionRegistries;
+	}
+
+	/**
+	 * Returns the names of the imported packages.
+	 * 
+	 * @return the packages
+	 */
+	public Collection<PackageInfo> getImportedPackages() {
+		return this.packages.values();
+	}
+
+	/**
+	 * Returns the jarPathLocations.
+	 * 
+	 * @return the jarPathLocations
+	 */
+	public List<File> getJarPathLocations() {
+		return this.jarPathLocations;
+	}
+
+	/**
+	 * Returns the operatorFactory.
+	 * 
+	 * @return the operatorFactory
+	 */
+	@Override
+	public IConfObjectRegistry<Operator<?>> getOperatorRegistry() {
+		return this.operatorRegistries;
+	}
 
 	/**
 	 * Imports sopremo-&lt;packageName&gt;.jar or returns a cached package
@@ -83,7 +163,8 @@ public class PackageManager implements ParsingScope {
 		if (packageInfo == null) {
 			List<File> packagePath = this.findPackageInClassPath(packageName);
 			if (!packagePath.isEmpty()) {
-				packageInfo = new PackageInfo(packageName, ClassLoader.getSystemClassLoader());
+				packageInfo =
+					new PackageInfo(packageName, ClassLoader.getSystemClassLoader(), this.nameChooserProvider);
 				File jarFile = null;
 				for (File file : packagePath)
 					if (file.isFile() && file.getName().endsWith(".jar")) {
@@ -96,7 +177,7 @@ public class PackageManager implements ParsingScope {
 				File jarLocation = this.findPackageInJarPathLocations(packageName);
 				if (jarLocation == null)
 					throw new IllegalArgumentException(String.format("no package %s found", packageName));
-				packageInfo = new PackageInfo(packageName);
+				packageInfo = new PackageInfo(packageName, this.nameChooserProvider);
 				packagePath = Arrays.asList(jarLocation);
 			}
 			QueryUtil.LOG.debug("adding package " + packagePath);
@@ -114,45 +195,6 @@ public class PackageManager implements ParsingScope {
 	}
 
 	/**
-	 * Returns the names of the imported packages.
-	 * 
-	 * @return the packages
-	 */
-	public Collection<PackageInfo> getImportedPackages() {
-		return this.packages.values();
-	}
-
-	/**
-	 * Returns the fileFormatRegistries.
-	 * 
-	 * @return the fileFormatRegistries
-	 */
-	@Override
-	public IConfObjectRegistry<SopremoFormat> getFileFormatRegistry() {
-		return this.fileFormatRegistries;
-	}
-
-	/**
-	 * Returns the operatorFactory.
-	 * 
-	 * @return the operatorFactory
-	 */
-	@Override
-	public IConfObjectRegistry<Operator<?>> getOperatorRegistry() {
-		return this.operatorRegistries;
-	}
-
-	@Override
-	public IConstantRegistry getConstantRegistry() {
-		return this.constantRegistries;
-	}
-
-	@Override
-	public IFunctionRegistry getFunctionRegistry() {
-		return this.functionRegistries;
-	}
-
-	/**
 	 * Returns the typeRegistries.
 	 * 
 	 * @return the typeRegistries
@@ -160,6 +202,38 @@ public class PackageManager implements ParsingScope {
 	@Override
 	public StackedTypeRegistry getTypeRegistry() {
 		return this.typeRegistries;
+	}
+
+	public void importPackage(PackageInfo packageInfo) {
+		this.constantRegistries.push(packageInfo.getConstantRegistry());
+		this.functionRegistries.push(packageInfo.getFunctionRegistry());
+		this.operatorRegistries.push(packageInfo.getOperatorRegistry());
+		this.fileFormatRegistries.push(packageInfo.getFileFormatRegistry());
+		this.typeRegistries.push(packageInfo.getTypeRegistry());
+	}
+
+	public void importPackage(String packageName) {
+		this.importPackage(this.getPackageInfo(packageName));
+	}
+
+	public void importPackageFrom(String packageName, File jarFile) {
+		try {
+			PackageInfo packageInfo = new PackageInfo(packageName, this.nameChooserProvider);
+			packageInfo.importFrom(jarFile, packageName);
+			this.packages.put(packageName, packageInfo);
+			this.importPackage(packageInfo);
+		} catch (Exception e) {
+			throw new IllegalArgumentException("Cannot load package from directory", e);
+		}
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return String.format("Package manager with packages %s", this.packages);
 	}
 
 	protected List<File> findPackageInClassPath(String packageName) {
@@ -184,14 +258,6 @@ public class PackageManager implements ParsingScope {
 		return paths;
 	}
 
-	private String getClasspath() {
-		// FIXME hack for running integration tests wit maven
-		String classpath = System.getProperty("surefire.test.class.path");
-		if (StringUtils.isBlank(classpath))
-			classpath = System.getProperty("java.class.path");
-		return classpath;
-	}
-
 	protected File findPackageInJarPathLocations(String packageName) {
 		String sopremoPackage = getJarFileNameForPackageName(packageName);
 		// look in additional directories
@@ -210,70 +276,15 @@ public class PackageManager implements ParsingScope {
 		return null;
 	}
 
+	private String getClasspath() {
+		// FIXME hack for running integration tests wit maven
+		String classpath = System.getProperty("surefire.test.class.path");
+		if (StringUtils.isBlank(classpath))
+			classpath = System.getProperty("java.class.path");
+		return classpath;
+	}
+
 	protected static String getJarFileNameForPackageName(String packageName) {
 		return "sopremo-" + packageName;
-	}
-
-	/**
-	 * Sets the defaultJarPath to the specified value.
-	 * 
-	 * @param defaultJarPath
-	 *        the defaultJarPath to set
-	 */
-	public void addJarPathLocation(File jarPathLocation) {
-		if (jarPathLocation == null)
-			throw new NullPointerException("jarPathLocation must not be null");
-
-		this.jarPathLocations.add(jarPathLocation);
-	}
-
-	/**
-	 * Returns the jarPathLocations.
-	 * 
-	 * @return the jarPathLocations
-	 */
-	public List<File> getJarPathLocations() {
-		return this.jarPathLocations;
-	}
-
-	public void importPackage(String packageName) {
-		this.importPackage(this.getPackageInfo(packageName));
-	}
-
-	public void importPackageFrom(String packageName, File jarFile) {
-		try {
-			PackageInfo packageInfo = new PackageInfo(packageName);
-			packageInfo.importFrom(jarFile, packageName);
-			this.packages.put(packageName, packageInfo);
-			this.importPackage(packageInfo);
-		} catch (Exception e) {
-			throw new IllegalArgumentException("Cannot load package from directory", e);
-		}
-	}
-
-	public void importPackage(PackageInfo packageInfo) {
-		this.constantRegistries.push(packageInfo.getConstantRegistry());
-		this.functionRegistries.push(packageInfo.getFunctionRegistry());
-		this.operatorRegistries.push(packageInfo.getOperatorRegistry());
-		this.fileFormatRegistries.push(packageInfo.getFileFormatRegistry());
-		this.typeRegistries.push(packageInfo.getTypeRegistry());
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#toString()
-	 */
-	@Override
-	public String toString() {
-		return String.format("Package manager with packages %s", this.packages);
-	}
-
-	public void addAll(PackageManager packageManager) {
-		this.constantRegistries.push(packageManager.getConstantRegistry());
-		this.functionRegistries.push(packageManager.getFunctionRegistry());
-		this.operatorRegistries.push(packageManager.getOperatorRegistry());
-		this.fileFormatRegistries.push(packageManager.getFileFormatRegistry());
-		this.typeRegistries.push(packageManager.getTypeRegistry());
-		this.packages.putAll(packageManager.packages);
 	}
 }

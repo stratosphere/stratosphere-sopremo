@@ -24,6 +24,4 @@ import eu.stratosphere.sopremo.packages.IRegistry;
  */
 public interface IConfObjectRegistry<T extends ConfigurableSopremoType> extends IRegistry<ConfObjectInfo<T>> {
 	void put(Class<? extends T> clazz);
-
-	String getName(final Class<? extends T> operatorClass);
 }

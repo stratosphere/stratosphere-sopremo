@@ -1,16 +1,22 @@
 package eu.stratosphere.sopremo.aggregation;
 
+import com.esotericsoftware.kryo.DefaultSerializer;
+import com.esotericsoftware.kryo.Kryo;
+import com.esotericsoftware.kryo.Serializer;
+import com.esotericsoftware.kryo.io.Input;
+import com.esotericsoftware.kryo.io.Output;
+
 import eu.stratosphere.sopremo.type.IJsonNode;
 import eu.stratosphere.util.reflect.ReflectUtil;
 
+@DefaultSerializer(AssociativeAggregation.AssociativeAggregationSerializer.class)
 public abstract class AssociativeAggregation<ElementType extends IJsonNode> extends Aggregation {
 	protected final ElementType initialAggregate;
 
 	protected transient ElementType aggregator;
 
 	@SuppressWarnings("unchecked")
-	public AssociativeAggregation(final String name, final ElementType initialAggregate) {
-		super(name);
+	public AssociativeAggregation(final ElementType initialAggregate) {
 		this.initialAggregate = initialAggregate;
 		this.aggregator = (ElementType) initialAggregate.clone();
 	}
@@ -35,16 +41,39 @@ public abstract class AssociativeAggregation<ElementType extends IJsonNode> exte
 			this.aggregator.copyValueFrom(this.initialAggregate);
 	}
 
-	@Override
-	public Aggregation clone() {
-		try {
-			// initial aggregate does not need to be cloned as it is never modified
-			return ReflectUtil.newInstance(this.getClass());
-		} catch (Exception e) {
-			throw new IllegalStateException("Aggregation must implement no-arg ctor", e);
+	/**
+	 * @author arv
+	 */
+	public static class AssociativeAggregationSerializer extends Serializer<AssociativeAggregation<?>> {
+		/*
+		 * (non-Javadoc)
+		 * @see com.esotericsoftware.kryo.Serializer#read(com.esotericsoftware.kryo.Kryo,
+		 * com.esotericsoftware.kryo.io.Input, java.lang.Class)
+		 */
+		@Override
+		public AssociativeAggregation<?> read(Kryo kryo, Input input, Class<AssociativeAggregation<?>> type) {
+			return ReflectUtil.newInstance(type, kryo.readClassAndObject(input));
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see com.esotericsoftware.kryo.Serializer#write(com.esotericsoftware.kryo.Kryo,
+		 * com.esotericsoftware.kryo.io.Output, java.lang.Object)
+		 */
+		@Override
+		public void write(Kryo kryo, Output output, AssociativeAggregation<?> object) {
+			kryo.writeClassAndObject(output, object.initialAggregate);
+		}
+		
+		/* (non-Javadoc)
+		 * @see com.esotericsoftware.kryo.Serializer#copy(com.esotericsoftware.kryo.Kryo, java.lang.Object)
+		 */
+		@Override
+		public AssociativeAggregation<?> copy(Kryo kryo, AssociativeAggregation<?> original) {
+			return ReflectUtil.newInstance(original.getClass(), original.initialAggregate);
 		}
 	}
-
+	
 	/*
 	 * (non-Javadoc)
 	 * @see eu.stratosphere.sopremo.aggregation.Aggregation#aggregate(eu.stratosphere.sopremo.type.IJsonNode)

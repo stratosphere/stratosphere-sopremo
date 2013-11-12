@@ -76,6 +76,7 @@ public class JsonCollector<T extends IJsonNode> implements Collector<T> {
 	 * @param value
 	 *        the node that should be collected
 	 */
+	@Override
 	public void collect(final T value) {
 		final IJsonNode resultValue = this.resultProjection.evaluate(value);
 		if (SopremoUtil.LOG.isTraceEnabled())

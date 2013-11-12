@@ -179,7 +179,7 @@ public abstract class AbstractArrayNode<T extends IJsonNode> extends AbstractJso
 		public AbstractArrayNode<?> read(Kryo kryo, Input input, Class<AbstractArrayNode<?>> type) {
 			final int len = input.readInt();
 
-			AbstractArrayNode<IJsonNode> array = new ArrayNode<IJsonNode>();
+			AbstractArrayNode<IJsonNode> array = new CachingArrayNode<IJsonNode>();
 			for (int i = 0; i < len; i++)
 				array.add((IJsonNode) kryo.readClassAndObject(input));
 			return array;

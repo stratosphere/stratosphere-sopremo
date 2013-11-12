@@ -36,7 +36,6 @@ public class ArrayAccessAsAggregation extends Aggregation {
 	 * @param name
 	 */
 	public ArrayAccessAsAggregation(int startIndex, int endIndex, boolean range) {
-		super("Array access");
 		this.startIndex = startIndex;
 		this.endIndex = endIndex;
 		this.range = range;

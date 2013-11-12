@@ -25,7 +25,10 @@ import eu.stratosphere.sopremo.expressions.ObjectAccess;
 import eu.stratosphere.sopremo.io.JsonFormat;
 import eu.stratosphere.sopremo.io.SopremoFormat;
 import eu.stratosphere.sopremo.packages.DefaultConstantRegistry;
+import eu.stratosphere.sopremo.packages.DefaultNameChooser;
 import eu.stratosphere.sopremo.packages.IConstantRegistry;
+import eu.stratosphere.sopremo.query.DefaultNameChooserProvider;
+import eu.stratosphere.sopremo.query.NameChooserProvider;
 import eu.stratosphere.sopremo.query.QueryWithVariablesParser;
 import eu.stratosphere.sopremo.query.RecognitionExceptionWithUsageHint;
 import eu.stratosphere.sopremo.query.StackedConstantRegistry;
@@ -39,7 +42,11 @@ import eu.stratosphere.sopremo.type.TextNode;
  * @author Arvid Heise
  */
 public abstract class MeteorParserBase extends QueryWithVariablesParser<JsonStreamExpression> {
-	private StackedConstantRegistry constantRegistry = new StackedConstantRegistry();
+	static DefaultNameChooserProvider NameChooserProvider =
+		new DefaultNameChooserProvider(new DefaultNameChooser(3, 0, 1, 2));
+
+	private StackedConstantRegistry constantRegistry = new StackedConstantRegistry(
+		NameChooserProvider.getConstantNameChooser());
 
 	public MeteorParserBase(TokenStream input) {
 		super(input);
@@ -59,6 +66,11 @@ public abstract class MeteorParserBase extends QueryWithVariablesParser<JsonStre
 		if (expression instanceof ObjectAccess)
 			return ((ObjectAccess) expression).getField();
 		return expression.toString();
+	}
+
+	@Override
+	protected NameChooserProvider getNameChooserProvider() {
+		return NameChooserProvider;
 	}
 
 	/*
@@ -82,11 +94,12 @@ public abstract class MeteorParserBase extends QueryWithVariablesParser<JsonStre
 	protected JsonStreamExpression getVariable(Token name) {
 		return this.getVariableRegistry().get(name.getText());
 	}
-	
+
 	protected JsonStreamExpression getVariableSafely(Token name) throws RecognitionException {
 		JsonStreamExpression variable = getVariable(name);
-		if(variable == null)
-			throw new RecognitionExceptionWithUsageHint(name, String.format("Unknown varible %s; possible alternatives %s", name,
+		if (variable == null)
+			throw new RecognitionExceptionWithUsageHint(name, String.format(
+				"Unknown varible %s; possible alternatives %s", name,
 				this.inputSuggestion.suggest(name.getText(), getVariableRegistry().keySet())));
 		return variable;
 	}
@@ -94,7 +107,7 @@ public abstract class MeteorParserBase extends QueryWithVariablesParser<JsonStre
 	protected void putVariable(Token name, JsonStreamExpression expression) {
 		this.getVariableRegistry().put(name.getText(), expression);
 	}
-	
+
 	protected void putVariable(Token name, JsonStreamExpression expression, int depth) {
 		this.getVariableRegistry().getRegistry(depth).put(name.getText(), expression);
 	}
@@ -110,6 +123,10 @@ public abstract class MeteorParserBase extends QueryWithVariablesParser<JsonStre
 		this.addTypeAlias("bool", BooleanNode.class);
 
 		this.constantRegistry.push(super.getConstantRegistry());
+	}
+	
+	static {
+		NameChooserProvider.setFunctionNameChooser(new DefaultNameChooser(1, 0, 2, 3));
 	}
 
 	protected void removeConstantScope() {

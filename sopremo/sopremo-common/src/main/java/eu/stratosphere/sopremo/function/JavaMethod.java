@@ -37,7 +37,7 @@ public class JavaMethod extends SopremoFunction {
 	 * Initializes JavaMethod.
 	 */
 	public JavaMethod(final String name) {
-		super(name, 0, Integer.MAX_VALUE);
+		super(0, Integer.MAX_VALUE);
 		this.method = new DynamicMethod<IJsonNode>(name);
 	}
 

@@ -98,6 +98,11 @@ public class SampleFormat extends SopremoFormat {
 
 	public static class SampleInputFormat extends AbstractSopremoInputFormat<InputSplit> {
 
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 8534362304827555826L;
+
 		private SopremoFormat originalFormat;
 
 		private SopremoInputFormat<InputSplit> originalInputFormat;

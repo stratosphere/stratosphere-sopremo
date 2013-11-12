@@ -365,7 +365,7 @@ public class BatchAggregationExpression extends PathSegmentExpression {
 			final Partial copy = new Partial(outer, this.getAggregation().clone(), this.index);
 			FieldSerializer<PathSegmentExpression> serializer =
 				(FieldSerializer<PathSegmentExpression>) kryo.getSerializer(PathSegmentExpression.class);
-			for (FieldSerializer<PathSegmentExpression>.CachedField<?> field : serializer.getFields())
+			for (FieldSerializer<?>.CachedField<?> field : serializer.getFields())
 				field.copy(this, copy);
 			return copy;
 		}

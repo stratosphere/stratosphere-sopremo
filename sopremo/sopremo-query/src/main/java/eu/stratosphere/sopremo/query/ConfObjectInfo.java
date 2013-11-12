@@ -14,6 +14,7 @@
  **********************************************************************************************************************/
 package eu.stratosphere.sopremo.query;
 
+import java.beans.BeanInfo;
 import java.beans.IndexedPropertyDescriptor;
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
@@ -183,11 +184,22 @@ public class ConfObjectInfo<Obj extends ConfigurableSopremoType> extends Abstrac
 	private final IRegistry<ConfObjectPropertyInfo> operatorPropertyRegistry =
 		new DefaultRegistry<ConfObjectPropertyInfo>();
 
-	private final IRegistry<ConfObjectIndexedPropertyInfo> inputPropertyRegistry = new DefaultRegistry<ConfObjectIndexedPropertyInfo>();
+	private final IRegistry<ConfObjectIndexedPropertyInfo> inputPropertyRegistry =
+		new DefaultRegistry<ConfObjectIndexedPropertyInfo>();
 
-	public ConfObjectInfo(final Class<Obj> operatorClass, final String opName,
+	private final BeanInfo beanInfo;
+
+	private IConfObjectRegistry<?> registry;
+
+	public ConfObjectInfo(final IConfObjectRegistry<?> registry, final Class<Obj> operatorClass, final String opName,
 			final NameChooser propertyNameChooser) {
+		this.registry = registry;
 		this.operatorClass = operatorClass;
+		try {
+			this.beanInfo = Introspector.getBeanInfo(this.operatorClass);
+		} catch (IntrospectionException e) {
+			throw new RuntimeException(e);
+		}
 		this.name = opName;
 		this.propertyNameChooser = propertyNameChooser;
 	}
@@ -200,29 +212,21 @@ public class ConfObjectInfo<Obj extends ConfigurableSopremoType> extends Abstrac
 	}
 
 	private void initProperties() {
-		try {
-			final PropertyDescriptor[] propertyDescriptors = Introspector.getBeanInfo(this.operatorClass)
-				.getPropertyDescriptors();
-			for (final PropertyDescriptor propertyDescriptor : propertyDescriptors)
-				if (propertyDescriptor.getWriteMethod() != null
-					|| propertyDescriptor instanceof IndexedPropertyDescriptor &&
-					((IndexedPropertyDescriptor) propertyDescriptor).getIndexedWriteMethod() != null) {
-					String name = this.propertyNameChooser.choose(
-						(String[]) propertyDescriptor.getValue(ConfigurableSopremoType.Info.NAME_NOUNS),
-						(String[]) propertyDescriptor.getValue(ConfigurableSopremoType.Info.NAME_VERB),
-						(String[]) propertyDescriptor.getValue(ConfigurableSopremoType.Info.NAME_ADJECTIVE),
-						(String[]) propertyDescriptor.getValue(ConfigurableSopremoType.Info.NAME_PREPOSITION));
-					if (name == null)
-						name = propertyDescriptor.getName();
+		final PropertyDescriptor[] propertyDescriptors = this.beanInfo.getPropertyDescriptors();
+		for (final PropertyDescriptor propertyDescriptor : propertyDescriptors) {
+			String name = this.propertyNameChooser.choose(
+				(String[]) propertyDescriptor.getValue(ConfigurableSopremoType.Info.NAME_NOUNS),
+				(String[]) propertyDescriptor.getValue(ConfigurableSopremoType.Info.NAME_VERB),
+				(String[]) propertyDescriptor.getValue(ConfigurableSopremoType.Info.NAME_ADJECTIVE),
+				(String[]) propertyDescriptor.getValue(ConfigurableSopremoType.Info.NAME_PREPOSITION));
+			if (name == null)
+				name = propertyDescriptor.getName();
 
-					if (propertyDescriptor.getValue(ConfigurableSopremoType.Info.INPUT) == Boolean.TRUE)
-						this.inputPropertyRegistry.put(name, new ConfObjectIndexedPropertyInfo(name,
-							(IndexedPropertyDescriptor) propertyDescriptor));
-					else
-						this.operatorPropertyRegistry.put(name, new ConfObjectPropertyInfo(name, propertyDescriptor));
-				}
-		} catch (final IntrospectionException e) {
-			e.printStackTrace();
+			if (propertyDescriptor.getValue(ConfigurableSopremoType.Info.INPUT) == Boolean.TRUE)
+				this.inputPropertyRegistry.put(name, new ConfObjectIndexedPropertyInfo(name,
+					(IndexedPropertyDescriptor) propertyDescriptor));
+			else
+				this.operatorPropertyRegistry.put(name, new ConfObjectPropertyInfo(name, propertyDescriptor));
 		}
 	}
 
