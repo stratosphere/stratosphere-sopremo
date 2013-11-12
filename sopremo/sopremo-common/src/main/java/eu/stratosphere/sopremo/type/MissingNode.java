@@ -76,7 +76,6 @@ public class MissingNode extends AbstractJsonNode implements IPrimitiveNode {
 
 	@Override
 	public void clear() {
-		throw new UnsupportedOperationException("MissingNode");
 	}
 
 	public static class MissingSerializer extends SingletonSerializer {

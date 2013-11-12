@@ -7,6 +7,8 @@ import org.junit.Test;
 
 import eu.stratosphere.sopremo.CoreFunctions;
 import eu.stratosphere.sopremo.EvaluationContext;
+import eu.stratosphere.sopremo.aggregation.AggregationFunction;
+import eu.stratosphere.sopremo.expressions.AggregationExpression;
 import eu.stratosphere.sopremo.expressions.ArrayAccess;
 import eu.stratosphere.sopremo.expressions.ArrayProjection;
 import eu.stratosphere.sopremo.expressions.ConstantExpression;
@@ -239,7 +241,7 @@ public class GroupingTest extends SopremoOperatorTestBase<Grouping> {
 		final SopremoTestPlan sopremoPlan = new SopremoTestPlan(1, 1);
 		sopremoPlan.getEvaluationContext().getFunctionRegistry().put(CoreFunctions.class);
 
-		final Grouping aggregation = new Grouping().withResultProjection(CoreFunctions.COUNT.inline(new InputSelection(0)));
+		final Grouping aggregation = new Grouping().withResultProjection(new FunctionCall(CoreFunctions.COUNT, new InputSelection(0)));
 		aggregation.setInputs(sopremoPlan.getInputOperator(0));
 		sopremoPlan.getOutputOperator(0).setInputs(aggregation);
 		sopremoPlan.getInput(0).

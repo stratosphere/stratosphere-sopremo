@@ -11,7 +11,7 @@ import eu.stratosphere.util.reflect.ReflectUtil;
 
 @DefaultSerializer(AssociativeAggregation.AssociativeAggregationSerializer.class)
 public abstract class AssociativeAggregation<ElementType extends IJsonNode> extends Aggregation {
-	protected final ElementType initialAggregate;
+	protected final transient ElementType initialAggregate;
 
 	protected transient ElementType aggregator;
 

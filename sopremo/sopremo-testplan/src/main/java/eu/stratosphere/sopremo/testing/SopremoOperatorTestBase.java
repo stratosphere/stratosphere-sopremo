@@ -31,6 +31,7 @@ import eu.stratosphere.sopremo.EqualCloneTest;
 import eu.stratosphere.sopremo.io.Sink;
 import eu.stratosphere.sopremo.operator.Operator;
 import eu.stratosphere.sopremo.operator.SopremoPlan;
+import eu.stratosphere.util.SopremoKryo;
 
 /**
  * 
@@ -40,7 +41,7 @@ public abstract class SopremoOperatorTestBase<T extends Operator<T>> extends Equ
 
 	@Test
 	public void testPlanSerialization() {
-		final Kryo k = new Kryo();
+		final Kryo k = new SopremoKryo();
 
 		for (T original : getInstances()) {
 			final SopremoPlan plan = new SopremoPlan();

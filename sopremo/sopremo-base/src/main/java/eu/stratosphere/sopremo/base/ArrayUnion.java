@@ -16,6 +16,9 @@ package eu.stratosphere.sopremo.base;
 
 import java.io.IOException;
 
+import com.esotericsoftware.kryo.DefaultSerializer;
+import com.esotericsoftware.kryo.serializers.FieldSerializer;
+
 import eu.stratosphere.sopremo.aggregation.Aggregation;
 import eu.stratosphere.sopremo.aggregation.FixedTypeAssociativeAggregation;
 import eu.stratosphere.sopremo.type.ArrayNode;
@@ -23,6 +26,7 @@ import eu.stratosphere.sopremo.type.IArrayNode;
 import eu.stratosphere.sopremo.type.IJsonNode;
 import eu.stratosphere.sopremo.type.MissingNode;
 
+@DefaultSerializer(FieldSerializer.class)
 public final class ArrayUnion extends FixedTypeAssociativeAggregation<ArrayNode<IJsonNode>> {
 	public ArrayUnion() {
 		super(new ArrayNode<IJsonNode>());
