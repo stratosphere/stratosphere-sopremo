@@ -25,7 +25,7 @@
 		<dependency>
 			<groupId>eu.stratosphere</groupId>
 			<artifactId>pact-testplan</artifactId>
-			<version>${ozone.version}</version>
+			<version>${pact-testplan.version}</version>
 		</dependency>
 		<dependency>
 		    <groupId>nl.jqno.equalsverifier</groupId>

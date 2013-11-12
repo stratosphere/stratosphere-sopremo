@@ -51,7 +51,8 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-		<ozone.version>0.4-SNAPSHOT</ozone.version>
+		<ozone.version>0.4-alpha.1-SNAPSHOT</ozone.version>
+		<pact-testplan.version>0.4-SNAPSHOT</pact-testplan.version>
 	</properties>
 
 	<dependencies>
