@@ -68,7 +68,7 @@ public class EvaluationContext extends AbstractSopremoType implements ISopremoTy
 		this(new DefaultFunctionRegistry(), new DefaultConstantRegistry(), new DefaultTypeRegistry(),
 			new HashMap<String, Object>());
 	}
-
+	
 	/**
 	 * Initializes EvaluationContext.
 	 */
@@ -125,10 +125,14 @@ public class EvaluationContext extends AbstractSopremoType implements ISopremoTy
 	 */
 	@Override
 	public void appendAsString(final Appendable appendable) throws IOException {
-		appendable.append("Context @ ").append(this.operatorDescription).append("\n").append("Methods: ");
-		this.methodRegistry.appendAsString(appendable);
-		appendable.append("\nConstants: ");
-		this.constantRegistry.appendAsString(appendable);
+		appendable.append("Context @ ").append(this.operatorDescription).append("\n");		
+		if(this.methodRegistry != null) {
+			appendable.append("Methods: ");
+			this.methodRegistry.appendAsString(appendable);
+		}
+		if(this.constantRegistry != null) {
+			this.constantRegistry.appendAsString(appendable);
+		}
 		appendable.append("\nParameters: ");
 		appendable.append(this.contextParameters.toString());
 	}
