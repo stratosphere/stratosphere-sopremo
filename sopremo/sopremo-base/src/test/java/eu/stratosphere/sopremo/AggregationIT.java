@@ -38,7 +38,6 @@ public class AggregationIT {
 			addObject("id", 2, "values1", new int[] { 21, 22 }, "values2", new int[] { 21, 22 }, "sorted",
 				new int[] { 21, 22 });
 
-		plan.trace();
 		plan.run();
 	}
 }
