@@ -120,7 +120,7 @@ public class ConfObjectInfo<Obj extends ConfigurableSopremoType> extends Abstrac
 					.invoke(operator, coerce(expression, this.getDescriptor().getPropertyType()));
 			} catch (final Exception e) {
 				throw new RuntimeException(
-					String.format("Could not set property %s of %s to %s", this.getName(), operator, expression), e);
+					String.format("Could not set property '%s' of '%s' to: %s", this.getName(), operator, expression), e);
 			}
 		}
 

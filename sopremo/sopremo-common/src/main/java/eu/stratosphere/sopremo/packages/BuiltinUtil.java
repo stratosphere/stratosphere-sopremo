@@ -36,7 +36,7 @@ public class BuiltinUtil {
 
 		// anonymous inner class
 		// find the field and check if there is an annotation
-		final Field[] fields = clazz.getDeclaringClass().getFields();
+		final Field[] fields = clazz.getEnclosingClass().getFields();
 		for (Field field : fields) {
 			if (Modifier.isStatic(field.getModifiers()))
 				try {

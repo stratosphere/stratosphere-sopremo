@@ -187,7 +187,7 @@ pathSegment
 @init {  paraphrase.push("a path expression"); }
 @after { paraphrase.pop(); }
   : // add .field or [index] to path
-    ('?.')=> '?.' field=ID -> ^(EXPRESSION["TernaryExpression"] ^(EXPRESSION["NotNullOrMissingBooleanExpression"]) ^(EXPRESSION["ObjectAccess"] {$field.text} {EvaluationExpression.VALUE}))  
+    ('?.')=> '?.' field=ID -> ^(EXPRESSION["TernaryExpression"]  {new NotNullOrMissingBooleanExpression()} {new ObjectAccess($field.text)} {EvaluationExpression.VALUE})  
   | ('.') => '.' field=ID -> ^(EXPRESSION["ObjectAccess"] {$field.text})    
   | ('[') => arrayAccess;
 

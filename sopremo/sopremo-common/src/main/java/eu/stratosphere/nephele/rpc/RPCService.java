@@ -42,6 +42,8 @@ import com.esotericsoftware.kryo.io.Output;
 import com.esotericsoftware.minlog.Log;
 
 import eu.stratosphere.nephele.util.StringUtils;
+import eu.stratosphere.util.KryoUtil;
+import eu.stratosphere.util.SopremoKryo;
 
 /**
  * This class implements a lightweight, UDP-based RPC service.
@@ -110,30 +112,6 @@ public final class RPCService {
 		new ConcurrentHashMap<Integer, CachedResponse>();
 
 	private final List<Class<?>> kryoTypesToRegister;
-
-	private final ThreadLocal<Kryo> kryo = new ThreadLocal<Kryo>() {
-
-		/**
-		 * {@inheritDoc}
-		 */
-		@Override
-		protected Kryo initialValue() {
-
-			final Kryo kryo = new Kryo();
-			if (RPCService.this.kryoTypesToRegister != null) {
-				kryo.setAutoReset(false);
-				kryo.setRegistrationRequired(true);
-				kryo.setReferences(true);
-				kryo.addDefaultSerializer(StackTraceElement.class, new StackTraceElementSerializer());
-				kryo.addDefaultSerializer(Collection.class, new CollectionSerializer());
-
-				for (final Class<?> kryoType : RPCService.this.kryoTypesToRegister)
-					kryo.register(kryoType);
-			}
-
-			return kryo;
-		}
-	};
 
 	private static final class CachedResponse {
 
@@ -463,7 +441,7 @@ public final class RPCService {
 			@Override
 			public void run() {
 
-				final Kryo k = RPCService.this.kryo.get();
+				final Kryo k = KryoUtil.getKryo();
 				k.reset();
 				final RPCEnvelope envelope = k.readObject(input, RPCEnvelope.class);
 				final RPCMessage msg = envelope.getRPCMessage();
@@ -553,7 +531,7 @@ public final class RPCService {
 	 */
 	private boolean isThrowableRegistered(final Class<? extends Throwable> throwableType) {
 
-		final Kryo kryo = this.kryo.get();
+		final Kryo kryo = KryoUtil.getKryo();
 		try {
 			kryo.getRegistration(throwableType);
 		} catch (IllegalArgumentException e) {
@@ -588,7 +566,7 @@ public final class RPCService {
 
 		final MultiPacketOutputStream mpos = new MultiPacketOutputStream(RPCMessage.MAXIMUM_MSG_SIZE
 			+ RPCMessage.METADATA_SIZE);
-		final Kryo kryo = this.kryo.get();
+		final Kryo kryo = KryoUtil.getKryo();
 		kryo.reset();
 
 		final Output output = new Output(mpos);

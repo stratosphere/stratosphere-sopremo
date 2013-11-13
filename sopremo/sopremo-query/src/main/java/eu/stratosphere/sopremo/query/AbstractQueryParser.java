@@ -449,7 +449,7 @@ public abstract class AbstractQueryParser extends Parser implements ParsingScope
 	protected abstract void parseSinks() throws RecognitionException;
 
 	public SopremoPlan parse() throws QueryParserException {
-		this.currentPlan = new SopremoPlan();
+//		this.currentPlan = new SopremoPlan();
 		try {
 			// this.setupParser();
 			this.parseSinks();

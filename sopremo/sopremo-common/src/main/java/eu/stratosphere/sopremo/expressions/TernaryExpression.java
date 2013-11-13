@@ -18,6 +18,7 @@ import java.io.IOException;
 
 import eu.stratosphere.sopremo.cache.NodeCache;
 import eu.stratosphere.sopremo.expressions.tree.ChildIterator;
+import eu.stratosphere.sopremo.expressions.tree.ConcatenatingNamedChildIterator;
 import eu.stratosphere.sopremo.expressions.tree.NamedChildIterator;
 import eu.stratosphere.sopremo.type.BooleanNode;
 import eu.stratosphere.sopremo.type.IJsonNode;
@@ -26,7 +27,7 @@ import eu.stratosphere.sopremo.type.TypeCoercer;
 /**
  * Represents a if-then-else clause.
  */
-public class TernaryExpression extends EvaluationExpression {
+public class TernaryExpression extends PathSegmentExpression {
 
 	private EvaluationExpression ifClause;
 
@@ -99,8 +100,13 @@ public class TernaryExpression extends EvaluationExpression {
 
 	private final transient NodeCache nodeCache = new NodeCache();
 
+	/*
+	 * (non-Javadoc)
+	 * @see
+	 * eu.stratosphere.sopremo.expressions.PathSegmentExpression#evaluateSegment(eu.stratosphere.sopremo.type.IJsonNode)
+	 */
 	@Override
-	public IJsonNode evaluate(final IJsonNode node) {
+	protected IJsonNode evaluateSegment(IJsonNode node) {
 		// no need to reuse the target of the coercion - a boolean node is never created anew
 		if (TypeCoercer.INSTANCE.coerce(this.ifClause.evaluate(node), this.nodeCache, BooleanNode.class) == BooleanNode.TRUE)
 			return this.ifExpression.evaluate(node);
@@ -113,33 +119,34 @@ public class TernaryExpression extends EvaluationExpression {
 	 */
 	@Override
 	public ChildIterator iterator() {
-		return new NamedChildIterator("ifClause", "ifExpression", "thenExpression") {
-			@Override
-			protected void set(int index, EvaluationExpression childExpression) {
-				switch (index) {
-				case 0:
-					TernaryExpression.this.ifClause = childExpression;
-					break;
-				case 1:
-					TernaryExpression.this.ifExpression = childExpression;
-					break;
-				default:
-					TernaryExpression.this.thenExpression = childExpression;
+		return new ConcatenatingNamedChildIterator(super.namedChildIterator(),
+			new NamedChildIterator("ifClause", "ifExpression", "thenExpression") {
+				@Override
+				protected void set(int index, EvaluationExpression childExpression) {
+					switch (index) {
+					case 0:
+						TernaryExpression.this.ifClause = childExpression;
+						break;
+					case 1:
+						TernaryExpression.this.ifExpression = childExpression;
+						break;
+					default:
+						TernaryExpression.this.thenExpression = childExpression;
+					}
 				}
-			}
 
-			@Override
-			protected EvaluationExpression get(int index) {
-				switch (index) {
-				case 0:
-					return TernaryExpression.this.ifClause;
-				case 1:
-					return TernaryExpression.this.ifExpression;
-				default:
-					return TernaryExpression.this.thenExpression;
+				@Override
+				protected EvaluationExpression get(int index) {
+					switch (index) {
+					case 0:
+						return TernaryExpression.this.ifClause;
+					case 1:
+						return TernaryExpression.this.ifExpression;
+					default:
+						return TernaryExpression.this.thenExpression;
+					}
 				}
-			}
-		};
+			});
 	}
 
 	@Override
@@ -151,20 +158,28 @@ public class TernaryExpression extends EvaluationExpression {
 		this.thenExpression.appendAsString(appendable);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.expressions.PathSegmentExpression#segmentHashCode()
+	 */
 	@Override
-	public int hashCode() {
+	protected int segmentHashCode() {
 		final int prime = 31;
-		int result = super.hashCode();
+		int result = 1;
 		result = prime * result + this.ifClause.hashCode();
 		result = prime * result + this.ifExpression.hashCode();
 		result = prime * result + this.thenExpression.hashCode();
 		return result;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see
+	 * eu.stratosphere.sopremo.expressions.PathSegmentExpression#equalsSameClass(eu.stratosphere.sopremo.expressions
+	 * .PathSegmentExpression)
+	 */
 	@Override
-	public boolean equals(final Object obj) {
-		if (!super.equals(obj))
-			return false;
+	protected boolean equalsSameClass(PathSegmentExpression obj) {
 		final TernaryExpression other = (TernaryExpression) obj;
 		return this.ifClause.equals(other.ifClause)
 			&& this.ifExpression.equals(other.ifExpression)

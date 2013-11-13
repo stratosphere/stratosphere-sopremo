@@ -15,6 +15,13 @@ public class StackedTypeRegistry extends StackedRegistry<Class<? extends IJsonNo
 	public StackedTypeRegistry(NameChooser typeNameChooser) {
 		super(typeNameChooser, new DefaultTypeRegistry(typeNameChooser));
 	}
+	
+	/**
+	 * Initializes StackedTypeRegistry.
+	 *
+	 */
+	StackedTypeRegistry() {
+	}
 
 	/* (non-Javadoc)
 	 * @see eu.stratosphere.sopremo.packages.ITypeRegistry#getTypes()

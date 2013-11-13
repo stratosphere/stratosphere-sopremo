@@ -1,8 +1,13 @@
 package eu.stratosphere.sopremo.packages;
 
+import java.io.IOException;
 import java.util.Arrays;
 
-public class DefaultNameChooser implements NameChooser {
+import javolution.text.TextFormat;
+
+import eu.stratosphere.sopremo.AbstractSopremoType;
+
+public class DefaultNameChooser extends AbstractSopremoType implements NameChooser {
 	private final int[] preferredOrder;
 
 	public DefaultNameChooser(final int... preferredOrder) {
@@ -32,6 +37,14 @@ public class DefaultNameChooser implements NameChooser {
 		return names == null || names.length == 0 ? null : names[0];
 	}
 
+	/* (non-Javadoc)
+	 * @see eu.stratosphere.util.IAppending#appendAsString(java.lang.Appendable)
+	 */
+	@Override
+	public void appendAsString(Appendable appendable) throws IOException {
+		appendable.append(Arrays.toString(this.preferredOrder));
+	}
+	
 	@Override
 	public int hashCode() {
 		final int prime = 31;

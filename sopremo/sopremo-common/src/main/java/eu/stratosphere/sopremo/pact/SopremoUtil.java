@@ -298,6 +298,7 @@ public class SopremoUtil {
 			return defaultValue;
 		Input input = new Input(stringRepresentation.getBytes(BINARY_CHARSET));
 		final Kryo kryo = KryoUtil.getKryo();
+		kryo.reset();
 		kryo.setClassLoader(SopremoEnvironment.getInstance().getClassLoader());
 		return (T) kryo.readClassAndObject(input);
 	}

@@ -327,13 +327,12 @@ public abstract class EvaluationExpression extends AbstractSopremoType implement
 		if (predicate.apply(this))
 			return VALUE;
 
-		this.removeRecursively(this, predicate);
+		this.removeRecursively(predicate);
 		return this;
 	}
 
-	private void removeRecursively(final EvaluationExpression expressionParent,
-			final Predicate<? super EvaluationExpression> predicate) {
-		final ChildIterator iterator = expressionParent.iterator();
+	private void removeRecursively(final Predicate<? super EvaluationExpression> predicate) {
+		final ChildIterator iterator = iterator();
 		while (iterator.hasNext()) {
 			EvaluationExpression child = iterator.next();
 			if (predicate.apply(child)) {
@@ -342,7 +341,7 @@ public abstract class EvaluationExpression extends AbstractSopremoType implement
 				else
 					iterator.remove();
 			} else
-				child.removeRecursively(this, predicate);
+				child.removeRecursively(predicate);
 		}
 	}
 

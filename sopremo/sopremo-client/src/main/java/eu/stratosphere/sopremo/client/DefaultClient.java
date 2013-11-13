@@ -272,8 +272,11 @@ public class DefaultClient implements Closeable {
 	}
 
 	private void dealWithError(ProgressListener progressListener, Exception e, final String detail) {
-		progressListener.progressUpdate(ExecutionState.ERROR, String.format("%s: %s", detail,
-			StringUtils.stringifyException(e)));
+		if (e != null)
+			progressListener.progressUpdate(ExecutionState.ERROR, String.format("%s: %s", detail,
+				StringUtils.stringifyException(e)));
+		else
+			progressListener.progressUpdate(ExecutionState.ERROR, detail);
 	}
 
 	private void initConnection(ProgressListener progressListener) {

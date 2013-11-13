@@ -129,6 +129,15 @@ public abstract class NamedChildIterator implements ChildIterator {
 	public boolean canChildBeRemoved() {
 		return false;
 	}
+	
+	/**
+	 * Returns the childNames.
+	 * 
+	 * @return the childNames
+	 */
+	protected String[] getChildNames() {
+		return this.childNames;
+	}
 
 	/*
 	 * (non-Javadoc)

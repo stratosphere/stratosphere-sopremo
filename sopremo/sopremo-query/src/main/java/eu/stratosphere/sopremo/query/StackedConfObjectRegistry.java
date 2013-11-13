@@ -10,6 +10,13 @@ public class StackedConfObjectRegistry<T extends ConfigurableSopremoType> extend
 	public StackedConfObjectRegistry(NameChooser nameChooser, NameChooser propertyNameChooser) {
 		super(new DefaultConfObjectRegistry<T>(nameChooser, propertyNameChooser));
 	}
+	
+	/**
+	 * Initializes StackedConfObjectRegistry.
+	 *
+	 */
+	StackedConfObjectRegistry() {
+	}
 
 	@Override
 	public void put(Class<? extends T> clazz) {

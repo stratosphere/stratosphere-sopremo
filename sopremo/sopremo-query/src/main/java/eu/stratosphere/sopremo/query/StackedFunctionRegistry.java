@@ -13,6 +13,13 @@ public class StackedFunctionRegistry extends StackedRegistry<Callable<?, ?>, IFu
 	public StackedFunctionRegistry(NameChooser functionNameChooser) {
 		super(functionNameChooser, new DefaultFunctionRegistry(functionNameChooser));
 	}
+	
+	/**
+	 * Initializes StackedFunctionRegistry.
+	 *
+	 */
+	StackedFunctionRegistry() {
+	}
 
 	@Override
 	public void put(Method method) {
