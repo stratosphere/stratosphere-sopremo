@@ -35,22 +35,7 @@ import eu.stratosphere.sopremo.type.NullNode;
  */
 public class SecondOrderFunctions implements BuiltinProvider {
 	@Name(verb = "map")
-	public final static SopremoFunction MAP = new MAP();
-
-	@Name(verb = "filter")
-	public final static SopremoFunction FILTER = new FILTER();
-
-	@Name(verb = { "fold", "reduce" })
-	public final static SopremoFunction FOLD = new FOLD();
-
-	@Name(verb = "find")
-	public final static SopremoFunction FIND = new FIND();
-
-	public static class MAP extends SopremoFunction2<IArrayNode<IJsonNode>, FunctionNode> {
-		public MAP() {
-			super();
-		}
-
+	public final static SopremoFunction MAP = new SopremoFunction2<IArrayNode<IJsonNode>, FunctionNode>() {
 		private final transient IArrayNode<IJsonNode> result = new ArrayNode<IJsonNode>(),
 				parameters = new ArrayNode<IJsonNode>(1);
 
@@ -70,11 +55,8 @@ public class SecondOrderFunctions implements BuiltinProvider {
 		}
 	};
 
-	public static class FILTER extends SopremoFunction2<IArrayNode<IJsonNode>, FunctionNode> {
-		public FILTER() {
-			super();
-		}
-
+	@Name(verb = "filter")
+	public final static SopremoFunction FILTER = new SopremoFunction2<IArrayNode<IJsonNode>, FunctionNode>() {
 		private final transient IArrayNode<IJsonNode> result = new ArrayNode<IJsonNode>(),
 				parameters = new ArrayNode<IJsonNode>(1);
 
@@ -93,32 +75,8 @@ public class SecondOrderFunctions implements BuiltinProvider {
 		}
 	};
 
-	public static class FIND extends SopremoFunction2<IArrayNode<IJsonNode>, FunctionNode> {
-		public FIND() {
-			super();
-		}
-
-		private final transient IArrayNode<IJsonNode> parameters = new ArrayNode<IJsonNode>(1);
-
-		@Override
-		protected IJsonNode call(IArrayNode<IJsonNode> input, final FunctionNode filterExpression) {
-			SopremoUtil.assertArguments(filterExpression.getFunction(), 1);
-
-			final SopremoFunction function = filterExpression.getFunction();
-			for (final IJsonNode node : input) {
-				this.parameters.set(0, node);
-				if (function.call(this.parameters) == BooleanNode.TRUE)
-					return node;
-			}
-			return NullNode.getInstance();
-		}
-	};
-
-	public static final class FOLD extends SopremoFunction3<IArrayNode<IJsonNode>, IJsonNode, FunctionNode> {
-		public FOLD() {
-			super();
-		}
-
+	@Name(verb = { "fold", "reduce" })
+	public final static SopremoFunction FOLD = new SopremoFunction3<IArrayNode<IJsonNode>, IJsonNode, FunctionNode>() {
 		private final transient NodeCache nodeCache = new NodeCache();
 
 		private final transient IArrayNode<IJsonNode> parameters = new ArrayNode<IJsonNode>();
@@ -137,6 +95,24 @@ public class SecondOrderFunctions implements BuiltinProvider {
 			}
 
 			return aggregator;
+		}
+	};
+
+	@Name(verb = "find")
+	public final static SopremoFunction FIND = new SopremoFunction2<IArrayNode<IJsonNode>, FunctionNode>() {
+		private final transient IArrayNode<IJsonNode> parameters = new ArrayNode<IJsonNode>(1);
+
+		@Override
+		protected IJsonNode call(IArrayNode<IJsonNode> input, final FunctionNode filterExpression) {
+			SopremoUtil.assertArguments(filterExpression.getFunction(), 1);
+
+			final SopremoFunction function = filterExpression.getFunction();
+			for (final IJsonNode node : input) {
+				this.parameters.set(0, node);
+				if (function.call(this.parameters) == BooleanNode.TRUE)
+					return node;
+			}
+			return NullNode.getInstance();
 		}
 	};
 

@@ -5,6 +5,7 @@ import eu.stratosphere.sopremo.expressions.ArrayAccess;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
 import eu.stratosphere.sopremo.operator.ElementaryOperator;
 import eu.stratosphere.sopremo.operator.InputCardinality;
+import eu.stratosphere.sopremo.operator.Name;
 import eu.stratosphere.sopremo.operator.Property;
 import eu.stratosphere.sopremo.pact.JsonCollector;
 import eu.stratosphere.sopremo.pact.SopremoMap;
@@ -21,6 +22,7 @@ import eu.stratosphere.sopremo.type.NullNode;
  * @author Arvid Heise
  */
 @InputCardinality(1)
+@Name(verb = "split array")
 public class ArraySplit extends ElementaryOperator<ArraySplit> {
 	private EvaluationExpression arrayPath = EvaluationExpression.VALUE, splitProjection = new ArrayAccess(0);
 
@@ -48,6 +50,7 @@ public class ArraySplit extends ElementaryOperator<ArraySplit> {
 	 *        the arrayPath to set
 	 */
 	@Property
+	@Name(preposition = "on")
 	public void setArrayPath(EvaluationExpression arrayPath) {
 		if (arrayPath == null)
 			throw new NullPointerException("arrayPath must not be null");
@@ -72,6 +75,7 @@ public class ArraySplit extends ElementaryOperator<ArraySplit> {
 	 * @param elementProjection
 	 */
 	@Property
+	@Name(preposition = "into")
 	public void setSplitProjection(EvaluationExpression elementProjection) {
 		if (elementProjection == null)
 			throw new NullPointerException("elementProjection must not be null");

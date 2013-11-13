@@ -1,5 +1,6 @@
 package eu.stratosphere.sopremo.base.join;
 
+import eu.stratosphere.sopremo.operator.Internal;
 import eu.stratosphere.sopremo.pact.JsonCollector;
 import eu.stratosphere.sopremo.pact.SopremoCoGroup;
 import eu.stratosphere.sopremo.type.ArrayNode;
@@ -8,6 +9,7 @@ import eu.stratosphere.sopremo.type.IJsonNode;
 import eu.stratosphere.sopremo.type.IStreamNode;
 import eu.stratosphere.sopremo.type.NullNode;
 
+@Internal
 public class SemiJoin extends TwoSourceJoinBase<SemiJoin> {
 	/**
 	 * Initializes SemiJoin.

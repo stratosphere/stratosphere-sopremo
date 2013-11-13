@@ -29,6 +29,7 @@ import eu.stratosphere.nephele.util.StringUtils;
 import eu.stratosphere.sopremo.AbstractSopremoType;
 import eu.stratosphere.sopremo.ISopremoType;
 import eu.stratosphere.sopremo.io.SopremoFormat;
+import eu.stratosphere.sopremo.operator.Internal;
 import eu.stratosphere.sopremo.operator.Operator;
 import eu.stratosphere.sopremo.packages.BuiltinProvider;
 import eu.stratosphere.sopremo.packages.ConstantRegistryCallback;
@@ -125,6 +126,8 @@ public class PackageInfo extends AbstractSopremoType implements ISopremoType, Pa
 		Class<?> clazz;
 		try {
 			clazz = this.classLoader.loadClass(className);
+			if(clazz.getAnnotation(Internal.class) != null)
+				return;
 			if (Operator.class.isAssignableFrom(clazz) && (clazz.getModifiers() & Modifier.ABSTRACT) == 0) {
 				clazz = Class.forName(className, true, this.classLoader);
 				QueryUtil.LOG.trace("adding operator " + clazz);

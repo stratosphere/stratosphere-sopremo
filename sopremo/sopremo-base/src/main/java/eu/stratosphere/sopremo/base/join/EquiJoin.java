@@ -1,7 +1,9 @@
 package eu.stratosphere.sopremo.base.join;
 
 import eu.stratosphere.pact.common.stubs.Stub;
+import eu.stratosphere.sopremo.operator.Internal;
 
+@Internal
 public class EquiJoin extends TwoSourceJoinBase<EquiJoin> {
 	private Mode mode = Mode.BOTH;
 

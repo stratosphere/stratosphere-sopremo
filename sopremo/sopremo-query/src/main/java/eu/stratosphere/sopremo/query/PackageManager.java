@@ -58,6 +58,14 @@ public class PackageManager implements ParsingScope {
 	public PackageManager(NameChooserProvider nameChooserProvider) {
 		this.nameChooserProvider = nameChooserProvider;
 
+		this.constantRegistries = new StackedConstantRegistry(nameChooserProvider.getConstantNameChooser());
+		this.functionRegistries = new StackedFunctionRegistry(nameChooserProvider.getFunctionNameChooser());
+		this.typeRegistries = new StackedTypeRegistry(nameChooserProvider.getTypeNameChooser());
+		this.operatorRegistries = new StackedConfObjectRegistry<Operator<?>>(
+			nameChooserProvider.getOperatorNameChooser(), nameChooserProvider.getPropertyNameChooser());
+		this.fileFormatRegistries = new StackedConfObjectRegistry<SopremoFormat>(
+			nameChooserProvider.getFormatNameChooser(), nameChooserProvider.getPropertyNameChooser());
+
 		final IConfObjectRegistry<Operator<?>> ioRegistry = new DefaultConfObjectRegistry<Operator<?>>(
 			nameChooserProvider.getOperatorNameChooser(), nameChooserProvider.getPropertyNameChooser());
 		ioRegistry.put(Sink.class);
@@ -69,17 +77,6 @@ public class PackageManager implements ParsingScope {
 		defaultFormatRegistry.put(CsvFormat.class);
 		defaultFormatRegistry.put(JsonFormat.class);
 		this.fileFormatRegistries.addLast(defaultFormatRegistry);
-
-		this.constantRegistries = new StackedConstantRegistry(nameChooserProvider.getConstantNameChooser());
-		this.functionRegistries = new StackedFunctionRegistry(nameChooserProvider.getFunctionNameChooser());
-
-		this.typeRegistries = new StackedTypeRegistry(nameChooserProvider.getTypeNameChooser());
-
-		this.operatorRegistries = new StackedConfObjectRegistry<Operator<?>>(
-			nameChooserProvider.getOperatorNameChooser(), nameChooserProvider.getPropertyNameChooser());
-
-		this.fileFormatRegistries = new StackedConfObjectRegistry<SopremoFormat>(
-			nameChooserProvider.getFormatNameChooser(), nameChooserProvider.getPropertyNameChooser());
 	}
 
 	public void addAll(PackageManager packageManager) {

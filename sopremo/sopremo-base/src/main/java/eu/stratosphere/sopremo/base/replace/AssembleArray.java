@@ -17,6 +17,7 @@ package eu.stratosphere.sopremo.base.replace;
 import eu.stratosphere.sopremo.expressions.ArrayAccess;
 import eu.stratosphere.sopremo.operator.ElementaryOperator;
 import eu.stratosphere.sopremo.operator.InputCardinality;
+import eu.stratosphere.sopremo.operator.Internal;
 import eu.stratosphere.sopremo.pact.JsonCollector;
 import eu.stratosphere.sopremo.pact.SopremoUtil;
 import eu.stratosphere.sopremo.pact.GenericSopremoReduce;
@@ -31,6 +32,7 @@ import eu.stratosphere.sopremo.type.JsonUtil;
  * @author Arvid Heise
  */
 @InputCardinality(1)
+@Internal
 public class AssembleArray extends ElementaryOperator<AssembleArray> {
 	/**
 	 * Initializes AssembleArray.

@@ -16,6 +16,7 @@ import eu.stratosphere.sopremo.expressions.OrderingExpression;
 import eu.stratosphere.sopremo.operator.ElementaryOperator;
 import eu.stratosphere.sopremo.operator.ElementarySopremoModule;
 import eu.stratosphere.sopremo.operator.InputCardinality;
+import eu.stratosphere.sopremo.operator.Name;
 import eu.stratosphere.sopremo.operator.OutputCardinality;
 import eu.stratosphere.sopremo.operator.Property;
 import eu.stratosphere.sopremo.pact.SopremoUtil;
@@ -28,6 +29,7 @@ import eu.stratosphere.util.Equaler;
  */
 @InputCardinality(1)
 @OutputCardinality(0)
+@Name(noun = "sink")
 public class Sink extends ElementaryOperator<Sink> {
 	private String outputPath;
 

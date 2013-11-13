@@ -19,6 +19,7 @@ import java.util.Iterator;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
 import eu.stratosphere.sopremo.expressions.PathSegmentExpression;
 import eu.stratosphere.sopremo.operator.InputCardinality;
+import eu.stratosphere.sopremo.operator.Internal;
 import eu.stratosphere.sopremo.operator.Property;
 import eu.stratosphere.sopremo.pact.JsonCollector;
 import eu.stratosphere.sopremo.pact.SopremoCoGroup;
@@ -26,6 +27,7 @@ import eu.stratosphere.sopremo.type.IJsonNode;
 import eu.stratosphere.sopremo.type.IStreamNode;
 
 @InputCardinality(min = 2, max = 2)
+@Internal
 public class AtomarReplaceWithDefaultValue extends AtomarReplaceBase<AtomarReplaceWithDefaultValue> {
 	private EvaluationExpression defaultExpression = EvaluationExpression.VALUE;
 

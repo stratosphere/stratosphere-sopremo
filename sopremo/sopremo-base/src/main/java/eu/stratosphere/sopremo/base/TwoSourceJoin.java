@@ -26,10 +26,12 @@ import eu.stratosphere.sopremo.expressions.ElementInSetExpression;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
 import eu.stratosphere.sopremo.expressions.InputSelection;
 import eu.stratosphere.sopremo.expressions.TransformFunction;
+import eu.stratosphere.sopremo.operator.Internal;
 import eu.stratosphere.sopremo.operator.Name;
 import eu.stratosphere.sopremo.operator.Property;
 import eu.stratosphere.sopremo.serialization.SopremoRecordLayout;
 
+@Internal
 public class TwoSourceJoin extends TwoSourceJoinBase<TwoSourceJoin> {
 	private BinaryBooleanExpression condition = new ComparativeExpression(new InputSelection(0),
 		ComparativeExpression.BinaryOperator.EQUAL, new InputSelection(1));

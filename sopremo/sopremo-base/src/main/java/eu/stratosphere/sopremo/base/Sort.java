@@ -14,19 +14,17 @@
  **********************************************************************************************************************/
 package eu.stratosphere.sopremo.base;
 
-import java.util.Arrays;
-import java.util.Comparator;
-
-import eu.stratosphere.nephele.configuration.Configuration;
+import eu.stratosphere.pact.common.contract.Order;
 import eu.stratosphere.sopremo.expressions.ConstantExpression;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
 import eu.stratosphere.sopremo.expressions.OrderingExpression;
 import eu.stratosphere.sopremo.operator.DegreeOfParallelism;
 import eu.stratosphere.sopremo.operator.ElementaryOperator;
 import eu.stratosphere.sopremo.operator.InputCardinality;
+import eu.stratosphere.sopremo.operator.Name;
+import eu.stratosphere.sopremo.operator.Property;
 import eu.stratosphere.sopremo.pact.JsonCollector;
 import eu.stratosphere.sopremo.pact.SopremoReduce;
-import eu.stratosphere.sopremo.type.ArrayNode;
 import eu.stratosphere.sopremo.type.IJsonNode;
 import eu.stratosphere.sopremo.type.IStreamNode;
 
@@ -35,42 +33,69 @@ import eu.stratosphere.sopremo.type.IStreamNode;
  */
 @InputCardinality(1)
 @DegreeOfParallelism(1)
+@Name(verb = "sort", noun = "sort")
 public class Sort extends ElementaryOperator<Sort> {
-	private OrderingExpression sortingExpression = new OrderingExpression();
-
 	/**
 	 * Initializes Sort.
 	 */
 	public Sort() {
 		this.setKeyExpressions(0, ConstantExpression.NULL);
-		setInnerGroupOrder(0, this.sortingExpression);
+		setInnerGroupOrder(0, new OrderingExpression());
 	}
 
 	/**
-	 * Sets the sortingExpression to the specified value.
+	 * Sets the orderingExpression to the specified value.
 	 * 
-	 * @param sortingExpression
-	 *        the sortingExpression to set
+	 * @param orderingExpression
+	 *        the orderingExpression to set
 	 */
-	public void setSortingExpression(OrderingExpression sortingExpression) {
-		if (sortingExpression == null)
-			throw new NullPointerException("sortingExpression must not be null");
+	public void setOrderingExpression(OrderingExpression orderingExpression) {
+		if (orderingExpression == null)
+			throw new NullPointerException("orderingExpression must not be null");
 
-		setInnerGroupOrder(0, sortingExpression);
+		setInnerGroupOrder(0, orderingExpression);
 	}
 
 	/**
-	 * Returns the sortingExpression.
+	 * Returns the orderingExpression.
 	 * 
-	 * @return the sortingExpression
+	 * @return the orderingExpression
 	 */
-	public EvaluationExpression getSortingExpression() {
+	public OrderingExpression getOrderingExpression() {
 		return this.getInnerGroupOrder(0).get(0);
 	}
 
-	public Sort withSortingExpression(OrderingExpression sortingExpression) {
+	public Sort withOrderingExpression(OrderingExpression orderingExpression) {
+		setOrderingExpression(orderingExpression);
+		return this;
+	}
+
+	@Property
+	@Name(noun = { "direction", "order" })
+	public void setDirection(Order order) {
+		getOrderingExpression().setOrder(order);
+	}
+
+	public Order getDirection() {
+		return getOrderingExpression().getOrder();
+	}
+
+	public Sort withDirection(Order order) {
+		setDirection(order);
+		return this;
+	}
+
+	public EvaluationExpression getSortingExpression() {
+		return this.getOrderingExpression().getPath();
+	}
+
+	public Sort withSortingExpression(EvaluationExpression sortingExpression) {
 		setSortingExpression(sortingExpression);
 		return this;
+	}
+
+	public void setSortingExpression(EvaluationExpression sortingExpression) {
+		getOrderingExpression().setPath(sortingExpression);
 	}
 
 	public static class Implementation extends SopremoReduce {
@@ -97,29 +122,29 @@ public class Sort extends ElementaryOperator<Sort> {
 // }
 //
 // /**
-// * Sets the sortingExpression to the specified value.
+// * Sets the orderingExpression to the specified value.
 // *
-// * @param sortingExpression
-// * the sortingExpression to set
+// * @param orderingExpression
+// * the orderingExpression to set
 // */
-// public void setSortingExpression(OrderingExpression sortingExpression) {
-// if (sortingExpression == null)
-// throw new NullPointerException("sortingExpression must not be null");
+// public void setOrderingExpression(OrderingExpression orderingExpression) {
+// if (orderingExpression == null)
+// throw new NullPointerException("orderingExpression must not be null");
 //
-// this.setInnerGroupOrder(0, Collections.singletonList(sortingExpression));
+// this.setInnerGroupOrder(0, Collections.singletonList(orderingExpression));
 // }
 //
 // /**
-// * Returns the sortingExpression.
+// * Returns the orderingExpression.
 // *
-// * @return the sortingExpression
+// * @return the orderingExpression
 // */
-// public EvaluationExpression getSortingExpression() {
+// public EvaluationExpression getOrderingExpression() {
 // return this.getInnerGroupOrder(0).get(0);
 // }
 //
-// public Sort withSortingExpression(OrderingExpression sortingExpression) {
-// setSortingExpression(sortingExpression);
+// public Sort withOrderingExpression(OrderingExpression orderingExpression) {
+// setOrderingExpression(orderingExpression);
 // return this;
 // }
 //

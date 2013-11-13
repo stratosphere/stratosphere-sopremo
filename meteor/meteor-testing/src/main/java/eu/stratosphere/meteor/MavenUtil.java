@@ -55,7 +55,7 @@ public class MavenUtil {
 		try {
 			boolean success = false;
 			String line;
-			Process p = Runtime.getRuntime().exec("mvn jar:jar -Djar.finalName=" + jarName);
+			Process p = Runtime.getRuntime().exec("mvn jar:jar -o -Djar.finalName=" + jarName);
 			BufferedReader bri = new BufferedReader(new InputStreamReader(p.getInputStream()));
 			while ((line = bri.readLine()) != null) {
 				System.out.println(line);

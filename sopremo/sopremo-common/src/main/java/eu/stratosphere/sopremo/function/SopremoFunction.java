@@ -2,6 +2,8 @@ package eu.stratosphere.sopremo.function;
 
 import java.io.IOException;
 
+import eu.stratosphere.sopremo.SopremoEnvironment;
+import eu.stratosphere.sopremo.packages.BuiltinUtil;
 import eu.stratosphere.sopremo.type.IArrayNode;
 import eu.stratosphere.sopremo.type.IJsonNode;
 
@@ -33,7 +35,8 @@ public abstract class SopremoFunction extends Callable<IJsonNode, IArrayNode<IJs
 	 */
 	@Override
 	public void appendAsString(Appendable appendable) throws IOException {
-		appendable.append(this.getClass().getSimpleName());
+		appendable.append(BuiltinUtil.getName(appendable, 
+			SopremoEnvironment.getInstance().getEvaluationContext().getFunctionRegistry()));
 	}
 
 	/*

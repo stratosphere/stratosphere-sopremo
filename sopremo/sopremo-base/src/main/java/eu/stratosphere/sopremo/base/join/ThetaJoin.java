@@ -4,6 +4,7 @@ import eu.stratosphere.sopremo.expressions.BooleanExpression;
 import eu.stratosphere.sopremo.expressions.ComparativeExpression;
 import eu.stratosphere.sopremo.expressions.InputSelection;
 import eu.stratosphere.sopremo.operator.InputCardinality;
+import eu.stratosphere.sopremo.operator.Internal;
 import eu.stratosphere.sopremo.pact.JsonCollector;
 import eu.stratosphere.sopremo.pact.SopremoCross;
 import eu.stratosphere.sopremo.type.ArrayNode;
@@ -12,6 +13,7 @@ import eu.stratosphere.sopremo.type.IArrayNode;
 import eu.stratosphere.sopremo.type.IJsonNode;
 
 @InputCardinality(min = 2, max = 2)
+@Internal
 public class ThetaJoin extends TwoSourceJoinBase<ThetaJoin> {
 	private BooleanExpression condition = new ComparativeExpression(new InputSelection(0),
 		ComparativeExpression.BinaryOperator.EQUAL, new InputSelection(1));

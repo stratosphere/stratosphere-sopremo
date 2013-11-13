@@ -17,6 +17,7 @@ package eu.stratosphere.sopremo.base.replace;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
 import eu.stratosphere.sopremo.expressions.PathSegmentExpression;
 import eu.stratosphere.sopremo.operator.InputCardinality;
+import eu.stratosphere.sopremo.operator.Internal;
 import eu.stratosphere.sopremo.pact.JsonCollector;
 import eu.stratosphere.sopremo.pact.SopremoMatch;
 import eu.stratosphere.sopremo.type.IJsonNode;
@@ -27,6 +28,7 @@ import eu.stratosphere.sopremo.type.IJsonNode;
  * @author Arvid Heise
  */
 @InputCardinality(min = 2, max = 2)
+@Internal
 public class StrictAtomarReplace extends AtomarReplaceBase<StrictAtomarReplace> {
 	public static class Implementation extends SopremoMatch {
 		private PathSegmentExpression replaceExpression;

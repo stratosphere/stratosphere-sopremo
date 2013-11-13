@@ -18,8 +18,10 @@ import eu.stratosphere.sopremo.expressions.ArrayAccess;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
 import eu.stratosphere.sopremo.expressions.PathSegmentExpression;
 import eu.stratosphere.sopremo.operator.ElementaryOperator;
+import eu.stratosphere.sopremo.operator.Internal;
 import eu.stratosphere.sopremo.operator.Property;
 
+@Internal
 public abstract class AtomarReplaceBase<Self extends AtomarReplaceBase<Self>> extends ElementaryOperator<Self> {
 
 	protected PathSegmentExpression replaceExpression = EvaluationExpression.VALUE;

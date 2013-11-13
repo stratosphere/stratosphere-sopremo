@@ -47,7 +47,7 @@ public class SecondOrderFunctionsTest {
 		context.getFunctionRegistry().put(MathFunctions.class);
 		pointer.setFunction((SopremoFunction) context.getFunctionRegistry().get("sqr"));
 
-		assertReturn(JsonUtil.createArrayNode(1, 4, 9), new SecondOrderFunctions.MAP(), new int[] { 1, 2, 3 }, pointer);
+		assertReturn(JsonUtil.createArrayNode(1, 4, 9), SecondOrderFunctions.MAP, new int[] { 1, 2, 3 }, pointer);
 	}
 
 	@Test
@@ -60,7 +60,7 @@ public class SecondOrderFunctionsTest {
 
 		final ContiguousSet<Integer> input = Ranges.closed(0, 10).asSet(DiscreteDomains.integers());
 		final ContiguousSet<Integer> expected = Ranges.closed(6, 10).asSet(DiscreteDomains.integers());
-		assertReturn(expected, new SecondOrderFunctions.FILTER(), input, pointer);
+		assertReturn(expected, SecondOrderFunctions.FILTER, input, pointer);
 	}
 
 	@Test
@@ -72,7 +72,7 @@ public class SecondOrderFunctionsTest {
 			new ComparativeExpression(new InputSelection(0), BinaryOperator.GREATER, new ConstantExpression(5))));
 
 		final ContiguousSet<Integer> input = Ranges.closed(0, 10).asSet(DiscreteDomains.integers());
-		assertReturn(6, new SecondOrderFunctions.FIND(), input, pointer);
+		assertReturn(6, SecondOrderFunctions.FIND, input, pointer);
 	}
 
 	@Test
@@ -84,6 +84,6 @@ public class SecondOrderFunctionsTest {
 			new ArithmeticExpression(new InputSelection(0), ArithmeticOperator.ADDITION, new InputSelection(1))));
 
 		final ContiguousSet<Integer> input = Ranges.closed(0, 10).asSet(DiscreteDomains.integers());
-		assertReturn(55, new SecondOrderFunctions.FOLD(), input, 0, pointer);
+		assertReturn(55, SecondOrderFunctions.FOLD, input, 0, pointer);
 	}
 }

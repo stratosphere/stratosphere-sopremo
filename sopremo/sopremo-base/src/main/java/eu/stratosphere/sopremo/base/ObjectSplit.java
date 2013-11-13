@@ -6,6 +6,7 @@ import eu.stratosphere.sopremo.EvaluationException;
 import eu.stratosphere.sopremo.expressions.ArrayAccess;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
 import eu.stratosphere.sopremo.operator.ElementaryOperator;
+import eu.stratosphere.sopremo.operator.Internal;
 import eu.stratosphere.sopremo.operator.Property;
 import eu.stratosphere.sopremo.pact.JsonCollector;
 import eu.stratosphere.sopremo.pact.SopremoMap;
@@ -23,6 +24,7 @@ import eu.stratosphere.sopremo.type.TextNode;
  * @author Arvid Heise
  */
 // TODO: needs to be refactored
+@Internal
 public class ObjectSplit extends ElementaryOperator<ObjectSplit> {
 	private EvaluationExpression objectPath = EvaluationExpression.VALUE,
 			valueProjection = new ArrayAccess(0);

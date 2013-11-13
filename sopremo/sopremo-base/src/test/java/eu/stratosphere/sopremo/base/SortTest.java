@@ -39,14 +39,14 @@ import eu.stratosphere.sopremo.type.IJsonNode;
 public class SortTest extends SopremoOperatorTestBase<Sort> {
 	@Override
 	protected Sort createDefaultInstance(final int index) {
-		return new Sort().withSortingExpression(new OrderingExpression(Order.ASCENDING, new ArrayAccess(index)));
+		return new Sort().withOrderingExpression(new OrderingExpression(Order.ASCENDING, new ArrayAccess(index)));
 	}
 
 	@Test
 	public void shouldSortOnValue() {
 		final Sort sort = new Sort();
 		final SopremoTestPlan sopremoPlan = new SopremoTestPlan(sort);
-		sort.setSortingExpression(new OrderingExpression(Order.DESCENDING, EvaluationExpression.VALUE));
+		sort.setOrderingExpression(new OrderingExpression(Order.DESCENDING, EvaluationExpression.VALUE));
 
 		sopremoPlan.getInput(0).
 			addValue("b").
@@ -71,7 +71,7 @@ public class SortTest extends SopremoOperatorTestBase<Sort> {
 	public void shouldSortOnExpression() {
 		final Sort sort = new Sort();
 		final SopremoTestPlan sopremoPlan = new SopremoTestPlan(ensureUnordered(sort));
-		sort.setSortingExpression(new OrderingExpression(Order.ASCENDING, new ArrayAccess(1)));
+		sort.setOrderingExpression(new OrderingExpression(Order.ASCENDING, new ArrayAccess(1)));
 
 		sopremoPlan.getInput(0).
 			addArray("b", "3").

@@ -68,14 +68,14 @@ public abstract class AbstractRegistry<T> extends AbstractSopremoType implements
 	protected String getName(Class<?> object) {
 		final Name nameAnnotation = object.getAnnotation(Name.class);
 		if (nameAnnotation == null)
-			throw new IllegalArgumentException("No name annotation");
+			throw new IllegalArgumentException(object + " has no name annotation");
 		return getName(nameAnnotation);
 	}
 
 	protected String getName(AccessibleObject object) {
 		final Name nameAnnotation = object.getAnnotation(Name.class);
 		if (nameAnnotation == null)
-			throw new IllegalArgumentException("No name annotation");
+			throw new IllegalArgumentException(object + " has no name annotation");
 		return getName(nameAnnotation);
 	}
 

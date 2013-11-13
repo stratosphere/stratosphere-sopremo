@@ -22,12 +22,14 @@ import eu.stratosphere.sopremo.expressions.JsonStreamExpression;
 import eu.stratosphere.sopremo.expressions.PathSegmentExpression;
 import eu.stratosphere.sopremo.expressions.UnevaluableExpression;
 import eu.stratosphere.sopremo.operator.CompositeOperator;
+import eu.stratosphere.sopremo.operator.Internal;
 import eu.stratosphere.sopremo.operator.Name;
 import eu.stratosphere.sopremo.operator.Property;
 
 /**
  * @author arv
  */
+@Internal
 public abstract class ReplaceBase<Op extends ReplaceBase<Op>> extends CompositeOperator<Op> {
 
 	private PathSegmentExpression replaceExpression = EvaluationExpression.VALUE;

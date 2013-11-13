@@ -23,9 +23,9 @@ import eu.stratosphere.sopremo.type.IJsonNode;
 import eu.stratosphere.sopremo.type.IntNode;
 
 public class OrderingExpression extends EvaluationExpression {
-	private final Order order;
+	private Order order;
 
-	private final PathSegmentExpression path;
+	private EvaluationExpression path;
 
 	private final transient IntNode result = new IntNode();
 
@@ -58,16 +58,40 @@ public class OrderingExpression extends EvaluationExpression {
 	public Order getOrder() {
 		return this.order;
 	}
-
+	
 	/**
 	 * Returns the path.
 	 * 
 	 * @return the path
 	 */
-	public PathSegmentExpression getPath() {
+	public EvaluationExpression getPath() {
 		return this.path;
 	}
 
+	/**
+	 * Sets the path to the specified value.
+	 *
+	 * @param path the path to set
+	 */
+	public void setPath(EvaluationExpression path) {
+		if (path == null)
+			throw new NullPointerException("path must not be null");
+
+		this.path = path;
+	}
+	
+	/**
+	 * Sets the order to the specified value.
+	 *
+	 * @param order the order to set
+	 */
+	public void setOrder(Order order) {
+		if (order == null)
+			throw new NullPointerException("order must not be null");
+
+		this.order = order;
+	}
+	
 	/*
 	 * (non-Javadoc)
 	 * @see eu.stratosphere.sopremo.expressions.EvaluationExpression#evaluate(eu.stratosphere.sopremo.type.IJsonNode)
