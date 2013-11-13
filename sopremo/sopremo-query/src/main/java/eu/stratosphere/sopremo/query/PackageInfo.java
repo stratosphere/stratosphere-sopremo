@@ -142,11 +142,9 @@ public class PackageInfo extends AbstractSopremoType implements ISopremoType, Pa
 				this.addFunctionsAndConstants(clazz);
 			} else if (IJsonNode.class.isAssignableFrom(clazz))
 				this.getTypeRegistry().put((Class<? extends IJsonNode>) clazz);
-		} catch (ClassNotFoundException e) {
+		} catch (Exception e) {
 			QueryUtil.LOG.warn("could not load operator " + className + ": " + StringUtils.stringifyException(e));
-		} catch (NoClassDefFoundError e) {
-			QueryUtil.LOG.warn("could not load operator " + className + ": " + StringUtils.stringifyException(e));
-		}
+		} 
 	}
 
 	public void importFromProject() {
