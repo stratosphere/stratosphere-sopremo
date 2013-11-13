@@ -288,7 +288,7 @@ public final class SopremoRecord extends AbstractSopremoType implements ISopremo
 	}
 
 	private int position() {
-		return this.output.position();
+		return this.binaryRepresentation.size() + this.output.position();
 	}
 
 	private class ObjectSerializer implements NodeSerializer<IObjectNode>, NodeDeserializer<IObjectNode> {
