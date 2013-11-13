@@ -1,5 +1,6 @@
 package eu.stratosphere.sopremo.base;
 
+import eu.stratosphere.pact.generic.contract.GenericCrossContract.CrossWithSmall;
 import eu.stratosphere.sopremo.expressions.ObjectAccess;
 import eu.stratosphere.sopremo.expressions.PathSegmentExpression;
 import eu.stratosphere.sopremo.operator.ElementaryOperator;
@@ -39,7 +40,7 @@ public class ContextualProjection extends ElementaryOperator<ContextualProjectio
 		return this;
 	}
 
-	public static class Implementation extends SopremoCross {
+	public static class Implementation extends SopremoCross implements CrossWithSmall {
 		private PathSegmentExpression contextPath;
 
 		@Override
