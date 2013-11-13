@@ -23,7 +23,6 @@ import eu.stratosphere.sopremo.base.Projection;
 import eu.stratosphere.sopremo.expressions.ArrayProjection;
 import eu.stratosphere.sopremo.expressions.ConstantExpression;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
-import eu.stratosphere.sopremo.expressions.FunctionCall;
 import eu.stratosphere.sopremo.expressions.InputSelection;
 import eu.stratosphere.sopremo.expressions.NotNullOrMissingBooleanExpression;
 import eu.stratosphere.sopremo.expressions.ObjectAccess;
@@ -120,11 +119,9 @@ public class MethodTest extends MeteorParseTest {
 				withInputs(input).
 				withResultProjection(
 					new TernaryExpression(
-						new NotNullOrMissingBooleanExpression().withInputExpression(
-							new ObjectAccess("addresses").withInputExpression(new InputSelection(0))),
-						createFunctionCall(CoreFunctions.COUNT,
-							new ObjectAccess("addresses").withInputExpression(new InputSelection(0))),
-						new ObjectAccess("addresses").withInputExpression(new InputSelection(0))));
+						new NotNullOrMissingBooleanExpression().withInputExpression(new ObjectAccess("addresses")),
+						createFunctionCall(CoreFunctions.COUNT, new ObjectAccess("addresses")),
+						new ObjectAccess("addresses")));
 		final Sink sink = new Sink("file://output.json").withInputs(projection);
 		expectedPlan.setSinks(sink);
 

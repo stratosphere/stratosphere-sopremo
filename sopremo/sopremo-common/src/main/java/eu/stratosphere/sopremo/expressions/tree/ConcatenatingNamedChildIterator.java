@@ -27,16 +27,16 @@ import eu.stratosphere.sopremo.expressions.EvaluationExpression;
 public class ConcatenatingNamedChildIterator extends NamedChildIterator {
 	private NamedChildIterator[] iterators;
 
-	private int[] endIndexes;
+	private int[] startIndexes;
 
 	public ConcatenatingNamedChildIterator(NamedChildIterator... iterators) {
 		super(concatenateNames(iterators));
 		this.iterators = iterators;
-		this.endIndexes = new int[iterators.length];
+		this.startIndexes = new int[iterators.length];
 
-		this.endIndexes[0] = iterators[0].getSize();
+		this.startIndexes[0] = 0;
 		for (int index = 1; index < iterators.length; index++)
-			this.endIndexes[index] = this.endIndexes[index - 1] + iterators[index].getSize();
+			this.startIndexes[index] = this.startIndexes[index - 1] + iterators[index - 1].getSize();
 	}
 	
 	private static String[] concatenateNames(NamedChildIterator[] iterators) {
@@ -61,13 +61,13 @@ public class ConcatenatingNamedChildIterator extends NamedChildIterator {
 	@Override
 	protected EvaluationExpression get(int index) {
 		int iteratorIndex = this.getIteratorIndex(index);
-		return this.iterators[iteratorIndex].get(index - this.endIndexes[iteratorIndex]);
+		return this.iterators[iteratorIndex].get(index - this.startIndexes[iteratorIndex]);
 	}
 
 	private int getIteratorIndex(int index) {
-		int iteratorIndex = Arrays.binarySearch(this.endIndexes, index);
+		int iteratorIndex = Arrays.binarySearch(this.startIndexes, index);
 		if (iteratorIndex < 0)
-			iteratorIndex = -iteratorIndex - 1;
+			iteratorIndex = -iteratorIndex - 2;
 		return iteratorIndex;
 	}
 
@@ -79,7 +79,7 @@ public class ConcatenatingNamedChildIterator extends NamedChildIterator {
 	@Override
 	protected void set(int index, EvaluationExpression childExpression) {
 		int iteratorIndex = this.getIteratorIndex(index);
-		this.iterators[iteratorIndex].set(index - this.endIndexes[iteratorIndex], childExpression);
+		this.iterators[iteratorIndex].set(index - this.startIndexes[iteratorIndex], childExpression);
 	}
 
 }
