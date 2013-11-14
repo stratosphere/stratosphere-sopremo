@@ -21,11 +21,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.DatagramPacket;
 import java.net.InetSocketAddress;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -36,14 +32,12 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.esotericsoftware.kryo.Kryo;
-import com.esotericsoftware.kryo.KryoException;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import com.esotericsoftware.minlog.Log;
 
 import eu.stratosphere.nephele.util.StringUtils;
 import eu.stratosphere.util.KryoUtil;
-import eu.stratosphere.util.SopremoKryo;
 
 /**
  * This class implements a lightweight, UDP-based RPC service.
@@ -110,8 +104,6 @@ public final class RPCService {
 
 	private final ConcurrentHashMap<Integer, CachedResponse> cachedResponses =
 		new ConcurrentHashMap<Integer, CachedResponse>();
-
-	private final List<Class<?>> kryoTypesToRegister;
 
 	private static final class CachedResponse {
 
@@ -180,19 +172,9 @@ public final class RPCService {
 		}
 	}
 
-	public RPCService(final int rpcPort, final int numRPCHandlers, final List<Class<?>> typesToRegister)
-			throws IOException {
+	public RPCService(final int rpcPort, final int numRPCHandlers) throws IOException {
 
 		this.rpcHandlers = Executors.newFixedThreadPool(numRPCHandlers);
-
-		if (typesToRegister == null)
-			this.kryoTypesToRegister = null;
-		else {
-			ArrayList<Class<?>> kryoTypesToRegister = new ArrayList<Class<?>>();
-			addBasicRPCTypes(kryoTypesToRegister);
-			kryoTypesToRegister.addAll(typesToRegister);
-			this.kryoTypesToRegister = Collections.unmodifiableList(kryoTypesToRegister);
-		}
 
 		this.rpcPort = rpcPort;
 		this.networkThread = new NetworkThread(this, rpcPort);
@@ -201,75 +183,13 @@ public final class RPCService {
 		this.cleanupTimer.schedule(new CleanupTask(), CLEANUP_INTERVAL, CLEANUP_INTERVAL);
 	}
 
-	private static void addBasicRPCTypes(final List<Class<?>> typesToRegister) {
-
-		typesToRegister.add(ArrayList.class);
-		typesToRegister.add(AssertionError.class);
-		typesToRegister.add(boolean[].class);
-		typesToRegister.add(Class.class);
-		typesToRegister.add(Class[].class);
-		typesToRegister.add(IllegalArgumentException.class);
-		typesToRegister.add(InterruptedException.class);
-		typesToRegister.add(IOException.class);
-		typesToRegister.add(KryoException.class);
-		typesToRegister.add(List.class);
-		typesToRegister.add(Object[].class);
-		typesToRegister.add(RPCEnvelope.class);
-		typesToRegister.add(RPCRequest.class);
-		typesToRegister.add(RPCReturnValue.class);
-		typesToRegister.add(RPCCleanup.class);
-		typesToRegister.add(RPCThrowable.class);
-		typesToRegister.add(StackTraceElement.class);
-		typesToRegister.add(StackTraceElement[].class);
-		typesToRegister.add(String[].class);
-		typesToRegister.add(StringBuffer.class);
-
-		// Register non-public RPC types
-		registerNonPublicRPCTypes(typesToRegister, "java.util.Collections$UnmodifiableRandomAccessList");
-
-	}
-
-	/**
-	 * Adds a non-public type to the list of RPC types to be registered.
-	 * 
-	 * @param typesToRegister
-	 *        the list of RPC types to be registered
-	 * @param className
-	 *        the name of the non-public type
-	 * @return <code>true</code> if the registered was successful, <code>false</code> otherwise
-	 */
-	private static boolean registerNonPublicRPCTypes(final List<Class<?>> typesToRegister, final String className) {
-
-		try {
-			final Class<?> uralClass = Class.forName(className);
-			typesToRegister.add(uralClass);
-			return true;
-		} catch (Exception e) {
-		}
-
-		return false;
-	}
-
 	public RPCService() throws IOException {
-		this(DEFAULT_NUM_RPC_HANDLERS, null);
+		this(DEFAULT_NUM_RPC_HANDLERS);
 	}
 
-	public RPCService(final List<Class<?>> typesToRegister) throws IOException {
-		this(DEFAULT_NUM_RPC_HANDLERS, typesToRegister);
-	}
-
-	public RPCService(final int numRPCHandlers, final List<Class<?>> typesToRegister) throws IOException {
+	public RPCService(final int numRPCHandlers) throws IOException {
 
 		this.rpcHandlers = Executors.newFixedThreadPool(numRPCHandlers);
-
-		if (typesToRegister == null)
-			this.kryoTypesToRegister = null;
-		else {
-			ArrayList<Class<?>> kryoTypesToRegister = new ArrayList<Class<?>>();
-			addBasicRPCTypes(kryoTypesToRegister);
-			kryoTypesToRegister.addAll(typesToRegister);
-			this.kryoTypesToRegister = Collections.unmodifiableList(kryoTypesToRegister);
-		}
 
 		this.rpcPort = -1;
 		this.networkThread = new NetworkThread(this, -1);
@@ -451,7 +371,7 @@ public final class RPCService {
 				else if (msg instanceof RPCResponse)
 					RPCService.this.processIncomingRPCResponse((RPCResponse) msg);
 				else
-					RPCService.this.processIncomingRPCCleanup(remoteSocketAddress, (RPCCleanup) msg);
+					RPCService.this.processIncomingRPCCleanup((RPCCleanup) msg);
 			}
 		};
 
@@ -600,7 +520,7 @@ public final class RPCService {
 		}
 	}
 
-	void processIncomingRPCCleanup(final InetSocketAddress remoteSocketAddress, final RPCCleanup rpcCleanup) {
+	void processIncomingRPCCleanup(final RPCCleanup rpcCleanup) {
 
 		this.cachedResponses.remove(Integer.valueOf(rpcCleanup.getMessageID()));
 	}

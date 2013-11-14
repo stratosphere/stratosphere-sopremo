@@ -15,6 +15,7 @@
 package eu.stratosphere.meteor.expression;
 
 import org.junit.Test;
+import static eu.stratosphere.sopremo.function.FunctionUtil.*;
 
 import eu.stratosphere.meteor.MeteorParseTest;
 import eu.stratosphere.sopremo.CoreFunctions;

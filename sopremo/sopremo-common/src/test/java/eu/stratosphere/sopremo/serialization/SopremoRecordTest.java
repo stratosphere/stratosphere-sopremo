@@ -19,7 +19,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 import org.junit.Assert;
-
 import org.junit.Test;
 
 import com.esotericsoftware.kryo.Kryo;

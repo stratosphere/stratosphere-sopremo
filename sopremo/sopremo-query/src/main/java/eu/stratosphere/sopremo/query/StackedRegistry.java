@@ -23,6 +23,7 @@ public class StackedRegistry<T, R extends IRegistry<T>> extends AbstractRegistry
 	}
 
 	public StackedRegistry(R defaultRegistry) {
+		super(defaultRegistry.getNameChooser());
 		this.registryStack.add(defaultRegistry);
 	}
 

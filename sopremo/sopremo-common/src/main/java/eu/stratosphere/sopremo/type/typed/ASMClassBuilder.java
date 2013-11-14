@@ -16,8 +16,8 @@ import com.google.common.reflect.TypeToken;
 import eu.stratosphere.sopremo.type.IJsonNode;
 import eu.stratosphere.sopremo.type.JavaToJsonMapper;
 import eu.stratosphere.sopremo.type.JsonToJavaMapper;
-import eu.stratosphere.sopremo.type.TypeMapper;
 import eu.stratosphere.sopremo.type.NullNode;
+import eu.stratosphere.sopremo.type.TypeMapper;
 
 /**
  * This class uses the ASM framework to build instances of {@link TypedObjectNode}s that implement a certain interface (

@@ -9,11 +9,10 @@ import java.util.List;
 import nl.jqno.equalsverifier.EqualsVerifier;
 
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 
-import eu.stratosphere.sopremo.EvaluationContext;
 import eu.stratosphere.sopremo.function.ExpressionFunction;
+import eu.stratosphere.sopremo.function.FunctionUtil;
 import eu.stratosphere.sopremo.function.SopremoFunction;
 import eu.stratosphere.sopremo.operator.Name;
 import eu.stratosphere.sopremo.type.DoubleNode;
@@ -40,17 +39,11 @@ public class FunctionCallTest extends EvaluableExpressionTest<FunctionCall> {
 			new ExpressionFunction(1, new ConstantExpression("black")));
 	}
 
-	@Before
-	public void setup() {
-		this.context = new EvaluationContext();
-		this.context.getFunctionRegistry().put(this.getClass());
-	}
-
 	@Test
 	public void shouldCallFunction() {
-		final IJsonNode result =
-			new FunctionCall("sum", this.context,
-				new ArrayAccess(0), new ArrayAccess(1)).evaluate(createArrayNode(1, 2));
+		final IJsonNode result = FunctionUtil.createFunctionCall(
+			FunctionCallTest.class, "sum", new ArrayAccess(0), new ArrayAccess(1)).
+			evaluate(createArrayNode(1, 2));
 		Assert.assertEquals(new DoubleNode(3), result);
 	}
 

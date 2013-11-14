@@ -24,7 +24,6 @@ import eu.stratosphere.sopremo.expressions.tree.ChildIterator;
 import eu.stratosphere.sopremo.expressions.tree.ConcatenatingChildIterator;
 import eu.stratosphere.sopremo.expressions.tree.NamedChildIterator;
 import eu.stratosphere.sopremo.function.SopremoFunction;
-import eu.stratosphere.sopremo.packages.EvaluationScope;
 import eu.stratosphere.sopremo.type.ArrayNode;
 import eu.stratosphere.sopremo.type.IArrayNode;
 import eu.stratosphere.sopremo.type.IJsonNode;
@@ -73,52 +72,11 @@ public class FunctionCall extends EvaluationExpression {
 	}
 
 	/**
-	 * Initializes a MethodCall with the given function name and expressions
-	 * which evaluate to the method parameters.
-	 * 
-	 * @param functionName
-	 *        the name of the function that should be called
-	 * @param context
-	 *        the {@link EvaluationContext} which contains the
-	 *        {@link eu.stratosphere.sopremo.packages.IFunctionRegistry} that contains the definition under the function
-	 *        name
-	 * @param params
-	 *        expressions which evaluate to the method parameters
-	 */
-	public FunctionCall(final String functionName, final EvaluationScope scope, final EvaluationExpression... params) {
-		this(checkIfMethodExists(functionName, scope), Arrays.asList(params));
-	}
-
-	/**
 	 * Initializes FunctionCall.
 	 */
 	FunctionCall() {
 		this.function = null;
 		this.paramExprs = null;
-	}
-
-	private static SopremoFunction checkIfMethodExists(final String functionName, final EvaluationScope scope) {
-		final SopremoFunction function = (SopremoFunction) scope.getFunctionRegistry().get(functionName);
-		if (function == null)
-			throw new IllegalArgumentException(String.format("No method %s found", functionName));
-		return function;
-	}
-
-	/**
-	 * Initializes a MethodCall with the given function name and expressions
-	 * which evaluate to the method parameters.
-	 * 
-	 * @param functionName
-	 *        the name of the function that should be called
-	 * @param context
-	 *        the {@link EvaluationContext} which contains the
-	 *        {@link eu.stratosphere.sopremo.packages.IFunctionRegistry} that contains the definition under the function
-	 *        name
-	 * @param params
-	 *        expressions which evaluate to the method parameters
-	 */
-	public FunctionCall(final String functionName, final EvaluationScope scope, final List<EvaluationExpression> params) {
-		this(checkIfMethodExists(functionName, scope), params);
 	}
 
 	@Override

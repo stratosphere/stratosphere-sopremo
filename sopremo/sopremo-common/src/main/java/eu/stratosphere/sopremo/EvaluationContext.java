@@ -1,3 +1,17 @@
+/***********************************************************************************************************************
+ *
+ * Copyright (C) 2010 by the Stratosphere project (http://stratosphere.eu)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
+ * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations under the License.
+ *
+ **********************************************************************************************************************/
 package eu.stratosphere.sopremo;
 
 import java.io.File;
@@ -15,13 +29,10 @@ import com.esotericsoftware.kryo.Kryo;
 
 import eu.stratosphere.nephele.fs.Path;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
-import eu.stratosphere.sopremo.packages.DefaultConstantRegistry;
-import eu.stratosphere.sopremo.packages.DefaultFunctionRegistry;
+import eu.stratosphere.sopremo.packages.DefaultNameChooserProvider;
 import eu.stratosphere.sopremo.packages.DefaultTypeRegistry;
-import eu.stratosphere.sopremo.packages.EvaluationScope;
-import eu.stratosphere.sopremo.packages.IConstantRegistry;
-import eu.stratosphere.sopremo.packages.IFunctionRegistry;
 import eu.stratosphere.sopremo.packages.ITypeRegistry;
+import eu.stratosphere.sopremo.packages.NameChooserProvider;
 import eu.stratosphere.sopremo.type.BooleanNode;
 import eu.stratosphere.sopremo.type.IArrayNode;
 import eu.stratosphere.sopremo.type.IJsonNode;
@@ -33,17 +44,9 @@ import eu.stratosphere.sopremo.type.TypeCoercer;
 import eu.stratosphere.util.SopremoKryo;
 
 /**
- * Provides additional context to the evaluation of {@link Evaluable}s, such as
- * access to all registered functions.
- * 
- * @author Arvid Heise
+ * @author arvid
  */
-public class EvaluationContext extends AbstractSopremoType implements ISopremoType, EvaluationScope {
-	private final IFunctionRegistry methodRegistry;
-
-	private final IConstantRegistry constantRegistry;
-
-	private final ITypeRegistry typeRegistry;
+public class EvaluationContext extends AbstractSopremoType {
 
 	private String workingPath;
 
@@ -51,6 +54,9 @@ public class EvaluationContext extends AbstractSopremoType implements ISopremoTy
 
 	private EvaluationExpression resultProjection = EvaluationExpression.VALUE;
 
+	private final ITypeRegistry typeRegistry;
+
+	private NameChooserProvider nameChooserProvider;
 	// public LinkedList<Operator<?>> getOperatorStack() {
 	// return this.operatorStack;
 	// }
@@ -59,26 +65,21 @@ public class EvaluationContext extends AbstractSopremoType implements ISopremoTy
 
 	private final transient Kryo kryo;
 
-	private final Map<String, Object> contextParameters;
+	private final Map<String, Object> contextParameters = new HashMap<String, Object>();
 
 	/**
 	 * Initializes EvaluationContext.
 	 */
 	public EvaluationContext() {
-		this(new DefaultFunctionRegistry(), new DefaultConstantRegistry(), new DefaultTypeRegistry(),
-			new HashMap<String, Object>());
+		this(new DefaultTypeRegistry(), new DefaultNameChooserProvider());
 	}
-	
+
 	/**
 	 * Initializes EvaluationContext.
 	 */
-	public EvaluationContext(IFunctionRegistry methodRegistry, IConstantRegistry constantRegistry,
-			ITypeRegistry typeRegistry,
-			Map<String, Object> contextParameters) {
-		this.methodRegistry = methodRegistry;
-		this.constantRegistry = constantRegistry;
+	public EvaluationContext(ITypeRegistry typeRegistry, NameChooserProvider nameChooserProvider) {
 		this.typeRegistry = typeRegistry;
-		this.contextParameters = contextParameters;
+		this.nameChooserProvider = nameChooserProvider;
 
 		this.workingPath = new Path(new File(".").toURI().toString()).toString();
 
@@ -97,6 +98,15 @@ public class EvaluationContext extends AbstractSopremoType implements ISopremoTy
 		for (Class<? extends IJsonNode> type : types)
 			register(type);
 	}
+	
+	/**
+	 * Returns the nameChooserProvider.
+	 * 
+	 * @return the nameChooserProvider
+	 */
+	public NameChooserProvider getNameChooserProvider() {
+		return this.nameChooserProvider;
+	}
 
 	private void register(Class<?> type) {
 		this.kryo.register(type);
@@ -105,8 +115,9 @@ public class EvaluationContext extends AbstractSopremoType implements ISopremoTy
 	/**
 	 * Initializes EvaluationContext.
 	 */
-	public EvaluationContext(EvaluationContext context) {
-		this(context.methodRegistry, context.constantRegistry, context.typeRegistry, context.contextParameters);
+	protected EvaluationContext(EvaluationContext context) {
+		this(context.typeRegistry, context.nameChooserProvider);
+		this.contextParameters.putAll(context.contextParameters);
 		this.copyPropertiesFrom(context);
 	}
 
@@ -125,14 +136,7 @@ public class EvaluationContext extends AbstractSopremoType implements ISopremoTy
 	 */
 	@Override
 	public void appendAsString(final Appendable appendable) throws IOException {
-		appendable.append("Context @ ").append(this.operatorDescription).append("\n");		
-		if(this.methodRegistry != null) {
-			appendable.append("Methods: ");
-			this.methodRegistry.appendAsString(appendable);
-		}
-		if(this.constantRegistry != null) {
-			this.constantRegistry.appendAsString(appendable);
-		}
+		appendable.append("Context @ ").append(this.operatorDescription).append("\n");
 		appendable.append("\nParameters: ");
 		appendable.append(this.contextParameters.toString());
 	}
@@ -176,33 +180,11 @@ public class EvaluationContext extends AbstractSopremoType implements ISopremoTy
 		this.resultProjection = context.resultProjection.clone();
 		this.operatorDescription = context.operatorDescription;
 	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.packages.RegistryScope#getConstantRegistry()
-	 */
-	@Override
-	public IConstantRegistry getConstantRegistry() {
-		return this.constantRegistry;
-	}
-
-	/**
-	 * Returns the {@link FunctionRegistry} containing all registered function
-	 * in the current evaluation context.
-	 * 
-	 * @return the FunctionRegistry
-	 */
-	@Override
-	public IFunctionRegistry getFunctionRegistry() {
-		return this.methodRegistry;
-	}
-
 	/**
 	 * Returns the typeRegistry.
 	 * 
 	 * @return the typeRegistry
 	 */
-	@Override
 	public ITypeRegistry getTypeRegistry() {
 		return this.typeRegistry;
 	}
@@ -284,9 +266,7 @@ public class EvaluationContext extends AbstractSopremoType implements ISopremoTy
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((this.constantRegistry == null) ? 0 : this.constantRegistry.hashCode());
 		result = prime * result + ((this.contextParameters == null) ? 0 : this.contextParameters.hashCode());
-		result = prime * result + ((this.methodRegistry == null) ? 0 : this.methodRegistry.hashCode());
 		result = prime * result + ((this.operatorDescription == null) ? 0 : this.operatorDescription.hashCode());
 		result = prime * result + ((this.resultProjection == null) ? 0 : this.resultProjection.hashCode());
 		result = prime * result + this.taskId;
@@ -304,20 +284,10 @@ public class EvaluationContext extends AbstractSopremoType implements ISopremoTy
 		if (getClass() != obj.getClass())
 			return false;
 		EvaluationContext other = (EvaluationContext) obj;
-		if (this.constantRegistry == null) {
-			if (other.constantRegistry != null)
-				return false;
-		} else if (!this.constantRegistry.equals(other.constantRegistry))
-			return false;
 		if (this.contextParameters == null) {
 			if (other.contextParameters != null)
 				return false;
 		} else if (!this.contextParameters.equals(other.contextParameters))
-			return false;
-		if (this.methodRegistry == null) {
-			if (other.methodRegistry != null)
-				return false;
-		} else if (!this.methodRegistry.equals(other.methodRegistry))
 			return false;
 		if (this.operatorDescription == null) {
 			if (other.operatorDescription != null)

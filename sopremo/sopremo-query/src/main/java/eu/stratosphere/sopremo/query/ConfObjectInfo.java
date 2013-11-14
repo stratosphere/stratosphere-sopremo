@@ -26,6 +26,7 @@ import eu.stratosphere.sopremo.AbstractSopremoType;
 import eu.stratosphere.sopremo.ISopremoType;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
 import eu.stratosphere.sopremo.operator.ConfigurableSopremoType;
+import eu.stratosphere.sopremo.operator.Name;
 import eu.stratosphere.sopremo.packages.DefaultRegistry;
 import eu.stratosphere.sopremo.packages.IRegistry;
 import eu.stratosphere.sopremo.packages.NameChooser;
@@ -191,8 +192,7 @@ public class ConfObjectInfo<Obj extends ConfigurableSopremoType> extends Abstrac
 
 	private IConfObjectRegistry<?> registry;
 
-	public ConfObjectInfo(final IConfObjectRegistry<?> registry, final Class<Obj> operatorClass, final String opName,
-			final NameChooser propertyNameChooser) {
+	public ConfObjectInfo(final IConfObjectRegistry<?> registry, final Class<Obj> operatorClass, final String opName) {
 		this.registry = registry;
 		this.operatorClass = operatorClass;
 		try {
@@ -201,7 +201,7 @@ public class ConfObjectInfo<Obj extends ConfigurableSopremoType> extends Abstrac
 			throw new RuntimeException(e);
 		}
 		this.name = opName;
-		this.propertyNameChooser = propertyNameChooser;
+		this.propertyNameChooser = registry.getNameChooser();
 	}
 
 	public static Object coerce(EvaluationExpression expression, Class<?> propertyType) {
@@ -214,12 +214,9 @@ public class ConfObjectInfo<Obj extends ConfigurableSopremoType> extends Abstrac
 	private void initProperties() {
 		final PropertyDescriptor[] propertyDescriptors = this.beanInfo.getPropertyDescriptors();
 		for (final PropertyDescriptor propertyDescriptor : propertyDescriptors) {
-			String name = this.propertyNameChooser.choose(
-				(String[]) propertyDescriptor.getValue(ConfigurableSopremoType.Info.NAME_NOUNS),
-				(String[]) propertyDescriptor.getValue(ConfigurableSopremoType.Info.NAME_VERB),
-				(String[]) propertyDescriptor.getValue(ConfigurableSopremoType.Info.NAME_ADJECTIVE),
-				(String[]) propertyDescriptor.getValue(ConfigurableSopremoType.Info.NAME_PREPOSITION));
-			if (name == null)
+			Name nameAnnotation = (Name) propertyDescriptor.getValue(ConfigurableSopremoType.Info.NAME);
+			String name;
+			if (nameAnnotation == null || (name = this.propertyNameChooser.getName(nameAnnotation)) == null)
 				name = propertyDescriptor.getName();
 
 			if (propertyDescriptor.getValue(ConfigurableSopremoType.Info.INPUT) == Boolean.TRUE)
@@ -239,6 +236,16 @@ public class ConfObjectInfo<Obj extends ConfigurableSopremoType> extends Abstrac
 	public IRegistry<ConfObjectIndexedPropertyInfo> getInputPropertyRegistry() {
 		if (this.needsInitialization())
 			this.initProperties();
+		BeanInfo[] additionalBeanInfos = this.beanInfo.getAdditionalBeanInfo();
+		if (additionalBeanInfos != null && additionalBeanInfos.length > 0) {
+			StackedRegistry<ConfObjectIndexedPropertyInfo, IRegistry<ConfObjectIndexedPropertyInfo>> stackedRegistry =
+				new StackedRegistry<ConfObjectIndexedPropertyInfo, IRegistry<ConfObjectIndexedPropertyInfo>>(this.inputPropertyRegistry);
+			for (BeanInfo beanInfo : additionalBeanInfos) {
+				ConfObjectInfo<?> additionalConfInfo = this.registry.get(beanInfo.getBeanDescriptor().getBeanClass());
+				stackedRegistry.push(additionalConfInfo.getInputPropertyRegistry());
+			}
+			return stackedRegistry;
+		}
 		return this.inputPropertyRegistry;
 	}
 
@@ -249,6 +256,16 @@ public class ConfObjectInfo<Obj extends ConfigurableSopremoType> extends Abstrac
 	public IRegistry<ConfObjectPropertyInfo> getOperatorPropertyRegistry() {
 		if (this.needsInitialization())
 			this.initProperties();
+		BeanInfo[] additionalBeanInfos = this.beanInfo.getAdditionalBeanInfo();
+		if (additionalBeanInfos != null && additionalBeanInfos.length > 0) {
+			StackedRegistry<ConfObjectPropertyInfo, IRegistry<ConfObjectPropertyInfo>> stackedRegistry =
+				new StackedRegistry<ConfObjectPropertyInfo, IRegistry<ConfObjectPropertyInfo>>(this.operatorPropertyRegistry);
+			for (BeanInfo beanInfo : additionalBeanInfos) {
+				ConfObjectInfo<?> additionalConfInfo = this.registry.get(beanInfo.getBeanDescriptor().getBeanClass());
+				stackedRegistry.push(additionalConfInfo.getOperatorPropertyRegistry());
+			}
+			return stackedRegistry;
+		}
 		return this.operatorPropertyRegistry;
 	}
 

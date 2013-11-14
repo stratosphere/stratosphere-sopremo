@@ -40,22 +40,6 @@ public abstract class MeteorIT extends MeteorParseTest {
 
 	protected File inputDir;
 
-	private String projectName;
-
-	private File projectJar;
-
-	private final static Map<String, File> ProjectJars = new HashMap<String, File>();
-
-	/**
-	 * Initializes DefaultClientIT.
-	 */
-	public MeteorIT() {
-		this.projectName = MavenUtil.getProjectName();
-		this.projectJar = ProjectJars.get(this.projectName);
-		if (this.projectJar == null)
-			ProjectJars.put(this.projectName, this.projectJar = build(this.projectName));
-	}
-
 	protected void execute(SopremoPlan plan) {
 		final String[] messageHolder = new String[1];
 
@@ -80,23 +64,9 @@ public abstract class MeteorIT extends MeteorParseTest {
 		this.client.setUpdateTime(100);
 	}
 
-	private static File build(String projectName) {
-		try {
-			String projectPath = (new File(".")).getCanonicalPath();
-			File projectJar = MavenUtil.buildJarForProject(projectPath, projectName + "_testing");
-			projectJar.deleteOnExit();
-			return projectJar;
-		} catch (IOException e) {
-			Assert.fail(e.getMessage());
-			return null;
-		}
-	}
-
 	@Override
 	protected void initParser(QueryParser queryParser) {
 		// queryParser.setInputDirectory(new File("target"));
-		queryParser.getPackageManager().importPackageFrom(this.projectName.substring("sopremo-".length()),
-			this.projectJar);
 	}
 
 	@After

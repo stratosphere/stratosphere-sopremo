@@ -34,6 +34,7 @@ import eu.stratosphere.sopremo.io.Source;
 import eu.stratosphere.sopremo.operator.Operator;
 import eu.stratosphere.sopremo.packages.IConstantRegistry;
 import eu.stratosphere.sopremo.packages.IFunctionRegistry;
+import eu.stratosphere.sopremo.packages.NameChooserProvider;
 
 /**
  * @author Arvid Heise

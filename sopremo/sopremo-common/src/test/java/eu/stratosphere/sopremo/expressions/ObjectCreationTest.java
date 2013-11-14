@@ -7,9 +7,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.Assert;
 import nl.jqno.equalsverifier.EqualsVerifier;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 import eu.stratosphere.sopremo.type.IJsonNode;

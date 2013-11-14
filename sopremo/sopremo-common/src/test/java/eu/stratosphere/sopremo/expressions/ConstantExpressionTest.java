@@ -1,9 +1,9 @@
 package eu.stratosphere.sopremo.expressions;
 
-import org.junit.Assert;
 import nl.jqno.equalsverifier.EqualsVerifier;
 import nl.jqno.equalsverifier.Warning;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 import eu.stratosphere.sopremo.type.IJsonNode;

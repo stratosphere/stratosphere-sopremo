@@ -17,7 +17,24 @@ public class StackedConfObjectRegistry<T extends ConfigurableSopremoType> extend
 	 */
 	StackedConfObjectRegistry() {
 	}
+	
+	/* (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.query.IConfObjectRegistry#getPropertyNameChooser()
+	 */
+	@Override
+	public NameChooser getPropertyNameChooser() {
+		return getTopRegistry().getPropertyNameChooser();
+	}
 
+	/* (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.query.IConfObjectRegistry#get(java.lang.Class)
+	 */
+	@Override
+	public ConfObjectInfo<T> get(Class<?> clazz) {
+		String name = this.getName(clazz);
+		return get(name);
+	}
+	
 	@Override
 	public void put(Class<? extends T> clazz) {
 		this.getTopRegistry().put(clazz);

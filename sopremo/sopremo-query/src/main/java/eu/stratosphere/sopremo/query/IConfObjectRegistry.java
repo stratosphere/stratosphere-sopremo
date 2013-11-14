@@ -16,6 +16,7 @@ package eu.stratosphere.sopremo.query;
 
 import eu.stratosphere.sopremo.operator.ConfigurableSopremoType;
 import eu.stratosphere.sopremo.packages.IRegistry;
+import eu.stratosphere.sopremo.packages.NameChooser;
 
 /**
  * Registry that manages {@link Operator}s.
@@ -24,4 +25,8 @@ import eu.stratosphere.sopremo.packages.IRegistry;
  */
 public interface IConfObjectRegistry<T extends ConfigurableSopremoType> extends IRegistry<ConfObjectInfo<T>> {
 	void put(Class<? extends T> clazz);
+	
+	ConfObjectInfo<T> get(Class<?> clazz);
+	
+	NameChooser getPropertyNameChooser();
 }

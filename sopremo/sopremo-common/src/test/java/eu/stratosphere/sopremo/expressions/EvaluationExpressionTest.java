@@ -15,8 +15,8 @@
 package eu.stratosphere.sopremo.expressions;
 
 import static eu.stratosphere.sopremo.type.JsonUtil.createPath;
-import org.junit.Assert;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 import eu.stratosphere.sopremo.expressions.ArithmeticExpression.ArithmeticOperator;

@@ -14,14 +14,14 @@
  **********************************************************************************************************************/
 package eu.stratosphere.meteor.base;
 
+import static eu.stratosphere.sopremo.function.FunctionUtil.createFunctionCall;
+
 import org.junit.Test;
 
 import eu.stratosphere.meteor.MeteorParseTest;
 import eu.stratosphere.sopremo.CoreFunctions;
-import eu.stratosphere.sopremo.EvaluationContext;
 import eu.stratosphere.sopremo.base.Grouping;
 import eu.stratosphere.sopremo.expressions.InputSelection;
-import eu.stratosphere.sopremo.expressions.FunctionCall;
 import eu.stratosphere.sopremo.expressions.ObjectCreation;
 import eu.stratosphere.sopremo.io.Sink;
 import eu.stratosphere.sopremo.io.Source;
@@ -47,8 +47,6 @@ public class GroupingTest extends MeteorParseTest {
 			"write $result to 'file://output.json'; ");
 
 		final SopremoPlan expectedPlan = new SopremoPlan();
-		final EvaluationContext context = expectedPlan.getEvaluationContext();
-		context.getFunctionRegistry().put(CoreFunctions.class);
 
 		final Source employees = new Source("file://employees.json");
 		final Source depts = new Source("file://departments.json");
@@ -82,8 +80,6 @@ public class GroupingTest extends MeteorParseTest {
 			"write $result to 'file://output.json';");
 
 		final SopremoPlan expectedPlan = new SopremoPlan();
-		final EvaluationContext context = expectedPlan.getEvaluationContext();
-		context.getFunctionRegistry().put(CoreFunctions.class);
 
 		final Source employees = new Source("file://employees.json");
 		final Source depts = new Source("file://departments.json");
@@ -110,8 +106,6 @@ public class GroupingTest extends MeteorParseTest {
 			"write $result to 'file://output.json'; ");
 
 		final SopremoPlan expectedPlan = new SopremoPlan();
-		final EvaluationContext context = expectedPlan.getEvaluationContext();
-		context.getFunctionRegistry().put(CoreFunctions.class);
 		final Source input = new Source("file://employees.json");
 		final Grouping selection = new Grouping().
 			withResultProjection(createFunctionCall(CoreFunctions.COUNT, new InputSelection(0))).
@@ -132,8 +126,6 @@ public class GroupingTest extends MeteorParseTest {
 			"write $result to 'file://output.json'; ");
 
 		final SopremoPlan expectedPlan = new SopremoPlan();
-		final EvaluationContext context = expectedPlan.getEvaluationContext();
-		context.getFunctionRegistry().put(CoreFunctions.class);
 
 		final Source input = new Source("file://employees.json");
 		final Grouping selection =
@@ -161,8 +153,6 @@ public class GroupingTest extends MeteorParseTest {
 			"write $result to 'file://output.json'; ");
 
 		final SopremoPlan expectedPlan = new SopremoPlan();
-		final EvaluationContext context = expectedPlan.getEvaluationContext();
-		context.getFunctionRegistry().put(CoreFunctions.class);
 
 		final Source input = new Source("file://employees.json");
 		final Grouping selection = new Grouping().

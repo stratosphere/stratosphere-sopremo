@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 
 import org.junit.Assert;
-
 import org.junit.Test;
 
 import eu.stratosphere.nephele.configuration.Configuration;

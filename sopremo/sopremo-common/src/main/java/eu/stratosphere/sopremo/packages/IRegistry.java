@@ -57,14 +57,11 @@ public interface IRegistry<T> extends ISopremoType /* , Map<String, T> */{
 	public T get(Name name);
 
 	/**
-	 * Return the lookup name for the given {@link Name} annotation.
-	 */
-	public String getName(Name name);
-
-	/**
 	 * Returns the set of all names.
 	 * 
 	 * @return the set of all names
 	 */
 	public Set<String> keySet();
+	
+	public NameChooser getNameChooser();
 }

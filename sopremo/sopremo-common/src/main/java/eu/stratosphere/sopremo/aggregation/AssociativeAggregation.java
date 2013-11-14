@@ -52,7 +52,9 @@ public abstract class AssociativeAggregation<ElementType extends IJsonNode> exte
 		 */
 		@Override
 		public AssociativeAggregation<?> read(Kryo kryo, Input input, Class<AssociativeAggregation<?>> type) {
-			return ReflectUtil.newInstance(type, kryo.readClassAndObject(input));
+			if (type.isAnonymousClass())
+				return ReflectUtil.newInstance(type, kryo.readClassAndObject(input));
+			return kryo.newInstance(type);
 		}
 
 		/*
@@ -64,16 +66,19 @@ public abstract class AssociativeAggregation<ElementType extends IJsonNode> exte
 		public void write(Kryo kryo, Output output, AssociativeAggregation<?> object) {
 			kryo.writeClassAndObject(output, object.initialAggregate);
 		}
-		
-		/* (non-Javadoc)
+
+		/*
+		 * (non-Javadoc)
 		 * @see com.esotericsoftware.kryo.Serializer#copy(com.esotericsoftware.kryo.Kryo, java.lang.Object)
 		 */
 		@Override
 		public AssociativeAggregation<?> copy(Kryo kryo, AssociativeAggregation<?> original) {
-			return ReflectUtil.newInstance(original.getClass(), original.initialAggregate);
+			if (original.getClass().isAnonymousClass())
+				return ReflectUtil.newInstance(original.getClass(), original.initialAggregate);
+			return kryo.newInstance(original.getClass());
 		}
 	}
-	
+
 	/*
 	 * (non-Javadoc)
 	 * @see eu.stratosphere.sopremo.aggregation.Aggregation#aggregate(eu.stratosphere.sopremo.type.IJsonNode)

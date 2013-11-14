@@ -2,20 +2,19 @@ package eu.stratosphere.sopremo.expressions;
 
 import java.io.IOException;
 
-import org.junit.Assert;
 import nl.jqno.equalsverifier.EqualsVerifier;
 import nl.jqno.equalsverifier.Warning;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
 import eu.stratosphere.sopremo.EqualCloneTest;
-import eu.stratosphere.sopremo.EvaluationContext;
 
 @Ignore
 public abstract class EvaluableExpressionTest<T extends EvaluationExpression> extends EqualCloneTest<T> {
-	protected EvaluationContext context;
+//	protected EvaluationContext context;
 
 	/*
 	 * (non-Javadoc)
@@ -29,7 +28,7 @@ public abstract class EvaluableExpressionTest<T extends EvaluationExpression> ex
 
 	@Before
 	public void initContext() {
-		this.context = new EvaluationContext();
+//		this.context = new EvaluationContext();
 	}
 
 	@Override

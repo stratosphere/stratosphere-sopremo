@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 
 import eu.stratosphere.sopremo.AbstractSopremoType;
+import eu.stratosphere.util.IdentityList;
 
 /**
  * Provides the basic mechanism for exposing configuration parameters of objects through the Java Bean specification.<br />
@@ -43,6 +44,8 @@ public abstract class ConfigurableSopremoType extends AbstractSopremoType implem
 
 	private static Map<Class<?>, Info> beanInfos = new IdentityHashMap<Class<?>, Info>();
 
+	private List<ConfigurableSopremoType> additionalBeanInfos = new IdentityList<ConfigurableSopremoType>();
+
 	/**
 	 * Initializes ConfigurableSopremoType.
 	 */
@@ -50,9 +53,20 @@ public abstract class ConfigurableSopremoType extends AbstractSopremoType implem
 		super();
 	}
 
+	protected void addPropertiesFrom(ConfigurableSopremoType type) {
+		this.additionalBeanInfos.remove(type);
+		this.additionalBeanInfos.add(type);
+	}
+
+	protected void removePropertiesFrom(ConfigurableSopremoType type) {
+		this.additionalBeanInfos.remove(type);
+	}
+
 	@Override
 	public BeanInfo[] getAdditionalBeanInfo() {
-		return this.getBeanInfo().getAdditionalBeanInfo();
+		if (this.additionalBeanInfos.isEmpty())
+			return new BeanInfo[0];
+		return this.additionalBeanInfos.toArray(new BeanInfo[this.additionalBeanInfos.size()]);
 	}
 
 	@Override
@@ -98,13 +112,7 @@ public abstract class ConfigurableSopremoType extends AbstractSopremoType implem
 	}
 
 	public static class Info extends SimpleBeanInfo {
-		public static final String NAME_PREPOSITION = "name.preposition";
-
-		public static final String NAME_ADJECTIVE = "name.adjective";
-
-		public static final String NAME_VERB = "name.verb";
-
-		public static final String NAME_NOUNS = "name.nouns";
+		public static final String NAME = "name";
 
 		public static final String INPUT = "flag.input";
 
@@ -153,18 +161,8 @@ public abstract class ConfigurableSopremoType extends AbstractSopremoType implem
 		}
 
 		private void setNames(final FeatureDescriptor description, final Name annotation) {
-			if (annotation != null) {
-				description.setValue(NAME_NOUNS, annotation.noun());
-				description.setValue(NAME_VERB, annotation.verb());
-				description.setValue(NAME_ADJECTIVE, annotation.adjective());
-				description.setValue(NAME_PREPOSITION, annotation.preposition());
-			} else {
-				final String[] empty = new String[0];
-				description.setValue(NAME_NOUNS, empty);
-				description.setValue(NAME_VERB, empty);
-				description.setValue(NAME_ADJECTIVE, empty);
-				description.setValue(NAME_PREPOSITION, empty);
-			}
+			if (annotation != null)
+				description.setValue(NAME, annotation);
 		}
 	}
 

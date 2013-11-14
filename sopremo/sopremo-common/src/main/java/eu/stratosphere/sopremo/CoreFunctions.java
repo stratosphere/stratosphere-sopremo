@@ -2,12 +2,7 @@ package eu.stratosphere.sopremo;
 
 import java.io.File;
 import java.io.IOException;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Map;
@@ -37,7 +32,6 @@ import eu.stratosphere.sopremo.function.SopremoFunction;
 import eu.stratosphere.sopremo.function.SopremoFunction1;
 import eu.stratosphere.sopremo.function.SopremoFunction2;
 import eu.stratosphere.sopremo.function.SopremoFunction3;
-import eu.stratosphere.sopremo.function.SopremoVarargFunction;
 import eu.stratosphere.sopremo.function.SopremoVarargFunction1;
 import eu.stratosphere.sopremo.operator.Name;
 import eu.stratosphere.sopremo.packages.BuiltinProvider;
@@ -53,7 +47,6 @@ import eu.stratosphere.sopremo.type.IntNode;
 import eu.stratosphere.sopremo.type.MissingNode;
 import eu.stratosphere.sopremo.type.NullNode;
 import eu.stratosphere.sopremo.type.TextNode;
-import eu.stratosphere.util.CharSequenceUtil;
 
 /**
  * Core functions.

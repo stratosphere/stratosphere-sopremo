@@ -18,6 +18,7 @@ import eu.stratosphere.sopremo.cache.NodeCache;
 import eu.stratosphere.sopremo.expressions.ArithmeticExpression;
 import eu.stratosphere.sopremo.expressions.ConstantExpression;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
+import eu.stratosphere.sopremo.function.SopremoFunction;
 import eu.stratosphere.sopremo.function.SopremoFunction1;
 import eu.stratosphere.sopremo.operator.Name;
 import eu.stratosphere.sopremo.packages.BuiltinProvider;
@@ -32,11 +33,7 @@ public class MathFunctions implements BuiltinProvider {
 	public static final EvaluationExpression PI = new ConstantExpression(Math.PI), E = new ConstantExpression(Math.E);
 
 	@Name(verb = "sqrt")
-	public static final class SQRT extends SopremoFunction1<INumericNode> {
-		SQRT() {
-			super();
-		}
-
+	public static final SopremoFunction SQRT = new SopremoFunction1<INumericNode>() {
 		private final DoubleNode result = new DoubleNode();
 
 		@Override
@@ -47,11 +44,7 @@ public class MathFunctions implements BuiltinProvider {
 	};
 
 	@Name(verb = "sqr")
-	public static final class SQR extends SopremoFunction1<INumericNode> {
-		SQR() {
-			super();
-		}
-
+	public static final SopremoFunction SQR = new SopremoFunction1<INumericNode>() {
 		private final transient NodeCache cache = new NodeCache();
 
 		@Override

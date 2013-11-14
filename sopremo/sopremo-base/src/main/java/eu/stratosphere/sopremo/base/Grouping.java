@@ -7,8 +7,8 @@ import java.util.List;
 import com.google.common.base.Function;
 import com.google.common.base.Predicates;
 
-import eu.stratosphere.sopremo.CoreFunctions;
 import eu.stratosphere.sopremo.EvaluationContext;
+import eu.stratosphere.sopremo.CoreFunctions;
 import eu.stratosphere.sopremo.aggregation.AssociativeAggregation;
 import eu.stratosphere.sopremo.expressions.AggregationExpression;
 import eu.stratosphere.sopremo.expressions.ArrayAccess;

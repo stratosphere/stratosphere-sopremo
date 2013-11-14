@@ -18,6 +18,8 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.junit.Assert;
 import org.junit.Ignore;
@@ -29,7 +31,6 @@ import eu.stratosphere.sopremo.aggregation.Aggregation;
 import eu.stratosphere.sopremo.aggregation.AggregationFunction;
 import eu.stratosphere.sopremo.expressions.AggregationExpression;
 import eu.stratosphere.sopremo.expressions.BatchAggregationExpression;
-import eu.stratosphere.sopremo.expressions.ChainedSegmentExpression;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
 import eu.stratosphere.sopremo.expressions.ExpressionUtil;
 import eu.stratosphere.sopremo.expressions.FunctionCall;
@@ -38,6 +39,7 @@ import eu.stratosphere.sopremo.function.ExpressionFunction;
 import eu.stratosphere.sopremo.function.MacroBase;
 import eu.stratosphere.sopremo.function.SopremoFunction;
 import eu.stratosphere.sopremo.operator.SopremoPlan;
+import eu.stratosphere.sopremo.packages.DefaultFunctionRegistry;
 import eu.stratosphere.sopremo.query.QueryParserException;
 import eu.stratosphere.sopremo.testing.SopremoTestUtil;
 
@@ -46,6 +48,35 @@ import eu.stratosphere.sopremo.testing.SopremoTestUtil;
  */
 @Ignore
 public class MeteorParseTest {
+
+	private String projectName;
+
+	private File projectJar;
+
+	private final static Map<String, File> ProjectJars = new HashMap<String, File>();
+
+	/**
+	 * Initializes DefaultClientIT.
+	 */
+	public MeteorParseTest() {
+		this.projectName = MavenUtil.getProjectName();
+		this.projectJar = ProjectJars.get(this.projectName);
+		if (this.projectJar == null)
+			ProjectJars.put(this.projectName, this.projectJar = build(this.projectName));
+	}
+
+	private static File build(String projectName) {
+		try {
+			String projectPath = (new File(".")).getCanonicalPath();
+			File projectJar = MavenUtil.buildJarForProject(projectPath, projectName + "_testing");
+			projectJar.deleteOnExit();
+			return projectJar;
+		} catch (IOException e) {
+			Assert.fail(e.getMessage());
+			return null;
+		}
+	}
+
 	public SopremoPlan parseScript(final String script) {
 		// printBeamerSlide(script);
 		SopremoPlan plan = null;
@@ -86,59 +117,6 @@ public class MeteorParseTest {
 		return plan;
 	}
 
-	protected EvaluationExpression createFunctionCall(Callable<?, ?> callable, EvaluationExpression... params) {
-		return this.createMethodCall(callable, null, params);
-	}
-
-	protected EvaluationExpression createFunctionCall(Aggregation aggregation, EvaluationExpression... params) {
-		return this.createMethodCall(new AggregationFunction(aggregation), null, params);
-	}
-
-	protected EvaluationExpression addToBatch(BatchAggregationExpression bae, Aggregation aggregation,
-			EvaluationExpression preprocessing) {
-		return bae.add(aggregation, preprocessing);
-	}
-
-	protected EvaluationExpression addToBatch(BatchAggregationExpression bae, Aggregation aggregation) {
-		return bae.add(aggregation);
-	}
-
-	protected EvaluationExpression addToBatch(final BatchAggregationExpression bae, ExpressionFunction aggregation) {
-		return addToBatch(bae, aggregation, EvaluationExpression.VALUE);
-	}
-
-	protected EvaluationExpression addToBatch(final BatchAggregationExpression bae, ExpressionFunction aggregation,
-			final EvaluationExpression preprocessing) {
-		return aggregation.inline(preprocessing).replace(Predicates.instanceOf(AggregationExpression.class),
-			new Function<EvaluationExpression, EvaluationExpression>() {
-				@Override
-				public EvaluationExpression apply(EvaluationExpression expression) {
-					AggregationExpression ae = (AggregationExpression) expression;
-					return bae.add(ae.getAggregation(),
-						ExpressionUtil.replaceArrayProjections(ae.getInputExpression()));
-				}
-			});
-	}
-
-	protected EvaluationExpression createMethodCall(Callable<?, ?> callable, EvaluationExpression object,
-			EvaluationExpression... params) {
-		if (callable instanceof MacroBase)
-			return ((MacroBase) callable).call(params);
-		if (!(callable instanceof SopremoFunction))
-			throw new QueryParserException(String.format("Unknown callable %s", callable));
-
-		if (object != null) {
-			EvaluationExpression[] shiftedParams = new EvaluationExpression[params.length + 1];
-			System.arraycopy(params, 0, shiftedParams, 1, params.length);
-			params = shiftedParams;
-			params[0] = object;
-		}
-
-		if (callable instanceof ExpressionFunction)
-			return ((ExpressionFunction) callable).inline(params);
-		return new FunctionCall((SopremoFunction) callable, params);
-	}
-
 	private String loadScriptFromFile(File scriptFile) {
 		try {
 			final BufferedReader reader = new BufferedReader(new FileReader(scriptFile));
@@ -156,7 +134,8 @@ public class MeteorParseTest {
 
 	@SuppressWarnings("unused")
 	protected void initParser(QueryParser queryParser) {
-
+		queryParser.getPackageManager().importPackageFrom(this.projectName.substring("sopremo-".length()),
+			this.projectJar);
 	}
 
 	public static void assertPlanEquals(SopremoPlan expectedPlan, SopremoPlan actualPlan) {

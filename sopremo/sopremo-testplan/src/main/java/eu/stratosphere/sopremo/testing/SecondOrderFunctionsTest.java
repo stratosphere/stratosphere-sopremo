@@ -22,7 +22,6 @@ import com.google.common.collect.ContiguousSet;
 import com.google.common.collect.DiscreteDomains;
 import com.google.common.collect.Ranges;
 
-import eu.stratosphere.sopremo.EvaluationContext;
 import eu.stratosphere.sopremo.MathFunctions;
 import eu.stratosphere.sopremo.SecondOrderFunctions;
 import eu.stratosphere.sopremo.expressions.ArithmeticExpression;
@@ -33,7 +32,6 @@ import eu.stratosphere.sopremo.expressions.ConstantExpression;
 import eu.stratosphere.sopremo.expressions.InputSelection;
 import eu.stratosphere.sopremo.function.ExpressionFunction;
 import eu.stratosphere.sopremo.function.FunctionNode;
-import eu.stratosphere.sopremo.function.SopremoFunction;
 import eu.stratosphere.sopremo.type.JsonUtil;
 
 /**
@@ -43,9 +41,7 @@ public class SecondOrderFunctionsTest {
 	@Test
 	public void shouldMapElements() {
 		final FunctionNode pointer = new FunctionNode();
-		EvaluationContext context = new EvaluationContext();
-		context.getFunctionRegistry().put(MathFunctions.class);
-		pointer.setFunction((SopremoFunction) context.getFunctionRegistry().get("sqr"));
+		pointer.setFunction(MathFunctions.SQR);
 
 		assertReturn(JsonUtil.createArrayNode(1, 4, 9), SecondOrderFunctions.MAP, new int[] { 1, 2, 3 }, pointer);
 	}
@@ -53,8 +49,6 @@ public class SecondOrderFunctionsTest {
 	@Test
 	public void shouldFilterElements() {
 		final FunctionNode pointer = new FunctionNode();
-		// EvaluationContext context = new EvaluationContext();
-		// context.getFunctionRegistry().put(MathFunctions.class);
 		pointer.setFunction(new ExpressionFunction(1,
 			new ComparativeExpression(new InputSelection(0), BinaryOperator.GREATER, new ConstantExpression(5))));
 
@@ -66,8 +60,6 @@ public class SecondOrderFunctionsTest {
 	@Test
 	public void shouldFindElements() {
 		final FunctionNode pointer = new FunctionNode();
-		// EvaluationContext context = new EvaluationContext();
-		// context.getFunctionRegistry().put(MathFunctions.class);
 		pointer.setFunction(new ExpressionFunction(1,
 			new ComparativeExpression(new InputSelection(0), BinaryOperator.GREATER, new ConstantExpression(5))));
 
@@ -78,8 +70,6 @@ public class SecondOrderFunctionsTest {
 	@Test
 	public void shouldFoldElements() {
 		final FunctionNode pointer = new FunctionNode();
-		// EvaluationContext context = new EvaluationContext();
-		// context.getFunctionRegistry().put(MathFunctions.class);
 		pointer.setFunction(new ExpressionFunction(2,
 			new ArithmeticExpression(new InputSelection(0), ArithmeticOperator.ADDITION, new InputSelection(1))));
 

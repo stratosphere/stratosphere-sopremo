@@ -4,7 +4,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import eu.stratosphere.sopremo.EvaluationContext;
 import eu.stratosphere.sopremo.EvaluationException;
 import eu.stratosphere.sopremo.function.JavaMethod;
 import eu.stratosphere.sopremo.function.SopremoFunction;
@@ -22,8 +21,6 @@ import eu.stratosphere.sopremo.type.TextNode;
 public class FunctionRegistryTest {
 	private IFunctionRegistry registry;
 
-	private EvaluationContext context;
-
 	private static final IJsonNode GENERIC_VARARG_NODE = new TextNode("var");
 
 	private static final IJsonNode GENERIC_NODE = new TextNode("generic");
@@ -38,8 +35,7 @@ public class FunctionRegistryTest {
 
 	@Before
 	public void setup() {
-		this.context = new EvaluationContext();
-		this.registry = this.context.getFunctionRegistry();
+		this.registry = new DefaultFunctionRegistry();
 	}
 
 	@Test
@@ -115,6 +111,7 @@ public class FunctionRegistryTest {
 		Assert.assertSame(ONE_INT_VARARG_NODE, this.evaluate("count", new IntNode(1)));
 	}
 
+	@SuppressWarnings("unused")
 	public static class JavaFunctions {
 
 		@Name(verb = "count")

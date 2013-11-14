@@ -39,6 +39,7 @@ import eu.stratosphere.sopremo.packages.DefaultTypeRegistry;
 import eu.stratosphere.sopremo.packages.IConstantRegistry;
 import eu.stratosphere.sopremo.packages.IFunctionRegistry;
 import eu.stratosphere.sopremo.packages.ITypeRegistry;
+import eu.stratosphere.sopremo.packages.NameChooserProvider;
 import eu.stratosphere.sopremo.type.IJsonNode;
 import eu.stratosphere.util.reflect.ReflectUtil;
 

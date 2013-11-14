@@ -3,7 +3,6 @@ package eu.stratosphere.sopremo.type;
 import java.util.Iterator;
 
 import org.junit.Assert;
-
 import org.junit.Test;
 
 public class ArrayNodeTest extends ArrayNodeBaseTest<ArrayNode<IJsonNode>> {

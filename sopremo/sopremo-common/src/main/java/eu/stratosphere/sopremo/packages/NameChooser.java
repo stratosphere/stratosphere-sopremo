@@ -1,6 +1,11 @@
 package eu.stratosphere.sopremo.packages;
 
+import eu.stratosphere.sopremo.operator.Name;
+
 
 public interface NameChooser {
-	public String choose(String[] nouns, String[] verbs, String[] adjectives, String[] prepositions);
+	/**
+	 * Return the lookup name for the given {@link Name} annotation.
+	 */
+	public String getName(Name name);
 }

@@ -3,7 +3,6 @@ package eu.stratosphere.sopremo.io;
 import java.io.IOException;
 
 import org.junit.Assert;
-
 import org.junit.Test;
 
 import eu.stratosphere.sopremo.io.CsvFormat.CsvOutputFormat;

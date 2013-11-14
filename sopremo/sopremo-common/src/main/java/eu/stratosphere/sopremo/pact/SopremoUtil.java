@@ -167,7 +167,7 @@ public class SopremoUtil {
 		return byteArrayToSerializable(buffer, clazz, clazz.getClassLoader());
 	}
 
-	@SuppressWarnings({"unchecked"})
+	@SuppressWarnings({ "unchecked", "unused" })
 	public static <T extends Serializable> T byteArrayToSerializable(byte[] buffer, Class<T> clazz,
 			final ClassLoader classLoader)
 			throws IOException {

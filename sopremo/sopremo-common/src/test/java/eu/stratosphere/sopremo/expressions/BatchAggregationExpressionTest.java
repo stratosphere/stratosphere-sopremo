@@ -1,13 +1,14 @@
 package eu.stratosphere.sopremo.expressions;
 
 import static eu.stratosphere.sopremo.expressions.ExpressionUtil.makePath;
+import static eu.stratosphere.sopremo.function.FunctionUtil.createFunctionCall;
 import static eu.stratosphere.sopremo.type.JsonUtil.createArrayNode;
 
 import java.util.Arrays;
 
-import org.junit.Assert;
 import nl.jqno.equalsverifier.EqualsVerifier;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -123,7 +124,6 @@ public class BatchAggregationExpressionTest extends EvaluableExpressionTest<Batc
 	@Before
 	public void initContext() {
 		super.initContext();
-		this.context.getFunctionRegistry().put(CoreFunctions.class);
 	}
 	
 	@Test
@@ -133,9 +133,9 @@ public class BatchAggregationExpressionTest extends EvaluableExpressionTest<Batc
 			makePath(new InputSelection(0), new ArrayAccess(0), new ObjectAccess("dept")));
 		transformation.addMapping("deptName",
 			makePath(new InputSelection(1), new ArrayAccess(0), new ObjectAccess("name")));
-		transformation.addMapping("emps", new FunctionCall("sort", this.context,
+		transformation.addMapping("emps", createFunctionCall(CoreFunctions.SORT, 
 			makePath(new InputSelection(0), new ArrayProjection(new ObjectAccess("id")))));
-		transformation.addMapping("numEmps", new FunctionCall("count", this.context, new InputSelection(0)));
+		transformation.addMapping("numEmps", createFunctionCall(CoreFunctions.COUNT, new InputSelection(0)));
 
 		final EvaluationExpression aggregation = ExpressionUtil.replaceAggregationWithBatchAggregation(
 			ExpressionUtil.replaceIndexAccessWithAggregation(transformation));

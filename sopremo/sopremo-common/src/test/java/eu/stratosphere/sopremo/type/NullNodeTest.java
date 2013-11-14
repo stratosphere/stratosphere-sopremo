@@ -1,7 +1,6 @@
 package eu.stratosphere.sopremo.type;
 
 import org.junit.Assert;
-
 import org.junit.Test;
 
 public class NullNodeTest {

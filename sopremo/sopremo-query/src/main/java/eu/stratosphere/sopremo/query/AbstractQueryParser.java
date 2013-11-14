@@ -26,8 +26,8 @@ import org.antlr.runtime.UnwantedTokenException;
 import com.google.common.base.CharMatcher;
 
 import eu.stratosphere.nephele.fs.Path;
-import eu.stratosphere.sopremo.CoreFunctions;
 import eu.stratosphere.sopremo.EvaluationContext;
+import eu.stratosphere.sopremo.CoreFunctions;
 import eu.stratosphere.sopremo.MathFunctions;
 import eu.stratosphere.sopremo.SecondOrderFunctions;
 import eu.stratosphere.sopremo.SopremoEnvironment;
@@ -47,6 +47,7 @@ import eu.stratosphere.sopremo.packages.IConstantRegistry;
 import eu.stratosphere.sopremo.packages.IFunctionRegistry;
 import eu.stratosphere.sopremo.packages.IRegistry;
 import eu.stratosphere.sopremo.packages.ITypeRegistry;
+import eu.stratosphere.sopremo.packages.NameChooserProvider;
 import eu.stratosphere.sopremo.pact.SopremoUtil;
 import eu.stratosphere.sopremo.query.ConfObjectInfo.ConfObjectIndexedPropertyInfo;
 import eu.stratosphere.sopremo.query.ConfObjectInfo.ConfObjectPropertyInfo;
@@ -82,9 +83,7 @@ public abstract class AbstractQueryParser extends Parser implements ParsingScope
 	 * 
 	 */
 	private void init() {
-		this.currentPlan.setContext(new EvaluationContext(this.getFunctionRegistry(), this.getConstantRegistry(),
-			this.getTypeRegistry(),
-			new HashMap<String, Object>()));
+		this.currentPlan.setContext(new EvaluationContext(this.getTypeRegistry(), this.getNameChooserProvider()));
 		this.packageManager.getFunctionRegistry().put(CoreFunctions.class);
 		this.packageManager.getFunctionRegistry().put(MathFunctions.class);
 		this.packageManager.getFunctionRegistry().put(SecondOrderFunctions.class);
@@ -161,7 +160,7 @@ public abstract class AbstractQueryParser extends Parser implements ParsingScope
 	//
 
 	protected EvaluationContext getContext() {
-		return this.currentPlan.getEvaluationContext();
+		return this.currentPlan.getCompilationContext();
 	}
 
 	//

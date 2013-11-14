@@ -12,9 +12,8 @@
  * specific language governing permissions and limitations under the License.
  *
  **********************************************************************************************************************/
-package eu.stratosphere.sopremo.query;
+package eu.stratosphere.sopremo.packages;
 
-import eu.stratosphere.sopremo.packages.NameChooser;
 
 /**
  * @author arv
@@ -27,6 +26,7 @@ public class DefaultNameChooserProvider implements NameChooserProvider {
 	 * Initializes DefaultNameChooserProvider.
 	 */
 	public DefaultNameChooserProvider() {
+		this(new DefaultNameChooser());
 	}
 
 	/**

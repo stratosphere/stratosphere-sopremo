@@ -184,7 +184,7 @@ public class ElementarySopremoModule extends SopremoModule {
 				OperatorNavigator.INSTANCE, new GraphTraverseListener<Operator<?>>() {
 					@Override
 					public void nodeTraversed(final Operator<?> node) {
-						EvaluationContext context = PactAssembler.this.context.clone();
+						EvaluationContext context = PactAssembler.this.context;
 						if (ElementarySopremoModule.this.getName() != null)
 							context.setOperatorDescription(ElementarySopremoModule.this.getName());
 						else

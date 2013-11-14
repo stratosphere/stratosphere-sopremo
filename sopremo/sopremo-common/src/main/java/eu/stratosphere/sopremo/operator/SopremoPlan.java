@@ -11,12 +11,8 @@ import eu.stratosphere.pact.common.contract.GenericDataSink;
 import eu.stratosphere.pact.common.plan.Plan;
 import eu.stratosphere.pact.generic.contract.Contract;
 import eu.stratosphere.sopremo.AbstractSopremoType;
-import eu.stratosphere.sopremo.CoreFunctions;
 import eu.stratosphere.sopremo.EvaluationContext;
 import eu.stratosphere.sopremo.io.Sink;
-import eu.stratosphere.sopremo.packages.EvaluationScope;
-import eu.stratosphere.sopremo.packages.IConstantRegistry;
-import eu.stratosphere.sopremo.packages.IFunctionRegistry;
 import eu.stratosphere.sopremo.packages.ITypeRegistry;
 import eu.stratosphere.sopremo.serialization.SopremoRecordLayout;
 
@@ -25,7 +21,7 @@ import eu.stratosphere.sopremo.serialization.SopremoRecordLayout;
  * 
  * @author Arvid Heise
  */
-public class SopremoPlan extends AbstractSopremoType implements Serializable, EvaluationScope {
+public class SopremoPlan extends AbstractSopremoType implements Serializable {
 
 	private static final long serialVersionUID = 5702832506916907827L;
 
@@ -39,7 +35,6 @@ public class SopremoPlan extends AbstractSopremoType implements Serializable, Ev
 
 	public SopremoPlan() {
 		this.module = new SopremoModule(0, 0);
-		this.context.getFunctionRegistry().put(CoreFunctions.class);
 	}
 
 	/**
@@ -61,7 +56,6 @@ public class SopremoPlan extends AbstractSopremoType implements Serializable, Ev
 		return this.requiredPackages;
 	}
 
-	@Override
 	public ITypeRegistry getTypeRegistry() {
 		return this.context.getTypeRegistry();
 	}
@@ -145,7 +139,7 @@ public class SopremoPlan extends AbstractSopremoType implements Serializable, Ev
 	 * 
 	 * @return the evaluation context
 	 */
-	public EvaluationContext getEvaluationContext() {
+	public EvaluationContext getCompilationContext() {
 		return this.context;
 	}
 
@@ -184,23 +178,5 @@ public class SopremoPlan extends AbstractSopremoType implements Serializable, Ev
 
 	public List<Operator<?>> getUnmatchingOperators(final SopremoPlan other) {
 		return this.module.getUnmatchingNodes(other.module);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.packages.EvaluationScope#getConstantRegistry()
-	 */
-	@Override
-	public IConstantRegistry getConstantRegistry() {
-		return this.context.getConstantRegistry();
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.packages.EvaluationScope#getFunctionRegistry()
-	 */
-	@Override
-	public IFunctionRegistry getFunctionRegistry() {
-		return this.context.getFunctionRegistry();
 	}
 }

@@ -6,7 +6,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.junit.Assert;
-
 import org.junit.Test;
 
 import com.google.common.base.Predicates;

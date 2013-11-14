@@ -3,9 +3,8 @@ package eu.stratosphere.sopremo.packages;
 import java.io.IOException;
 import java.util.Arrays;
 
-import javolution.text.TextFormat;
-
 import eu.stratosphere.sopremo.AbstractSopremoType;
+import eu.stratosphere.sopremo.operator.Name;
 
 public class DefaultNameChooser extends AbstractSopremoType implements NameChooser {
 	private final int[] preferredOrder;
@@ -23,6 +22,11 @@ public class DefaultNameChooser extends AbstractSopremoType implements NameChoos
 	}
 
 	@Override
+	public String getName(Name nameAnnotation) {
+		return this.choose(nameAnnotation.noun(), nameAnnotation.verb(), nameAnnotation.adjective(),
+			nameAnnotation.preposition());
+	}
+	
 	public String choose(final String[] nouns, final String[] verbs, final String[] adjectives, final String[] prepositions) {
 		final String[][] names = { nouns, verbs, adjectives, prepositions };
 		for (final int pos : this.preferredOrder) {

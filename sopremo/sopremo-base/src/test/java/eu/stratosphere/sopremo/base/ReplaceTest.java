@@ -1,12 +1,14 @@
 package eu.stratosphere.sopremo.base;
 
 import java.util.Arrays;
+import static eu.stratosphere.sopremo.function.FunctionUtil.*;
 import java.util.List;
 
 import nl.jqno.equalsverifier.EqualsVerifier;
 
 import org.junit.Test;
 
+import eu.stratosphere.sopremo.EvaluationContext;
 import eu.stratosphere.sopremo.CoreFunctions;
 import eu.stratosphere.sopremo.EvaluationContext;
 import eu.stratosphere.sopremo.base.replace.ReplaceBase;
@@ -92,10 +94,8 @@ public class ReplaceTest extends SopremoOperatorTestBase<Replace> {
 	public void shouldLookupValuesWithDefaultValue() {
 		final Replace replace = new Replace();
 		final SopremoTestPlan sopremoPlan = new SopremoTestPlan(replace);
-		final EvaluationContext context = sopremoPlan.getEvaluationContext();
-		context.getFunctionRegistry().put(CoreFunctions.class);
 		replace.withReplaceExpression(new ObjectAccess("fieldToReplace")).
-			withDefaultExpression(new FunctionCall("format", context,
+			withDefaultExpression(createFunctionCall(CoreFunctions.FORMAT,
 				new ConstantExpression("default %s"), new ObjectAccess("fieldToReplace"))).
 			withDictionaryKeyExtraction(new ArrayAccess(0)).
 			withDictionaryValueExtraction(new ArrayAccess(1));
@@ -178,13 +178,11 @@ public class ReplaceTest extends SopremoOperatorTestBase<Replace> {
 	public void shouldLookupArrayValuesWithDefault() {
 		final ReplaceAll replace = new ReplaceAll();
 		final SopremoTestPlan sopremoPlan = new SopremoTestPlan(replace);
-		final EvaluationContext context = sopremoPlan.getEvaluationContext();
-		sopremoPlan.getEvaluationContext().getFunctionRegistry().put(CoreFunctions.class);
 		replace.setReplaceExpression(new ObjectAccess("fieldToReplace"));
 		replace.setDictionaryKeyExtraction(new ArrayAccess(0));
 		replace.setDictionaryValueExtraction(new ArrayAccess(1));
-		replace.setDefaultExpression(new FunctionCall("format", context, new ConstantExpression("default %s"),
-			EvaluationExpression.VALUE));
+		replace.setDefaultExpression(createFunctionCall(CoreFunctions.FORMAT,
+			new ConstantExpression("default %s"), EvaluationExpression.VALUE));
 
 		sopremoPlan.getInput(0).
 			addObject("field1", 1, "fieldToReplace", new int[] { 1, 2, 3 }, "field2", 2).

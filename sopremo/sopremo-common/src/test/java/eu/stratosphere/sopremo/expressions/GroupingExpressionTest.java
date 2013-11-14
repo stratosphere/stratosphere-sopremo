@@ -1,10 +1,11 @@
 package eu.stratosphere.sopremo.expressions;
 
+import static eu.stratosphere.sopremo.function.FunctionUtil.createFunctionCall;
 import static eu.stratosphere.sopremo.type.JsonUtil.createObjectNode;
 import javolution.util.FastMap;
-import org.junit.Assert;
 import nl.jqno.equalsverifier.EqualsVerifier;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 import eu.stratosphere.sopremo.CoreFunctions;
@@ -21,8 +22,6 @@ public class GroupingExpressionTest extends EvaluableExpressionTest<GroupingExpr
 
 	@Test
 	public void testAggregation() {
-		this.context.getFunctionRegistry().put(CoreFunctions.class);
-
 		final ArrayNode<IJsonNode> input = new ArrayNode<IJsonNode>();
 		input.add(createObjectNode("key", 1, "value", 11));
 		input.add(createObjectNode("key", 2, "value", 24));
@@ -31,8 +30,8 @@ public class GroupingExpressionTest extends EvaluableExpressionTest<GroupingExpr
 		input.add(createObjectNode("key", 1, "value", 12));
 
 		final GroupingExpression aggExpression =
-			new GroupingExpression(new ObjectAccess("key"), new FunctionCall("sum",
-				this.context, new ArrayProjection(new ObjectAccess("value"))));
+			new GroupingExpression(new ObjectAccess("key"), createFunctionCall(CoreFunctions.SUM,
+				new ArrayProjection(new ObjectAccess("value"))));
 
 		final IJsonNode result = aggExpression.evaluate(input);
 
@@ -43,8 +42,6 @@ public class GroupingExpressionTest extends EvaluableExpressionTest<GroupingExpr
 
 	@Test
 	public void shouldReuseTarget() {
-		this.context.getFunctionRegistry().put(CoreFunctions.class);
-
 		final ArrayNode<IJsonNode> input = new ArrayNode<IJsonNode>();
 		input.add(createObjectNode("key", 1, "value", 11));
 		input.add(createObjectNode("key", 2, "value", 24));
@@ -53,8 +50,8 @@ public class GroupingExpressionTest extends EvaluableExpressionTest<GroupingExpr
 		input.add(createObjectNode("key", 1, "value", 12));
 
 		final GroupingExpression aggExpression =
-			new GroupingExpression(new ObjectAccess("key"), new FunctionCall("sum",
-				this.context, new ArrayProjection(new ObjectAccess("value"))));
+			new GroupingExpression(new ObjectAccess("key"),
+				createFunctionCall(CoreFunctions.SUM, new ArrayProjection(new ObjectAccess("value"))));
 
 		final IJsonNode result1 = aggExpression.evaluate(input);
 

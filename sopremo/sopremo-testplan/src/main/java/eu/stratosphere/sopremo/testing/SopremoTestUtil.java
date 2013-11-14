@@ -46,7 +46,7 @@ public class SopremoTestUtil {
 		// actualPlan may contain operators from loaded packages with their own classloaders
 		// thus, these operators are not equal to the expected plan as the operators are loaded by the default classloader
 		// one solution is to use the serializer/deserializer trick to transfer the classes to the default classloader
-		Kryo kryo = expectedPlan.getEvaluationContext().getKryo();
+		Kryo kryo = expectedPlan.getCompilationContext().getKryo();
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		Output output = new Output(baos);
 		kryo.writeObject(output, actualPlan);

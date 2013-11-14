@@ -15,16 +15,15 @@
 package eu.stratosphere.meteor.expression;
 
 import org.junit.Test;
+import static eu.stratosphere.sopremo.function.FunctionUtil.*;
 
 import eu.stratosphere.meteor.MeteorParseTest;
-import eu.stratosphere.sopremo.EvaluationContext;
 import eu.stratosphere.sopremo.SecondOrderFunctions;
 import eu.stratosphere.sopremo.base.Grouping;
 import eu.stratosphere.sopremo.expressions.ArithmeticExpression;
 import eu.stratosphere.sopremo.expressions.ArithmeticExpression.ArithmeticOperator;
 import eu.stratosphere.sopremo.expressions.ArrayCreation;
 import eu.stratosphere.sopremo.expressions.ConstantExpression;
-import eu.stratosphere.sopremo.expressions.FunctionCall;
 import eu.stratosphere.sopremo.expressions.InputSelection;
 import eu.stratosphere.sopremo.expressions.ObjectCreation;
 import eu.stratosphere.sopremo.function.ExpressionFunction;
@@ -49,8 +48,6 @@ public class SecondOrderFunctionTest extends MeteorParseTest {
 			"write $result to 'file://output.json'; ");
 
 		final SopremoPlan expectedPlan = new SopremoPlan();
-		final EvaluationContext context = expectedPlan.getEvaluationContext();
-		context.getFunctionRegistry().put(SecondOrderFunctions.class);
 		final ExpressionFunction squareFunction = new ExpressionFunction(1,
 			new ArithmeticExpression(JsonUtil.createPath("0", "a"), ArithmeticOperator.MULTIPLICATION,
 				JsonUtil.createPath("0", "b")));
@@ -78,8 +75,6 @@ public class SecondOrderFunctionTest extends MeteorParseTest {
 				"write $result to 'file://output.json'; ");
 
 		final SopremoPlan expectedPlan = new SopremoPlan();
-		final EvaluationContext context = expectedPlan.getEvaluationContext();
-		context.getFunctionRegistry().put(SecondOrderFunctions.class);
 		final JavaMethod javaMethod = new JavaMethod("testudf");
 		javaMethod.addSignature(this.getClass().getMethod("udfTest", IJsonNode[].class));
 		final ConstantExpression functionNode = new ConstantExpression(new FunctionNode(javaMethod));
@@ -103,8 +98,6 @@ public class SecondOrderFunctionTest extends MeteorParseTest {
 				"write $result to 'file://output.json'; ");
 
 		final SopremoPlan expectedPlan = new SopremoPlan();
-		final EvaluationContext context = expectedPlan.getEvaluationContext();
-		context.getFunctionRegistry().put(SecondOrderFunctions.class);
 		final ExpressionFunction squareFunction = new ExpressionFunction(1,
 			new ArithmeticExpression(JsonUtil.createPath("0", "a"), ArithmeticOperator.MULTIPLICATION,
 				JsonUtil.createPath("0", "b")));

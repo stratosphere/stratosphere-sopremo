@@ -15,8 +15,10 @@
 package eu.stratosphere.sopremo.packages;
 
 import java.lang.reflect.AccessibleObject;
+import java.lang.reflect.Member;
 
 import eu.stratosphere.sopremo.AbstractSopremoType;
+import eu.stratosphere.sopremo.operator.Internal;
 import eu.stratosphere.sopremo.operator.Name;
 
 /**
@@ -25,14 +27,14 @@ import eu.stratosphere.sopremo.operator.Name;
  */
 public abstract class AbstractRegistry<T> extends AbstractSopremoType implements IRegistry<T> {
 	protected final static NameChooser StandardNameChooser = new DefaultNameChooser(0, 1, 2, 3);
-	
+
 	private final NameChooser nameChooser;
 
 	/**
 	 * Initializes AbstractRegistry.
 	 */
 	public AbstractRegistry(NameChooser nameChooser) {
-		if(nameChooser == null)
+		if (nameChooser == null)
 			throw new NullPointerException();
 		this.nameChooser = nameChooser;
 	}
@@ -46,37 +48,45 @@ public abstract class AbstractRegistry<T> extends AbstractSopremoType implements
 
 	@Override
 	public void put(Name name, T element) {
-		put(getName(name), element);
+		put(getNameChooser().getName(name), element);
 	}
-	
-	/* (non-Javadoc)
+
+	/*
+	 * (non-Javadoc)
 	 * @see eu.stratosphere.sopremo.packages.IRegistry#get(eu.stratosphere.sopremo.operator.Name)
 	 */
 	@Override
 	public T get(Name name) {
-		return get(getName(name));
+		return get(getNameChooser().getName(name));
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.packages.IRegistry#getNameChooser()
+	 */
 	@Override
-	public String getName(Name nameAnnotation) {
-		if(this.nameChooser == null)
-			throw new IllegalStateException("This registry was initialized without NameChooser");
-		return this.nameChooser.choose(nameAnnotation.noun(), nameAnnotation.verb(), nameAnnotation.adjective(),
-			nameAnnotation.preposition());
+	public NameChooser getNameChooser() {
+		return this.nameChooser;
 	}
 
 	protected String getName(Class<?> object) {
 		final Name nameAnnotation = object.getAnnotation(Name.class);
-		if (nameAnnotation == null)
+		if (nameAnnotation == null) {
+			if(object.getAnnotation(Internal.class) != null)
+				return String.format("__%s", object.getSimpleName());
 			throw new IllegalArgumentException(object + " has no name annotation");
-		return getName(nameAnnotation);
+		}
+		return getNameChooser().getName(nameAnnotation);
 	}
 
 	protected String getName(AccessibleObject object) {
 		final Name nameAnnotation = object.getAnnotation(Name.class);
-		if (nameAnnotation == null)
+		if (nameAnnotation == null) {
+			if(object.getAnnotation(Internal.class) != null)
+				return String.format("__%s", ((Member) object).getName());
 			throw new IllegalArgumentException(object + " has no name annotation");
-		return getName(nameAnnotation);
+		}
+		return getNameChooser().getName(nameAnnotation);
 	}
 
 	@Override

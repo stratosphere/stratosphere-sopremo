@@ -27,6 +27,7 @@ import eu.stratosphere.pact.testing.GenericTestPlan;
 import eu.stratosphere.pact.testing.GenericTestRecords;
 import eu.stratosphere.pact.testing.TypeConfig;
 import eu.stratosphere.sopremo.EvaluationContext;
+import eu.stratosphere.sopremo.EvaluationContext;
 import eu.stratosphere.sopremo.io.JsonFormat;
 import eu.stratosphere.sopremo.io.JsonFormat.JsonInputFormat;
 import eu.stratosphere.sopremo.io.JsonParser;
@@ -277,7 +278,7 @@ public class SopremoTestPlan {
 	 * 
 	 * @return the context
 	 */
-	public EvaluationContext getEvaluationContext() {
+	public EvaluationContext getCompilationContext() {
 		return this.evaluationContext;
 	}
 
@@ -568,7 +569,7 @@ public class SopremoTestPlan {
 		}
 
 		protected EvaluationContext getContext() {
-			return this.testPlan.getEvaluationContext();
+			return this.testPlan.getCompilationContext();
 		}
 
 		@SuppressWarnings("unchecked")

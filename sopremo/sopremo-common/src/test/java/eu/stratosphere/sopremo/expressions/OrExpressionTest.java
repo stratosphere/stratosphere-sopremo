@@ -5,9 +5,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import org.junit.Assert;
 import nl.jqno.equalsverifier.EqualsVerifier;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 import eu.stratosphere.sopremo.type.BooleanNode;

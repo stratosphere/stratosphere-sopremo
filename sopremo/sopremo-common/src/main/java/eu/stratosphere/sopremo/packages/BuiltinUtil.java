@@ -16,7 +16,6 @@ package eu.stratosphere.sopremo.packages;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.util.Set;
 
 import eu.stratosphere.sopremo.operator.Name;
 
@@ -24,12 +23,12 @@ import eu.stratosphere.sopremo.operator.Name;
  * @author arv
  */
 public class BuiltinUtil {
-	public static String getName(Object element, IRegistry<?> registry) {
+	public static String getName(Object element, NameChooser nameChooser) {
 		final Class<? extends Object> clazz = element.getClass();
 		// if this a non-anonymous class, it should be self-descriptive
 		Name nameAnnotation = clazz.getAnnotation(Name.class);
 		if (nameAnnotation != null)
-			return registry.getName(nameAnnotation);
+			return nameChooser.getName(nameAnnotation);
 
 		if (!clazz.isAnonymousClass())
 			return clazz.getSimpleName();
@@ -43,19 +42,12 @@ public class BuiltinUtil {
 					if (field.get(null).getClass() == clazz) {
 						nameAnnotation = field.getAnnotation(Name.class);
 						if (nameAnnotation != null)
-							return registry.getName(nameAnnotation);
+							return nameChooser.getName(nameAnnotation);
 					}
 				} catch (Exception e) {
 					throw new RuntimeException(e);
 				}
 		}
-
-		// last chance, is it in already registered?
-		final Set<String> allFunctions = registry.keySet();
-		for (String function : allFunctions) 
-			// use equals to find the original object in case of cloned instances
-			if (registry.get(function).equals(element)) 
-				return function;
 		
 		// fall through
 		return "unknown";
