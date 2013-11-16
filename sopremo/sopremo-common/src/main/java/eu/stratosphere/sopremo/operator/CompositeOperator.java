@@ -56,7 +56,7 @@ public abstract class CompositeOperator<Self extends CompositeOperator<Self>> ex
 	@Override
 	public final ElementarySopremoModule asElementaryOperators(EvaluationContext context) {
 		SopremoModule module = new SopremoModule(this.getNumInputs(), this.getNumOutputs());
-		module.setName(this.toString());
+		module.setName(getName());
 		this.addImplementation(module, context);
 
 		// inherit the CompositeOperator's DoP, if it was not changed by the

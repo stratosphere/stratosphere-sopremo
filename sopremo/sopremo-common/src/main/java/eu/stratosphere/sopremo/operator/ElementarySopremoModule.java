@@ -185,10 +185,7 @@ public class ElementarySopremoModule extends SopremoModule {
 					@Override
 					public void nodeTraversed(final Operator<?> node) {
 						EvaluationContext context = PactAssembler.this.context;
-						if (ElementarySopremoModule.this.getName() != null)
-							context.setOperatorDescription(ElementarySopremoModule.this.getName());
-						else
-							context.setOperatorDescription(node.toString());
+						context.setOperatorDescription(node.getName());
 						final PactModule module = node.asPactModule(context, layout);
 
 						PactAssembler.this.modules.put(node, module);
@@ -259,7 +256,7 @@ public class ElementarySopremoModule extends SopremoModule {
 	 */
 	public void inferSchema() {
 		final Set<EvaluationExpression> keyExpressions = new HashSet<EvaluationExpression>();
-		for (final ElementaryOperator<?> operator : this.getReachableNodes()) 
+		for (final ElementaryOperator<?> operator : this.getReachableNodes())
 			keyExpressions.addAll(operator.getAllKeyExpressions());
 
 		this.schema = new Schema(new ArrayList<EvaluationExpression>(keyExpressions));

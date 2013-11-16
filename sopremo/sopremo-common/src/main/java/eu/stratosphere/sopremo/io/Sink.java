@@ -287,7 +287,8 @@ public class Sink extends ElementaryOperator<Sink> {
 	 */
 	@Override
 	public void appendAsString(Appendable appendable) throws IOException {
-		appendable.append("Sink [");
+		appendable.append(getName());
+		appendable.append(" [");
 		if (this.outputPath != null)
 			appendable.append(this.outputPath).append(", ");
 		this.format.appendAsString(appendable);

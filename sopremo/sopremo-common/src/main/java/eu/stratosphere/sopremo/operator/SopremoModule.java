@@ -170,6 +170,7 @@ public class SopremoModule extends GraphModule<Operator<?>, Source, Sink> implem
 	 */
 	protected void copyPropertiesFrom(ISopremoType original) {
 		SopremoModule module = (SopremoModule) original;
+		setName(module.getName());
 		// this is currently not a deep clone
 		for (int index = 0; index < module.getNumInputs(); index++)
 			this.setInput(index, module.getInput(index));
@@ -243,8 +244,9 @@ public class SopremoModule extends GraphModule<Operator<?>, Source, Sink> implem
 		for (final Operator<?> sink : sinks) {
 			if (sink instanceof Sink)
 				module.setOutput(sinkIndex++, (Sink) sink);
-			else for (JsonStream output : sink.getOutputs()) 
-				module.getOutput(sinkIndex++).setInput(0, output);
+			else
+				for (JsonStream output : sink.getOutputs())
+					module.getOutput(sinkIndex++).setInput(0, output);
 		}
 	}
 
@@ -338,6 +340,8 @@ public class SopremoModule extends GraphModule<Operator<?>, Source, Sink> implem
 			for (final Sink sink : sopremoModule.getInternalOutputNodes())
 				elementarySopremoModule.addInternalOutput(this.modules.get(sink).getInternalOutputNodes(0));
 
+			if (sopremoModule.getName() != null)
+				elementarySopremoModule.setName(sopremoModule.getName());
 			return elementarySopremoModule;
 		}
 
@@ -346,9 +350,10 @@ public class SopremoModule extends GraphModule<Operator<?>, Source, Sink> implem
 				OperatorNavigator.INSTANCE, new GraphTraverseListener<Operator<?>>() {
 					@Override
 					public void nodeTraversed(final Operator<?> node) {
+						if (sopremoModule.getName() != null)
+							node.setName(sopremoModule.getName() + " - " + node.getName());
 						final ElementarySopremoModule elementaryModule =
 							node.asElementaryOperators(ElementaryAssembler.this.context);
-						elementaryModule.setName(sopremoModule + " - " + node.toString());
 						ElementaryAssembler.this.modules.put(node, elementaryModule);
 					}
 				});
