@@ -67,16 +67,19 @@ public class PackageManager implements ParsingScope {
 		this.fileFormatRegistries = new StackedConfObjectRegistry<SopremoFormat>(
 			nameChooserProvider.getFormatNameChooser(), nameChooserProvider.getPropertyNameChooser());
 
+		final AdditionalInfoResolver operatorOrFormatResolver =
+			new AdditionalInfoResolver.OperatorOrFormat(this.operatorRegistries, this.fileFormatRegistries);
 		final IConfObjectRegistry<Operator<?>> ioRegistry = new DefaultConfObjectRegistry<Operator<?>>(
 			nameChooserProvider.getOperatorNameChooser(), nameChooserProvider.getPropertyNameChooser());
-		ioRegistry.put(Sink.class);
-		ioRegistry.put(Source.class);
+		ioRegistry.put(Sink.class, operatorOrFormatResolver);
+		ioRegistry.put(Source.class, operatorOrFormatResolver);
 		this.operatorRegistries.addLast(ioRegistry);
 
+		final AdditionalInfoResolver formatResolver = new AdditionalInfoResolver.Format(this.fileFormatRegistries);
 		final IConfObjectRegistry<SopremoFormat> defaultFormatRegistry = new DefaultConfObjectRegistry<SopremoFormat>(
 			nameChooserProvider.getFormatNameChooser(), nameChooserProvider.getPropertyNameChooser());
-		defaultFormatRegistry.put(CsvFormat.class);
-		defaultFormatRegistry.put(JsonFormat.class);
+		defaultFormatRegistry.put(CsvFormat.class, formatResolver);
+		defaultFormatRegistry.put(JsonFormat.class, formatResolver);
 		this.fileFormatRegistries.addLast(defaultFormatRegistry);
 	}
 

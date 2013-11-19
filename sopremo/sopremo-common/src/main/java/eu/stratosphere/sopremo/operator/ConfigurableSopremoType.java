@@ -44,7 +44,7 @@ public abstract class ConfigurableSopremoType extends AbstractSopremoType implem
 
 	private static Map<Class<?>, Info> beanInfos = new IdentityHashMap<Class<?>, Info>();
 
-	private List<ConfigurableSopremoType> additionalBeanInfos = new IdentityList<ConfigurableSopremoType>();
+	private transient List<ConfigurableSopremoType> additionalBeanInfos = new IdentityList<ConfigurableSopremoType>();
 
 	/**
 	 * Initializes ConfigurableSopremoType.
@@ -63,10 +63,10 @@ public abstract class ConfigurableSopremoType extends AbstractSopremoType implem
 	}
 
 	@Override
-	public BeanInfo[] getAdditionalBeanInfo() {
+	public ConfigurableSopremoType[] getAdditionalBeanInfo() {
 		if (this.additionalBeanInfos.isEmpty())
-			return new BeanInfo[0];
-		return this.additionalBeanInfos.toArray(new BeanInfo[this.additionalBeanInfos.size()]);
+			return new ConfigurableSopremoType[0];
+		return this.additionalBeanInfos.toArray(new ConfigurableSopremoType[this.additionalBeanInfos.size()]);
 	}
 
 	@Override

@@ -10,15 +10,15 @@ public class StackedConfObjectRegistry<T extends ConfigurableSopremoType> extend
 	public StackedConfObjectRegistry(NameChooser nameChooser, NameChooser propertyNameChooser) {
 		super(new DefaultConfObjectRegistry<T>(nameChooser, propertyNameChooser));
 	}
-	
+
 	/**
 	 * Initializes StackedConfObjectRegistry.
-	 *
 	 */
 	StackedConfObjectRegistry() {
 	}
-	
-	/* (non-Javadoc)
+
+	/*
+	 * (non-Javadoc)
 	 * @see eu.stratosphere.sopremo.query.IConfObjectRegistry#getPropertyNameChooser()
 	 */
 	@Override
@@ -26,17 +26,22 @@ public class StackedConfObjectRegistry<T extends ConfigurableSopremoType> extend
 		return getTopRegistry().getPropertyNameChooser();
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
 	 * @see eu.stratosphere.sopremo.query.IConfObjectRegistry#get(java.lang.Class)
 	 */
 	@Override
 	public ConfObjectInfo<T> get(Class<?> clazz) {
-		String name = this.getName(clazz);
-		return get(name);
+		return get(this.getNames(clazz)[0]);
 	}
-	
+
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.query.IConfObjectRegistry#put(java.lang.Class,
+	 * eu.stratosphere.sopremo.query.AdditionalInfoResolver)
+	 */
 	@Override
-	public void put(Class<? extends T> clazz) {
-		this.getTopRegistry().put(clazz);
+	public void put(Class<? extends T> clazz, AdditionalInfoResolver additionalInfoResolver) {
+		this.getTopRegistry().put(clazz, additionalInfoResolver);
 	}
 }

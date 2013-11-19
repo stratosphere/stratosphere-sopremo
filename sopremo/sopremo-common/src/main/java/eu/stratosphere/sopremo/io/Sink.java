@@ -53,6 +53,7 @@ public class Sink extends ElementaryOperator<Sink> {
 		if (format.getOutputFormat() == null)
 			throw new IllegalArgumentException("given format does not support writing");
 		checkPath();
+		addPropertiesFrom(format);
 	}
 
 	/**
@@ -79,7 +80,7 @@ public class Sink extends ElementaryOperator<Sink> {
 	/**
 	 * Initializes a Sink. This constructor uses {@link Sink#Sink(String)} with an empty string.
 	 */
-	Sink() {
+	public Sink() {
 		this("file:///");
 	}
 
@@ -105,7 +106,9 @@ public class Sink extends ElementaryOperator<Sink> {
 		if (format.getOutputFormat() == null)
 			throw new IllegalArgumentException("writing for the given format is not supported");
 
+		removePropertiesFrom(this.format);
 		this.format = format;
+		addPropertiesFrom(format);
 	}
 
 	/**

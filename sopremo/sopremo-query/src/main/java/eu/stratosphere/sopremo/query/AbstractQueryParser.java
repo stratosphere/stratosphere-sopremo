@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.antlr.runtime.BitSet;
 import org.antlr.runtime.IntStream;
@@ -40,6 +41,7 @@ import eu.stratosphere.sopremo.function.MacroBase;
 import eu.stratosphere.sopremo.function.SopremoFunction;
 import eu.stratosphere.sopremo.io.Sink;
 import eu.stratosphere.sopremo.io.SopremoFormat;
+import eu.stratosphere.sopremo.operator.ConfigurableSopremoType;
 import eu.stratosphere.sopremo.operator.Name;
 import eu.stratosphere.sopremo.operator.Operator;
 import eu.stratosphere.sopremo.operator.SopremoPlan;
@@ -76,7 +78,7 @@ public abstract class AbstractQueryParser extends Parser implements ParsingScope
 		super(input);
 		this.init();
 	}
-	
+
 	protected abstract NameChooserProvider getNameChooserProvider();
 
 	/**
@@ -229,6 +231,18 @@ public abstract class AbstractQueryParser extends Parser implements ParsingScope
 		throw e;
 	}
 
+	protected ConfObjectInfo<? extends Operator<?>> getOperatorInfo(Operator<?> operator) {
+		final IConfObjectRegistry<Operator<?>> operatorRegistry = getOperatorRegistry();
+		final Name nameAnnotation = operator.getClass().getAnnotation(Name.class);
+		if (nameAnnotation != null)
+			return operatorRegistry.get(nameAnnotation);
+		final Set<String> operatorNames = operatorRegistry.keySet();
+		for (String opName : operatorNames)
+			if (operatorRegistry.get(opName).getOperatorClass().isInstance(operator))
+				return operatorRegistry.get(opName);
+		return null;
+	}
+
 	protected ConfObjectInfo<? extends Operator<?>> findOperatorGreedily(String packageName, Token firstWord)
 			throws RecognitionException {
 		StringBuilder name = new StringBuilder(firstWord.getText());
@@ -369,14 +383,15 @@ public abstract class AbstractQueryParser extends Parser implements ParsingScope
 		return scope;
 	}
 
-	protected ConfObjectInfo.ConfObjectPropertyInfo findPropertyRelunctantly(ConfObjectInfo<?> info, Token firstWord)
+	protected ConfObjectInfo.ConfObjectPropertyInfo findPropertyRelunctantly(ConfigurableSopremoType object,
+			ConfObjectInfo<?> info, Token firstWord)
 			throws RecognitionException {
 		String name = firstWord.getText();
 		ConfObjectInfo.ConfObjectPropertyInfo property;
 
 		int lookAhead = 1;
 		// Reluctantly concatenate tokens
-		final IRegistry<ConfObjectPropertyInfo> propertyRegistry = info.getOperatorPropertyRegistry();
+		final IRegistry<ConfObjectPropertyInfo> propertyRegistry = info.getOperatorPropertyRegistry(object);
 		for (; (property = propertyRegistry.get(name)) == null && this.input.LA(lookAhead) == firstWord.getType(); lookAhead++) {
 			Token matchedToken = this.input.LT(lookAhead);
 			name = String.format("%s %s", name, matchedToken.getText());
@@ -394,14 +409,14 @@ public abstract class AbstractQueryParser extends Parser implements ParsingScope
 		return property;
 	}
 
-	public ConfObjectInfo.ConfObjectIndexedPropertyInfo findInputPropertyRelunctantly(ConfObjectInfo<?> info,
-			Token firstWord, boolean consume) {
+	protected ConfObjectInfo.ConfObjectIndexedPropertyInfo findInputPropertyRelunctantly(
+			ConfigurableSopremoType object, ConfObjectInfo<?> info, Token firstWord, boolean consume) {
 		String name = firstWord.getText();
 		ConfObjectInfo.ConfObjectIndexedPropertyInfo property;
 
 		int lookAhead = 1;
 		// Reluctantly concatenate tokens
-		final IRegistry<ConfObjectIndexedPropertyInfo> inputPropertyRegistry = info.getInputPropertyRegistry();
+		final IRegistry<ConfObjectIndexedPropertyInfo> inputPropertyRegistry = info.getInputPropertyRegistry(object);
 		for (; (property = inputPropertyRegistry.get(name)) == null && this.input.LA(lookAhead) == firstWord.getType(); lookAhead++) {
 			Token matchedToken = this.input.LT(lookAhead);
 			name = String.format("%s %s", name, matchedToken.getText());
@@ -448,12 +463,12 @@ public abstract class AbstractQueryParser extends Parser implements ParsingScope
 	protected abstract void parseSinks() throws RecognitionException;
 
 	public SopremoPlan parse() throws QueryParserException {
-//		this.currentPlan = new SopremoPlan();
+		// this.currentPlan = new SopremoPlan();
 		try {
 			// this.setupParser();
 			this.parseSinks();
 		} catch (RecognitionExceptionWithUsageHint e) {
-			throw new QueryParserException(e.getMessage());
+			throw new QueryParserException(e.getMessage(), e);
 		} catch (RecognitionException e) {
 			throw new QueryParserException(DEFAULT_ERROR_MESSAGE, e);
 		}

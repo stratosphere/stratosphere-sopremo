@@ -40,7 +40,7 @@ public class QueryParser {
 
 	protected <O extends Operator<?>> void appendInputProperties(final O op, final JavaRenderInfo renderInfo,
 			final ConfObjectInfo<O> info, final O defaultInstance) {
-		final IRegistry<ConfObjectIndexedPropertyInfo> inputPropertyRegistry = info.getInputPropertyRegistry();
+		final IRegistry<ConfObjectIndexedPropertyInfo> inputPropertyRegistry = info.getInputPropertyRegistry(op);
 		for (final String propertyName : inputPropertyRegistry.keySet())
 			for (int index = 0; index < op.getInputs().size(); index++) {
 				final ConfObjectIndexedPropertyInfo propertyInfo = inputPropertyRegistry.get(propertyName);
@@ -85,7 +85,7 @@ public class QueryParser {
 	protected <O extends Operator<?>> void appendOperatorProperties(final O op,
 			final JavaRenderInfo renderInfo, final ConfObjectInfo<O> info, final O defaultInstance) {
 
-		final IRegistry<ConfObjectPropertyInfo> operatorPropertyRegistry = info.getOperatorPropertyRegistry();
+		final IRegistry<ConfObjectPropertyInfo> operatorPropertyRegistry = info.getOperatorPropertyRegistry(op);
 		for (final String propertyName : operatorPropertyRegistry.keySet()) {
 			final ConfObjectPropertyInfo propertyInfo = operatorPropertyRegistry.get(propertyName);
 			final Object actualValue = propertyInfo.getValue(op);

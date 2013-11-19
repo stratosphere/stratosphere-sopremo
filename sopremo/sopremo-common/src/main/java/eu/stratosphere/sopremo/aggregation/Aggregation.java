@@ -75,7 +75,7 @@ public abstract class Aggregation extends AbstractSopremoType implements ISoprem
 
 	@Override
 	public void appendAsString(final Appendable appendable) throws IOException {
-		appendable.append(BuiltinUtil.getName(this,
-			SopremoEnvironment.getInstance().getEvaluationContext().getNameChooserProvider().getFunctionNameChooser()));
+		appendable.append(BuiltinUtil.getNames(this,
+			SopremoEnvironment.getInstance().getEvaluationContext().getNameChooserProvider().getFunctionNameChooser())[0]);
 	}
 }

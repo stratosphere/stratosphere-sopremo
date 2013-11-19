@@ -161,10 +161,12 @@ public class DefaultFunctionRegistry extends DefaultRegistry<Callable<?, ?>> imp
 				try {
 					if (Aggregation.class.isAssignableFrom(innerClass)) {
 						final Aggregation aggregation = (Aggregation) ReflectUtil.newInstance(innerClass);
-						this.put(this.getName(innerClass), new AggregationFunction(aggregation));
+						for (String name : this.getNames(innerClass))
+							this.put(name, new AggregationFunction(aggregation));
 					} else if (SopremoFunction.class.isAssignableFrom(innerClass)) {
 						final SopremoFunction function = (SopremoFunction) ReflectUtil.newInstance(innerClass);
-						this.put(this.getName(innerClass), function);
+						for (String name : this.getNames(innerClass))
+							this.put(name, function);
 					}
 				} catch (Exception e) {
 					SopremoUtil.LOG.warn(String.format("Cannot access inner class %s: %s", innerClass, e));
@@ -177,10 +179,12 @@ public class DefaultFunctionRegistry extends DefaultRegistry<Callable<?, ?>> imp
 			try {
 				if (Aggregation.class.isAssignableFrom(field.getType())) {
 					final Aggregation aggregation = (Aggregation) field.get(null);
-					this.put(this.getName(field), new AggregationFunction(aggregation));
+					for (String name : this.getNames(field))
+						this.put(name, new AggregationFunction(aggregation));
 				} else if (SopremoFunction.class.isAssignableFrom(field.getType())) {
 					final SopremoFunction function = (SopremoFunction) field.get(null);
-					this.put(this.getName(field), function);
+					for (String name : this.getNames(field))
+						this.put(name, function);
 				}
 			} catch (Throwable e) {
 				SopremoUtil.LOG.warn(String.format("Cannot access field %s: %s", field, e));
@@ -192,13 +196,15 @@ public class DefaultFunctionRegistry extends DefaultRegistry<Callable<?, ?>> imp
 
 	@Override
 	public void put(final Method method) {
-		String name = this.getName(method);
-		if (name == null)
-			name = method.getName();
-		Callable<?, ?> javaMethod = this.get(name);
-		if (javaMethod == null || !(javaMethod instanceof JavaMethod))
-			this.put(name, javaMethod = this.createJavaMethod(name, method));
-		((JavaMethod) javaMethod).addSignature(method);
+		String[] names = this.getNames(method);
+		if (names == null)
+			names = new String[] { method.getName() };
+		for (String name : names) {
+			Callable<?, ?> javaMethod = this.get(name);
+			if (javaMethod == null || !(javaMethod instanceof JavaMethod))
+				this.put(name, javaMethod = this.createJavaMethod(name, method));
+			((JavaMethod) javaMethod).addSignature(method);
+		}
 	}
 
 	private List<Method> getCompatibleMethods(final List<Method> methods) {

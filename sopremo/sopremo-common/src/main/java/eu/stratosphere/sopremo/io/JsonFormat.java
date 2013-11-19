@@ -61,6 +61,12 @@ public class JsonFormat extends SopremoFormat {
 		 */
 		@Override
 		protected void open(FSDataInputStream stream, FileInputSplit split) {
+			// we currently have no method to handle multiple splits
+			if(split.getStart() != 0) {
+				this.endReached();
+				return;
+			}				
+			
 			try {
 				this.parser = new JsonParser(new InputStreamReader(stream, this.getEncoding()));
 				this.parser.setWrappingArraySkipping(true);

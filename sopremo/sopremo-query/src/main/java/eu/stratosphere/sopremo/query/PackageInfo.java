@@ -49,6 +49,8 @@ import eu.stratosphere.util.reflect.ReflectUtil;
 public class PackageInfo extends AbstractSopremoType implements ISopremoType, ParsingScope {
 	private final transient PackageClassLoader classLoader;
 
+	private final AdditionalInfoResolver formatResolver, operatorOrFormatResolver;
+
 	/**
 	 * Initializes PackageInfo.
 	 * 
@@ -65,6 +67,10 @@ public class PackageInfo extends AbstractSopremoType implements ISopremoType, Pa
 		this.constantRegistry = new DefaultConstantRegistry(nameChooserProvider.getConstantNameChooser());
 		this.functionRegistry = new DefaultFunctionRegistry(nameChooserProvider.getFunctionNameChooser());
 		this.typeRegistry = new DefaultTypeRegistry(nameChooserProvider.getTypeNameChooser());
+
+		this.formatResolver = new AdditionalInfoResolver.Format(this.fileFormatRegistry);
+		this.operatorOrFormatResolver =
+			new AdditionalInfoResolver.OperatorOrFormat(this.operatorRegistry, this.fileFormatRegistry);
 	}
 
 	/**
@@ -127,17 +133,17 @@ public class PackageInfo extends AbstractSopremoType implements ISopremoType, Pa
 		Class<?> clazz;
 		try {
 			clazz = this.classLoader.loadClass(className);
-			if(clazz.getAnnotation(Internal.class) != null)
+			if (clazz.getAnnotation(Internal.class) != null)
 				return;
 			if (Operator.class.isAssignableFrom(clazz) && (clazz.getModifiers() & Modifier.ABSTRACT) == 0) {
 				clazz = Class.forName(className, true, this.classLoader);
 				QueryUtil.LOG.trace("adding operator " + clazz);
-				this.getOperatorRegistry().put((Class<? extends Operator<?>>) clazz);
+				this.getOperatorRegistry().put((Class<? extends Operator<?>>) clazz, this.operatorOrFormatResolver);
 			} else if (SopremoFormat.class.isAssignableFrom(clazz)
 				&& (clazz.getModifiers() & Modifier.ABSTRACT) == 0) {
 				clazz = Class.forName(className, true, this.classLoader);
 				QueryUtil.LOG.trace("adding operator " + clazz);
-				this.getFileFormatRegistry().put((Class<? extends SopremoFormat>) clazz);
+				this.getFileFormatRegistry().put((Class<? extends SopremoFormat>) clazz, this.formatResolver);
 			} else if (BuiltinProvider.class.isAssignableFrom(clazz)) {
 				clazz = Class.forName(className, true, this.classLoader);
 				this.addFunctionsAndConstants(clazz);
@@ -145,7 +151,7 @@ public class PackageInfo extends AbstractSopremoType implements ISopremoType, Pa
 				this.getTypeRegistry().put((Class<? extends IJsonNode>) clazz);
 		} catch (Exception e) {
 			QueryUtil.LOG.warn("could not load operator " + className + ": " + StringUtils.stringifyException(e));
-		} 
+		}
 	}
 
 	public void importFromProject() {

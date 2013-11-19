@@ -47,8 +47,10 @@ public abstract class AbstractRegistry<T> extends AbstractSopremoType implements
 	}
 
 	@Override
-	public void put(Name name, T element) {
-		put(getNameChooser().getName(name), element);
+	public void put(Name nameAnnotation, T element) {
+		final String[] names = getNameChooser().getNames(nameAnnotation);
+		for (String name : names)
+			put(name, element);
 	}
 
 	/*
@@ -56,8 +58,8 @@ public abstract class AbstractRegistry<T> extends AbstractSopremoType implements
 	 * @see eu.stratosphere.sopremo.packages.IRegistry#get(eu.stratosphere.sopremo.operator.Name)
 	 */
 	@Override
-	public T get(Name name) {
-		return get(getNameChooser().getName(name));
+	public T get(Name nameAnnotation) {
+		return get(getNameChooser().getNames(nameAnnotation)[0]);
 	}
 
 	/*
@@ -69,24 +71,24 @@ public abstract class AbstractRegistry<T> extends AbstractSopremoType implements
 		return this.nameChooser;
 	}
 
-	protected String getName(Class<?> object) {
+	protected String[] getNames(Class<?> object) {
 		final Name nameAnnotation = object.getAnnotation(Name.class);
 		if (nameAnnotation == null) {
-			if(object.getAnnotation(Internal.class) != null)
-				return String.format("__%s", object.getSimpleName());
+			if (object.getAnnotation(Internal.class) != null)
+				return new String[] { String.format("__%s", object.getSimpleName()) };
 			throw new IllegalArgumentException(object + " has no name annotation");
 		}
-		return getNameChooser().getName(nameAnnotation);
+		return getNameChooser().getNames(nameAnnotation);
 	}
 
-	protected String getName(AccessibleObject object) {
+	protected String[] getNames(AccessibleObject object) {
 		final Name nameAnnotation = object.getAnnotation(Name.class);
 		if (nameAnnotation == null) {
-			if(object.getAnnotation(Internal.class) != null)
-				return String.format("__%s", ((Member) object).getName());
+			if (object.getAnnotation(Internal.class) != null)
+				return new String[] { String.format("__%s", ((Member) object).getName()) };
 			throw new IllegalArgumentException(object + " has no name annotation");
 		}
-		return getNameChooser().getName(nameAnnotation);
+		return getNameChooser().getNames(nameAnnotation);
 	}
 
 	@Override

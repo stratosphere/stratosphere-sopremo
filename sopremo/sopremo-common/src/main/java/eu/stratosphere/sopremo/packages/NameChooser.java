@@ -7,5 +7,5 @@ public interface NameChooser {
 	/**
 	 * Return the lookup name for the given {@link Name} annotation.
 	 */
-	public String getName(Name name);
+	public String[] getNames(Name nameAnnotation);
 }

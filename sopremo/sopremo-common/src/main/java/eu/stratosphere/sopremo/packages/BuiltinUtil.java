@@ -23,15 +23,16 @@ import eu.stratosphere.sopremo.operator.Name;
  * @author arv
  */
 public class BuiltinUtil {
-	public static String getName(Object element, NameChooser nameChooser) {
+	public static String[] getNames(Object element, NameChooser nameChooser) {
 		final Class<? extends Object> clazz = element.getClass();
 		// if this a non-anonymous class, it should be self-descriptive
 		Name nameAnnotation = clazz.getAnnotation(Name.class);
-		if (nameAnnotation != null)
-			return nameChooser.getName(nameAnnotation);
+		String[] names ;
+		if (nameAnnotation != null && (names = nameChooser.getNames(nameAnnotation)) != null)
+			return names;
 
 		if (!clazz.isAnonymousClass())
-			return clazz.getSimpleName();
+			return new String[] { clazz.getSimpleName() };
 
 		// anonymous inner class
 		// find the field and check if there is an annotation
@@ -41,15 +42,15 @@ public class BuiltinUtil {
 				try {
 					if (field.get(null).getClass() == clazz) {
 						nameAnnotation = field.getAnnotation(Name.class);
-						if (nameAnnotation != null)
-							return nameChooser.getName(nameAnnotation);
+						if (nameAnnotation  != null && (names = nameChooser.getNames(nameAnnotation)) != null)
+							return names;
 					}
 				} catch (Exception e) {
 					throw new RuntimeException(e);
 				}
 		}
-		
+
 		// fall through
-		return "unknown";
+		return new String[] { "unknown" };
 	}
 }

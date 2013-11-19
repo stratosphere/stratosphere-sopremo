@@ -12,43 +12,39 @@ public class DefaultNameChooser extends AbstractSopremoType implements NameChoos
 	public DefaultNameChooser(final int... preferredOrder) {
 		this.preferredOrder = preferredOrder;
 	}
-	
+
 	/**
 	 * Initializes DefaultNameChooser.
-	 *
 	 */
 	DefaultNameChooser() {
-		this(new int[0]);
+		this(new int[] { 0, 1, 2, 3 });
 	}
 
 	@Override
-	public String getName(Name nameAnnotation) {
+	public String[] getNames(Name nameAnnotation) {
 		return this.choose(nameAnnotation.noun(), nameAnnotation.verb(), nameAnnotation.adjective(),
 			nameAnnotation.preposition());
 	}
-	
-	public String choose(final String[] nouns, final String[] verbs, final String[] adjectives, final String[] prepositions) {
+
+	public String[] choose(final String[] nouns, final String[] verbs, final String[] adjectives,
+			final String[] prepositions) {
 		final String[][] names = { nouns, verbs, adjectives, prepositions };
 		for (final int pos : this.preferredOrder) {
-			final String value = this.firstOrNull(names[pos]);
-			if (value != null)
-				return value;
+			if (names[pos] != null && names[pos].length > 0)
+				return names[pos];
 		}
 		return null;
 	}
 
-	private String firstOrNull(final String[] names) {
-		return names == null || names.length == 0 ? null : names[0];
-	}
-
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
 	 * @see eu.stratosphere.util.IAppending#appendAsString(java.lang.Appendable)
 	 */
 	@Override
 	public void appendAsString(Appendable appendable) throws IOException {
 		appendable.append(Arrays.toString(this.preferredOrder));
 	}
-	
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;

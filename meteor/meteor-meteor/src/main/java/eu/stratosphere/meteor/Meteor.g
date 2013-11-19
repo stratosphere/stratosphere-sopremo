@@ -304,13 +304,11 @@ readOperator returns [Source source]
   path = makeFilePath($protocol, $filePath.text);
   formatInfo = findFormat($packageName.text, format, path);
   fileFormat = formatInfo.newInstance(); 
-}
-	  confOption[formatInfo, fileFormat]* 
-{ 
   $source = new Source(fileFormat, path); 
   if(output != null)
     putVariable(output, new JsonStreamExpression($source));
-} ->;
+}  confOption[getOperatorInfo($source), $source]* 
+ ->;
 
 // write <format> <input> to <path> options*
 writeOperator returns [Sink sink]
@@ -331,13 +329,10 @@ writeOperator returns [Sink sink]
   path = makeFilePath($protocol, $filePath.text);
   formatInfo = findFormat($packageName.text, format, path);
   fileFormat = formatInfo.newInstance();
-}
-    confOption[formatInfo, fileFormat]* 
-{ 
 	$sink = new Sink(fileFormat, makeFilePath($protocol, path));
   $sink.setInputs(getVariableSafely(from).getStream());
   this.sinks.add($sink);
-} ->;
+} confOption[getOperatorInfo($sink), $sink]* ->;
 
 // <name> flags* <input>* options*
 // flags - boolean options
@@ -373,7 +368,7 @@ confOption [ConfObjectInfo<?> info, ConfigurableSopremoType object]
  ConfObjectInfo.ConfObjectPropertyInfo property = null;
 } : //{ findOperatorPropertyRelunctantly($genericOperator::operatorInfo, input.LT(1)) != null }?	
   name=ID
-	{ (property = findPropertyRelunctantly(info, name)) != null }?=>
+	{ (property = findPropertyRelunctantly(object, info, name)) != null }?=>
   expr=ternaryExpression { property.setValue(object, $expr.tree); } ->;
 
 input	[ConfObjectInfo<?> info, Operator<?> object]
@@ -390,8 +385,8 @@ input	[ConfObjectInfo<?> info, Operator<?> object]
 	  putVariable(name != null ? name : from, inputExpression);
   }
 } 
-({ (findInputPropertyRelunctantly(info, input.LT(1), false) != null) }?=>
-  { inputProperty = findInputPropertyRelunctantly(info, input.LT(1), true); }
+({ (findInputPropertyRelunctantly(object, info, input.LT(1), false) != null) }?=>
+  { inputProperty = findInputPropertyRelunctantly(object, info, input.LT(1), true); }
   expr=ternaryExpression { inputProperty.setValue(object, $operator::numInputs-1, $expr.tree); })?
 -> ;
 

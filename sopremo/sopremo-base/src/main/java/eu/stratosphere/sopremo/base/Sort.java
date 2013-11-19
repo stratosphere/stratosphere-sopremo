@@ -94,6 +94,8 @@ public class Sort extends ElementaryOperator<Sort> {
 		return this;
 	}
 
+	@Property
+	@Name(preposition = "on")
 	public void setSortingExpression(EvaluationExpression sortingExpression) {
 		getOrderingExpression().setPath(sortingExpression);
 	}

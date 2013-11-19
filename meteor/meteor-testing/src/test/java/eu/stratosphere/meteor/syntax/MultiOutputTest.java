@@ -38,6 +38,7 @@ import eu.stratosphere.sopremo.operator.OutputCardinality;
 import eu.stratosphere.sopremo.operator.Property;
 import eu.stratosphere.sopremo.operator.SopremoModule;
 import eu.stratosphere.sopremo.operator.SopremoPlan;
+import eu.stratosphere.sopremo.query.AdditionalInfoResolver;
 import eu.stratosphere.sopremo.query.IConfObjectRegistry;
 import eu.stratosphere.sopremo.type.JsonUtil;
 
@@ -52,7 +53,7 @@ public class MultiOutputTest extends MeteorParseTest {
 	@Override
 	protected void initParser(QueryParser queryParser) {
 		final IConfObjectRegistry<Operator<?>> operatorRegistry = queryParser.getPackageManager().getOperatorRegistry();
-		operatorRegistry.put(MultiOutputOp.class);
+		operatorRegistry.put(MultiOutputOp.class, new AdditionalInfoResolver.None());
 		super.initParser(queryParser);
 	}
 

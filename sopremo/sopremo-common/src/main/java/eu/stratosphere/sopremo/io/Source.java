@@ -61,6 +61,7 @@ public class Source extends ElementaryOperator<Source> {
 
 		if (this.inputPath != null)
 			checkPath();
+		addPropertiesFrom(this.format);
 	}
 
 	/**
@@ -152,7 +153,9 @@ public class Source extends ElementaryOperator<Source> {
 		if (format.getInputFormat() == null)
 			throw new IllegalArgumentException("reading for the given format is not supported");
 
+		removePropertiesFrom(this.format);
 		this.format = format;
+		addPropertiesFrom(format);
 	}
 
 	/**
