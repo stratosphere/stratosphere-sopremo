@@ -183,7 +183,7 @@ public class GlobalEnumeration extends ElementaryOperator<GlobalEnumeration> {
 		 */
 		@Override
 		public IJsonNode generate(long localId) {
-			this.result.setValue(localId + this.prefix);
+			this.result.setValue(localId | this.prefix);
 			return this.result;
 		}
 
@@ -193,8 +193,8 @@ public class GlobalEnumeration extends ElementaryOperator<GlobalEnumeration> {
 		 */
 		@Override
 		public void setup(int taskId, int numTasks) {
-			int freeBits = Long.numberOfLeadingZeros(numTasks);
-			this.prefix = taskId << (64 - freeBits);
+			int freeBits = Long.numberOfLeadingZeros(numTasks - 1);
+			this.prefix = (long) taskId << freeBits;
 		}
 	}
 

@@ -82,14 +82,15 @@ public class LongNode extends AbstractNumericNode implements INumericNode {
 		return this.value;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
 	 * @see eu.stratosphere.sopremo.type.INumericNode#getGeneralilty()
 	 */
 	@Override
 	public byte getGeneralilty() {
 		return 32;
 	}
-	
+
 	@Override
 	public BigInteger getBigIntegerValue() {
 		return BigInteger.valueOf(this.value);
@@ -128,7 +129,8 @@ public class LongNode extends AbstractNumericNode implements INumericNode {
 
 	@Override
 	public int compareToSameType(final IJsonNode other) {
-		return Long.signum(this.value - ((LongNode) other).value);
+		final long thisVal = this.value, anotherVal= ((LongNode) other).value;
+		return thisVal < anotherVal ? -1 : (thisVal==anotherVal ? 0 : 1);
 	}
 
 	@Override

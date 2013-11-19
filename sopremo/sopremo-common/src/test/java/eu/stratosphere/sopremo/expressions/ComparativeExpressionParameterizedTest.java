@@ -16,6 +16,7 @@ import eu.stratosphere.sopremo.expressions.ComparativeExpression.BinaryOperator;
 import eu.stratosphere.sopremo.type.BooleanNode;
 import eu.stratosphere.sopremo.type.IJsonNode;
 import eu.stratosphere.sopremo.type.IntNode;
+import eu.stratosphere.sopremo.type.LongNode;
 import eu.stratosphere.sopremo.type.TextNode;
 
 @RunWith(Parameterized.class)
@@ -95,6 +96,8 @@ public class ComparativeExpressionParameterizedTest {
 			{ TextNode.valueOf("23"), BinaryOperator.LESS, TextNode.valueOf("42"), BooleanNode.TRUE },
 			{ TextNode.valueOf("23"), BinaryOperator.LESS_EQUAL, TextNode.valueOf("42"), BooleanNode.TRUE },
 
+			{ IntNode.valueOf(0), BinaryOperator.LESS, LongNode.valueOf(-9223372036854775808L), BooleanNode.FALSE },
+			{ LongNode.valueOf(0), BinaryOperator.LESS, LongNode.valueOf(-9223372036854775808L), BooleanNode.FALSE },
 		});
 	}
 }

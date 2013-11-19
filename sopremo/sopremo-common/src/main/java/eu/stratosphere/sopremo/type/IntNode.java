@@ -138,7 +138,8 @@ public class IntNode extends AbstractNumericNode implements INumericNode {
 
 	@Override
 	public int compareToSameType(final IJsonNode other) {
-		return this.value - ((IntNode) other).value;
+		final int thisVal = this.value, anotherVal= ((IntNode) other).value;
+		return thisVal < anotherVal ? -1 : (thisVal==anotherVal ? 0 : 1);
 	}
 
 	@Override

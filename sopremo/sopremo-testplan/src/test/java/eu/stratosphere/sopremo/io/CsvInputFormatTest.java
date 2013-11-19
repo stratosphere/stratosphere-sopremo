@@ -133,7 +133,7 @@ public class CsvInputFormatTest {
 		format.setKeyNames("dna");
 		final Source read =
 			new Source(format, this.getResource("CsvInputFormat/dna_10.csv"));
-		read.setDegreeOfParallelism(3);
+		read.setDegreeOfParallelism(5);
 
 		final SopremoTestPlan testPlan = new SopremoTestPlan(read);
 

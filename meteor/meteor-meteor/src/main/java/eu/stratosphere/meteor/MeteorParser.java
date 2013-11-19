@@ -1,4 +1,4 @@
-// $ANTLR 3.5 /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g 2013-11-19 11:54:13
+// $ANTLR 3.5 /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g 2013-11-19 16:07:30
  
 package eu.stratosphere.meteor; 
 
@@ -2071,7 +2071,7 @@ public class MeteorParser extends MeteorParserBase {
 			}
 
 			// AST REWRITE
-			// elements: set, elem, elem
+			// elements: elem, elem, set
 			// token labels: 
 			// rule labels: elem, retval, set
 			// token list labels: 
@@ -2278,7 +2278,7 @@ public class MeteorParser extends MeteorParserBase {
 			}
 
 			// AST REWRITE
-			// elements: e1, e1, e1, e2, e1, e2, e2
+			// elements: e2, e1, e1, e1, e2, e1, e2
 			// token labels: 
 			// rule labels: retval, e1, e2
 			// token list labels: 
@@ -2455,7 +2455,7 @@ public class MeteorParser extends MeteorParserBase {
 			}
 
 			// AST REWRITE
-			// elements: e2, e1, e1
+			// elements: e1, e1, e2
 			// token labels: 
 			// rule labels: retval, e1, e2
 			// token list labels: 

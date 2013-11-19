@@ -554,18 +554,20 @@ public class CsvFormat extends SopremoFormat {
 			this.objectNode.clear();
 			do {
 				lastCharacter = this.fillBuilderWithNextField();
-				if (!lastValue && lastCharacter == -1) {
-					// read the remainder of the started line
+				if (lastCharacter == -1 && !lastValue) {
+					// ignore empty line
+					if(this.builder.length() == 0 && fieldIndex == 0)
+						break;
+					
 					lastValue = true;
+					// read the remainder of the started line
 					this.reader.liftLimit();
+					lastCharacter = 0;
 					continue;
 				}
-				// ignore empty line
-				if (lastCharacter <= 0 && this.builder.length() == 0)
-					break;
 				this.addToObject(fieldIndex++, this.builder.toString());
 				this.builder.setLength(0);
-			} while (lastCharacter != '\n');
+			} while (lastCharacter != '\n' && lastCharacter != -1);
 
 			if (lastCharacter == -1 || lastValue)
 				this.endReached();

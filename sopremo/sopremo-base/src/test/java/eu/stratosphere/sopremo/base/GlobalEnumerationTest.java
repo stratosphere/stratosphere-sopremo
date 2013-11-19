@@ -33,6 +33,7 @@ public class GlobalEnumerationTest {
 	@Test
 	public void shouldEnumerate() {
 		final GlobalEnumeration globalEnumeration = new GlobalEnumeration();
+		globalEnumeration.setDegreeOfParallelism(2);
 		SopremoTestPlan plan = new SopremoTestPlan(globalEnumeration);
 		for (int index = 0; index < 5; index++)
 			plan.getInput(0).addObject("text", "value");
