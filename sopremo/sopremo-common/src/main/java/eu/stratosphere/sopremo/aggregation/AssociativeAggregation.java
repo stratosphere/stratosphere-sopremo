@@ -64,7 +64,8 @@ public abstract class AssociativeAggregation<ElementType extends IJsonNode> exte
 		 */
 		@Override
 		public void write(Kryo kryo, Output output, AssociativeAggregation<?> object) {
-			kryo.writeClassAndObject(output, object.initialAggregate);
+			if (object.getClass().isAnonymousClass())
+				kryo.writeClassAndObject(output, object.initialAggregate);
 		}
 
 		/*

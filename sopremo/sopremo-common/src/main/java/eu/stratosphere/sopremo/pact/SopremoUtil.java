@@ -1,13 +1,8 @@
 package eu.stratosphere.sopremo.pact;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInput;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.ObjectStreamClass;
-import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.nio.charset.Charset;
@@ -159,38 +154,19 @@ public class SopremoUtil {
 	 * Deserializes an {@link Serializable} from a {@link DataInput}.<br>
 	 * Please note that this method is not very efficient.
 	 */
-	public static <T extends Serializable> T deserializeObject(DataInput in, Class<T> clazz)
-			throws IOException {
+	public static <T> T deserialize(DataInput in, Class<T> clazz) throws IOException {
 		byte[] buffer = new byte[in.readInt()];
 		in.readFully(buffer);
-
-		return byteArrayToSerializable(buffer, clazz, clazz.getClassLoader());
+		return deserialize(buffer, clazz);
 	}
 
-	@SuppressWarnings({ "unchecked", "unused" })
-	public static <T extends Serializable> T byteArrayToSerializable(byte[] buffer, Class<T> clazz,
-			final ClassLoader classLoader)
-			throws IOException {
-		final ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(buffer)) {
-			/*
-			 * (non-Javadoc)
-			 * @see java.io.ObjectInputStream#resolveClass(java.io.ObjectStreamClass)
-			 */
-			@Override
-			protected Class<?> resolveClass(ObjectStreamClass desc) throws IOException, ClassNotFoundException {
-				try {
-					return classLoader.loadClass(desc.getName());
-				} catch (ClassNotFoundException e) {
-					return super.resolveClass(desc);
-				}
-			}
-		};
-
-		try {
-			return (T) ois.readObject();
-		} catch (ClassNotFoundException e) {
-			throw new IllegalStateException("Cannot deserialize the object", e);
-		}
+	@SuppressWarnings({ "unchecked" })
+	public static <T> T deserialize(byte[] bytes, Class<T> clazz) {
+		final Kryo kryo = KryoUtil.getKryo();
+		Input input = new Input(bytes);
+		kryo.reset();
+		kryo.setClassLoader(SopremoEnvironment.getInstance().getClassLoader());
+		return (T) kryo.readClassAndObject(input);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -296,11 +272,8 @@ public class SopremoUtil {
 		final String stringRepresentation = config.getString(keyName, null);
 		if (stringRepresentation == null)
 			return defaultValue;
-		Input input = new Input(stringRepresentation.getBytes(BINARY_CHARSET));
-		final Kryo kryo = KryoUtil.getKryo();
-		kryo.reset();
-		kryo.setClassLoader(SopremoEnvironment.getInstance().getClassLoader());
-		return (T) kryo.readClassAndObject(input);
+		final byte[] bytes = stringRepresentation.getBytes(BINARY_CHARSET);
+		return (T) deserialize(bytes, Object.class);
 	}
 
 	public static EvaluationContext getEvaluationContext(Configuration config) {
@@ -329,13 +302,7 @@ public class SopremoUtil {
 	 * @param context3
 	 */
 	public static void setObject(Configuration config, String keyName, Object object) {
-		final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		final Output output = new Output(baos);
-		final Kryo kryo = KryoUtil.getKryo();
-		kryo.reset();
-		kryo.writeClassAndObject(output, object);
-		output.close();
-		config.setString(keyName, new String(baos.toByteArray(), BINARY_CHARSET));
+		config.setString(keyName, new String(serializable(object), BINARY_CHARSET));
 	}
 
 	@SuppressWarnings("unchecked")
@@ -375,16 +342,14 @@ public class SopremoUtil {
 			node.put(field, element.clone());
 	}
 
-	public static byte[] serializableToByteArray(Serializable serializable) {
-		try {
-			final ByteArrayOutputStream byteOutStream = new ByteArrayOutputStream();
-			final ObjectOutputStream oos = new ObjectOutputStream(byteOutStream);
-			oos.writeObject(serializable);
-			oos.close();
-			return byteOutStream.toByteArray();
-		} catch (IOException e) {
-			throw new IllegalStateException("IO exceptions should not occur locally", e);
-		}
+	public static byte[] serializable(Object object) {
+		final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		final Output output = new Output(baos);
+		final Kryo kryo = KryoUtil.getKryo();
+		kryo.reset();
+		kryo.writeClassAndObject(output, object);
+		output.close();
+		return baos.toByteArray();
 	}
 
 	@SuppressWarnings("unchecked")

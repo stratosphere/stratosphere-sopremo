@@ -108,7 +108,7 @@ public final class SopremoRecord extends AbstractSopremoType implements ISopremo
 	public SopremoRecord(SopremoRecordLayout layout) {
 		this.layout = layout;
 		this.offsets = new int[layout.getNumKeys()];
-		this.kryo = SopremoEnvironment.getInstance().getEvaluationContext().getKryo();
+		this.kryo = SopremoEnvironment.getInstance().getEvaluationContext().getKryoForDataSerialization();
 
 		this.serializers.put(IObjectNode.class, (NodeSerializer) new ObjectSerializer());
 		this.serializers.put(IArrayNode.class, (NodeSerializer) new ArraySerializer());

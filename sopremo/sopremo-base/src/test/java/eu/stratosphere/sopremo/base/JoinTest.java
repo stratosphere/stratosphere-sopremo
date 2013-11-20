@@ -4,6 +4,9 @@ import static eu.stratosphere.sopremo.type.JsonUtil.createPath;
 
 import org.junit.Test;
 
+import com.google.common.base.Joiner;
+
+import eu.stratosphere.sopremo.base.join.ThetaJoin;
 import eu.stratosphere.sopremo.expressions.AndExpression;
 import eu.stratosphere.sopremo.expressions.ArrayCreation;
 import eu.stratosphere.sopremo.expressions.BooleanExpression;
@@ -14,8 +17,11 @@ import eu.stratosphere.sopremo.expressions.ElementInSetExpression.Quantor;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
 import eu.stratosphere.sopremo.expressions.InputSelection;
 import eu.stratosphere.sopremo.expressions.ObjectCreation;
+import eu.stratosphere.sopremo.expressions.UnaryExpression;
 import eu.stratosphere.sopremo.testing.SopremoOperatorTestBase;
 import eu.stratosphere.sopremo.testing.SopremoTestPlan;
+import eu.stratosphere.sopremo.testing.SopremoTestPlan.ExpectedOutput;
+import eu.stratosphere.sopremo.testing.SopremoTestPlan.Input;
 import eu.stratosphere.sopremo.type.JsonUtil;
 import eu.stratosphere.sopremo.type.MissingNode;
 
@@ -458,76 +464,4 @@ public class JoinTest extends SopremoOperatorTestBase<Join> {
 		sopremoPlan.run();
 	}
 
-	@Test
-	public void shouldPerformParallelThetaJoin() {
-		final SopremoTestPlan sopremoPlan = new SopremoTestPlan(1, 1);
-		sopremoPlan.setDegreeOfParallelism(25);
-
-		final AndExpression condition =
-			new AndExpression(new ComparativeExpression(createPath("0"), BinaryOperator.LESS, createPath("1")));
-		final Join join = new Join().withJoinCondition(condition);
-		join.setInputs(sopremoPlan.getInputOperator(0), sopremoPlan.getInputOperator(0));
-		sopremoPlan.getOutputOperator(0).setInputs(join);
-		sopremoPlan.getInput(0).
-			addValue(3458764513820540928L).
-			addValue(7493989779944505344L).
-			addValue(-8646911284551352320L).
-			addValue(4035225266123964416L).
-			addValue(4611686018427387904L).
-			addValue(-4611686018427387904L).
-			addValue(-4611686018427387903L).
-			addValue(-6341068275337658368L).
-			addValue(1152921504606846976L).
-			addValue(1729382256910270464L);
-		sopremoPlan.getExpectedOutput(0).
-			addArray(-8646911284551352320L, 3458764513820540928L).
-			addArray(-4611686018427387904L, 3458764513820540928L).
-			addArray(-4611686018427387903L, 3458764513820540928L).
-			addArray(-6341068275337658368L, 3458764513820540928L).
-			addArray(1152921504606846976L, 3458764513820540928L).
-			addArray(1729382256910270464L, 3458764513820540928L).
-			addArray(3458764513820540928L, 7493989779944505344L).
-			addArray(-8646911284551352320L, 7493989779944505344L).
-			addArray(4035225266123964416L, 7493989779944505344L).
-			addArray(4611686018427387904L, 7493989779944505344L).
-			addArray(-4611686018427387904L, 7493989779944505344L).
-			addArray(-4611686018427387903L, 7493989779944505344L).
-			addArray(-6341068275337658368L, 7493989779944505344L).
-			addArray(1152921504606846976L, 7493989779944505344L).
-			addArray(1729382256910270464L, 7493989779944505344L).
-			addArray(3458764513820540928L, 4035225266123964416L).
-			addArray(-8646911284551352320L, 4035225266123964416L).
-			addArray(-4611686018427387904L, 4035225266123964416L).
-			addArray(-4611686018427387903L, 4035225266123964416L).
-			addArray(-6341068275337658368L, 4035225266123964416L).
-			addArray(1152921504606846976L, 4035225266123964416L).
-			addArray(1729382256910270464L, 4035225266123964416L).
-			addArray(3458764513820540928L, 4611686018427387904L).
-			addArray(-8646911284551352320L, 4611686018427387904L).
-			addArray(4035225266123964416L, 4611686018427387904L).
-			addArray(-4611686018427387904L, 4611686018427387904L).
-			addArray(-4611686018427387903L, 4611686018427387904L).
-			addArray(-6341068275337658368L, 4611686018427387904L).
-			addArray(1152921504606846976L, 4611686018427387904L).
-			addArray(1729382256910270464L, 4611686018427387904L).
-			addArray(-8646911284551352320L, -4611686018427387904L).
-			addArray(-6341068275337658368L, -4611686018427387904L).
-			addArray(-8646911284551352320L, -4611686018427387903L).
-			addArray(-4611686018427387904L, -4611686018427387903L).
-			addArray(-6341068275337658368L, -4611686018427387903L).
-			addArray(-8646911284551352320L, -6341068275337658368L).
-			addArray(-8646911284551352320L, 1152921504606846976L).
-			addArray(-4611686018427387904L, 1152921504606846976L).
-			addArray(-4611686018427387903L, 1152921504606846976L).
-			addArray(-6341068275337658368L, 1152921504606846976L).
-			addArray(-8646911284551352320L, 1729382256910270464L).
-			addArray(-4611686018427387904L, 1729382256910270464L).
-			addArray(-4611686018427387903L, 1729382256910270464L).
-			addArray(-6341068275337658368L, 1729382256910270464L).
-			addArray(1152921504606846976L, 1729382256910270464L);
-
-		sopremoPlan.run();
-
-		System.out.println(sopremoPlan.getActualOutput(0).getAllNodes());
-	}
 }

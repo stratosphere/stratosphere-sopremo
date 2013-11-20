@@ -16,6 +16,7 @@ package eu.stratosphere.sopremo.type;
 
 import java.lang.reflect.Array;
 
+import com.esotericsoftware.kryo.DefaultSerializer;
 import com.esotericsoftware.kryo.Kryo;
 
 import eu.stratosphere.util.CachingList;
@@ -23,6 +24,7 @@ import eu.stratosphere.util.CachingList;
 /**
  * @author Arvid Heise
  */
+@DefaultSerializer(AbstractArrayNode.ArraySerializer.class)
 public class CachingArrayNode<T extends IJsonNode> extends ArrayNode<T> {
 	/**
 	 * Initializes CachingArrayNode.

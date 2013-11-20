@@ -34,7 +34,7 @@ public class ArrayNode<T extends IJsonNode> extends AbstractArrayNode<T> {
 	 */
 	@SuppressWarnings("unchecked")
 	public ArrayNode() {
-		this((Class<T>) IJsonNode.class);
+		this((Class<T>) IJsonNode.class, 0);
 	}
 
 	/**
@@ -59,8 +59,8 @@ public class ArrayNode<T extends IJsonNode> extends AbstractArrayNode<T> {
 	 * Initializes an empty ArrayNode<T> directly with the given list.
 	 */
 	@SuppressWarnings("unchecked")
-	protected ArrayNode(Class<T> elemType) {
-		this(ObjectArrayList.wrap((T[]) Array.newInstance(elemType, 0)));
+	protected ArrayNode(Class<T> elemType, int size) {
+		this(ObjectArrayList.wrap((T[]) Array.newInstance(elemType, size)));
 	}
 
 	/**
@@ -72,11 +72,12 @@ public class ArrayNode<T extends IJsonNode> extends AbstractArrayNode<T> {
 	 */
 	@SuppressWarnings("unchecked")
 	public ArrayNode(final T... nodes) {
-		this((Class<T>) nodes.getClass().getComponentType());
-		for (final T node : nodes) {
+		this((Class<T>) nodes.getClass().getComponentType(), nodes.length);
+		for (int index = 0; index < nodes.length; index++) {
+			final T node = nodes[index];
 			if (node == null)
 				throw new NullPointerException();
-			this.children.add(node);
+			this.children.set(index, node);
 		}
 	}
 
@@ -110,6 +111,7 @@ public class ArrayNode<T extends IJsonNode> extends AbstractArrayNode<T> {
 			clone.children.add((T) node.clone());
 		return clone;
 	}
+
 	/**
 	 * Creates an ArrayNode<T> which contains clones of all {@link IJsonNode}s from
 	 * the given stream array node in proper sequence.
@@ -118,8 +120,9 @@ public class ArrayNode<T extends IJsonNode> extends AbstractArrayNode<T> {
 	 *        a Collection of nodes that should be added to this ArrayNode
 	 */
 	@SuppressWarnings("unchecked")
-	public static <T extends IJsonNode> ArrayNode<T> deepClone(final Class<T> elemType, final IStreamNode<? extends T> nodes) {
-		ArrayNode<T> clone = new ArrayNode<T>(elemType);
+	public static <T extends IJsonNode> ArrayNode<T> deepClone(final Class<T> elemType,
+			final IStreamNode<? extends T> nodes) {
+		ArrayNode<T> clone = new ArrayNode<T>(elemType, 0);
 		for (final T node : nodes)
 			clone.children.add((T) node.clone());
 		return clone;

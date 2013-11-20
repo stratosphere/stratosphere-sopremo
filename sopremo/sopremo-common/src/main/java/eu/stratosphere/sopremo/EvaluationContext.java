@@ -57,13 +57,14 @@ public class EvaluationContext extends AbstractSopremoType {
 	private final ITypeRegistry typeRegistry;
 
 	private NameChooserProvider nameChooserProvider;
+
 	// public LinkedList<Operator<?>> getOperatorStack() {
 	// return this.operatorStack;
 	// }
 
 	private int taskId;
 
-	private final transient Kryo kryo;
+	private final transient Kryo kryo, dataKryo;
 
 	private final Map<String, Object> contextParameters = new HashMap<String, Object>();
 
@@ -83,22 +84,24 @@ public class EvaluationContext extends AbstractSopremoType {
 
 		this.workingPath = new Path(new File(".").toURI().toString()).toString();
 
-		this.kryo = new SopremoKryo();
-		this.kryo.setReferences(false);
+		this.dataKryo = new Kryo();
+		this.dataKryo.setReferences(false);
 		for (Class<? extends IJsonNode> type : TypeCoercer.NUMERIC_TYPES)
-			register(type);
+			this.dataKryo.register(type);
 		@SuppressWarnings("unchecked")
 		List<Class<? extends Object>> defaultTypes =
 			Arrays.asList(BooleanNode.class, TextNode.class, IObjectNode.class, IArrayNode.class, NullNode.class,
 				MissingNode.class, TreeMap.class, ArrayList.class, BigInteger.class, BigDecimal.class);
 		for (Class<?> type : defaultTypes)
-			register(type);
+			this.dataKryo.register(type);
 
 		final List<Class<? extends IJsonNode>> types = typeRegistry.getTypes();
 		for (Class<? extends IJsonNode> type : types)
-			register(type);
+			this.dataKryo.register(type);
+
+		this.kryo = new SopremoKryo();
 	}
-	
+
 	/**
 	 * Returns the nameChooserProvider.
 	 * 
@@ -106,10 +109,6 @@ public class EvaluationContext extends AbstractSopremoType {
 	 */
 	public NameChooserProvider getNameChooserProvider() {
 		return this.nameChooserProvider;
-	}
-
-	private void register(Class<?> type) {
-		this.kryo.register(type);
 	}
 
 	/**
@@ -127,6 +126,14 @@ public class EvaluationContext extends AbstractSopremoType {
 	 */
 	public Kryo getKryo() {
 		return this.kryo;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.AbstractSopremoType#getKryo()
+	 */
+	public Kryo getKryoForDataSerialization() {
+		return this.dataKryo;
 	}
 
 	/*
@@ -180,6 +187,7 @@ public class EvaluationContext extends AbstractSopremoType {
 		this.resultProjection = context.resultProjection.clone();
 		this.operatorDescription = context.operatorDescription;
 	}
+
 	/**
 	 * Returns the typeRegistry.
 	 * 

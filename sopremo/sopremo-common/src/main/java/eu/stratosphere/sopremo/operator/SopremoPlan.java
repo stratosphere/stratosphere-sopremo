@@ -96,6 +96,10 @@ public class SopremoPlan extends AbstractSopremoType implements Serializable {
 		for (final Sink sink : sinks)
 			this.module.addInternalOutput(sink);
 	}
+	
+	public List<Sink> getSinks() {
+		return this.module.getInternalOutputNodes();
+	}
 
 	public SopremoRecordLayout getLayout() {
 		return this.layout;

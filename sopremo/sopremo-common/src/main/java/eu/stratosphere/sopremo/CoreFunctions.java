@@ -114,12 +114,15 @@ public class CoreFunctions implements BuiltinProvider {
 	// combinable: all = fn(array) { array_concat(map(array, fn(x) { [x] })) }
 	@Name(noun = "all")
 	public static final ExpressionFunction ALL =
-		new ExpressionFunction(
-			1,
+		new ExpressionFunction(1,
 			ARRAY_CONCAT.asExpression().withInputExpression(
 				// optimized version of map(array, fn(x) { [x] })
-				new ArrayProjection(new ArrayCreation(EvaluationExpression.VALUE)).withInputExpression(new InputSelection(
-					0)))
+				new ArrayProjection(new EvaluationExpression() {
+					@Override
+					public IJsonNode evaluate(IJsonNode node) {
+						return  new ArrayNode<IJsonNode>(node.clone());
+					}
+				}).withInputExpression(new InputSelection(0)))
 		);
 
 	@Name(verb = "sort")

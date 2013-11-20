@@ -26,6 +26,7 @@ import eu.stratosphere.sopremo.io.Source;
 import eu.stratosphere.sopremo.pact.JsonCollector;
 import eu.stratosphere.sopremo.pact.SopremoMap;
 import eu.stratosphere.sopremo.pact.SopremoReduce;
+import eu.stratosphere.sopremo.pact.SopremoUtil;
 import eu.stratosphere.sopremo.type.IJsonNode;
 import eu.stratosphere.sopremo.type.IObjectNode;
 import eu.stratosphere.sopremo.type.IStreamNode;
@@ -47,6 +48,50 @@ public class SopremoPlanTest extends EqualCloneTest<SopremoPlan> {
 		return plan;
 	}
 
+	@Test
+	public void shouldCloneDAGs() {
+		final SopremoPlan plan = new SopremoPlan();
+
+		final Source source = new Source("file:///input.csv");
+		final PolymorphOperator poly = new PolymorphOperator().withInputs(source);
+		final TwoInputOperator twoInputOperator = new TwoInputOperator().withInputs(poly, poly);
+		plan.setSinks(new Sink("file:///output.csv").withInputs(twoInputOperator));
+		
+		final SopremoPlan clone = (SopremoPlan) plan.clone();
+		Assert.assertNotNull(clone);
+		final Operator<?> cloneTwoInput = Iterables.find(clone.getContainedOperators(), Predicates.instanceOf(TwoInputOperator.class));
+		Assert.assertSame(cloneTwoInput.getInput(0), cloneTwoInput.getInput(1));
+	}
+
+	@Test
+	public void shouldSerializeTrivialDAGs() {
+		final SopremoPlan plan = new SopremoPlan();
+
+		final Source source = new Source("file:///input.csv");
+		plan.setSinks(new Sink("file:///output1.csv").withInputs(source), new Sink("file:///output2.csv").withInputs(source));
+		
+		final byte[] byteArray = SopremoUtil.serializable(plan);
+		final SopremoPlan clone = SopremoUtil.deserialize(byteArray, SopremoPlan.class);
+		Assert.assertEquals(2, clone.getSinks().size());
+		Assert.assertSame(clone.getSinks().get(0).getInput(0), clone.getSinks().get(1).getInput(0));
+	}
+	
+	@Test
+	public void shouldSerializeDAGs() {
+		final SopremoPlan plan = new SopremoPlan();
+
+		final Source source = new Source("file:///input.csv");
+		final PolymorphOperator poly = new PolymorphOperator().withInputs(source);
+		final TwoInputOperator twoInputOperator = new TwoInputOperator().withInputs(poly, poly);
+		plan.setSinks(new Sink("file:///output.csv").withInputs(twoInputOperator));
+		
+		final byte[] byteArray = SopremoUtil.serializable(plan);
+		final SopremoPlan clone = SopremoUtil.deserialize(byteArray, SopremoPlan.class);
+		final Operator<?> cloneTwoInput = Iterables.find(clone.getContainedOperators(), Predicates.instanceOf(TwoInputOperator.class));
+		Assert.assertNotNull(clone);
+		Assert.assertSame(cloneTwoInput.getInput(0), cloneTwoInput.getInput(1));
+	}
+	
 	@Test
 	public void shouldTranslateDifferentStrategies() {
 		final SopremoPlan plan = new SopremoPlan();
@@ -73,6 +118,12 @@ public class SopremoPlanTest extends EqualCloneTest<SopremoPlan> {
 		Assert.assertNotNull(contract);
 		Assert.assertSame(pactStub, contract.getUserCodeWrapper().getUserCodeClass());
 	}
+}
+
+@InputCardinality(2)
+@OutputCardinality(1)
+class TwoInputOperator extends ElementaryOperator<TwoInputOperator> {
+	
 }
 
 @InputCardinality(1)

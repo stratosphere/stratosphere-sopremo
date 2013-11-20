@@ -42,6 +42,32 @@ public class OperatorTest extends EqualCloneTest<OperatorTest.OpImpl> {
 	}
 
 	/**
+	 * Run the Operator<?> clone() method test.
+	 */
+	@Test
+	public void shouldCloneInputsCorrectly() {
+		final Operator<?> input = new OpImpl(1);
+		final Operator<?> fixture = new OpImpl(0).withInputs(input, input);
+
+		final Operator<?> result = fixture.clone();
+
+		assertSame(result.getInput(0), result.getInput(1));
+		assertSame(fixture.getInput(0).getSource().getOperator(), fixture.getInput(1).getSource().getOperator());
+
+		assertNotNull(result);
+		assertEquals(fixture, result);
+		assertNotSame(fixture, result);
+
+		assertNotNull(result.getInput(0));
+		assertEquals(input, result.getInput(0).getSource().getOperator());
+		assertNotSame(input, result.getInput(0).getSource().getOperator());
+
+		assertNotNull(result.getInput(1));
+		assertEquals(input, result.getInput(1).getSource().getOperator());
+		assertNotSame(input, result.getInput(1).getSource().getOperator());
+	}
+
+	/**
 	 * Run the void setName(String) method test.
 	 */
 	@Test

@@ -30,6 +30,7 @@ import com.esotericsoftware.kryo.io.Output;
 import eu.stratosphere.nephele.execution.librarycache.LibraryCacheManager;
 import eu.stratosphere.nephele.io.IOReadableWritable;
 import eu.stratosphere.nephele.jobgraph.JobID;
+import eu.stratosphere.sopremo.SopremoEnvironment;
 import eu.stratosphere.sopremo.operator.SopremoPlan;
 import eu.stratosphere.sopremo.pact.SopremoUtil;
 
@@ -91,7 +92,7 @@ public class ExecutionRequest implements KryoSerializable, KryoCopyable<Executio
 	@Override
 	public void write(Kryo kryo, Output output) {
 		kryo.writeObject(output, this.mode);
-		kryo.writeObject(output, new ArrayList<String>( this.query.getRequiredPackages()));
+		kryo.writeObject(output, new ArrayList<String>(this.query.getRequiredPackages()));
 		kryo.writeObject(output, this.query);
 	}
 
@@ -136,7 +137,7 @@ public class ExecutionRequest implements KryoSerializable, KryoCopyable<Executio
 		er.setMode(this.mode);
 		return er;
 	}
-	
+
 	/*
 	 * (non-Javadoc)
 	 * @see eu.stratosphere.nephele.io.IOReadableWritable#read(java.io.DataInput)
@@ -151,13 +152,13 @@ public class ExecutionRequest implements KryoSerializable, KryoCopyable<Executio
 		this.query = null;
 		byte[] planBuffer = new byte[in.readInt()];
 		in.readFully(planBuffer);
-		
+
 		final JobID dummId = new JobID();
 		try {
 			LibraryCacheManager.register(dummId,
 				requiredPackages.toArray(new String[requiredPackages.size()]));
-			this.query = SopremoUtil.byteArrayToSerializable(planBuffer, SopremoPlan.class, 
-				LibraryCacheManager.getClassLoader(dummId));
+			SopremoEnvironment.getInstance().setClassLoader(LibraryCacheManager.getClassLoader(dummId));
+			this.query = SopremoUtil.deserialize(planBuffer, SopremoPlan.class);
 		} catch (IOException e) {
 			e.printStackTrace();
 		} finally {
@@ -166,7 +167,7 @@ public class ExecutionRequest implements KryoSerializable, KryoCopyable<Executio
 			} catch (IOException e) {
 			}
 		}
-		
+
 	}
 
 	/*
@@ -182,7 +183,7 @@ public class ExecutionRequest implements KryoSerializable, KryoCopyable<Executio
 		for (String packageName : requiredPackages)
 			out.writeUTF(packageName);
 
-		final byte[] planBuffer = SopremoUtil.serializableToByteArray(this.query);
+		final byte[] planBuffer = SopremoUtil.serializable(this.query);
 		out.writeInt(planBuffer.length);
 		out.write(planBuffer);
 	}

@@ -16,6 +16,7 @@ package eu.stratosphere.sopremo.type;
 
 import java.util.Iterator;
 
+import com.esotericsoftware.kryo.DefaultSerializer;
 import com.google.common.collect.Iterators;
 
 /**
@@ -23,6 +24,7 @@ import com.google.common.collect.Iterators;
  * 
  * @author Arvid Heise
  */
+@DefaultSerializer(AbstractArrayNode.ArraySerializer.class)
 public class SubArrayNode<T extends IJsonNode> extends AbstractArrayNode<T> {
 	@SuppressWarnings("unchecked")
 	private IArrayNode<T> originalArray = (IArrayNode<T>) ArrayNode.EMPTY;

@@ -25,7 +25,7 @@ public class KryoUtil {
 		@Override
 		protected Kryo initialValue() {
 			final Kryo kryo = new SopremoKryo();
-			kryo.setReferences(false);
+//			kryo.setReferences(false);
 			return kryo;
 		};
 	};

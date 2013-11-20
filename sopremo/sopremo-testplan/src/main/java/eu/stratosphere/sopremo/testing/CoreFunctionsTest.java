@@ -54,7 +54,7 @@ public class CoreFunctionsTest {
 	 */
 	@Test
 	public void shouldCountNormalArray() {
-		assertReturn(3, CoreFunctions.COUNT, 1, 2, 3);
+		assertReturn(3, CoreFunctions.COUNT, new int[] { 1, 2, 3 });
 	}
 
 	/**
@@ -62,7 +62,7 @@ public class CoreFunctionsTest {
 	 */
 	@Test
 	public void shouldCountZeroForEmptyArray() {
-		assertReturn(0, CoreFunctions.COUNT);
+		assertReturn(0, CoreFunctions.COUNT, new int[0]);
 	}
 
 	/**
@@ -89,8 +89,8 @@ public class CoreFunctionsTest {
 		final IArrayNode<?> expected =
 			createArrayNode(new Number[] { 1, 2.4 }, new Number[] { 1, 3.4 }, new Number[] { 2, 2.4 },
 				new Number[] { 2, 2.4, 3 });
-		assertReturn(expected, CoreFunctions.SORT, new Number[] { 1, 3.4 }, new Number[] { 2, 2.4 },
-			new Number[] { 1, 2.4 }, new Number[] { 2, 2.4, 3 });
+		assertReturn(expected, CoreFunctions.SORT, (Object) new Number[][] { new Number[] { 1, 3.4 },
+			new Number[] { 2, 2.4 }, new Number[] { 1, 2.4 }, new Number[] { 2, 2.4, 3 } });
 	}
 
 	/**
@@ -98,7 +98,7 @@ public class CoreFunctionsTest {
 	 */
 	@Test
 	public void shouldSortDoubles() {
-		assertReturn(createArrayNode(1.2, 2.0, 3.14, 4.5), CoreFunctions.SORT, 3.14, 4.5, 1.2, 2.0);
+		assertReturn(createArrayNode(1.2, 2.0, 3.14, 4.5), CoreFunctions.SORT, new double[] { 3.14, 4.5, 1.2, 2.0 });
 	}
 
 	/**
@@ -106,7 +106,7 @@ public class CoreFunctionsTest {
 	 */
 	@Test
 	public void shouldSortEmptyArray() {
-		assertReturn(createArrayNode(), CoreFunctions.SORT);
+		assertReturn(createArrayNode(), CoreFunctions.SORT, new int[0]);
 	}
 
 	/**
@@ -114,7 +114,7 @@ public class CoreFunctionsTest {
 	 */
 	@Test
 	public void shouldSortIntegers() {
-		assertReturn(createArrayNode(1, 2, 3, 4), CoreFunctions.SORT, 3, 4, 1, 2);
+		assertReturn(createArrayNode(1, 2, 3, 4), CoreFunctions.SORT, new int[] { 3, 4, 1, 2 });
 	}
 
 	/**

@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.IdentityHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
@@ -38,7 +37,7 @@ import eu.stratosphere.util.reflect.ReflectUtil;
  * 
  * @author Arvid Heise
  */
-@DefaultSerializer(Operator.OperatorSerializer.class)
+//@DefaultSerializer(Operator.OperatorSerializer.class)
 public abstract class Operator<Self extends Operator<Self>> extends ConfigurableSopremoType implements
 		ISopremoType, JsonStream, Cloneable {
 
@@ -566,7 +565,7 @@ public abstract class Operator<Self extends Operator<Self>> extends Configurable
 	 * 
 	 * @author Arvid Heise
 	 */
-	@DefaultSerializer(OperatorOutputSerializer.class)
+//	@DefaultSerializer(OperatorOutputSerializer.class)
 	public static class Output extends AbstractSopremoType implements JsonStream {
 		private final int index;
 
@@ -639,18 +638,22 @@ public abstract class Operator<Self extends Operator<Self>> extends Configurable
 	public static class OperatorSerializer extends com.esotericsoftware.kryo.Serializer<Operator<?>> {
 		private final FieldSerializer<Operator<?>> fieldSerializer;
 
-		private final static ThreadLocal<OperatorSerializationStack> OperatorSerializationStack =
-			new ThreadLocal<OperatorSerializationStack>() {
+		private final static ThreadLocal<OperatorSerializationPool> OperatorSerializationStack =
+			new ThreadLocal<OperatorSerializationPool>() {
 				@Override
-				protected OperatorSerializationStack initialValue() {
-					return new OperatorSerializationStack();
+				protected OperatorSerializationPool initialValue() {
+					return new OperatorSerializationPool();
 				};
 			};
 
-		private static class OperatorSerializationStack {
-			private final Map<Operator<?>, Integer> operatorSerializedAt = new IdentityHashMap<Operator<?>, Integer>();
+		private static class OperatorSerializationPool {
+			private final Map<Operator<?>, Integer> operatorSerializedId = new IdentityHashMap<Operator<?>, Integer>();
 
-			private final LinkedList<Operator<?>> operatorDeserializedAt = new LinkedList<Operator<?>>();
+			private final List<Operator<?>> operatorDeserializedId = new ArrayList<Operator<?>>();
+
+			// private final Map<Operator<?>, Operator<?>> copies = new IdentityHashMap<Operator<?>, Operator<?>>();
+			//
+			private int stackDepth;
 		}
 
 		public OperatorSerializer(Kryo kryo, Class<Operator<?>> type) {
@@ -664,15 +667,18 @@ public abstract class Operator<Self extends Operator<Self>> extends Configurable
 		 */
 		@Override
 		public Operator<?> read(Kryo kryo, Input input, Class<Operator<?>> type) {
-			LinkedList<Operator<?>> operatorDeserializedAt = OperatorSerializationStack.get().operatorDeserializedAt;
+			final OperatorSerializationPool stack = OperatorSerializationStack.get();
+			List<Operator<?>> operatorDeserializedAt = stack.operatorDeserializedId;
 			if (input.readBoolean())
 				return operatorDeserializedAt.get(input.readByteUnsigned());
+			stack.stackDepth++;
 			Operator<?> object = kryo.newInstance(type);
-			operatorDeserializedAt.push(object);
+			operatorDeserializedAt.add(object);
 			FieldSerializer<?>.CachedField<?>[] fields = this.fieldSerializer.getFields();
 			for (int i = 0, n = fields.length; i < n; i++)
 				fields[i].read(input, object);
-			operatorDeserializedAt.pop();
+			if (--stack.stackDepth == 0)
+				operatorDeserializedAt.clear();
 			return object;
 		}
 
@@ -692,15 +698,18 @@ public abstract class Operator<Self extends Operator<Self>> extends Configurable
 		 */
 		@Override
 		public void write(Kryo kryo, com.esotericsoftware.kryo.io.Output output, Operator<?> object) {
-			Map<Operator<?>, Integer> operatorSerializedAt = OperatorSerializationStack.get().operatorSerializedAt;
-			Integer alreadySerializedAt = operatorSerializedAt.get(object);
-			output.writeBoolean(alreadySerializedAt != null);
-			if (alreadySerializedAt != null) {
-				output.writeByte(alreadySerializedAt);
+			final OperatorSerializationPool stack = OperatorSerializationStack.get();
+			Map<Operator<?>, Integer> operatorSerializationId = stack.operatorSerializedId;
+			Integer serializationId = operatorSerializationId.get(object);
+			output.writeBoolean(serializationId != null);
+			if (serializationId != null) {
+				output.writeByte(serializationId);
 			} else {
-				operatorSerializedAt.put(object, operatorSerializedAt.size());
+				operatorSerializationId.put(object, operatorSerializationId.size());
+				stack.stackDepth++;
 				this.fieldSerializer.write(kryo, output, object);
-				operatorSerializedAt.remove(object);
+				if (--stack.stackDepth == 0)
+					operatorSerializationId.clear();
 			}
 		}
 	}
@@ -729,7 +738,7 @@ public abstract class Operator<Self extends Operator<Self>> extends Configurable
 		 */
 		@Override
 		public Output copy(Kryo kryo, Output original) {
-			return new Output(kryo.copy(original.getOperator()), original.getIndex());
+			return (Output) kryo.copy(original.getOperator()).getOutput(original.getIndex());
 		}
 
 		/*

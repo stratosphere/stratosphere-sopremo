@@ -64,6 +64,18 @@ public class SopremoEnvironment {
 	public ClassLoader getClassLoader() {
 		return this.classLoader;
 	}
+	
+	/**
+	 * Sets the classLoader to the specified value.
+	 *
+	 * @param classLoader the classLoader to set
+	 */
+	public void setClassLoader(ClassLoader classLoader) {
+		if (classLoader == null)
+			throw new NullPointerException("classLoader must not be null");
+
+		this.classLoader = classLoader;
+	}
 
 	/**
 	 * Returns the configuration.

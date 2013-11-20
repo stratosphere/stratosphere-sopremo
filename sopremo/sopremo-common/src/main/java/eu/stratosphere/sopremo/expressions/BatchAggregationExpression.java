@@ -47,7 +47,7 @@ import eu.stratosphere.sopremo.type.ReusingSerializer;
  * 
  * @author Arvid Heise
  */
-@DefaultSerializer(BatchAggregationExpression.BAESerializer.class)
+//@DefaultSerializer(BatchAggregationExpression.BAESerializer.class)
 public class BatchAggregationExpression extends PathSegmentExpression {
 	public static class PartialSerializer extends ReusingSerializer<Partial> {
 		private final Map<BatchAggregationExpression, Integer> objectReferenceMap =
@@ -315,11 +315,11 @@ public class BatchAggregationExpression extends PathSegmentExpression {
 		return cloneHelper.clone;
 	}
 
-	@DefaultSerializer(PartialSerializer.class)
+//	@DefaultSerializer(PartialSerializer.class)
 	final static class Partial extends AggregationExpression {
 		private final int index;
 
-		private final transient BatchAggregationExpression bae;
+		private final BatchAggregationExpression bae;
 
 		/**
 		 * Initializes a Partial with the given function, preprocessing and index.
