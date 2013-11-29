@@ -61,8 +61,9 @@ public class MeteorParseTest {
 	public MeteorParseTest() {
 		this.projectName = MavenUtil.getProjectName();
 		this.projectJar = ProjectJars.get(this.projectName);
-		if (this.projectJar == null)
-			ProjectJars.put(this.projectName, this.projectJar = build(this.projectName));
+		//FIXME removed if clause
+		//if (this.projectJar == null)
+		ProjectJars.put(this.projectName, this.projectJar = build(this.projectName));
 	}
 
 	private static File build(String projectName) {
@@ -132,7 +133,6 @@ public class MeteorParseTest {
 
 	}
 
-	@SuppressWarnings("unused")
 	protected void initParser(QueryParser queryParser) {
 		queryParser.getPackageManager().importPackageFrom(this.projectName.substring("sopremo-".length()),
 			this.projectJar);

@@ -15,9 +15,8 @@
 package eu.stratosphere.meteor;
 
 import java.io.File;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -26,8 +25,12 @@ import org.junit.Before;
 import eu.stratosphere.sopremo.client.DefaultClient;
 import eu.stratosphere.sopremo.client.ProgressListener;
 import eu.stratosphere.sopremo.execution.ExecutionResponse.ExecutionState;
+import eu.stratosphere.sopremo.io.JsonParseException;
+import eu.stratosphere.sopremo.io.JsonParser;
 import eu.stratosphere.sopremo.operator.SopremoPlan;
 import eu.stratosphere.sopremo.server.SopremoTestServer;
+import eu.stratosphere.sopremo.type.IArrayNode;
+import eu.stratosphere.sopremo.type.IJsonNode;
 
 /**
  * @author Arvid Heise
@@ -66,12 +69,25 @@ public abstract class MeteorIT extends MeteorParseTest {
 
 	@Override
 	protected void initParser(QueryParser queryParser) {
-		// queryParser.setInputDirectory(new File("target"));
+		//queryParser.setInputDirectory(new File("target"));
+		queryParser.getPackageManager().addJarPathLocation(new File("target"));
 	}
 
 	@After
 	public void teardown() throws Exception {
 		this.client.close();
 		this.testServer.close();
+	}
+	
+	protected IJsonNode[] getContentsToCheckFrom(String fileName) throws JsonParseException, FileNotFoundException{
+		final JsonParser parser = new JsonParser(new FileReader(fileName));
+		parser.setWrappingArraySkipping(false);
+		IJsonNode expectedValues = parser.readValueAsTree();
+		
+		IJsonNode[] content = new IJsonNode[((IArrayNode) expectedValues).size()];
+		for (int i = 0; i < content.length; i++) {
+			content[i] = ((IArrayNode) expectedValues).get(i);
+		}
+		return content;
 	}
 }

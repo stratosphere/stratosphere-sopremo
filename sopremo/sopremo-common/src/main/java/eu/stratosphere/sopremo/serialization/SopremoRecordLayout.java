@@ -59,7 +59,7 @@ public class SopremoRecordLayout extends AbstractSopremoType {
 	public static final int VALUE_INDEX = Integer.MAX_VALUE;
 
 	public static class KryoSerializer extends Serializer<SopremoRecordLayout> {
-
+		
 		/*
 		 * (non-Javadoc)
 		 * @see com.esotericsoftware.kryo.Serializer#write(com.esotericsoftware.kryo.Kryo,
