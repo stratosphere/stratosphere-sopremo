@@ -546,7 +546,7 @@ public abstract class SopremoFormat extends ConfigurableSopremoType {
 	public void configureForInput(Configuration configuration, String inputPath) {
 		final Class<? extends SopremoInputFormat<?>> inputFormat = getInputFormat();
 		if (inputPath != null)
-			configuration.setString(FileInputFormat.FILE_PARAMETER_KEY, inputPath);
+			configuration.setString("pact.input.file.path", inputPath);
 		else if (FileInputFormat.class.isAssignableFrom(inputFormat))
 			throw new IllegalStateException("No input path was given for the file input format");
 

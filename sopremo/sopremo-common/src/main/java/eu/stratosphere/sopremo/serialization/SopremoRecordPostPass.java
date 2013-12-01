@@ -140,7 +140,7 @@ public class SopremoRecordPostPass implements OptimizerPostPass {
 	private void processChannel(PlanNode node, SopremoRecordLayout layout, Channel channel, Type type) {
 		if (!type.equals(layout.getTargetType())) {
 			layout = layout.copy();
-			layout.setTargetType(type);
+			layout.setTargetType(TypeToken.of(type).getRawType());
 		}
 		channel.setSerializer(new SopremoRecordSerializerFactory(layout));
 		// FIXME: workaround for Stratosphere #206

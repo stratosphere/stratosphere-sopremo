@@ -132,7 +132,7 @@ public class SopremoServer implements SopremoExecutionProtocol, Closeable {
 	public InetSocketAddress getServerAddress() {
 		InetSocketAddress serverAddress = this.serverAddress;
 		if (serverAddress == null) {
-			final String address = this.configuration.getString(SopremoConstants.SOPREMO_SERVER_IPC_ADDRESS_KEY, null);
+			final String address = this.configuration.getString(SopremoConstants.SOPREMO_SERVER_IPC_ADDRESS_KEY, "localhost");
 			final int port = this.configuration.getInteger(SopremoConstants.SOPREMO_SERVER_IPC_PORT_KEY,
 				SopremoConstants.DEFAULT_SOPREMO_SERVER_IPC_PORT);
 
