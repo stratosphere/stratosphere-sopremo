@@ -283,7 +283,7 @@ public class DefaultClient implements Closeable {
 		InetSocketAddress serverAddress = this.serverAddress;
 
 		if (serverAddress == null) {
-			String address = this.configuration.getString(SopremoConstants.SOPREMO_SERVER_IPC_ADDRESS_KEY, null);
+			String address = this.configuration.getString(SopremoConstants.SOPREMO_SERVER_IPC_ADDRESS_KEY, "localhost");
 			final int port = this.configuration.getInteger(SopremoConstants.SOPREMO_SERVER_IPC_PORT_KEY,
 				SopremoConstants.DEFAULT_SOPREMO_SERVER_IPC_PORT);
 			serverAddress = new InetSocketAddress(address, port);

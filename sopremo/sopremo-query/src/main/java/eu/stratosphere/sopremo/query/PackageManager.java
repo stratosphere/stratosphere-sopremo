@@ -23,9 +23,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
-
-import org.apache.commons.lang3.StringUtils;
-
 import eu.stratosphere.sopremo.io.CsvFormat;
 import eu.stratosphere.sopremo.io.JsonFormat;
 import eu.stratosphere.sopremo.io.Sink;
@@ -282,7 +279,7 @@ public class PackageManager implements ParsingScope {
 	private String getClasspath() {
 		// FIXME hack for running integration tests wit maven
 		String classpath = System.getProperty("surefire.test.class.path");
-		if (StringUtils.isBlank(classpath))
+		if (classpath == null || classpath.equals(""))
 			classpath = System.getProperty("java.class.path");
 		return classpath;
 	}

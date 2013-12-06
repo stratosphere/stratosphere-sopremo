@@ -290,8 +290,8 @@ public abstract class Operator<Self extends Operator<Self>> extends Configurable
 	 * @return all outputs of this operator
 	 */
 	public List<JsonStream> getOutputs() {
-		final ArrayList<JsonStream> outputs = new ArrayList<JsonStream>(this.maxOutputs);
-		for (int index = 0; index < this.maxOutputs; index++)
+		final ArrayList<JsonStream> outputs = new ArrayList<JsonStream>(this.minInputs);
+		for (int index = 0; index < this.outputs.size(); index++)
 			outputs.add(this.getOutput(index));
 		return outputs;
 	}
@@ -564,7 +564,7 @@ public abstract class Operator<Self extends Operator<Self>> extends Configurable
 	 * 
 	 * @author Arvid Heise
 	 */
-//	@DefaultSerializer(OperatorOutputSerializer.class)
+	@DefaultSerializer(OperatorOutputSerializer.class)
 	public static class Output extends AbstractSopremoType implements JsonStream {
 		private final int index;
 

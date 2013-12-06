@@ -51,7 +51,7 @@ public class SopremoRecordLayout extends AbstractSopremoType {
 	/**
 	 * 
 	 */
-	private static final Type UNTYPED = IJsonNode.class;
+	private static final Class<?> UNTYPED = IJsonNode.class;
 
 	/**
 	 * 
@@ -68,7 +68,7 @@ public class SopremoRecordLayout extends AbstractSopremoType {
 		@Override
 		public void write(Kryo kryo, Output output, SopremoRecordLayout object) {
 			kryo.writeObject(output, object.getKeyExpressions());
-			kryo.writeClassAndObject(output, object.targetType == UNTYPED ? null : object.targetType);
+			kryo.writeObject(output, object.targetType);
 		}
 
 		/*
@@ -89,8 +89,8 @@ public class SopremoRecordLayout extends AbstractSopremoType {
 		@Override
 		public SopremoRecordLayout read(Kryo kryo, Input input, Class<SopremoRecordLayout> type) {
 			final SopremoRecordLayout layout = SopremoRecordLayout.create(kryo.readObject(input, ArrayList.class));
-			final Type targetType = (Type) kryo.readClassAndObject(input);
-			layout.setTargetType(targetType == null ? UNTYPED : targetType);
+			final Class<?> targetType = kryo.readObject(input, Class.class);
+			layout.setTargetType(targetType);
 			return layout;
 		}
 	}
@@ -110,7 +110,7 @@ public class SopremoRecordLayout extends AbstractSopremoType {
 
 	private final EvaluationExpression[] directDataExpression, calculatedKeyExpressions;
 
-	private Type targetType = UNTYPED;
+	private Class<?> targetType = UNTYPED;
 
 	private final transient ExpressionIndex expressionIndex;
 
@@ -139,12 +139,12 @@ public class SopremoRecordLayout extends AbstractSopremoType {
 	 *        the targetType to set
 	 */
 	@SuppressWarnings("unchecked")
-	public void setTargetType(Type targetType) {
+	public void setTargetType(Class<?> targetType) {
 		if (targetType == null)
 			throw new NullPointerException("targetType must not be null");
 
 		this.targetType = targetType;
-		if (ITypedObjectNode.class.isAssignableFrom(TypeToken.of(targetType).getRawType()))
+		if (ITypedObjectNode.class.isAssignableFrom(targetType))
 			this.typedNode = (TypedObjectNode) TypedObjectNodeFactory.getInstance().getTypedObjectForInterface(
 				(Class<? extends ITypedObjectNode>) this.targetType);
 	}
@@ -167,7 +167,7 @@ public class SopremoRecordLayout extends AbstractSopremoType {
 		return this.targetType;
 	}
 
-	public SopremoRecordLayout withTargetType(Type targetType) {
+	public SopremoRecordLayout withTargetType(Class<?> targetType) {
 		setTargetType(targetType);
 		return this;
 	}

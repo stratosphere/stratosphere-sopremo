@@ -66,12 +66,12 @@ public abstract class MeteorIT extends MeteorParseTest {
 		this.client.setServerAddress(this.testServer.getServerAddress());
 		this.client.setUpdateTime(100);
 	}
-
-	@Override
-	protected void initParser(QueryParser queryParser) {
-		//queryParser.setInputDirectory(new File("target"));
-		queryParser.getPackageManager().addJarPathLocation(new File("target"));
-	}
+	
+//
+//	@Override
+//	protected void initParser(QueryParser queryParser) {
+//		// queryParser.setInputDirectory(new File("target"));
+//	}
 
 	@After
 	public void teardown() throws Exception {
