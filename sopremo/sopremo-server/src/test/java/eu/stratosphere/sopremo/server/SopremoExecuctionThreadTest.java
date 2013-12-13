@@ -21,6 +21,7 @@ import static org.powermock.api.mockito.PowerMockito.whenNew;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.util.HashMap;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -31,6 +32,7 @@ import org.powermock.modules.junit4.PowerMockRunner;
 
 import eu.stratosphere.nephele.client.JobClient;
 import eu.stratosphere.nephele.client.JobExecutionException;
+import eu.stratosphere.nephele.client.JobExecutionResult;
 import eu.stratosphere.nephele.configuration.Configuration;
 import eu.stratosphere.nephele.jobgraph.JobGraph;
 import eu.stratosphere.pact.common.plan.Plan;
@@ -77,7 +79,7 @@ public class SopremoExecuctionThreadTest {
 		plan.setSinks(output);
 		return plan;
 	}
-	
+
 	@Before
 	public void setup() throws Exception {
 		this.jobInfo = new SopremoJobInfo(SopremoID.generate(),
@@ -100,7 +102,7 @@ public class SopremoExecuctionThreadTest {
 
 	@Test
 	public void testSuccessfulExecution() throws Exception {
-		when(this.mockClient.submitJobAndWait()).thenReturn(1L);
+		when(this.mockClient.submitJobAndWait()).thenReturn(new JobExecutionResult(1, new HashMap<String, Object>()));
 
 		this.thread.run();
 		Assert.assertSame(this.jobInfo.getDetail(), ExecutionState.FINISHED, this.jobInfo.getStatus());
@@ -110,7 +112,7 @@ public class SopremoExecuctionThreadTest {
 	@Test
 	public void testSuccessfulExecutionWithStatistics() throws Exception {
 		this.jobInfo.getInitialRequest().setMode(ExecutionMode.RUN_WITH_STATISTICS);
-		when(this.mockClient.submitJobAndWait()).thenReturn(1L);
+		when(this.mockClient.submitJobAndWait()).thenReturn(new JobExecutionResult(1, new HashMap<String, Object>()));
 
 		this.thread.run();
 		Assert.assertSame(this.jobInfo.getDetail(), ExecutionState.FINISHED, this.jobInfo.getStatus());

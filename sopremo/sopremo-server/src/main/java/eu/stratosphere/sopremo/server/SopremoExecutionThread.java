@@ -21,6 +21,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import eu.stratosphere.nephele.client.JobClient;
+import eu.stratosphere.nephele.client.JobExecutionResult;
 import eu.stratosphere.nephele.execution.librarycache.LibraryCacheManager;
 import eu.stratosphere.nephele.fs.FileSystem;
 import eu.stratosphere.nephele.fs.Path;
@@ -68,8 +69,8 @@ public class SopremoExecutionThread implements Runnable {
 		try {
 			LOG.info("Starting job " + this.jobInfo.getJobId());
 			SopremoPlan plan = this.jobInfo.getInitialRequest().getQuery();
-			final long runtime = executePlan(plan);
-			if (runtime != -1) {
+			final JobExecutionResult runtime = executePlan(plan);
+			if (runtime != null) {
 				switch (this.jobInfo.getInitialRequest().getMode()) {
 				case RUN:
 					this.jobInfo.setStatusAndDetail(ExecutionState.FINISHED, "");
@@ -90,9 +91,9 @@ public class SopremoExecutionThread implements Runnable {
 	/**
 	 * @param plan
 	 */
-	private void gatherStatistics(SopremoPlan plan, long runtime) {
+	private void gatherStatistics(SopremoPlan plan, JobExecutionResult result) {
 		StringBuilder statistics = new StringBuilder();
-		statistics.append("Executed in ").append(runtime).append(" ms");
+		statistics.append("Executed in ").append(result.getNetRuntime()).append(" ms");
 		for (Operator<?> op : plan.getContainedOperators())
 			if (op instanceof Sink) {
 				try {
@@ -106,7 +107,7 @@ public class SopremoExecutionThread implements Runnable {
 		this.jobInfo.setStatusAndDetail(ExecutionState.FINISHED, statistics.toString());
 	}
 
-	private long executePlan(SopremoPlan plan) {
+	private JobExecutionResult executePlan(SopremoPlan plan) {
 		final Plan pactPlan = plan.asPactPlan();
 
 		JobGraph jobGraph;
@@ -116,7 +117,7 @@ public class SopremoExecutionThread implements Runnable {
 			LOG.error("Could not generate job graph " + this.jobInfo.getJobId(), e);
 			this.jobInfo.setStatusAndDetail(ExecutionState.ERROR, "Could not generate job graph: "
 				+ StringUtils.stringifyException(e));
-			return -1;
+			return null;
 		}
 
 		try {
@@ -125,7 +126,7 @@ public class SopremoExecutionThread implements Runnable {
 				if(libPath == null ) {
 					LOG.error("Could not find associated packages " + requiredPackage + " of job " + this.jobInfo.getJobId());
 					this.jobInfo.setStatusAndDetail(ExecutionState.ERROR, "Could not find associated packages: " + requiredPackage);
-					return -1;
+					return null;
 				}
 				jobGraph.addJar(libPath);
 			}
@@ -133,7 +134,7 @@ public class SopremoExecutionThread implements Runnable {
 			LOG.error("Could not find retrieve package information from library manager " + this.jobInfo.getJobId(), e);
 			this.jobInfo.setStatusAndDetail(ExecutionState.ERROR, "Could not find retrieve package information from library manager: "
 				+ StringUtils.stringifyException(e));
-			return -1;
+			return null;
 		}
 
 		JobClient client;
@@ -143,7 +144,7 @@ public class SopremoExecutionThread implements Runnable {
 			LOG.error("Could not open job manager " + this.jobInfo.getJobId(), e);
 			this.jobInfo.setStatusAndDetail(ExecutionState.ERROR, "Could not open job manager: "
 				+ StringUtils.stringifyException(e));
-			return -1;
+			return null;
 		}
 
 		try {
@@ -155,7 +156,7 @@ public class SopremoExecutionThread implements Runnable {
 			this.jobInfo.setStatusAndDetail(ExecutionState.ERROR,
 				"The job was not successfully executed: "
 					+ StringUtils.stringifyException(e));
-			return -1;
+			return null;
 		}
 	}
 
