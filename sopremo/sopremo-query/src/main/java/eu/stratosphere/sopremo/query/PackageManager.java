@@ -23,7 +23,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
-
 import eu.stratosphere.sopremo.io.CsvFormat;
 import eu.stratosphere.sopremo.io.JsonFormat;
 import eu.stratosphere.sopremo.io.Sink;
@@ -88,6 +87,7 @@ public class PackageManager implements ParsingScope {
 		this.fileFormatRegistries.push(packageManager.getFileFormatRegistry());
 		this.typeRegistries.push(packageManager.getTypeRegistry());
 		this.packages.putAll(packageManager.packages);
+		this.jarPathLocations.addAll(packageManager.getJarPathLocations());
 	}
 
 	/**
@@ -261,6 +261,7 @@ public class PackageManager implements ParsingScope {
 		String sopremoPackage = getJarFileNameForPackageName(packageName);
 		// look in additional directories
 		final Pattern filePattern = Pattern.compile(sopremoPackage + ".*\\.jar");
+		
 		for (File jarPathLocation : this.jarPathLocations) {
 			final File[] jars = jarPathLocation.listFiles(new FilenameFilter() {
 				@Override
