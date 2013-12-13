@@ -1,4 +1,4 @@
-// $ANTLR 3.5 /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g 2013-11-19 16:07:30
+// $ANTLR 3.5 /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g 2013-12-13 18:10:15
  
 package eu.stratosphere.meteor; 
 
@@ -2071,7 +2071,7 @@ public class MeteorParser extends MeteorParserBase {
 			}
 
 			// AST REWRITE
-			// elements: elem, elem, set
+			// elements: set, elem, elem
 			// token labels: 
 			// rule labels: elem, retval, set
 			// token list labels: 
@@ -2278,7 +2278,7 @@ public class MeteorParser extends MeteorParserBase {
 			}
 
 			// AST REWRITE
-			// elements: e2, e1, e1, e1, e2, e1, e2
+			// elements: e1, e2, e2, e1, e2, e1, e1
 			// token labels: 
 			// rule labels: retval, e1, e2
 			// token list labels: 
@@ -2455,7 +2455,7 @@ public class MeteorParser extends MeteorParserBase {
 			}
 
 			// AST REWRITE
-			// elements: e1, e1, e2
+			// elements: e1, e2, e1
 			// token labels: 
 			// rule labels: retval, e1, e2
 			// token list labels: 
@@ -2604,7 +2604,7 @@ public class MeteorParser extends MeteorParserBase {
 			}
 
 			// AST REWRITE
-			// elements: e2, e1, e1
+			// elements: e1, e1, e2
 			// token labels: 
 			// rule labels: retval, e1, e2
 			// token list labels: 
@@ -7252,9 +7252,9 @@ public class MeteorParser extends MeteorParserBase {
 			name=(Token)match(input,ID,FOLLOW_ID_in_confOption2430); if (state.failed) return retval; 
 			if ( state.backtracking==0 ) stream_ID.add(name);
 
-			if ( !(( (property = findPropertyRelunctantly(object, info, name)) != null )) ) {
+			if ( !(( (property = findPropertyGreedily(object, info, name)) != null )) ) {
 				if (state.backtracking>0) {state.failed=true; return retval;}
-				throw new FailedPredicateException(input, "confOption", " (property = findPropertyRelunctantly(object, info, name)) != null ");
+				throw new FailedPredicateException(input, "confOption", " (property = findPropertyGreedily(object, info, name)) != null ");
 			}
 			pushFollow(FOLLOW_ternaryExpression_in_confOption2440);
 			expr=ternaryExpression();

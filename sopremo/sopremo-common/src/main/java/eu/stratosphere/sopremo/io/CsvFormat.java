@@ -421,8 +421,7 @@ public class CsvFormat extends SopremoFormat {
 		protected void open(FSDataInputStream stream, FileInputSplit split) throws IOException {
 			this.setState(State.TOP_LEVEL);
 
-			this.reader = new CountingReader(stream, this.getEncoding(), split.getStart(), split.getStart()
-				+ split.getLength());
+			this.reader = new CountingReader(stream, this.getEncoding(), split.getStart() + split.getLength());
 			this.usesQuotation = this.quotation == Boolean.TRUE;
 			if (this.quotation == null) {
 				// very simple heuristic
@@ -440,25 +439,23 @@ public class CsvFormat extends SopremoFormat {
 			}
 
 			// skip to beginning of the first record
-			if (this.splitStart > 0)
+			if (this.splitStart > 0) {
+				this.reader.seek(this.pos = this.splitStart - 1);
 				if (this.usesQuotation) {
 					// TODO: how to detect if where are inside a quotation?
-					this.reader.seek(this.pos = this.splitStart - 1);
-
 					int ch;
 					for (; (ch = this.reader.read()) != -1 && ch != '\n'; this.pos++)
 						;
 					if (ch == -1)
 						this.endReached();
 				} else {
-					this.reader.seek(this.pos = this.splitStart - 1);
-
 					int ch;
 					for (; (ch = this.reader.read()) != -1 && ch != '\n'; this.pos++)
 						;
 					if (ch == -1)
 						this.endReached();
 				}
+			}
 		}
 
 		/**
@@ -556,9 +553,9 @@ public class CsvFormat extends SopremoFormat {
 				lastCharacter = this.fillBuilderWithNextField();
 				if (lastCharacter == -1 && !lastValue) {
 					// ignore empty line
-					if(this.builder.length() == 0 && fieldIndex == 0)
+					if (this.builder.length() == 0 && fieldIndex == 0)
 						break;
-					
+
 					lastValue = true;
 					// read the remainder of the started line
 					this.reader.liftLimit();
@@ -676,7 +673,7 @@ public class CsvFormat extends SopremoFormat {
 	 * @author Arvid Heise
 	 */
 	public static class CountingReader extends Reader {
-		private long start = 0, absolutePos = 0, limit = 0;
+		private long absolutePos = 0, limit = 0;
 
 		private boolean reachedLimit = false, eos = false;
 
@@ -690,11 +687,10 @@ public class CsvFormat extends SopremoFormat {
 
 		private final Charset cs;
 
-		public CountingReader(FSDataInputStream stream, String charset, long start, long limit) {
+		public CountingReader(FSDataInputStream stream, String charset, long limit) {
 			this.stream = stream;
 			this.cs = Charset.forName(charset);
 			this.decoder = this.cs.newDecoder();
-			this.start = start;
 			this.limit = limit;
 			// mark as empty
 			this.charBuffer.limit(0);

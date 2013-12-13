@@ -245,7 +245,32 @@ public abstract class AbstractQueryParser extends Parser implements ParsingScope
 
 	protected ConfObjectInfo<? extends Operator<?>> findOperatorGreedily(String packageName, Token firstWord)
 			throws RecognitionException {
+		final IConfObjectRegistry<Operator<?>> registry = this.getScope(packageName).getOperatorRegistry();
 		StringBuilder name = new StringBuilder(firstWord.getText());
+		IntList wordBoundaries = greedilyAddToName(firstWord, name);
+		ConfObjectInfo<Operator<?>> info = findGreedilyInRegistry(registry, name, wordBoundaries);
+
+		if (info == null)
+			throw new RecognitionExceptionWithUsageHint(firstWord, String.format(
+				"Unknown operator %s; possible alternatives %s", name,
+				this.inputSuggestion.suggest(name, registry.keySet())));
+
+		return info;
+	}
+
+	private <T> T findGreedilyInRegistry(final IRegistry<T> registry, StringBuilder name, IntList wordBoundaries) {
+		int tokenCount = wordBoundaries.size();
+		T info = null;
+		for (; info == null && tokenCount > 0;)
+			info = registry.get(name.substring(0, wordBoundaries.getInt(--tokenCount)));
+
+		// consume additional tokens
+		for (; tokenCount > 0; tokenCount--)
+			this.input.consume();
+		return info;
+	}
+
+	private IntList greedilyAddToName(Token firstWord, StringBuilder name) {
 		IntList wordBoundaries = new IntArrayList();
 		wordBoundaries.add(name.length());
 
@@ -256,28 +281,7 @@ public abstract class AbstractQueryParser extends Parser implements ParsingScope
 			name.append(' ').append(matchedToken.getText());
 			wordBoundaries.add(name.length());
 		}
-
-		int tokenCount = wordBoundaries.size();
-		ConfObjectInfo<Operator<?>> info = null;
-		ParsingScope scope = this.getScope(packageName);
-		for (; info == null && tokenCount > 0;)
-			info = scope.getOperatorRegistry().get(name.substring(0, wordBoundaries.getInt(--tokenCount)));
-
-		// consume additional tokens
-		for (; tokenCount > 0; tokenCount--)
-			this.input.consume();
-
-		if (info == null)
-			throw new RecognitionExceptionWithUsageHint(firstWord, String.format(
-				"Unknown operator %s; possible alternatives %s", name,
-				this.inputSuggestion.suggest(name, scope.getOperatorRegistry().keySet())));
-		/*
-		 * throw new SimpleException(String.format(
-		 * "Unknown operator %s; possible alternatives %s", name,
-		 * this.getOperatorSuggestion().suggest(name)), firstWord);
-		 */
-
-		return info;
+		return wordBoundaries;
 	}
 
 	protected String makeFilePath(Token protocol, String filePath) {
@@ -383,6 +387,22 @@ public abstract class AbstractQueryParser extends Parser implements ParsingScope
 		return scope;
 	}
 
+	protected ConfObjectInfo.ConfObjectPropertyInfo findPropertyGreedily(ConfigurableSopremoType object,
+			ConfObjectInfo<?> info, Token firstWord) throws RecognitionException {
+
+		final IRegistry<ConfObjectPropertyInfo> registry = info.getOperatorPropertyRegistry(object);
+		StringBuilder name = new StringBuilder(firstWord.getText());
+		IntList wordBoundaries = greedilyAddToName(firstWord, name);
+		ConfObjectPropertyInfo property = findGreedilyInRegistry(registry, name, wordBoundaries);
+
+		if (property == null)
+			throw new RecognitionExceptionWithUsageHint(firstWord, String.format(
+				"Unknown property %s; possible alternatives %s", name,
+				this.inputSuggestion.suggest(name, registry.keySet())));
+
+		return property;
+	}
+
 	protected ConfObjectInfo.ConfObjectPropertyInfo findPropertyRelunctantly(ConfigurableSopremoType object,
 			ConfObjectInfo<?> info, Token firstWord)
 			throws RecognitionException {
@@ -411,12 +431,12 @@ public abstract class AbstractQueryParser extends Parser implements ParsingScope
 
 	protected ConfObjectInfo.ConfObjectIndexedPropertyInfo findInputPropertyRelunctantly(
 			ConfigurableSopremoType object, ConfObjectInfo<?> info, Token firstWord, boolean consume) {
+		final IRegistry<ConfObjectIndexedPropertyInfo> inputPropertyRegistry = info.getInputPropertyRegistry(object);
 		String name = firstWord.getText();
 		ConfObjectInfo.ConfObjectIndexedPropertyInfo property;
 
 		int lookAhead = 1;
 		// Reluctantly concatenate tokens
-		final IRegistry<ConfObjectIndexedPropertyInfo> inputPropertyRegistry = info.getInputPropertyRegistry(object);
 		for (; (property = inputPropertyRegistry.get(name)) == null && this.input.LA(lookAhead) == firstWord.getType(); lookAhead++) {
 			Token matchedToken = this.input.LT(lookAhead);
 			name = String.format("%s %s", name, matchedToken.getText());

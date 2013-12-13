@@ -368,7 +368,7 @@ confOption [ConfObjectInfo<?> info, ConfigurableSopremoType object]
  ConfObjectInfo.ConfObjectPropertyInfo property = null;
 } : //{ findOperatorPropertyRelunctantly($genericOperator::operatorInfo, input.LT(1)) != null }?	
   name=ID
-	{ (property = findPropertyRelunctantly(object, info, name)) != null }?=>
+	{ (property = findPropertyGreedily(object, info, name)) != null }?=>
   expr=ternaryExpression { property.setValue(object, $expr.tree); } ->;
 
 input	[ConfObjectInfo<?> info, Operator<?> object]
