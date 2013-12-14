@@ -38,12 +38,9 @@ public final class SopremoRecordComparator extends TypeComparator<SopremoRecord>
 
 	private final boolean[] ascending;
 
-	private SopremoRecordLayout layout;
+	private final SopremoRecordLayout layout;
 
-	public SopremoRecordComparator(SopremoRecordLayout layout, EvaluationExpression[] keyExpressions,
-			boolean[] ascending) {
-		this(layout, layout.getIndices(keyExpressions), ascending);
-	}
+	private final EvaluationExpression[] keyExpressions;
 
 	/**
 	 * Initializes SopremoRecordComparator.
@@ -52,19 +49,31 @@ public final class SopremoRecordComparator extends TypeComparator<SopremoRecord>
 	 * @param keyExpressionIndices2
 	 * @param ascending2
 	 */
-	public SopremoRecordComparator(SopremoRecordLayout layout, int[] keyExpressionIndices, boolean[] ascending) {
+	public SopremoRecordComparator(final SopremoRecordLayout layout, final int[] keyExpressionIndices,
+			final boolean[] ascending) {
 		this.layout = layout;
 		this.keyExpressionIndices = keyExpressionIndices;
+		this.keyExpressions = new EvaluationExpression[keyExpressionIndices.length];
 		this.keys = new IJsonNode[this.keyExpressionIndices.length];
 		this.nodeCache1 = new NodeCache[this.keyExpressionIndices.length];
 		this.nodeCache2 = new NodeCache[this.keyExpressionIndices.length];
 		for (int index = 0; index < this.keyExpressionIndices.length; index++) {
 			this.nodeCache1[index] = new NodeCache(CachingNodeFactory.getInstance());
 			this.nodeCache2[index] = new NodeCache(CachingNodeFactory.getInstance());
+			this.keyExpressions[index] = layout.getExpression(this.keyExpressionIndices[index]);
 		}
-		this.temp1 = new SopremoRecord(layout);
-		this.temp2 = new SopremoRecord(layout);
+		this.temp1 = new SopremoRecord();
+		this.temp2 = new SopremoRecord();
 		this.ascending = ascending;
+	}
+
+	/**
+	 * Returns the keyExpressions.
+	 * 
+	 * @return the keyExpressions
+	 */
+	public EvaluationExpression[] getKeyExpressions() {
+		return this.keyExpressions;
 	}
 
 	/**
@@ -90,11 +99,17 @@ public final class SopremoRecordComparator extends TypeComparator<SopremoRecord>
 	 * @see eu.stratosphere.pact.generic.types.TypeComparator#hash(java.lang.Object)
 	 */
 	@Override
-	public int hash(SopremoRecord record) {
+	public int hash(final SopremoRecord record) {
 		final int prime = 37;
 		int hash = prime;
-		for (int index = 0; index < this.nodeCache2.length; index++)
-			hash = hash + prime * record.getKey(this.keyExpressionIndices[index], this.nodeCache2[index]).hashCode();
+		final IJsonNode node = record.getNode();
+		if (node == null)
+			for (int index = 0; index < this.keyExpressionIndices.length; index++)
+				hash =
+					hash + prime * record.getKey(this.keyExpressionIndices[index], this.nodeCache2[index]).hashCode();
+		else
+			for (int index = 0; index < this.keyExpressionIndices.length; index++)
+				hash = hash + prime * this.keyExpressions[index].evaluate(node).hashCode();
 		return hash;
 	}
 
@@ -103,10 +118,15 @@ public final class SopremoRecordComparator extends TypeComparator<SopremoRecord>
 	 * @see eu.stratosphere.pact.generic.types.TypeComparator#setReference(java.lang.Object)
 	 */
 	@Override
-	public void setReference(SopremoRecord toCompare) {
+	public void setReference(final SopremoRecord toCompare) {
 		this.reference = toCompare;
-		for (int index = 0; index < this.nodeCache1.length; index++)
-			this.keys[index] = this.reference.getKey(this.keyExpressionIndices[index], this.nodeCache1[index]);
+		final IJsonNode node = toCompare.getNode();
+		if (node == null)
+			for (int index = 0; index < this.keyExpressionIndices.length; index++)
+				this.keys[index] = this.reference.getKey(this.keyExpressionIndices[index], this.nodeCache1[index]);
+		else
+			for (int index = 0; index < this.keyExpressionIndices.length; index++)
+				this.keys[index] = this.keyExpressions[index].evaluate(node);
 	}
 
 	/*
@@ -114,10 +134,17 @@ public final class SopremoRecordComparator extends TypeComparator<SopremoRecord>
 	 * @see eu.stratosphere.pact.generic.types.TypeComparator#equalToReference(java.lang.Object)
 	 */
 	@Override
-	public boolean equalToReference(SopremoRecord candidate) {
-		for (int index = 0; index < this.nodeCache1.length; index++)
-			if (!candidate.getKey(this.keyExpressionIndices[index], this.nodeCache2[index]).equals(this.keys[index]))
-				return false;
+	public boolean equalToReference(final SopremoRecord candidate) {
+		final IJsonNode node = candidate.getNode();
+		if (node == null) {
+			for (int index = 0; index < this.keyExpressionIndices.length; index++)
+				if (!candidate.getKey(this.keyExpressionIndices[index], this.nodeCache2[index]).equals(this.keys[index]))
+					return false;
+		}
+		else
+			for (int index = 0; index < this.keyExpressionIndices.length; index++)
+				if (!this.keyExpressions[index].evaluate(node).equals(this.keys[index]))
+					return false;
 		return true;
 	}
 
@@ -127,10 +154,10 @@ public final class SopremoRecordComparator extends TypeComparator<SopremoRecord>
 	 * TypeComparator)
 	 */
 	@Override
-	public int compareToReference(TypeComparator<SopremoRecord> referencedComparator) {
-		SopremoRecordComparator other = (SopremoRecordComparator) referencedComparator;
+	public int compareToReference(final TypeComparator<SopremoRecord> referencedComparator) {
+		final SopremoRecordComparator other = (SopremoRecordComparator) referencedComparator;
 		for (int index = 0; index < this.nodeCache1.length; index++) {
-			int comparison = other.keys[index].compareTo(this.keys[index]);
+			final int comparison = other.keys[index].compareTo(this.keys[index]);
 			if (comparison != 0)
 				return comparison;
 		}
@@ -143,9 +170,9 @@ public final class SopremoRecordComparator extends TypeComparator<SopremoRecord>
 	 * DataInputView, eu.stratosphere.nephele.services.memorymanager.DataInputView)
 	 */
 	@Override
-	public int compare(DataInputView firstSource, DataInputView secondSource) throws IOException {
-		this.temp1.read(firstSource);
-		this.temp2.read(secondSource);
+	public int compare(final DataInputView firstSource, final DataInputView secondSource) throws IOException {
+		this.temp1.read(firstSource, this.layout);
+		this.temp2.read(secondSource, this.layout);
 
 		for (int index = 0; index < this.keyExpressionIndices.length; index++) {
 			final IJsonNode k1 = this.temp1.getKey(this.keyExpressionIndices[index], this.nodeCache1[index]);
@@ -190,15 +217,18 @@ public final class SopremoRecordComparator extends TypeComparator<SopremoRecord>
 	 * @see eu.stratosphere.pact.generic.types.TypeComparator#isNormalizedKeyPrefixOnly(int)
 	 */
 	@Override
-	public boolean isNormalizedKeyPrefixOnly(int keyBytes) {
+	public boolean isNormalizedKeyPrefixOnly(final int keyBytes) {
 		return false;
 	}
 
-	/* (non-Javadoc)
-	 * @see eu.stratosphere.pact.generic.types.TypeComparator#putNormalizedKey(java.lang.Object, eu.stratosphere.nephele.services.memorymanager.MemorySegment, int, int)
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.pact.generic.types.TypeComparator#putNormalizedKey(java.lang.Object,
+	 * eu.stratosphere.nephele.services.memorymanager.MemorySegment, int, int)
 	 */
 	@Override
-	public void putNormalizedKey(SopremoRecord record, MemorySegment target, int offset, int numBytes) {
+	public void putNormalizedKey(final SopremoRecord record, final MemorySegment target, final int offset,
+			final int numBytes) {
 	}
 
 	/*
@@ -207,7 +237,7 @@ public final class SopremoRecordComparator extends TypeComparator<SopremoRecord>
 	 * eu.stratosphere.nephele.services.memorymanager.DataOutputView)
 	 */
 	@Override
-	public void writeWithKeyNormalization(SopremoRecord record, DataOutputView target) throws IOException {
+	public void writeWithKeyNormalization(final SopremoRecord record, final DataOutputView target) throws IOException {
 	}
 
 	/*
@@ -216,7 +246,7 @@ public final class SopremoRecordComparator extends TypeComparator<SopremoRecord>
 	 * eu.stratosphere.nephele.services.memorymanager.DataInputView)
 	 */
 	@Override
-	public void readWithKeyDenormalization(SopremoRecord record, DataInputView source) throws IOException {
+	public void readWithKeyDenormalization(final SopremoRecord record, final DataInputView source) throws IOException {
 	}
 
 	/*

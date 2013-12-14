@@ -22,8 +22,8 @@ public class IdentitySet<E> extends AbstractSet<E> {
 		super();
 	}
 
-	public IdentitySet(Set<? extends E> set) {
-		for (E e : set)
+	public IdentitySet(final Set<? extends E> set) {
+		for (final E e : set)
 			this.backing.put(e, null);
 	}
 

@@ -22,7 +22,7 @@ import org.junit.Test;
 public class OperatorErrors extends SyntaxTest {
 	@Test
 	public void testMisspelledFilter() {
-		String query = "$input = read from 'file://input.json';\n" +
+		final String query = "$input = read from 'file://input.json';\n" +
 			"$result = fitler $emp in $input where $emp.mgr or $emp.income > 30000;\n" +
 			"write $result to 'file://output.json';";
 
@@ -31,7 +31,7 @@ public class OperatorErrors extends SyntaxTest {
 
 	@Test
 	public void testMisspelledProperty() {
-		String query = "$input = read from 'file://input.json';\n" +
+		final String query = "$input = read from 'file://input.json';\n" +
 			"$result = filter $emp in $input wher $emp.mgr or $emp.income > 30000;\n" +
 			"write $result to 'file://output.json';";
 
@@ -40,7 +40,7 @@ public class OperatorErrors extends SyntaxTest {
 
 	@Test
 	public void testUnknownOperator() {
-		String query = "$input = read from 'file://input.json';\n" +
+		final String query = "$input = read from 'file://input.json';\n" +
 			"$result = xqwzts $emp in $input where $emp.mgr or $emp.income > 30000;\n" +
 			"write $result to 'file://output.json';";
 
@@ -49,7 +49,7 @@ public class OperatorErrors extends SyntaxTest {
 
 	@Test
 	public void testUnknownProperty() {
-		String query = "$input = read from 'file://input.json';\n" +
+		final String query = "$input = read from 'file://input.json';\n" +
 			"$result = filter $emp in $input xqwzts $emp.mgr or $emp.income > 30000;\n" +
 			"write $result to 'file://output.json';";
 

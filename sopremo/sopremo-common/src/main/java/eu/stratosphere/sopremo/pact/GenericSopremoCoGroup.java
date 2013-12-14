@@ -2,6 +2,8 @@ package eu.stratosphere.sopremo.pact;
 
 import java.util.Iterator;
 
+import com.google.common.reflect.TypeToken;
+
 import eu.stratosphere.nephele.configuration.Configuration;
 import eu.stratosphere.pact.common.stubs.Collector;
 import eu.stratosphere.pact.generic.stub.AbstractStub;
@@ -9,11 +11,11 @@ import eu.stratosphere.pact.generic.stub.GenericCoGrouper;
 import eu.stratosphere.sopremo.EvaluationContext;
 import eu.stratosphere.sopremo.SopremoEnvironment;
 import eu.stratosphere.sopremo.serialization.SopremoRecord;
-import eu.stratosphere.sopremo.serialization.SopremoRecordLayout;
 import eu.stratosphere.sopremo.type.ArrayNode;
 import eu.stratosphere.sopremo.type.IJsonNode;
 import eu.stratosphere.sopremo.type.IStreamNode;
 import eu.stratosphere.sopremo.type.StreamNode;
+import eu.stratosphere.sopremo.type.typed.TypedObjectNode;
 
 /**
  * An abstract implementation of the {@link GenericCoGrouper}. SopremoCoGroup provides the functionality to convert the
@@ -51,7 +53,7 @@ public abstract class GenericSopremoCoGroup<LeftElem extends IJsonNode, RightEle
 	 *         decide whether to retry the combiner execution.
 	 */
 	@Override
-	public void combineFirst(Iterator<SopremoRecord> records, Collector<SopremoRecord> out) {
+	public void combineFirst(final Iterator<SopremoRecord> records, final Collector<SopremoRecord> out) {
 		throw new UnsupportedOperationException();
 	}
 
@@ -71,7 +73,7 @@ public abstract class GenericSopremoCoGroup<LeftElem extends IJsonNode, RightEle
 	 *         decide whether to retry the combiner execution.
 	 */
 	@Override
-	public void combineSecond(Iterator<SopremoRecord> records, Collector<SopremoRecord> out) {
+	public void combineSecond(final Iterator<SopremoRecord> records, final Collector<SopremoRecord> out) {
 		throw new UnsupportedOperationException();
 	}
 
@@ -83,14 +85,13 @@ public abstract class GenericSopremoCoGroup<LeftElem extends IJsonNode, RightEle
 	@Override
 	public void coGroup(final Iterator<SopremoRecord> records1, final Iterator<SopremoRecord> records2,
 			final Collector<SopremoRecord> out) {
-		this.collector.configure(out, this.context);
+		this.collector.configure(out);
 		this.cachedIterator1.setIterator(records1);
 		this.cachedIterator2.setIterator(records2);
-
 		try {
 			if (SopremoUtil.DEBUG && SopremoUtil.LOG.isTraceEnabled()) {
-				ArrayNode<LeftElem> leftArray = new ArrayNode<LeftElem>(this.leftArray);
-				ArrayNode<RightElem> rightArray = new ArrayNode<RightElem>(this.rightArray);
+				final ArrayNode<LeftElem> leftArray = new ArrayNode<LeftElem>(this.leftArray);
+				final ArrayNode<RightElem> rightArray = new ArrayNode<RightElem>(this.rightArray);
 
 				SopremoUtil.LOG.trace(String.format("%s %s/%s", this.getContext().getOperatorDescription(), leftArray,
 					rightArray));
@@ -112,18 +113,18 @@ public abstract class GenericSopremoCoGroup<LeftElem extends IJsonNode, RightEle
 	@Override
 	public void open(final Configuration parameters) throws Exception {
 		SopremoEnvironment.getInstance().setConfiguration(parameters);
-		//	SopremoEnvironment.getInstance().setConfigurationAndContext(parameters, getRuntimeContext());
+		// SopremoEnvironment.getInstance().setConfigurationAndContext(parameters, getRuntimeContext());
 		this.context = SopremoEnvironment.getInstance().getEvaluationContext();
-		this.collector = createCollector(SopremoEnvironment.getInstance().getLayout());
-		this.cachedIterator1 = new RecordToJsonIterator<LeftElem>();
-		this.cachedIterator2 = new RecordToJsonIterator<RightElem>();
+		this.collector = new JsonCollector<>(this.context);
 		SopremoUtil.configureWithTransferredState(this, GenericSopremoCoGroup.class, parameters);
+		final TypedObjectNode[] typedInputNodes =
+			SopremoUtil.getTypedNodes(TypeToken.of(this.getClass()).getSupertype(GenericSopremoCoGroup.class));
+		this.cachedIterator1 = typedInputNodes[0] == null ?
+			new UntypedRecordToJsonIterator<LeftElem>() : new TypedRecordToJsonIterator<LeftElem>(typedInputNodes[0]);
+		this.cachedIterator2 = typedInputNodes[1] == null ?
+			new UntypedRecordToJsonIterator<RightElem>() : new TypedRecordToJsonIterator<RightElem>(typedInputNodes[1]);
 		this.leftArray.setNodeIterator(this.cachedIterator1);
 		this.rightArray.setNodeIterator(this.cachedIterator2);
-	}
-
-	protected JsonCollector<Out> createCollector(final SopremoRecordLayout layout) {
-		return new JsonCollector<Out>(layout);
 	}
 
 	/**

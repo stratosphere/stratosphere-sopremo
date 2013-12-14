@@ -53,12 +53,12 @@ public abstract class ConfigurableSopremoType extends AbstractSopremoType implem
 		super();
 	}
 
-	protected void addPropertiesFrom(ConfigurableSopremoType type) {
+	protected void addPropertiesFrom(final ConfigurableSopremoType type) {
 		this.additionalBeanInfos.remove(type);
 		this.additionalBeanInfos.add(type);
 	}
 
-	protected void removePropertiesFrom(ConfigurableSopremoType type) {
+	protected void removePropertiesFrom(final ConfigurableSopremoType type) {
 		this.additionalBeanInfos.remove(type);
 	}
 

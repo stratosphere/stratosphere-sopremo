@@ -15,7 +15,6 @@ import eu.stratosphere.sopremo.io.JsonFormat.JsonInputFormat;
 import eu.stratosphere.sopremo.io.SopremoFormat.SopremoFileInputFormat;
 import eu.stratosphere.sopremo.pact.SopremoUtil;
 import eu.stratosphere.sopremo.serialization.SopremoRecord;
-import eu.stratosphere.sopremo.serialization.SopremoRecordLayout;
 import eu.stratosphere.sopremo.testing.SopremoTestPlan;
 import eu.stratosphere.sopremo.type.IArrayNode;
 import eu.stratosphere.sopremo.type.IObjectNode;
@@ -73,16 +72,15 @@ public class JsonInputFormatTest {
 		jsonWriter.write("{\"id\": 1}, {\"id\": 2}, {\"id\": 3}, {\"id\": 4}, {\"id\": 5}");
 		jsonWriter.close();
 
-		Configuration config = new Configuration();
+		final Configuration config = new Configuration();
 		final EvaluationContext context = new EvaluationContext();
 		SopremoUtil.setEvaluationContext(config, context);
-		SopremoUtil.setLayout(config, SopremoRecordLayout.EMPTY);
 		final JsonFormat format = new JsonFormat();
 		SopremoUtil.transferFieldsToConfiguration(format, SopremoFormat.class, config,
 			JsonInputFormat.class, SopremoFileInputFormat.class);
 		final SopremoFileInputFormat inputFormat =
 			FormatUtil.openInput(JsonInputFormat.class, file.toURI().toString(), config);
-		final SopremoRecord record = new SopremoRecord(SopremoRecordLayout.EMPTY);
+		final SopremoRecord record = new SopremoRecord();
 		for (int index = 1; index <= 5; index++) {
 			Assert.assertFalse("more pairs expected @ " + index, inputFormat.reachedEnd());
 			Assert.assertTrue("valid pair expected @ " + index, inputFormat.nextRecord(record));
@@ -107,15 +105,14 @@ public class JsonInputFormatTest {
 		jsonWriter.write("{\"array\": [{\"id\": 1}, {\"id\": 2}, {\"id\": 3}, {\"id\": 4}, {\"id\": 5}]}");
 		jsonWriter.close();
 
-		Configuration config = new Configuration();
+		final Configuration config = new Configuration();
 		final EvaluationContext context = new EvaluationContext();
 		SopremoUtil.setEvaluationContext(config, context);
-		SopremoUtil.setLayout(config, SopremoRecordLayout.EMPTY);
 		SopremoUtil.transferFieldsToConfiguration(new JsonFormat(), SopremoFormat.class, config,
 			JsonInputFormat.class, SopremoFileInputFormat.class);
 		final SopremoFileInputFormat inputFormat =
 			FormatUtil.openInput(JsonInputFormat.class, file.toURI().toString(), config);
-		final SopremoRecord record = new SopremoRecord(SopremoRecordLayout.EMPTY);
+		final SopremoRecord record = new SopremoRecord();
 
 		if (!inputFormat.reachedEnd())
 			if (!inputFormat.nextRecord(record))

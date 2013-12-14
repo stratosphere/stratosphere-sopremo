@@ -39,7 +39,7 @@ public abstract class SopremoVarargFunction1<Arg1 extends IJsonNode> extends Sop
 	 */
 	@SuppressWarnings("unchecked")
 	@Override
-	public IJsonNode call(IArrayNode<IJsonNode> params) {
+	public IJsonNode call(final IArrayNode<IJsonNode> params) {
 		this.varargArguments.init(params, 1);
 		return this.call((Arg1) params.get(0), this.varargArguments);
 	}

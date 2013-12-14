@@ -149,7 +149,7 @@ public class ElementarySopremoModule extends SopremoModule {
 			this.context = context;
 		}
 
-		public Collection<Contract> assemble(SopremoRecordLayout layout) {
+		public Collection<Contract> assemble(final SopremoRecordLayout layout) {
 			this.convertDAGToModules(layout);
 
 			this.connectModules();
@@ -184,14 +184,14 @@ public class ElementarySopremoModule extends SopremoModule {
 				OperatorNavigator.INSTANCE, new GraphTraverseListener<Operator<?>>() {
 					@Override
 					public void nodeTraversed(final Operator<?> node) {
-						EvaluationContext context = PactAssembler.this.context;
+						final EvaluationContext context = PactAssembler.this.context;
 						context.setOperatorDescription(node.getName());
 						final PactModule module = node.asPactModule(context, layout);
 
 						PactAssembler.this.modules.put(node, module);
 						final List<GenericDataSink> outputStubs = module.getOutputs();
 						final List<List<Contract>> outputContracts = new ArrayList<List<Contract>>();
-						for (GenericDataSink sink : outputStubs)
+						for (final GenericDataSink sink : outputStubs)
 							outputContracts.add(sink.getInputs());
 						PactAssembler.this.operatorOutputs.put(node, outputContracts);
 					}
@@ -203,7 +203,8 @@ public class ElementarySopremoModule extends SopremoModule {
 
 		private void addOutputtingPactInOperator(final Operator<?> operator, final Contract o,
 				final List<Contract> connectedInputs) {
-			int inputIndex = new IdentityList<GenericDataSource<?>>(this.modules.get(operator).getInputs()).indexOf(o);
+			final int inputIndex =
+				new IdentityList<GenericDataSource<?>>(this.modules.get(operator).getInputs()).indexOf(o);
 			// final List<FileDataSource> inputPacts =
 			// this.modules.get(operator).getInputs();
 			// for (int index = 0; index < inputPacts.size(); index++)

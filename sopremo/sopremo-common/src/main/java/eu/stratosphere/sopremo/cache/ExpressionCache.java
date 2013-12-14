@@ -27,7 +27,7 @@ public class ExpressionCache<E extends EvaluationExpression> implements ISopremo
 
 	private final transient List<E> expressions = new ArrayList<E>();
 
-	public ExpressionCache(E template) {
+	public ExpressionCache(final E template) {
 		this.template = template;
 	}
 
@@ -48,7 +48,7 @@ public class ExpressionCache<E extends EvaluationExpression> implements ISopremo
 	}
 
 	@SuppressWarnings("unchecked")
-	public E get(int index) {
+	public E get(final int index) {
 		while (index >= this.expressions.size())
 			this.expressions.add((E) this.template.clone());
 		return this.expressions.get(index);

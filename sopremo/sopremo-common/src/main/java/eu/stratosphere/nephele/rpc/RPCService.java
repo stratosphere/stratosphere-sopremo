@@ -241,14 +241,14 @@ public final class RPCService {
 					throw new IllegalArgumentException("Method " + method.getName()
 						+ " of protocol " + protocol.getName() + " must be declared to throw an InterruptedException");
 			}
-		} catch (SecurityException se) {
+		} catch (final SecurityException se) {
 			if (Log.DEBUG)
 				Log.debug(StringUtils.stringifyException(se));
 		}
 	}
 
 	@SuppressWarnings("unchecked")
-	public <T extends RPCProtocol> T getProxy(final InetSocketAddress remoteAddress, Class<T> protocol) {
+	public <T extends RPCProtocol> T getProxy(final InetSocketAddress remoteAddress, final Class<T> protocol) {
 
 		final Class<?>[] interfaces = new Class<?>[1];
 		interfaces[0] = protocol;
@@ -273,7 +273,7 @@ public final class RPCService {
 			throw new IOException("Shutdown of RPC service has already been requested");
 
 		final long start = System.currentTimeMillis();
-		DatagramPacket[] packets = this.messageToPackets(remoteSocketAddress, request);
+		final DatagramPacket[] packets = this.messageToPackets(remoteSocketAddress, request);
 		final Integer messageID = Integer.valueOf(request.getMessageID());
 
 		final RPCRequestMonitor requestMonitor = new RPCRequestMonitor();
@@ -333,7 +333,7 @@ public final class RPCService {
 		// Request shutdown of network thread
 		try {
 			this.networkThread.shutdown();
-		} catch (InterruptedException ie) {
+		} catch (final InterruptedException ie) {
 			Log.debug("Caught exception while waiting for network thread to shut down: ", ie);
 		}
 
@@ -341,7 +341,7 @@ public final class RPCService {
 
 		try {
 			this.rpcHandlers.awaitTermination(5000L, TimeUnit.MILLISECONDS);
-		} catch (InterruptedException ie) {
+		} catch (final InterruptedException ie) {
 			Log.debug("Caught exception while waiting for RPC handlers to finish: ", ie);
 		}
 
@@ -393,7 +393,7 @@ public final class RPCService {
 				final int numberOfRetries = this.networkThread.send(cachedResponse.packets);
 				this.statistics.reportSuccessfulTransmission(rpcRequest.getMethodName() + " (Response)",
 					cachedResponse.packets.length, numberOfRetries);
-			} catch (Exception e) {
+			} catch (final Exception e) {
 				Log.error("Caught exception while trying to send RPC response: ", e);
 			} finally {
 				this.requestsBeingProcessed.remove(messageID);
@@ -416,7 +416,7 @@ public final class RPCService {
 			try {
 				final Object retVal = method.invoke(callbackHandler, rpcRequest.getArgs());
 				rpcResponse = new RPCReturnValue(rpcRequest.getMessageID(), retVal);
-			} catch (InvocationTargetException ite) {
+			} catch (final InvocationTargetException ite) {
 
 				Throwable targetException = ite.getTargetException();
 
@@ -435,7 +435,7 @@ public final class RPCService {
 			this.statistics.reportSuccessfulTransmission(rpcRequest.getMethodName() + " (Response)", packets.length,
 				numberOfRetries);
 
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			Log.error("Caught processing RPC request: ", e);
 		} finally {
 			this.requestsBeingProcessed.remove(messageID);
@@ -454,7 +454,7 @@ public final class RPCService {
 		final Kryo kryo = KryoUtil.getKryo();
 		try {
 			kryo.getRegistration(throwableType);
-		} catch (IllegalArgumentException e) {
+		} catch (final IllegalArgumentException e) {
 			return false;
 		}
 

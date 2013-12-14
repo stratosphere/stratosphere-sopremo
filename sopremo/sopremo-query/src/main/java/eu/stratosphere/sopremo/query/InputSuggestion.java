@@ -53,7 +53,7 @@ public class InputSuggestion {
 		this.similarityMeasure = similarityMeasure;
 	}
 
-	public <T> List<String> suggest(final CharSequence input, Collection<?> possibleValues) {
+	public <T> List<String> suggest(final CharSequence input, final Collection<?> possibleValues) {
 		final List<String> suggestions = new ArrayList<String>();
 		for (final Pair<String, Double> entry : this.suggestWithProbability(input, possibleValues))
 			suggestions.add(entry.getKey());
@@ -61,7 +61,7 @@ public class InputSuggestion {
 	}
 
 	public List<Pair<String, Double>> suggestWithProbability(final CharSequence input,
-			Collection<?> possibleValues) {
+			final Collection<?> possibleValues) {
 		final List<Pair<String, Double>> list = new ArrayList<Pair<String, Double>>();
 
 		// calculate similarity values for each possible value

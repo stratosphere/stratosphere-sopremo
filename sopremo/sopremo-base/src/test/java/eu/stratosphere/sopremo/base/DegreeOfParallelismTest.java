@@ -19,7 +19,7 @@ public class DegreeOfParallelismTest {
 		final Join join = new Join().withJoinCondition(condition);
 		join.setDegreeOfParallelism(42);
 
-		for (ElementaryOperator<?> elementaryOperator : join.asElementaryOperators(null).getReachableNodes())
+		for (final ElementaryOperator<?> elementaryOperator : join.asElementaryOperators(null).getReachableNodes())
 			if (elementaryOperator instanceof TwoSourceJoin)
 				assertEquals(elementaryOperator.getDegreeOfParallelism(), join.getDegreeOfParallelism());
 			else

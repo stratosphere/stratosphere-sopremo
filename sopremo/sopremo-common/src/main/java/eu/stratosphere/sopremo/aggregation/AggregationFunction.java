@@ -33,7 +33,7 @@ public class AggregationFunction extends SopremoFunction1<IStreamNode<?>> {
 	 * 
 	 * @param aggregation
 	 */
-	public AggregationFunction(Aggregation aggregation) {
+	public AggregationFunction(final Aggregation aggregation) {
 		this.aggregation = aggregation.clone();
 	}
 
@@ -58,7 +58,7 @@ public class AggregationFunction extends SopremoFunction1<IStreamNode<?>> {
 	 * @see eu.stratosphere.sopremo.function.SopremoFunction#appendAsString(java.lang.Appendable)
 	 */
 	@Override
-	public void appendAsString(Appendable appendable) throws IOException {
+	public void appendAsString(final Appendable appendable) throws IOException {
 		this.aggregation.appendAsString(appendable);
 	}
 
@@ -67,10 +67,10 @@ public class AggregationFunction extends SopremoFunction1<IStreamNode<?>> {
 	 * @see eu.stratosphere.sopremo.function.SopremoFunction1#call(eu.stratosphere.sopremo.type.IJsonNode)
 	 */
 	@Override
-	protected IJsonNode call(IStreamNode<?> items) {
+	protected IJsonNode call(final IStreamNode<?> items) {
 		this.aggregation.initialize();
 
-		for (IJsonNode item : items)
+		for (final IJsonNode item : items)
 			this.aggregation.aggregate(item);
 
 		return this.aggregation.getFinalAggregate();
@@ -85,14 +85,14 @@ public class AggregationFunction extends SopremoFunction1<IStreamNode<?>> {
 	}
 
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(final Object obj) {
 		if (this == obj)
 			return true;
 		if (obj == null)
 			return false;
 		if (this.getClass() != obj.getClass())
 			return false;
-		AggregationFunction other = (AggregationFunction) obj;
+		final AggregationFunction other = (AggregationFunction) obj;
 		return this.aggregation.equals(other.aggregation);
 	}
 }

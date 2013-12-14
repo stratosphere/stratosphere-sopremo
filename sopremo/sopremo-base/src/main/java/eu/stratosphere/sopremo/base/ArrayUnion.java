@@ -35,21 +35,22 @@ public final class ArrayUnion extends FixedTypeAssociativeAggregation<ArrayNode<
 	 * .IJsonNode, eu.stratosphere.sopremo.type.IJsonNode)
 	 */
 	@Override
-	protected void aggregateInto(final ArrayNode<IJsonNode> aggregator, IJsonNode element) {
+	protected void aggregateInto(final ArrayNode<IJsonNode> aggregator, final IJsonNode element) {
 		final IArrayNode<?> node = (IArrayNode<?>) element;
 		for (int index = 0; index < node.size(); index++)
 			if (aggregator.get(index) == MissingNode.getInstance() && node.get(index) != MissingNode.getInstance())
 				aggregator.set(index, node.get(index));
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
 	 * @see eu.stratosphere.sopremo.aggregation.Aggregation#appendAsString(java.lang.Appendable)
 	 */
 	@Override
-	public void appendAsString(Appendable appendable) throws IOException {
+	public void appendAsString(final Appendable appendable) throws IOException {
 		appendable.append("U<values>");
 	}
-	
+
 	/*
 	 * (non-Javadoc)
 	 * @see eu.stratosphere.sopremo.aggregation.AssociativeAggregation#clone()

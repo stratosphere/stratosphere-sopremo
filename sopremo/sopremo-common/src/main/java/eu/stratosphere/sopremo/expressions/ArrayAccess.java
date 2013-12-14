@@ -88,7 +88,7 @@ public class ArrayAccess extends PathSegmentExpression {
 	 * .PathSegmentExpression)
 	 */
 	@Override
-	public boolean equalsSameClass(PathSegmentExpression obj) {
+	public boolean equalsSameClass(final PathSegmentExpression obj) {
 		final ArrayAccess other = (ArrayAccess) obj;
 		return this.startIndex == other.startIndex && this.endIndex == other.endIndex;
 	}
@@ -174,26 +174,26 @@ public class ArrayAccess extends PathSegmentExpression {
 	}
 
 	public int[] getIndices() {
-		if (!isFixedSize())
+		if (!this.isFixedSize())
 			return null;
 		if (this.startIndex >= 0) { // normal access
-			int[] indices = new int[this.endIndex - this.startIndex + 1];
+			final int[] indices = new int[this.endIndex - this.startIndex + 1];
 			for (int index = this.startIndex; index <= this.endIndex; index++)
 				indices[index - this.startIndex] = index;
 			return indices;
 		}
 		// backward array
-		int[] indices = new int[-this.startIndex - this.endIndex + 1];
+		final int[] indices = new int[-this.startIndex - this.endIndex + 1];
 		for (int index = this.startIndex; index <= this.endIndex; index++)
 			indices[this.startIndex - index] = index;
 		return indices;
 	}
 
 	public Collection<ArrayAccess> decompose() {
-		if (!isFixedSize())
+		if (!this.isFixedSize())
 			throw new IllegalStateException("Not decomposable");
 
-		if (!isSelectingRange())
+		if (!this.isSelectingRange())
 			return Arrays.asList(this);
 
 		final ArrayList<ArrayAccess> accesses = new ArrayList<ArrayAccess>();
@@ -209,7 +209,7 @@ public class ArrayAccess extends PathSegmentExpression {
 	 */
 	@SuppressWarnings("unchecked")
 	@Override
-	protected IJsonNode setSegment(IJsonNode node, IJsonNode value) {
+	protected IJsonNode setSegment(final IJsonNode node, final IJsonNode value) {
 		if (this.isSelectingAll())
 			return value;
 		final IArrayNode<IJsonNode> arrayNode = (IArrayNode<IJsonNode>) node;

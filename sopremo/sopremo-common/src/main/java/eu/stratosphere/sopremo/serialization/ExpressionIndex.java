@@ -67,7 +67,7 @@ public class ExpressionIndex extends AbstractSopremoType {
 		this(EvaluationExpression.VALUE, -1);
 	}
 
-	protected ExpressionIndex(EvaluationExpression evaluationExpression, int keyIndex) {
+	protected ExpressionIndex(final EvaluationExpression evaluationExpression, final int keyIndex) {
 		this.expression = evaluationExpression;
 		this.objectAccesses.defaultReturnValue(EMPTY_INDEX);
 		this.arrayAccesses.defaultReturnValue(EMPTY_INDEX);
@@ -78,7 +78,7 @@ public class ExpressionIndex extends AbstractSopremoType {
 	 * @param fieldName
 	 * @return
 	 */
-	public ExpressionIndex subIndex(String fieldName) {
+	public ExpressionIndex subIndex(final String fieldName) {
 		return this.objectAccesses.get(fieldName);
 	}
 
@@ -95,7 +95,7 @@ public class ExpressionIndex extends AbstractSopremoType {
 	 * @param index
 	 * @return
 	 */
-	public ExpressionIndex get(int index) {
+	public ExpressionIndex get(final int index) {
 		return this.arrayAccesses.get(index);
 	}
 
@@ -108,24 +108,25 @@ public class ExpressionIndex extends AbstractSopremoType {
 		SupportedClasses.add(InputSelection.class);
 	}
 
-	public boolean add(EvaluationExpression expression, int keyIndex) {
+	public boolean add(final EvaluationExpression expression, final int keyIndex) {
 		final Class<?> type = expression.getClass();
 		final Deque<EvaluationExpression> expressionChain = new LinkedList<EvaluationExpression>();
 		if (expression.findFirst(new Predicate<EvaluationExpression>() {
 			@Override
-			public boolean apply(EvaluationExpression expression) {
+			public boolean apply(final EvaluationExpression expression) {
 				expressionChain.add(expression);
 				return !SupportedClasses.contains(type) ||
-					(expression instanceof ArrayAccess && ((ArrayAccess) expression).isSelectingRange());
+					expression instanceof ArrayAccess && ((ArrayAccess) expression).isSelectingRange();
 			}
 		}) != null)
 			return false;
 
-		add(expressionChain, expression, keyIndex);
+		this.add(expressionChain, expression, keyIndex);
 		return true;
 	}
 
-	private void add(Deque<EvaluationExpression> expressionChain, EvaluationExpression expression, int keyIndex) {
+	private void add(final Deque<EvaluationExpression> expressionChain, final EvaluationExpression expression,
+			final int keyIndex) {
 		if (expressionChain.isEmpty())
 			return;
 
@@ -146,13 +147,13 @@ public class ExpressionIndex extends AbstractSopremoType {
 			subIndex.add(expressionChain, expression, keyIndex);
 		} else if (currentExpression instanceof ArrayAccess) {
 			final ArrayAccess arrayAccess = (ArrayAccess) currentExpression;
-			int index = arrayAccess.getStartIndex();
+			final int index = arrayAccess.getStartIndex();
 			ExpressionIndex subIndex = this.arrayAccesses.get(index);
 			if (subIndex == EMPTY_INDEX)
 				this.arrayAccesses.put(index, subIndex = new ExpressionIndex(new ArrayAccess(index), keyIndex));
 			subIndex.add(expressionChain, expression, keyIndex);
 		} else if (currentExpression == EvaluationExpression.VALUE)
-			add(expressionChain, currentExpression, keyIndex);
+			this.add(expressionChain, currentExpression, keyIndex);
 	}
 
 	/*
@@ -160,17 +161,17 @@ public class ExpressionIndex extends AbstractSopremoType {
 	 * @see eu.stratosphere.sopremo.ISopremoType#appendAsString(java.lang.Appendable)
 	 */
 	@Override
-	public void appendAsString(Appendable builder) throws IOException {
+	public void appendAsString(final Appendable builder) throws IOException {
 		builder.append("ExpressionIndex ");
 		if (this.expression != null)
 			this.expression.appendAsString(builder);
 		if (!this.objectAccesses.isEmpty()) {
 			builder.append(", objectAccesses=");
-			append(builder, this.objectAccesses.values(), ", ");
+			this.append(builder, this.objectAccesses.values(), ", ");
 		}
 		if (!this.arrayAccesses.isEmpty()) {
 			builder.append(", arrayAccesses=");
-			append(builder, this.arrayAccesses.values(), ", ");
+			this.append(builder, this.arrayAccesses.values(), ", ");
 		}
 		builder.append(", keyIndex=");
 		TypeFormat.format(this.keyIndex, builder);

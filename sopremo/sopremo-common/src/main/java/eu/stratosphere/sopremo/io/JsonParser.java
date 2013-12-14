@@ -212,16 +212,15 @@ public class JsonParser {
 				final StringBuffer buffer = new StringBuffer();
 
 				for (char nextChar = (char) parser.read(); nextChar != this.charToFinishString; nextChar =
-					(char) parser.read()) {
-					if (nextChar == '\\') {
-						buffer.append(unescape(parser));
-					} else
+					(char) parser.read())
+					if (nextChar == '\\')
+						buffer.append(this.unescape(parser));
+					else
 						buffer.append(nextChar);
-				}
 				return TextNode.valueOf(buffer.toString());
 			}
 
-			private char unescape(JsonParser parser) throws JsonParseException {
+			private char unescape(final JsonParser parser) throws JsonParseException {
 				final char escapeChar = (char) parser.read();
 				switch (escapeChar) {
 				case '"':
@@ -241,12 +240,12 @@ public class JsonParser {
 					return '\t';
 
 				case 'u':
-					char[] hexCode =
+					final char[] hexCode =
 					{ (char) parser.read(), (char) parser.read(), (char) parser.read(), (char) parser.read(), };
 					return (char) Integer.parseInt(String.valueOf(hexCode), ARRAY_START);
 
 				default:
-					throw parser.getParseException(getName(),
+					throw parser.getParseException(this.getName(),
 						"a valid escape sequence \\(\" | \\ | / | b | f | n | r | t | uXXXX)",
 						String.valueOf("\\" + escapeChar));
 				}
@@ -276,7 +275,7 @@ public class JsonParser {
 				} else if (startChar == this.expectedCharFalse) {
 					expectedContentWithoutFirstChar = this.falseChars;
 					result = BooleanNode.FALSE;
-				} else 
+				} else
 					throw parser.getParseException(this.getName(), "one of [" + this.expectedCharTrue + ", "
 						+ this.expectedCharFalse + "]", String.valueOf(startChar));
 
@@ -581,7 +580,7 @@ public class JsonParser {
 		final STATE nextState = this.getRoot().nextState(
 			(char) currentChar);
 		if (nextState == null)
-			throw getParseException(this.getRoot().getName(), "one of ['{', '[', 't', 'f', 'n', 0-9, '\"', '-']",
+			throw this.getParseException(this.getRoot().getName(), "one of ['{', '[', 't', 'f', 'n', 0-9, '\"', '-']",
 				String.valueOf((char) currentChar));
 		return nextState.createJsonNode((char) currentChar, this);
 	}
@@ -603,7 +602,7 @@ public class JsonParser {
 			if (this.skipWrappingArray)
 				this.reachedEnd = true;
 			else
-				throw getParseException(this.getRoot().getName(), String.valueOf(ELEMENT_SEPARATOR) + " or eof",
+				throw this.getParseException(this.getRoot().getName(), String.valueOf(ELEMENT_SEPARATOR) + " or eof",
 					String.valueOf((char) currentChar));
 	}
 

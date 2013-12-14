@@ -51,7 +51,7 @@ public class MultiOutputTest extends MeteorParseTest {
 	 * @see eu.stratosphere.meteor.MeteorParseTest#initParser(eu.stratosphere.meteor.QueryParser)
 	 */
 	@Override
-	protected void initParser(QueryParser queryParser) {
+	protected void initParser(final QueryParser queryParser) {
 		final IConfObjectRegistry<Operator<?>> operatorRegistry = queryParser.getPackageManager().getOperatorRegistry();
 		operatorRegistry.put(MultiOutputOp.class, new AdditionalInfoResolver.None());
 		super.initParser(queryParser);
@@ -59,10 +59,10 @@ public class MultiOutputTest extends MeteorParseTest {
 
 	@Test
 	public void testOneOutput() {
-		String query = "$input = read from 'file://input.json';\n" +
+		final String query = "$input = read from 'file://input.json';\n" +
 			"$result1 = multi $input;\n" +
 			"write $result1 to 'file://output1.json';";
-		final SopremoPlan actualPlan = parseScript(query);
+		final SopremoPlan actualPlan = this.parseScript(query);
 
 		final SopremoPlan expectedPlan = new SopremoPlan();
 		final Source input = new Source("file://input.json");
@@ -75,11 +75,11 @@ public class MultiOutputTest extends MeteorParseTest {
 
 	@Test
 	public void testTwoOutput() {
-		String query = "$input = read from 'file://input.json';\n" +
+		final String query = "$input = read from 'file://input.json';\n" +
 			"$result1, $result2 = multi $input;\n" +
 			"write $result1 to 'file://output1.json';\n" +
 			"write $result2 to 'file://output2.json';";
-		final SopremoPlan actualPlan = parseScript(query);
+		final SopremoPlan actualPlan = this.parseScript(query);
 
 		final SopremoPlan expectedPlan = new SopremoPlan();
 		final Source input = new Source("file://input.json");
@@ -93,12 +93,12 @@ public class MultiOutputTest extends MeteorParseTest {
 
 	@Test
 	public void testThreeOutput() {
-		String query = "$input = read from 'file://input.json';\n" +
+		final String query = "$input = read from 'file://input.json';\n" +
 			"$result1, $result2, $result3 = multi $input;\n" +
 			"write $result1 to 'file://output1.json';\n" +
 			"write $result2 to 'file://output2.json';\n" +
 			"write $result3 to 'file://output3.json';";
-		final SopremoPlan actualPlan = parseScript(query);
+		final SopremoPlan actualPlan = this.parseScript(query);
 
 		final SopremoPlan expectedPlan = new SopremoPlan();
 		final Source input = new Source("file://input.json");
@@ -113,7 +113,7 @@ public class MultiOutputTest extends MeteorParseTest {
 
 	@Test
 	public void testTwoOutputProjection() {
-		String query = "$input = read from 'file://input.json';\n" +
+		final String query = "$input = read from 'file://input.json';\n" +
 			"$result1, $result2 = multi $input with [\n" +
 			"  group $input by $input.key into {" +
 			"    name: $input.name" +
@@ -124,15 +124,17 @@ public class MultiOutputTest extends MeteorParseTest {
 			"];\n" +
 			"write $result1 to 'file://output1.json';\n" +
 			"write $result2 to 'file://output2.json';";
-		final SopremoPlan actualPlan = parseScript(query);
+		final SopremoPlan actualPlan = this.parseScript(query);
 
 		final SopremoPlan expectedPlan = new SopremoPlan();
 		final Source input = new Source("file://input.json");
 		final MultiOutputOp multi = new MultiOutputOp().withInputs(input);
-		Grouping grouping1 = new Grouping().withGroupingKey(JsonUtil.createPath("0", "key")).withResultProjection(
-			new ObjectCreation().addMapping("name", JsonUtil.createPath("0", "name")));
-		Grouping grouping2 = new Grouping().withGroupingKey(JsonUtil.createPath("0", "key2")).withResultProjection(
-			new ObjectCreation().addMapping("name2", JsonUtil.createPath("0", "name2")));
+		final Grouping grouping1 =
+			new Grouping().withGroupingKey(JsonUtil.createPath("0", "key")).withResultProjection(
+				new ObjectCreation().addMapping("name", JsonUtil.createPath("0", "name")));
+		final Grouping grouping2 =
+			new Grouping().withGroupingKey(JsonUtil.createPath("0", "key2")).withResultProjection(
+				new ObjectCreation().addMapping("name2", JsonUtil.createPath("0", "name2")));
 		multi.setProjection(new ArrayCreation(new NestedOperatorExpression(grouping1),
 			new NestedOperatorExpression(grouping2)));
 
@@ -145,7 +147,7 @@ public class MultiOutputTest extends MeteorParseTest {
 
 	@Test
 	public void testTwoInputAndOutputProjection() {
-		String query = "$input1 = read from 'file://input1.json';\n" +
+		final String query = "$input1 = read from 'file://input1.json';\n" +
 			"$input2 = read from 'file://input2.json';\n" +
 			"$result1, $result2 = multi $input1, $input2 with [\n" +
 			"  group $input1 by $input1.key into {" +
@@ -157,16 +159,18 @@ public class MultiOutputTest extends MeteorParseTest {
 			"];\n" +
 			"write $result1 to 'file://output1.json';\n" +
 			"write $result2 to 'file://output2.json';";
-		final SopremoPlan actualPlan = parseScript(query);
+		final SopremoPlan actualPlan = this.parseScript(query);
 
 		final SopremoPlan expectedPlan = new SopremoPlan();
 		final Source input1 = new Source("file://input1.json");
 		final Source input2 = new Source("file://input2.json");
 		final MultiOutputOp multi = new MultiOutputOp().withInputs(input1, input2);
-		Grouping grouping1 = new Grouping().withGroupingKey(JsonUtil.createPath("0", "key")).withResultProjection(
-			new ObjectCreation().addMapping("name", JsonUtil.createPath("0", "name")));
-		Grouping grouping2 = new Grouping().withGroupingKey(JsonUtil.createPath("1", "key2")).withResultProjection(
-			new ObjectCreation().addMapping("name2", JsonUtil.createPath("1", "name2")));
+		final Grouping grouping1 =
+			new Grouping().withGroupingKey(JsonUtil.createPath("0", "key")).withResultProjection(
+				new ObjectCreation().addMapping("name", JsonUtil.createPath("0", "name")));
+		final Grouping grouping2 =
+			new Grouping().withGroupingKey(JsonUtil.createPath("1", "key2")).withResultProjection(
+				new ObjectCreation().addMapping("name2", JsonUtil.createPath("1", "name2")));
 		multi.setProjection(new ArrayCreation(new NestedOperatorExpression(grouping1),
 			new NestedOperatorExpression(grouping2)));
 
@@ -179,7 +183,7 @@ public class MultiOutputTest extends MeteorParseTest {
 
 	@Test
 	public void testCrossReferenceProjection() {
-		String query = "$input1 = read from 'file://input1.json';\n" +
+		final String query = "$input1 = read from 'file://input1.json';\n" +
 			"$input2 = read from 'file://input2.json';\n" +
 			"$result1, $result2 = multi $input1, $input2 with [\n" +
 			"  group $input1 by $input1.key into {" +
@@ -191,17 +195,17 @@ public class MultiOutputTest extends MeteorParseTest {
 			"];\n" +
 			"write $result1 to 'file://output1.json';\n" +
 			"write $result2 to 'file://output2.json';";
-		final SopremoPlan actualPlan = parseScript(query);
+		final SopremoPlan actualPlan = this.parseScript(query);
 
 		final SopremoPlan expectedPlan = new SopremoPlan();
 		final Source input1 = new Source("file://input1.json");
 		final Source input2 = new Source("file://input2.json");
 		final MultiOutputOp multi = new MultiOutputOp().withInputs(input1, input2);
-		Grouping grouping1 = new Grouping().
+		final Grouping grouping1 = new Grouping().
 			withGroupingKey(JsonUtil.createPath("0", "key")).
 			withResultProjection(new ObjectCreation().addMapping("name",
 				new ObjectAccess("name").withInputExpression(new JsonStreamExpression(multi.getOutput(1)))));
-		Grouping grouping2 = new Grouping().
+		final Grouping grouping2 = new Grouping().
 			withGroupingKey(JsonUtil.createPath("1", "key2")).
 			withResultProjection(new ObjectCreation().addMapping("name2",
 				new ObjectAccess("name2").withInputExpression(new JsonStreamExpression(multi.getOutput(0)))));
@@ -229,7 +233,7 @@ public class MultiOutputTest extends MeteorParseTest {
 		 */
 		@Property
 		@Name(adjective = "with")
-		public void setProjection(EvaluationExpression assignment) {
+		public void setProjection(final EvaluationExpression assignment) {
 			if (assignment == null)
 				throw new NullPointerException("projection must not be null");
 
@@ -262,14 +266,14 @@ public class MultiOutputTest extends MeteorParseTest {
 		 * @see java.lang.Object#equals(java.lang.Object)
 		 */
 		@Override
-		public boolean equals(Object obj) {
+		public boolean equals(final Object obj) {
 			if (this == obj)
 				return true;
 			if (!super.equals(obj))
 				return false;
-			if (getClass() != obj.getClass())
+			if (this.getClass() != obj.getClass())
 				return false;
-			MultiOutputOp other = (MultiOutputOp) obj;
+			final MultiOutputOp other = (MultiOutputOp) obj;
 			return this.projection.equals(other.projection);
 		}
 
@@ -278,7 +282,7 @@ public class MultiOutputTest extends MeteorParseTest {
 		 * @see eu.stratosphere.sopremo.operator.Operator#appendAsString(java.lang.Appendable)
 		 */
 		@Override
-		public void appendAsString(Appendable appendable) throws IOException {
+		public void appendAsString(final Appendable appendable) throws IOException {
 			super.appendAsString(appendable);
 			appendable.append(" with ");
 			this.projection.appendAsString(appendable);
@@ -290,7 +294,7 @@ public class MultiOutputTest extends MeteorParseTest {
 		 * SopremoModule, eu.stratosphere.sopremo.EvaluationContext)
 		 */
 		@Override
-		public void addImplementation(SopremoModule module, EvaluationContext context) {
+		public void addImplementation(final SopremoModule module, final EvaluationContext context) {
 		}
 
 	}

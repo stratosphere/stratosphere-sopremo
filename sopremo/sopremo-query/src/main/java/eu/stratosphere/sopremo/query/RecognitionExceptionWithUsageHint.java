@@ -28,14 +28,14 @@ public class RecognitionExceptionWithUsageHint extends RecognitionException {
 	 */
 	private static final long serialVersionUID = 6238176868329971376L;
 
-	private String message;
+	private final String message;
 
-	public RecognitionExceptionWithUsageHint(IntStream input, String message) {
+	public RecognitionExceptionWithUsageHint(final IntStream input, final String message) {
 		super(input);
 		this.message = message;
 	}
 
-	public RecognitionExceptionWithUsageHint(Token token, String message) {
+	public RecognitionExceptionWithUsageHint(final Token token, final String message) {
 		super(token.getInputStream());
 		this.token = token;
 		this.line = token.getLine();
@@ -45,7 +45,7 @@ public class RecognitionExceptionWithUsageHint extends RecognitionException {
 
 	@Override
 	public String getMessage() {
-		StringBuilder builder = new StringBuilder(this.message);
+		final StringBuilder builder = new StringBuilder(this.message);
 		builder.append(" @ line: ").append(this.line).append("; row: ").append(this.charPositionInLine);
 		if (this.token != null)
 			builder.append("; but found ").append(this.token.getText());

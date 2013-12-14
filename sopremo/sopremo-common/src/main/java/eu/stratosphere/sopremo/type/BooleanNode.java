@@ -28,7 +28,7 @@ public class BooleanNode extends AbstractJsonNode implements IPrimitiveNode {
 		 * 
 		 * @param v
 		 */
-		private UnmodifiableBoolean(boolean v) {
+		private UnmodifiableBoolean(final boolean v) {
 			super(v);
 		}
 
@@ -46,7 +46,7 @@ public class BooleanNode extends AbstractJsonNode implements IPrimitiveNode {
 		 * @see eu.stratosphere.sopremo.type.BooleanNode#copyValueFrom(eu.stratosphere.sopremo.type.IJsonNode)
 		 */
 		@Override
-		public void copyValueFrom(IJsonNode otherNode) {
+		public void copyValueFrom(final IJsonNode otherNode) {
 			throw new UnsupportedOperationException();
 		}
 
@@ -56,12 +56,12 @@ public class BooleanNode extends AbstractJsonNode implements IPrimitiveNode {
 			}
 
 			@Override
-			public void write(Kryo kryo, Output output, UnmodifiableBoolean object) {
+			public void write(final Kryo kryo, final Output output, final UnmodifiableBoolean object) {
 				output.writeBoolean(object == TRUE);
 			}
 
 			@Override
-			public UnmodifiableBoolean read(Kryo kryo, Input input, Class<UnmodifiableBoolean> type) {
+			public UnmodifiableBoolean read(final Kryo kryo, final Input input, final Class<UnmodifiableBoolean> type) {
 				return (UnmodifiableBoolean) BooleanNode.valueOf(input.readBoolean());
 			}
 		}
@@ -156,7 +156,7 @@ public class BooleanNode extends AbstractJsonNode implements IPrimitiveNode {
 	 * @see eu.stratosphere.sopremo.ISopremoType#toString(java.lang.StringBuilder)
 	 */
 	@Override
-	public void appendAsString(Appendable appendable) throws IOException {
+	public void appendAsString(final Appendable appendable) throws IOException {
 		TypeFormat.format(this.value, appendable);
 	}
 

@@ -143,14 +143,14 @@ public class ArithmeticExpression extends EvaluationExpression {
 		return new NamedChildIterator("firstOperand", "second") {
 
 			@Override
-			protected EvaluationExpression get(int index) {
+			protected EvaluationExpression get(final int index) {
 				if (index == 0)
 					return ArithmeticExpression.this.firstOperand;
 				return ArithmeticExpression.this.secondOperand;
 			}
 
 			@Override
-			protected void set(int index, EvaluationExpression childExpression) {
+			protected void set(final int index, final EvaluationExpression childExpression) {
 				if (index == 0)
 					ArithmeticExpression.this.firstOperand = childExpression;
 				else

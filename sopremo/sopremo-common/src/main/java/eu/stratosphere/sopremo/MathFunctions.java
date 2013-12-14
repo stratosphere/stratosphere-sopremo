@@ -37,7 +37,7 @@ public class MathFunctions implements BuiltinProvider {
 		private final DoubleNode result = new DoubleNode();
 
 		@Override
-		protected IJsonNode call(INumericNode input) {
+		protected IJsonNode call(final INumericNode input) {
 			this.result.setValue(Math.sqrt(input.getDoubleValue()));
 			return this.result;
 		}
@@ -48,7 +48,7 @@ public class MathFunctions implements BuiltinProvider {
 		private final transient NodeCache cache = new NodeCache();
 
 		@Override
-		protected IJsonNode call(INumericNode input) {
+		protected IJsonNode call(final INumericNode input) {
 			return ArithmeticExpression.ArithmeticOperator.MULTIPLICATION.evaluate(input, input, this.cache);
 		}
 	};

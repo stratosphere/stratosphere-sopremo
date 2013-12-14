@@ -30,8 +30,8 @@ public class TextNode extends AbstractJsonNode implements IPrimitiveNode,
 		 * java.lang.Class)
 		 */
 		@Override
-		public TextNode read(Kryo kryo, Input input, TextNode oldInstance,
-				Class<TextNode> type) {
+		public TextNode read(final Kryo kryo, final Input input, final TextNode oldInstance,
+				final Class<TextNode> type) {
 			final String string = input.readString();
 			if (oldInstance == null)
 				return new TextNode(string);
@@ -47,7 +47,7 @@ public class TextNode extends AbstractJsonNode implements IPrimitiveNode,
 		 * .Kryo, com.esotericsoftware.kryo.io.Output, java.lang.Object)
 		 */
 		@Override
-		public void write(Kryo kryo, Output output, TextNode object) {
+		public void write(final Kryo kryo, final Output output, final TextNode object) {
 			output.writeString(object);
 		}
 
@@ -58,14 +58,14 @@ public class TextNode extends AbstractJsonNode implements IPrimitiveNode,
 		 * .Kryo, java.lang.Object)
 		 */
 		@Override
-		public TextNode copy(Kryo kryo, TextNode original) {
+		public TextNode copy(final Kryo kryo, final TextNode original) {
 			return new TextNode(original);
 		}
 	}
 
 	public final static TextNode EMPTY_STRING = new TextNode("");
 
-	private CharArrayList value = new CharArrayList();
+	private final CharArrayList value = new CharArrayList();
 
 	private transient Formatter formatter;
 
@@ -156,7 +156,7 @@ public class TextNode extends AbstractJsonNode implements IPrimitiveNode,
 	}
 
 	public boolean contentEquals(final CharSequence seq) {
-		int count = seq.length();
+		final int count = seq.length();
 		if (this.value.size() != count)
 			return false;
 
@@ -171,7 +171,7 @@ public class TextNode extends AbstractJsonNode implements IPrimitiveNode,
 		this.value.clear();
 	}
 
-	public void setLength(int newLength) {
+	public void setLength(final int newLength) {
 		this.value.size(newLength);
 	}
 
@@ -205,13 +205,13 @@ public class TextNode extends AbstractJsonNode implements IPrimitiveNode,
 		this.value.addAll(((TextNode) otherNode).value);
 	}
 
-	public void setValue(TextNode text, int start, int end) {
+	public void setValue(final TextNode text, final int start, final int end) {
 		this.value.size(end - start);
 		System.arraycopy(text.value.elements(), start, this.value.elements(),
 			0, end - start);
 	}
 
-	public void setValue(CharSequence text, int start, int end) {
+	public void setValue(final CharSequence text, final int start, final int end) {
 		this.value.clear();
 		for (int index = start; index < end; index++)
 			this.value.add(text.charAt(index));
@@ -223,7 +223,7 @@ public class TextNode extends AbstractJsonNode implements IPrimitiveNode,
 	}
 
 	@Override
-	public char charAt(int index) {
+	public char charAt(final int index) {
 		return this.value.getChar(index);
 	}
 
@@ -232,7 +232,7 @@ public class TextNode extends AbstractJsonNode implements IPrimitiveNode,
 		return new CharSequence() {
 
 			@Override
-			public CharSequence subSequence(int s, int e) {
+			public CharSequence subSequence(final int s, final int e) {
 				return TextNode.this.subSequence(start + e, end - e);
 			}
 
@@ -242,7 +242,7 @@ public class TextNode extends AbstractJsonNode implements IPrimitiveNode,
 			}
 
 			@Override
-			public char charAt(int index) {
+			public char charAt(final int index) {
 				return TextNode.this.charAt(start + index);
 			}
 
@@ -262,7 +262,7 @@ public class TextNode extends AbstractJsonNode implements IPrimitiveNode,
 	 * @see java.lang.Appendable#append(java.lang.CharSequence)
 	 */
 	@Override
-	public Appendable append(CharSequence csq) {
+	public Appendable append(final CharSequence csq) {
 		for (int index = 0, count = csq.length(); index < count; index++)
 			this.value.add(csq.charAt(index));
 		return this;
@@ -273,7 +273,7 @@ public class TextNode extends AbstractJsonNode implements IPrimitiveNode,
 	 * @see java.lang.Appendable#append(java.lang.CharSequence, int, int)
 	 */
 	@Override
-	public Appendable append(CharSequence csq, int start, int end) {
+	public Appendable append(final CharSequence csq, final int start, final int end) {
 		for (int index = start; index < end; index++)
 			this.value.add(csq.charAt(index));
 		return this;
@@ -283,7 +283,7 @@ public class TextNode extends AbstractJsonNode implements IPrimitiveNode,
 	 * (non-Javadoc)
 	 * @see java.lang.Appendable#append(java.lang.CharSequence)
 	 */
-	public Appendable append(TextNode csq) {
+	public Appendable append(final TextNode csq) {
 		this.value.addAll(csq.value);
 		return this;
 	}
@@ -292,7 +292,7 @@ public class TextNode extends AbstractJsonNode implements IPrimitiveNode,
 	 * (non-Javadoc)
 	 * @see java.lang.Appendable#append(java.lang.CharSequence, int, int)
 	 */
-	public Appendable append(TextNode csq, int start, int end) {
+	public Appendable append(final TextNode csq, final int start, final int end) {
 		this.value.addElements(this.value.size(), csq.value.elements(), start,
 			end);
 		return this;
@@ -303,7 +303,7 @@ public class TextNode extends AbstractJsonNode implements IPrimitiveNode,
 	 * @see java.lang.Appendable#append(char)
 	 */
 	@Override
-	public Appendable append(char c) {
+	public Appendable append(final char c) {
 		this.value.add(c);
 		return this;
 	}
@@ -311,16 +311,16 @@ public class TextNode extends AbstractJsonNode implements IPrimitiveNode,
 	/**
 	 * @param number
 	 */
-	public void append(long number) {
+	public void append(final long number) {
 		this.asFormatter().format("%d", number);
 	}
 
-	public int indexOf(TextNode needle) {
-		return indexOf(0, this.value.size(), needle, 0, needle.length());
+	public int indexOf(final TextNode needle) {
+		return this.indexOf(0, this.value.size(), needle, 0, needle.length());
 	}
 
-	public int indexOf(int thisFromIndex, int thisEndIndex, TextNode needle,
-			int needleFromIndex, int needleToIndex) {
+	public int indexOf(final int thisFromIndex, final int thisEndIndex, final TextNode needle,
+			final int needleFromIndex, final int needleToIndex) {
 		final int searchLength = needleToIndex - needleFromIndex;
 		if (searchLength <= 0)
 			return thisFromIndex;

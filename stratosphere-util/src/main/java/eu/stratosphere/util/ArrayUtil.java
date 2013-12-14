@@ -33,8 +33,8 @@ public class ArrayUtil {
 	 *         if either <tt>i</tt> or <tt>j</tt> is out of range (i &lt; 0 || i &gt;= array.length || j &lt; 0 || j
 	 *         &gt;= array.length).
 	 */
-	public static <T> void swap(T[] array, int i, int j) {
-		T temp = array[i];
+	public static <T> void swap(final T[] array, final int i, final int j) {
+		final T temp = array[i];
 		array[i] = array[j];
 		array[j] = temp;
 	}
@@ -54,8 +54,8 @@ public class ArrayUtil {
 	 *         if either <tt>i</tt> or <tt>j</tt> is out of range (i &lt; 0 || i &gt;= array.length || j &lt; 0 || j
 	 *         &gt;= array.length).
 	 */
-	public static void swap(int[] array, int i, int j) {
-		int temp = array[i];
+	public static void swap(final int[] array, final int i, final int j) {
+		final int temp = array[i];
 		array[i] = array[j];
 		array[j] = temp;
 	}

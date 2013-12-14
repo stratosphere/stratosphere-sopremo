@@ -32,7 +32,7 @@ import eu.stratosphere.util.StringUtil;
 public class QueryParser {
 	private File inputDirectory = new File(".");
 
-	private PackageManager packageManager = new PackageManager(MeteorParserBase.NameChooserProvider);
+	private final PackageManager packageManager = new PackageManager(MeteorParserBase.NameChooserProvider);
 
 	private void appendExpression(final Object value, final JavaRenderInfo renderInfo) {
 		renderInfo.adaptor.addJavaFragment(value, renderInfo.builder);
@@ -115,7 +115,7 @@ public class QueryParser {
 	 * @param inputDirectory
 	 *        the inputDirectory to set
 	 */
-	public void setInputDirectory(File inputDirectory) {
+	public void setInputDirectory(final File inputDirectory) {
 		if (inputDirectory == null)
 			throw new NullPointerException("inputDirectory must not be null");
 
@@ -150,7 +150,7 @@ public class QueryParser {
 	}
 
 	public SopremoPlan tryParse(final CharStream charStream) {
-		return getParser(charStream).parse();
+		return this.getParser(charStream).parse();
 	}
 
 	public MeteorParser getParser(final String script) {
@@ -197,12 +197,12 @@ public class QueryParser {
 	 * @param inputDirectory
 	 *        the inputDirectory to set
 	 */
-	public QueryParser withInputDirectory(File inputDirectory) {
-		setInputDirectory(inputDirectory);
+	public QueryParser withInputDirectory(final File inputDirectory) {
+		this.setInputDirectory(inputDirectory);
 		return this;
 	}
 
-	public static String getPrefixedName(String prefix, String name) {
+	public static String getPrefixedName(final String prefix, final String name) {
 		return String.format("%s:%s", prefix, name);
 	}
 

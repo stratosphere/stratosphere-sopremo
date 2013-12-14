@@ -27,7 +27,7 @@ public class QueryParserException extends RuntimeException {
 	 * @param message
 	 * @param cause
 	 */
-	public QueryParserException(String message, Throwable cause) {
+	public QueryParserException(final String message, final Throwable cause) {
 		super(message, cause);
 
 		if (cause instanceof RecognitionException) {
@@ -42,7 +42,7 @@ public class QueryParserException extends RuntimeException {
 	 * 
 	 * @param message
 	 */
-	public QueryParserException(String message) {
+	public QueryParserException(final String message) {
 		super(message);
 	}
 
@@ -51,7 +51,7 @@ public class QueryParserException extends RuntimeException {
 	 * 
 	 * @param cause
 	 */
-	public QueryParserException(String message, Token invalidToken) {
+	public QueryParserException(final String message, final Token invalidToken) {
 		super(message);
 
 		this.invalidToken = invalidToken;
@@ -63,7 +63,7 @@ public class QueryParserException extends RuntimeException {
 		return this.line;
 	}
 
-	public void setLine(int line) {
+	public void setLine(final int line) {
 		this.line = line;
 	}
 
@@ -71,7 +71,7 @@ public class QueryParserException extends RuntimeException {
 		return this.charIndex;
 	}
 
-	public void setCharIndex(int charIndex) {
+	public void setCharIndex(final int charIndex) {
 		this.charIndex = charIndex;
 	}
 
@@ -79,7 +79,7 @@ public class QueryParserException extends RuntimeException {
 		return this.invalidToken;
 	}
 
-	public void setInvalidToken(Token token) {
+	public void setInvalidToken(final Token token) {
 		if (token == null)
 			throw new NullPointerException("token must not be null");
 

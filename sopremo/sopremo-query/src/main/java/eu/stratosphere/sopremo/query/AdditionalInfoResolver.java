@@ -32,7 +32,7 @@ public interface AdditionalInfoResolver {
 		 * )
 		 */
 		@Override
-		public <T extends ConfigurableSopremoType> ConfObjectInfo<T> get(T object) {
+		public <T extends ConfigurableSopremoType> ConfObjectInfo<T> get(final T object) {
 			return null;
 		}
 	}
@@ -40,7 +40,7 @@ public interface AdditionalInfoResolver {
 	public static class Format implements AdditionalInfoResolver {
 		private final IConfObjectRegistry<?> formatRegistry;
 
-		public Format(IConfObjectRegistry<?> formatRegistry) {
+		public Format(final IConfObjectRegistry<?> formatRegistry) {
 			this.formatRegistry = formatRegistry;
 		}
 
@@ -51,7 +51,7 @@ public interface AdditionalInfoResolver {
 		 * )
 		 */
 		@Override
-		public <T extends ConfigurableSopremoType> ConfObjectInfo<T> get(T object) {
+		public <T extends ConfigurableSopremoType> ConfObjectInfo<T> get(final T object) {
 			return (ConfObjectInfo<T>) this.formatRegistry.get(object.getClass());
 		}
 	}
@@ -59,7 +59,8 @@ public interface AdditionalInfoResolver {
 	public static class OperatorOrFormat implements AdditionalInfoResolver {
 		private final IConfObjectRegistry<?> operatorRegistry, formatRegistry;
 
-		public OperatorOrFormat(IConfObjectRegistry<?> operatorRegistry, IConfObjectRegistry<?> formatRegistry) {
+		public OperatorOrFormat(final IConfObjectRegistry<?> operatorRegistry,
+				final IConfObjectRegistry<?> formatRegistry) {
 			this.operatorRegistry = operatorRegistry;
 			this.formatRegistry = formatRegistry;
 		}
@@ -71,7 +72,7 @@ public interface AdditionalInfoResolver {
 		 * )
 		 */
 		@Override
-		public <T extends ConfigurableSopremoType> ConfObjectInfo<T> get(T object) {
+		public <T extends ConfigurableSopremoType> ConfObjectInfo<T> get(final T object) {
 			final Class<? extends ConfigurableSopremoType> clazz = object.getClass();
 			if (SopremoFormat.class.isAssignableFrom(clazz))
 				return (ConfObjectInfo<T>) this.formatRegistry.get(clazz);

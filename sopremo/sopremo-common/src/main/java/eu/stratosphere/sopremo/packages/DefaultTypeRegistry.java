@@ -27,14 +27,14 @@ import eu.stratosphere.sopremo.type.IJsonNode;
  * @author arv
  */
 public class DefaultTypeRegistry extends AbstractRegistry<Class<? extends IJsonNode>> implements ITypeRegistry {
-	private Map<String, Class<? extends IJsonNode>> elements = new HashMap<String, Class<? extends IJsonNode>>();
+	private final Map<String, Class<? extends IJsonNode>> elements = new HashMap<String, Class<? extends IJsonNode>>();
 
-	private List<Class<? extends IJsonNode>> typeList = new ArrayList<Class<? extends IJsonNode>>();
+	private final List<Class<? extends IJsonNode>> typeList = new ArrayList<Class<? extends IJsonNode>>();
 
 	/**
 	 * Initializes DefaultTypeRegistry.
 	 */
-	public DefaultTypeRegistry(NameChooser typeNameChooser) {
+	public DefaultTypeRegistry(final NameChooser typeNameChooser) {
 		super(typeNameChooser);
 	}
 
@@ -49,7 +49,7 @@ public class DefaultTypeRegistry extends AbstractRegistry<Class<? extends IJsonN
 	 * @see eu.stratosphere.sopremo.packages.IRegistry#get(java.lang.String)
 	 */
 	@Override
-	public Class<? extends IJsonNode> get(String name) {
+	public Class<? extends IJsonNode> get(final String name) {
 		return this.elements.get(name);
 	}
 
@@ -59,7 +59,7 @@ public class DefaultTypeRegistry extends AbstractRegistry<Class<? extends IJsonN
 	 * java.lang.Object)
 	 */
 	@Override
-	public void put(String name, Class<? extends IJsonNode> element) {
+	public void put(final String name, final Class<? extends IJsonNode> element) {
 		this.elements.put(name, element);
 		this.typeList.add(element);
 	}
@@ -69,7 +69,7 @@ public class DefaultTypeRegistry extends AbstractRegistry<Class<? extends IJsonN
 	 * @see eu.stratosphere.sopremo.packages.ITypeRegistry#put(java.lang.Class)
 	 */
 	@Override
-	public void put(Class<? extends IJsonNode> type) {
+	public void put(final Class<? extends IJsonNode> type) {
 		this.put(type.getName(), type);
 	}
 
@@ -88,7 +88,7 @@ public class DefaultTypeRegistry extends AbstractRegistry<Class<? extends IJsonN
 	 * eu.stratosphere.sopremo.ISopremoType#appendAsString(java.lang.Appendable)
 	 */
 	@Override
-	public void appendAsString(Appendable appendable) throws IOException {
+	public void appendAsString(final Appendable appendable) throws IOException {
 		appendable.append("Registry: {");
 		boolean first = true;
 		for (final Class<? extends IJsonNode> type : this.typeList) {
@@ -120,14 +120,14 @@ public class DefaultTypeRegistry extends AbstractRegistry<Class<? extends IJsonN
 	}
 
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(final Object obj) {
 		if (this == obj)
 			return true;
 		if (obj == null)
 			return false;
-		if (getClass() != obj.getClass())
+		if (this.getClass() != obj.getClass())
 			return false;
-		DefaultTypeRegistry other = (DefaultTypeRegistry) obj;
+		final DefaultTypeRegistry other = (DefaultTypeRegistry) obj;
 		return this.elements.equals(other.elements) && this.typeList.equals(other.typeList);
 	}
 

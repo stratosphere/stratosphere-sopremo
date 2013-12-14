@@ -77,7 +77,7 @@ public class ElementInSetExpression extends BinaryBooleanExpression {
 		return new NamedChildIterator("elementExpr", "setExpr") {
 
 			@Override
-			protected void set(int index, EvaluationExpression childExpression) {
+			protected void set(final int index, final EvaluationExpression childExpression) {
 				if (index == 0)
 					ElementInSetExpression.this.elementExpr = childExpression;
 				else
@@ -85,7 +85,7 @@ public class ElementInSetExpression extends BinaryBooleanExpression {
 			}
 
 			@Override
-			protected EvaluationExpression get(int index) {
+			protected EvaluationExpression get(final int index) {
 				if (index == 0)
 					return ElementInSetExpression.this.elementExpr;
 				return ElementInSetExpression.this.setExpr;
@@ -119,8 +119,9 @@ public class ElementInSetExpression extends BinaryBooleanExpression {
 	public EvaluationExpression getElementExpr() {
 		return this.elementExpr;
 	}
-	
-	/* (non-Javadoc)
+
+	/*
+	 * (non-Javadoc)
 	 * @see eu.stratosphere.sopremo.expressions.BinaryBooleanExpression#getExpr1()
 	 */
 	@Override
@@ -145,8 +146,9 @@ public class ElementInSetExpression extends BinaryBooleanExpression {
 	public EvaluationExpression getSetExpr() {
 		return this.setExpr;
 	}
-	
-	/* (non-Javadoc)
+
+	/*
+	 * (non-Javadoc)
 	 * @see eu.stratosphere.sopremo.expressions.BinaryBooleanExpression#getExpr2()
 	 */
 	@Override

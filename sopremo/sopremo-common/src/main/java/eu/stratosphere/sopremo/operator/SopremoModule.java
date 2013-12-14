@@ -168,15 +168,15 @@ public class SopremoModule extends GraphModule<Operator<?>, Source, Sink> implem
 	 * (non-Javadoc)
 	 * @see eu.stratosphere.sopremo.ISopremoType#copyPropertiesFrom(eu.stratosphere.sopremo.ISopremoType)
 	 */
-	protected void copyPropertiesFrom(ISopremoType original) {
-		SopremoModule module = (SopremoModule) original;
-		setName(module.getName());
+	protected void copyPropertiesFrom(final ISopremoType original) {
+		final SopremoModule module = (SopremoModule) original;
+		this.setName(module.getName());
 		// this is currently not a deep clone
 		for (int index = 0; index < module.getNumInputs(); index++)
 			this.setInput(index, module.getInput(index));
 		for (int index = 0; index < this.getNumOutputs(); index++)
 			this.setOutput(index, module.getOutput(index));
-		for (Sink internal : module.getInternalOutputNodes())
+		for (final Sink internal : module.getInternalOutputNodes())
 			this.addInternalOutput(internal);
 	}
 
@@ -192,7 +192,7 @@ public class SopremoModule extends GraphModule<Operator<?>, Source, Sink> implem
 	 * @see eu.stratosphere.sopremo.ISopremoType#toString(java.lang.StringBuilder)
 	 */
 	@Override
-	public void appendAsString(Appendable appendable) throws IOException {
+	public void appendAsString(final Appendable appendable) throws IOException {
 		final GraphPrinter<Operator<?>> graphPrinter = new GraphPrinter<Operator<?>>();
 		graphPrinter.setWidth(80);
 		graphPrinter.print(appendable, this.getAllOutputs(), OperatorNavigator.INSTANCE);
@@ -241,13 +241,12 @@ public class SopremoModule extends GraphModule<Operator<?>, Source, Sink> implem
 
 	protected static void connectOutputs(final SopremoModule module, final Collection<? extends Operator<?>> sinks) {
 		int sinkIndex = 0;
-		for (final Operator<?> sink : sinks) {
+		for (final Operator<?> sink : sinks)
 			if (sink instanceof Sink)
 				module.setOutput(sinkIndex++, (Sink) sink);
 			else
-				for (JsonStream output : sink.getOutputs())
+				for (final JsonStream output : sink.getOutputs())
 					module.getOutput(sinkIndex++).setInput(0, output);
-		}
 	}
 
 	protected static List<Operator<?>> findInputs(final Collection<? extends Operator<?>> sinks) {
@@ -295,7 +294,7 @@ public class SopremoModule extends GraphModule<Operator<?>, Source, Sink> implem
 		}
 
 		@Override
-		public void addImplementation(SopremoModule module, EvaluationContext context) {
+		public void addImplementation(final SopremoModule module, final EvaluationContext context) {
 			module.inputNodes.addAll(SopremoModule.this.inputNodes);
 			module.outputNodes.addAll(SopremoModule.this.outputNodes);
 			module.internalOutputNodes.addAll(SopremoModule.this.internalOutputNodes);

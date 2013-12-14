@@ -23,6 +23,7 @@ import eu.stratosphere.sopremo.operator.Internal;
 import eu.stratosphere.sopremo.operator.Property;
 import eu.stratosphere.sopremo.pact.JsonCollector;
 import eu.stratosphere.sopremo.pact.SopremoCoGroup;
+import eu.stratosphere.sopremo.pact.SopremoUtil;
 import eu.stratosphere.sopremo.type.IJsonNode;
 import eu.stratosphere.sopremo.type.IStreamNode;
 
@@ -32,14 +33,14 @@ public class AtomarReplaceWithDefaultValue extends AtomarReplaceBase<AtomarRepla
 	private EvaluationExpression defaultExpression = EvaluationExpression.VALUE;
 
 	@Property
-	public void setDefaultExpression(EvaluationExpression defaultExpression) {
+	public void setDefaultExpression(final EvaluationExpression defaultExpression) {
 		if (defaultExpression == null)
 			throw new NullPointerException("defaultExpression must not be null");
 
 		this.defaultExpression = defaultExpression;
 	}
 
-	public AtomarReplaceWithDefaultValue withDefaultExpression(EvaluationExpression prop) {
+	public AtomarReplaceWithDefaultValue withDefaultExpression(final EvaluationExpression prop) {
 		this.setDefaultExpression(prop);
 		return this;
 	}
@@ -53,23 +54,26 @@ public class AtomarReplaceWithDefaultValue extends AtomarReplaceBase<AtomarRepla
 
 		private EvaluationExpression dictionaryValueExtraction, defaultExpression;
 
+		private transient IJsonNode cloneTarget;
+
 		/*
 		 * (non-Javadoc)
 		 * @see eu.stratosphere.sopremo.pact.SopremoCoGroup#coGroup(eu.stratosphere.sopremo.type.IArrayNode,
 		 * eu.stratosphere.sopremo.type.IArrayNode, eu.stratosphere.sopremo.pact.JsonCollector)
 		 */
 		@Override
-		protected void coGroup(IStreamNode<IJsonNode> values1, IStreamNode<IJsonNode> values2, JsonCollector<IJsonNode> out) {
+		protected void coGroup(final IStreamNode<IJsonNode> values1, final IStreamNode<IJsonNode> values2,
+				final JsonCollector<IJsonNode> out) {
 			final Iterator<IJsonNode> valueIterator = values1.iterator();
-			if(!valueIterator.hasNext())
+			if (!valueIterator.hasNext())
 				return;
-				
+
 			final Iterator<IJsonNode> replaceValueIterator = values2.iterator();
-			IJsonNode replaceValue = replaceValueIterator.hasNext() ?
+			final IJsonNode replaceValue = replaceValueIterator.hasNext() ?
 				this.dictionaryValueExtraction.evaluate(replaceValueIterator.next()) : null;
 
 			while (valueIterator.hasNext()) {
-				final IJsonNode value = valueIterator.next();
+				final IJsonNode value = SopremoUtil.copyInto(valueIterator.next(), this.cloneTarget);
 				final IJsonNode replacement;
 				if (replaceValue != null)
 					replacement = replaceValue;

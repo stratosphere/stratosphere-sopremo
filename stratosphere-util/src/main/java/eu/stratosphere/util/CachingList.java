@@ -31,7 +31,7 @@ public class CachingList<T> extends ObjectArrayList<T> {
 	private int usedElements;
 
 	@Override
-	public void add(int index, T element) {
+	public void add(final int index, final T element) {
 		this.checkRange(index, this.usedElements + 1);
 
 		if (index < this.usedElements) // insert
@@ -45,7 +45,7 @@ public class CachingList<T> extends ObjectArrayList<T> {
 	}
 
 	@Override
-	public boolean add(T element) {
+	public boolean add(final T element) {
 		if (this.usedElements == super.size()) // append
 			super.add(element);
 		else
@@ -72,10 +72,9 @@ public class CachingList<T> extends ObjectArrayList<T> {
 		l.size = length;
 		return l;
 	}
-	
+
 	/**
 	 * Initializes CachingList.
-	 *
 	 */
 	public CachingList() {
 	}
@@ -88,7 +87,7 @@ public class CachingList<T> extends ObjectArrayList<T> {
 	 * @param a
 	 *        the array that will be used to back this array list.
 	 */
-	protected CachingList(final T a[], boolean dummy) {
+	protected CachingList(final T a[], final boolean dummy) {
 		super(a, dummy);
 	}
 
@@ -113,7 +112,7 @@ public class CachingList<T> extends ObjectArrayList<T> {
 	}
 
 	@Override
-	public T remove(int index) {
+	public T remove(final int index) {
 		this.checkRange(index, this.usedElements);
 
 		final T oldObject = super.remove(index);
@@ -122,7 +121,7 @@ public class CachingList<T> extends ObjectArrayList<T> {
 		return oldObject;
 	}
 
-	private void checkRange(int index, int size) {
+	private void checkRange(final int index, final int size) {
 		if (index >= size)
 			throw new IndexOutOfBoundsException("Index: " + index + ", Size: " + size);
 	}
@@ -132,7 +131,7 @@ public class CachingList<T> extends ObjectArrayList<T> {
 	 * @see java.util.AbstractList#get(int)
 	 */
 	@Override
-	public T get(int index) {
+	public T get(final int index) {
 		this.checkRange(index, this.usedElements);
 
 		return super.get(index);
@@ -170,9 +169,9 @@ public class CachingList<T> extends ObjectArrayList<T> {
 	 * @see it.unimi.dsi.fastutil.objects.ObjectArrayList#size(int)
 	 */
 	@Override
-	public void size(int size) {
+	public void size(final int size) {
 		if (size > this.a.length)
-			ensureCapacity(size);
+			this.ensureCapacity(size);
 		if (size > this.size) {
 			ObjectArrays.fill(this.a, this.size, size, null);
 			this.size = size;
@@ -184,9 +183,9 @@ public class CachingList<T> extends ObjectArrayList<T> {
 	 * (non-Javadoc)
 	 * @see it.unimi.dsi.fastutil.objects.ObjectArrayList#size(int)
 	 */
-	public void size(int size, T defaultElement) {
+	public void size(final int size, final T defaultElement) {
 		if (size > this.a.length)
-			ensureCapacity(size);
+			this.ensureCapacity(size);
 		if (size > this.size) {
 			ObjectArrays.fill(this.a, this.size, size, defaultElement);
 			this.size = size;

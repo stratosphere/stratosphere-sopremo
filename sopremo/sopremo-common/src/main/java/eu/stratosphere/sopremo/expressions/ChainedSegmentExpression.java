@@ -55,7 +55,7 @@ public class ChainedSegmentExpression extends PathSegmentExpression {
 		this.expressions = new ArrayList<EvaluationExpression>();
 	}
 
-	public void addExpression(EvaluationExpression expression) {
+	public void addExpression(final EvaluationExpression expression) {
 		this.expressions.add(expression);
 	}
 
@@ -75,14 +75,14 @@ public class ChainedSegmentExpression extends PathSegmentExpression {
 	 * .PathSegmentExpression)
 	 */
 	@Override
-	public boolean equalsSameClass(PathSegmentExpression other) {
+	public boolean equalsSameClass(final PathSegmentExpression other) {
 		return this.expressions.equals(((ChainedSegmentExpression) other).expressions);
 	}
 
 	@Override
 	protected IJsonNode evaluateSegment(final IJsonNode node) {
 		IJsonNode result = node;
-		for (EvaluationExpression expression : this.expressions)
+		for (final EvaluationExpression expression : this.expressions)
 			result = expression.evaluate(result);
 		return result;
 	}

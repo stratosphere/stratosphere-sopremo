@@ -21,7 +21,6 @@ public class TypeCoercer {
 	private final Map<Class<? extends IJsonNode>, Map<Class<? extends IJsonNode>, TypeMapper<?, ?>>> coercers =
 		new IdentityHashMap<Class<? extends IJsonNode>, Map<Class<? extends IJsonNode>, TypeMapper<?, ?>>>();
 
-	@SuppressWarnings("unchecked")
 	public static final List<Class<? extends INumericNode>> NUMERIC_TYPES = Arrays.asList(
 		(Class<? extends INumericNode>)
 		IntNode.class, DoubleNode.class, LongNode.class, DecimalNode.class, BigIntegerNode.class);
@@ -39,11 +38,13 @@ public class TypeCoercer {
 	public static final TypeCoercer INSTANCE = new TypeCoercer();
 
 	public TypeCoercer() {
-		this.addCoercers(MissingNode.class, new IdentityHashMap<Class<? extends IJsonNode>, TypeMapper<?, MissingNode>>());
+		this.addCoercers(MissingNode.class,
+			new IdentityHashMap<Class<? extends IJsonNode>, TypeMapper<?, MissingNode>>());
 		this.addCoercers(BooleanNode.class, this.getToBooleanCoercers());
 		this.addCoercers(TextNode.class, this.getToStringCoercers());
 		this.addCoercers(IArrayNode.class, this.getToArrayCoercers());
-		this.addCoercers(IObjectNode.class, new IdentityHashMap<Class<? extends IJsonNode>, TypeMapper<?, IObjectNode>>());
+		this.addCoercers(IObjectNode.class,
+			new IdentityHashMap<Class<? extends IJsonNode>, TypeMapper<?, IObjectNode>>());
 		this.addNumericCoercers(this.coercers);
 		this.addCoercers(IJsonNode.class, new IdentityHashMap<Class<? extends IJsonNode>, TypeMapper<?, IJsonNode>>());
 		this.addSelfCoercers();
@@ -82,13 +83,14 @@ public class TypeCoercer {
 				return target;
 			}
 		});
-		coercers.get(DoubleNode.class).put(BooleanNode.class, new TypeMapper<BooleanNode, DoubleNode>(DoubleNode.class) {
-			@Override
-			public DoubleNode mapTo(final BooleanNode from, final DoubleNode target) {
-				target.setValue(from == BooleanNode.TRUE ? 1 : 0);
-				return target;
-			}
-		});
+		coercers.get(DoubleNode.class).put(BooleanNode.class,
+			new TypeMapper<BooleanNode, DoubleNode>(DoubleNode.class) {
+				@Override
+				public DoubleNode mapTo(final BooleanNode from, final DoubleNode target) {
+					target.setValue(from == BooleanNode.TRUE ? 1 : 0);
+					return target;
+				}
+			});
 		coercers.get(LongNode.class).put(BooleanNode.class, new TypeMapper<BooleanNode, LongNode>(LongNode.class) {
 			@Override
 			public LongNode mapTo(final BooleanNode from, final LongNode target) {
@@ -184,7 +186,7 @@ public class TypeCoercer {
 		for (final Entry<Class<? extends IJsonNode>, Map<Class<? extends IJsonNode>, TypeMapper<?, ?>>> toCoercers : this.coercers
 			.entrySet()) {
 			final Class<? extends IJsonNode> targetClass = toCoercers.getKey();
-			Map<Class<? extends IJsonNode>, TypeMapper<?, ?>> coercers = toCoercers.getValue();
+			final Map<Class<? extends IJsonNode>, TypeMapper<?, ?>> coercers = toCoercers.getValue();
 			if (coercers.containsKey(targetClass))
 				continue;
 			if (targetClass.isInterface())
@@ -239,7 +241,8 @@ public class TypeCoercer {
 		TypeHierarchyBrowser.INSTANCE.visit(toClass, Mode.CLASS_FIRST, new Visitor<Class<?>>() {
 			@Override
 			public boolean visited(final Class<?> superClass, final int distance) {
-				final Map<Class<? extends IJsonNode>, TypeMapper<?, ?>> froms = TypeCoercer.this.coercers.get(superClass);
+				final Map<Class<? extends IJsonNode>, TypeMapper<?, ?>> froms =
+					TypeCoercer.this.coercers.get(superClass);
 				if (froms == null)
 					return true;
 				// found a matching coercer; terminate browsing
@@ -392,7 +395,7 @@ public class TypeCoercer {
 		/**
 		 * Initializes SelfCoercer.
 		 */
-		public SelfCoercer(Class<? extends IJsonNode> defaultType) {
+		public SelfCoercer(final Class<? extends IJsonNode> defaultType) {
 			super(defaultType);
 		}
 

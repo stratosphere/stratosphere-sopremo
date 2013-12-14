@@ -22,15 +22,15 @@ import eu.stratosphere.sopremo.type.IJsonNode;
 public class ValueSplit extends ElementaryOperator<ValueSplit> {
 	private List<EvaluationExpression> projections = new ArrayList<EvaluationExpression>();
 
-	public ValueSplit addProjection(EvaluationExpression... projections) {
-		for (EvaluationExpression evaluationExpression : projections)
+	public ValueSplit addProjection(final EvaluationExpression... projections) {
+		for (final EvaluationExpression evaluationExpression : projections)
 			this.projections.add(evaluationExpression);
 		return this;
 	}
 
 	@Name(preposition = "into")
 	@Property
-	public void setProjections(ArrayCreation projections) {
+	public void setProjections(final ArrayCreation projections) {
 		if (projections == null)
 			throw new NullPointerException("projections must not be null");
 
@@ -46,29 +46,29 @@ public class ValueSplit extends ElementaryOperator<ValueSplit> {
 		return new ArrayCreation(this.projections);
 	}
 
-	public void setProjections(List<EvaluationExpression> projections) {
+	public void setProjections(final List<EvaluationExpression> projections) {
 		if (projections == null)
 			throw new NullPointerException("projections must not be null");
 
 		this.projections = projections;
 	}
-	
-	public ValueSplit withProjections(List<EvaluationExpression> projections) {
-		setProjections(projections);
+
+	public ValueSplit withProjections(final List<EvaluationExpression> projections) {
+		this.setProjections(projections);
 		return this;
 	}
-	
-	public ValueSplit withProjections(ArrayCreation projections) {
-		setProjections(projections);
+
+	public ValueSplit withProjections(final ArrayCreation projections) {
+		this.setProjections(projections);
 		return this;
 	}
 
 	public static class Implementation extends SopremoMap {
-		private List<EvaluationExpression> projections = new ArrayList<EvaluationExpression>();
+		private final List<EvaluationExpression> projections = new ArrayList<EvaluationExpression>();
 
 		@Override
-		protected void map(IJsonNode value, JsonCollector<IJsonNode> out) {
-			for (EvaluationExpression projection : this.projections)
+		protected void map(final IJsonNode value, final JsonCollector<IJsonNode> out) {
+			for (final EvaluationExpression projection : this.projections)
 				out.collect(projection.evaluate(value));
 		}
 	}

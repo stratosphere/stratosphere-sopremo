@@ -34,17 +34,17 @@ public class MavenUtil {
 	 */
 	public static String getProjectName() {
 		try {
-			Reader reader = new FileReader("pom.xml");
-			MavenXpp3Reader xpp3Reader = new MavenXpp3Reader();
-			Model model = xpp3Reader.read(reader);
+			final Reader reader = new FileReader("pom.xml");
+			final MavenXpp3Reader xpp3Reader = new MavenXpp3Reader();
+			final Model model = xpp3Reader.read(reader);
 			reader.close();
 			return model.getName();
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			throw new RuntimeException("Could not read project name", e);
 		}
 	}
 
-	public static File buildJarForProject(String canonicalProjectPath, String jarName) {
+	public static File buildJarForProject(final String canonicalProjectPath, final String jarName) {
 		/*
 		 * MavenCli cli = new MavenCli(); if (cli.doMain(new String[] {
 		 * "jar:jar", "-Djar.finalName=" + jarName }, new
@@ -55,23 +55,24 @@ public class MavenUtil {
 		try {
 			boolean success = false;
 			String line;
-			Process p = Runtime.getRuntime().exec("mvn jar:jar -o -Djar.finalName=" + jarName);
-			BufferedReader bri = new BufferedReader(new InputStreamReader(p.getInputStream()));
+			final Process p = Runtime.getRuntime().exec("mvn jar:jar -o -Djar.finalName=" + jarName);
+			final BufferedReader bri = new BufferedReader(new InputStreamReader(p.getInputStream()));
 			while ((line = bri.readLine()) != null) {
 				System.out.println(line);
-				//FIXME hacky
-				if(line.contains("BUILD SUCCESS"))
+				// FIXME hacky
+				if (line.contains("BUILD SUCCESS"))
 					success = true;
 			}
 			bri.close();
 			p.waitFor();
-			
-			if(!success)
-				throw new RuntimeException("Jar for desired project path " + canonicalProjectPath + " could not be build.");
-			
-		} catch (IOException err) {
+
+			if (!success)
+				throw new RuntimeException("Jar for desired project path " + canonicalProjectPath +
+					" could not be build.");
+
+		} catch (final IOException err) {
 			throw new RuntimeException("Jar for desired project path " + canonicalProjectPath + " could not be build.");
-		} catch (InterruptedException e) {
+		} catch (final InterruptedException e) {
 			throw new RuntimeException("Jar for desired project path " + canonicalProjectPath + " could not be build.");
 		}
 		return new File("target", jarName + ".jar");

@@ -130,8 +130,9 @@ public class BigIntegerNode extends AbstractNumericNode implements INumericNode 
 	public int compareToSameType(final IJsonNode other) {
 		return this.value.compareTo(((BigIntegerNode) other).value);
 	}
-	
-	/* (non-Javadoc)
+
+	/*
+	 * (non-Javadoc)
 	 * @see eu.stratosphere.sopremo.type.INumericNode#getGeneralilty()
 	 */
 	@Override
@@ -150,7 +151,7 @@ public class BigIntegerNode extends AbstractNumericNode implements INumericNode 
 	 * @see eu.stratosphere.sopremo.ISopremoType#toString(java.lang.StringBuilder)
 	 */
 	@Override
-	public void appendAsString(Appendable appendable) throws IOException {
+	public void appendAsString(final Appendable appendable) throws IOException {
 		TextFormat.getInstance(BigInteger.class).format(this.value, appendable);
 	}
 }

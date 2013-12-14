@@ -14,7 +14,6 @@
  **********************************************************************************************************************/
 package eu.stratosphere.sopremo.packages;
 
-
 /**
  * @author arv
  */
@@ -32,7 +31,7 @@ public class DefaultNameChooserProvider implements NameChooserProvider {
 	/**
 	 * Initializes DefaultNameChooserProvider.
 	 */
-	public DefaultNameChooserProvider(NameChooser defaultNameChooser) {
+	public DefaultNameChooserProvider(final NameChooser defaultNameChooser) {
 		this.constantNameChooser =
 			this.functionNameChooser =
 				this.operatorNameChooser =
@@ -71,42 +70,42 @@ public class DefaultNameChooserProvider implements NameChooserProvider {
 		return this.typeNameChooser;
 	}
 
-	public void setConstantNameChooser(NameChooser constantNameChooser) {
+	public void setConstantNameChooser(final NameChooser constantNameChooser) {
 		if (constantNameChooser == null)
 			throw new NullPointerException("constantNameChooser must not be null");
 
 		this.constantNameChooser = constantNameChooser;
 	}
 
-	public void setFormatNameChooser(NameChooser formatNameChooser) {
+	public void setFormatNameChooser(final NameChooser formatNameChooser) {
 		if (formatNameChooser == null)
 			throw new NullPointerException("formatNameChooser must not be null");
 
 		this.formatNameChooser = formatNameChooser;
 	}
 
-	public void setFunctionNameChooser(NameChooser functionNameChooser) {
+	public void setFunctionNameChooser(final NameChooser functionNameChooser) {
 		if (functionNameChooser == null)
 			throw new NullPointerException("functionNameChooser must not be null");
 
 		this.functionNameChooser = functionNameChooser;
 	}
 
-	public void setOperatorNameChooser(NameChooser operatorNameChooser) {
+	public void setOperatorNameChooser(final NameChooser operatorNameChooser) {
 		if (operatorNameChooser == null)
 			throw new NullPointerException("operatorNameChooser must not be null");
 
 		this.operatorNameChooser = operatorNameChooser;
 	}
 
-	public void setPropertyNameChooser(NameChooser propertyNameChooser) {
+	public void setPropertyNameChooser(final NameChooser propertyNameChooser) {
 		if (propertyNameChooser == null)
 			throw new NullPointerException("propertyNameChooser must not be null");
 
 		this.propertyNameChooser = propertyNameChooser;
 	}
 
-	public void setTypeNameChooser(NameChooser typeNameChooser) {
+	public void setTypeNameChooser(final NameChooser typeNameChooser) {
 		if (typeNameChooser == null)
 			throw new NullPointerException("typeNameChooser must not be null");
 

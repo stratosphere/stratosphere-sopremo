@@ -30,7 +30,7 @@ import eu.stratosphere.util.reflect.ReflectUtil;
  * @author Arvid Heise
  */
 public class SampleFormat extends SopremoFormat {
-	private SopremoFormat originalFormat = new JsonFormat();
+	private final SopremoFormat originalFormat = new JsonFormat();
 
 	public static final long DEFAULT_SAMPLE_SIZE = 10;
 
@@ -42,7 +42,7 @@ public class SampleFormat extends SopremoFormat {
 	 * eu.stratosphere.nephele.fs.Path)
 	 */
 	@Override
-	public boolean canHandleFormat(URI path) {
+	public boolean canHandleFormat(final URI path) {
 		return this.originalFormat.canHandleFormat(path);
 	}
 
@@ -62,7 +62,7 @@ public class SampleFormat extends SopremoFormat {
 	 *        the sampleSize to set
 	 */
 	@Property
-	public void setSampleSize(long sampleSize) {
+	public void setSampleSize(final long sampleSize) {
 		this.sampleSize = sampleSize;
 	}
 
@@ -85,14 +85,14 @@ public class SampleFormat extends SopremoFormat {
 	}
 
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(final Object obj) {
 		if (this == obj)
 			return true;
 		if (!super.equals(obj))
 			return false;
 		if (this.getClass() != obj.getClass())
 			return false;
-		SampleFormat other = (SampleFormat) obj;
+		final SampleFormat other = (SampleFormat) obj;
 		return this.sampleSize == other.sampleSize && this.originalFormat.equals(other.originalFormat);
 	}
 
@@ -116,13 +116,13 @@ public class SampleFormat extends SopremoFormat {
 		 */
 		@SuppressWarnings("unchecked")
 		@Override
-		public void configure(Configuration parameters) {
+		public void configure(final Configuration parameters) {
 			super.configure(parameters);
 
 			this.originalInputFormat =
 				(SopremoInputFormat<InputSplit>) ReflectUtil.newInstance(this.originalFormat.getInputFormat());
 			this.currentSample = 0;
-			Configuration originalConfiguration = new Configuration();
+			final Configuration originalConfiguration = new Configuration();
 			SopremoUtil.transferFieldsToConfiguration(this.originalFormat, SopremoFormat.class,
 				originalConfiguration, this.originalFormat.getInputFormat(), InputFormat.class);
 			this.originalInputFormat.configure(originalConfiguration);
@@ -133,7 +133,7 @@ public class SampleFormat extends SopremoFormat {
 		 * @see eu.stratosphere.pact.generic.io.InputFormat#open(eu.stratosphere.nephele.template.InputSplit)
 		 */
 		@Override
-		public void open(InputSplit split) throws IOException {
+		public void open(final InputSplit split) throws IOException {
 			this.originalInputFormat.open(split);
 		}
 
@@ -144,7 +144,7 @@ public class SampleFormat extends SopremoFormat {
 		 * BaseStatistics)
 		 */
 		@Override
-		public BaseStatistics getStatistics(BaseStatistics cachedStatistics) throws IOException {
+		public BaseStatistics getStatistics(final BaseStatistics cachedStatistics) throws IOException {
 			final BaseStatistics stats = this.originalInputFormat.getStatistics(cachedStatistics);
 
 			return new BaseStatistics() {
@@ -172,7 +172,7 @@ public class SampleFormat extends SopremoFormat {
 				 */
 				@Override
 				public long getTotalInputSize() {
-					return (long) Math.ceil(getNumberOfRecords() * getAverageRecordWidth());
+					return (long) Math.ceil(this.getNumberOfRecords() * this.getAverageRecordWidth());
 				}
 			};
 		}
@@ -197,7 +197,7 @@ public class SampleFormat extends SopremoFormat {
 		 * @see eu.stratosphere.pact.generic.io.InputFormat#createInputSplits(int)
 		 */
 		@Override
-		public InputSplit[] createInputSplits(int minNumSplits) throws IOException {
+		public InputSplit[] createInputSplits(final int minNumSplits) throws IOException {
 			return this.originalInputFormat.createInputSplits(minNumSplits);
 		}
 

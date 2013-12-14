@@ -43,7 +43,7 @@ public abstract class ReplaceBase<Op extends ReplaceBase<Op>> extends CompositeO
 	private EvaluationExpression defaultExpression = EvaluationExpression.VALUE;
 
 	@Override
-	public void appendAsString(Appendable appendable) throws IOException {
+	public void appendAsString(final Appendable appendable) throws IOException {
 		appendable.append(this.getName());
 		this.getReplaceExpression().appendAsString(appendable);
 		if (this.getInput(1) != null) {
@@ -55,14 +55,14 @@ public abstract class ReplaceBase<Op extends ReplaceBase<Op>> extends CompositeO
 	}
 
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(final Object obj) {
 		if (this == obj)
 			return true;
 		if (!super.equals(obj))
 			return false;
 		if (this.getClass() != obj.getClass())
 			return false;
-		ReplaceBase<?> other = (ReplaceBase<?>) obj;
+		final ReplaceBase<?> other = (ReplaceBase<?>) obj;
 		return this.defaultExpression.equals(other.defaultExpression) &&
 			this.dictionaryKeyExtraction.equals(other.dictionaryKeyExtraction) &&
 			this.dictionaryValueExtraction.equals(other.dictionaryValueExtraction) &&
@@ -102,7 +102,7 @@ public abstract class ReplaceBase<Op extends ReplaceBase<Op>> extends CompositeO
 
 	@Property
 	@Name(noun = "default")
-	public void setDefaultExpression(EvaluationExpression defaultExpression) {
+	public void setDefaultExpression(final EvaluationExpression defaultExpression) {
 		if (defaultExpression == null)
 			throw new NullPointerException("defaultExpression must not be null");
 
@@ -111,7 +111,7 @@ public abstract class ReplaceBase<Op extends ReplaceBase<Op>> extends CompositeO
 
 	@Property
 	@Name(noun = "dictionary", preposition = "with")
-	public void setDictionary(JsonStreamExpression dictionary) {
+	public void setDictionary(final JsonStreamExpression dictionary) {
 		if (dictionary == null)
 			throw new NullPointerException("dictionary must not be null");
 
@@ -119,7 +119,7 @@ public abstract class ReplaceBase<Op extends ReplaceBase<Op>> extends CompositeO
 	}
 
 	@Property
-	public void setDictionaryKeyExtraction(EvaluationExpression dictionaryKeyExtraction) {
+	public void setDictionaryKeyExtraction(final EvaluationExpression dictionaryKeyExtraction) {
 		if (dictionaryKeyExtraction == null)
 			throw new NullPointerException("dictionaryKeyExtraction must not be null");
 
@@ -127,7 +127,7 @@ public abstract class ReplaceBase<Op extends ReplaceBase<Op>> extends CompositeO
 	}
 
 	@Property
-	public void setDictionaryValueExtraction(EvaluationExpression dictionaryValueExtraction) {
+	public void setDictionaryValueExtraction(final EvaluationExpression dictionaryValueExtraction) {
 		if (dictionaryValueExtraction == null)
 			throw new NullPointerException("dictionaryValueExtraction must not be null");
 
@@ -136,34 +136,34 @@ public abstract class ReplaceBase<Op extends ReplaceBase<Op>> extends CompositeO
 
 	@Property()
 	@Name(preposition = "on")
-	public void setReplaceExpression(PathSegmentExpression inputKeyExtract) {
+	public void setReplaceExpression(final PathSegmentExpression inputKeyExtract) {
 		if (inputKeyExtract == null)
 			throw new NullPointerException("inputKeyExtract must not be null");
 
 		this.replaceExpression = inputKeyExtract;
 	}
 
-	public Op withDefaultExpression(EvaluationExpression defaultExpression) {
+	public Op withDefaultExpression(final EvaluationExpression defaultExpression) {
 		this.setDefaultExpression(defaultExpression);
 		return this.self();
 	}
 
-	public Op withDictionary(JsonStreamExpression dictionary) {
+	public Op withDictionary(final JsonStreamExpression dictionary) {
 		this.setDictionary(dictionary);
 		return this.self();
 	}
 
-	public Op withDictionaryKeyExtraction(EvaluationExpression dictionaryKeyExtraction) {
+	public Op withDictionaryKeyExtraction(final EvaluationExpression dictionaryKeyExtraction) {
 		this.setDictionaryKeyExtraction(dictionaryKeyExtraction);
 		return this.self();
 	}
 
-	public Op withDictionaryValueExtraction(EvaluationExpression dictionaryValueExtraction) {
+	public Op withDictionaryValueExtraction(final EvaluationExpression dictionaryValueExtraction) {
 		this.setDictionaryValueExtraction(dictionaryValueExtraction);
 		return this.self();
 	}
 
-	public Op withReplaceExpression(PathSegmentExpression inputKeyExtract) {
+	public Op withReplaceExpression(final PathSegmentExpression inputKeyExtract) {
 		this.setReplaceExpression(inputKeyExtract);
 		return this.self();
 	}

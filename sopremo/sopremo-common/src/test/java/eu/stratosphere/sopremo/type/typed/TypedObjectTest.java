@@ -18,7 +18,7 @@ import eu.stratosphere.sopremo.type.ObjectNode;
 import eu.stratosphere.sopremo.type.TextNode;
 
 public class TypedObjectTest {
-	private TypedObjectNodeFactory factory = TypedObjectNodeFactory.getInstance();
+	private final TypedObjectNodeFactory factory = TypedObjectNodeFactory.getInstance();
 
 	@Test
 	public void testSimpleObjectCreationForEmptyInterface() {
@@ -33,7 +33,7 @@ public class TypedObjectTest {
 		dummy1 = (TypedObjectNode) this.factory.getTypedObjectForInterface(
 			EmptyInterface1.class);
 		dummy1.backingObject.put("foo", new TextNode("bar"));
-		TypedObjectNode dummy2 = dummy1.clone();
+		final TypedObjectNode dummy2 = dummy1.clone();
 		// not very safe test
 		assertEquals(dummy1.getBackingNode().get("foo"), dummy2.getBackingNode().get("foo"));
 		assertNotSame(dummy1.getBackingNode().get("foo"), dummy2.getBackingNode().get("foo"));
@@ -41,27 +41,27 @@ public class TypedObjectTest {
 
 	@Test
 	public void testMultipleInstantiationOfTypedObject() {
-		EmptyInterface3 dummy1 = this.factory.getTypedObjectForInterface(EmptyInterface3.class);
-		EmptyInterface3 dummy2 = this.factory.getTypedObjectForInterface(EmptyInterface3.class);
+		final EmptyInterface3 dummy1 = this.factory.getTypedObjectForInterface(EmptyInterface3.class);
+		final EmptyInterface3 dummy2 = this.factory.getTypedObjectForInterface(EmptyInterface3.class);
 		assertSame(dummy1.getClass(), dummy2.getClass());
 		assertNotSame(dummy1, dummy2);
 	}
 
 	@Test
 	public void testSimpleObjectCreationForSimpleInterface() {
-		PersonInterface dummy = this.factory.getTypedObjectForInterface(PersonInterface.class);
-		TextNode nameNode = new TextNode("FooBär");
+		final PersonInterface dummy = this.factory.getTypedObjectForInterface(PersonInterface.class);
+		final TextNode nameNode = new TextNode("FooBär");
 		dummy.setName(nameNode);
 		assertSame(nameNode, dummy.getName());
 	}
 
 	@Test
 	public void testMultipleInheritanceHierarchies() {
-		PersonWithAgeAndWeightInterface dummy = this.factory.getTypedObjectForInterface(
+		final PersonWithAgeAndWeightInterface dummy = this.factory.getTypedObjectForInterface(
 			PersonWithAgeAndWeightInterface.class);
-		TextNode nameNode = new TextNode("FooBär");
-		INumericNode ageNode = new IntNode(3);
-		INumericNode weightNode = new IntNode(14);
+		final TextNode nameNode = new TextNode("FooBär");
+		final INumericNode ageNode = new IntNode(3);
+		final INumericNode weightNode = new IntNode(14);
 		dummy.setName(nameNode);
 		dummy.setAge(ageNode);
 		dummy.setWeight(weightNode);
@@ -72,11 +72,11 @@ public class TypedObjectTest {
 
 	@Test
 	public void testSimpleObjectCreationForALessSimpleInterface() {
-		SomeThingInterface dummy = this.factory.getTypedObjectForInterface(
+		final SomeThingInterface dummy = this.factory.getTypedObjectForInterface(
 			SomeThingInterface.class);
-		TextNode labelNode = new TextNode("labelText");
-		IntNode ageNode = new IntNode(5);
-		BooleanNode coolNode = new BooleanNode();
+		final TextNode labelNode = new TextNode("labelText");
+		final IntNode ageNode = new IntNode(5);
+		final BooleanNode coolNode = new BooleanNode();
 		dummy.setName(labelNode);
 		assertSame(labelNode, dummy.getName());
 		dummy.setAge(ageNode);
@@ -87,7 +87,7 @@ public class TypedObjectTest {
 
 	@Test
 	public void testNullReturningForUnsetValues() {
-		SomeThingInterface dummy = this.factory.getTypedObjectForInterface(SomeThingInterface.class);
+		final SomeThingInterface dummy = this.factory.getTypedObjectForInterface(SomeThingInterface.class);
 		assertNull(dummy.getName());
 		assertNull(dummy.getAge());
 		assertNull(dummy.getCool());
@@ -95,7 +95,7 @@ public class TypedObjectTest {
 
 	@Test
 	public void testNullReturningForNullSetValues() {
-		SomeThingInterface dummy = this.factory.getTypedObjectForInterface(
+		final SomeThingInterface dummy = this.factory.getTypedObjectForInterface(
 			SomeThingInterface.class);
 		dummy.setName(null);
 		assertNull(dummy.getName());
@@ -107,16 +107,16 @@ public class TypedObjectTest {
 
 	@Test
 	public void testTypedObjectCreationForAnInterfaceExtendingAnotherTypedInterface() {
-		PersonWithAgeAndWeightInterface person = this.factory.getTypedObjectForInterface(
+		final PersonWithAgeAndWeightInterface person = this.factory.getTypedObjectForInterface(
 			PersonWithAgeAndWeightInterface.class);
-		TextNode nameNode = new TextNode("FooBär");
-		INumericNode ageNode = new IntNode(3);
-		INumericNode weightNode = new IntNode(14);
+		final TextNode nameNode = new TextNode("FooBär");
+		final INumericNode ageNode = new IntNode(3);
+		final INumericNode weightNode = new IntNode(14);
 		person.setName(nameNode);
 		person.setAge(ageNode);
 		person.setWeight(weightNode);
 
-		MyInterfaceWithTypedObjectProperty dummy = this.factory.getTypedObjectForInterface(
+		final MyInterfaceWithTypedObjectProperty dummy = this.factory.getTypedObjectForInterface(
 			MyInterfaceWithTypedObjectProperty.class);
 
 		dummy.setPerson(person);
@@ -127,13 +127,13 @@ public class TypedObjectTest {
 
 	@Test
 	public void testTypedObjectCreationForAnInterfaceWithCyclicTypedObjectProperties() {
-		MyInterfaceWithCyclicTypedObjectProperty inner = this.factory
+		final MyInterfaceWithCyclicTypedObjectProperty inner = this.factory
 			.getTypedObjectForInterface(MyInterfaceWithCyclicTypedObjectProperty.class);
 
-		MyInterfaceWithCyclicTypedObjectProperty outer = this.factory
+		final MyInterfaceWithCyclicTypedObjectProperty outer = this.factory
 			.getTypedObjectForInterface(MyInterfaceWithCyclicTypedObjectProperty.class);
 
-		MyInterfaceWithCyclicTypedObjectProperty someOther = this.factory
+		final MyInterfaceWithCyclicTypedObjectProperty someOther = this.factory
 			.getTypedObjectForInterface(MyInterfaceWithCyclicTypedObjectProperty.class);
 
 		outer.setCyclicProperty(inner);
@@ -144,15 +144,15 @@ public class TypedObjectTest {
 
 	@Test
 	public void testTypedInterfaceWithAListsOfTypedObjectNodes() {
-		PersonOwningThingsInterface personOwning = this.factory.getTypedObjectForInterface(
+		final PersonOwningThingsInterface personOwning = this.factory.getTypedObjectForInterface(
 			PersonOwningThingsInterface.class);
 
-		SomeThingInterface thing1 = this.factory.getTypedObjectForInterface(
+		final SomeThingInterface thing1 = this.factory.getTypedObjectForInterface(
 			SomeThingInterface.class);
-		SomeThingInterface thing2 = this.factory.getTypedObjectForInterface(
+		final SomeThingInterface thing2 = this.factory.getTypedObjectForInterface(
 			SomeThingInterface.class);
 
-		ArrayNode<SomeThingInterface> listOfThings = new ArrayNode<SomeThingInterface>();
+		final ArrayNode<SomeThingInterface> listOfThings = new ArrayNode<SomeThingInterface>();
 		listOfThings.add(thing1);
 		listOfThings.add(thing2);
 
@@ -165,19 +165,19 @@ public class TypedObjectTest {
 
 	@Test
 	public void testTypedInterfaceWithAListsOfTypedObjectNodesWithoutPriorClassInstantiation() {
-		InterfaceWithATypedObjectProperty owningPerson = this.factory
+		final InterfaceWithATypedObjectProperty owningPerson = this.factory
 			.getTypedObjectForInterface(InterfaceWithATypedObjectProperty.class);
 
-		IObjectNode thing1 = new ObjectNode();
-		TextNode name = new TextNode("foobar");
+		final IObjectNode thing1 = new ObjectNode();
+		final TextNode name = new TextNode("foobar");
 		thing1.put("name", name);
-		INumericNode age = new IntNode(15);
+		final INumericNode age = new IntNode(15);
 		thing1.put("age", age);
-		BooleanNode cool = new BooleanNode();
+		final BooleanNode cool = new BooleanNode();
 		thing1.put("cool", cool);
 
 		owningPerson.put("it", thing1);
-		SomeThingInterface thing1_1 = owningPerson.getIt();
+		final SomeThingInterface thing1_1 = owningPerson.getIt();
 		assertSame(name, thing1_1.getName());
 		assertSame(age, thing1_1.getAge());
 		assertSame(cool, thing1_1.getCool());
@@ -185,25 +185,25 @@ public class TypedObjectTest {
 
 	@Test(expected = ClassCastException.class)
 	public void testIfWrongDatatypeInBackingObjectCausesErrorForJSONPrimitives() {
-		InterfaceWithATypedObjectProperty dummy = this.factory.getTypedObjectForInterface(
+		final InterfaceWithATypedObjectProperty dummy = this.factory.getTypedObjectForInterface(
 			InterfaceWithATypedObjectProperty.class);
-		TextNode number = new TextNode("foo");
+		final TextNode number = new TextNode("foo");
 		dummy.put("number", number);
 		assertSame(number, dummy.getNumber());
 	}
 
 	@Test
 	public void testTypedInterfaceExtendingTwoTypedInterfaces() {
-		InterfaceImplementingTwoInterfaces personAndThing = this.factory
+		final InterfaceImplementingTwoInterfaces personAndThing = this.factory
 			.getTypedObjectForInterface(InterfaceImplementingTwoInterfaces.class);
-		TextNode name = new TextNode("Foobär");
+		final TextNode name = new TextNode("Foobär");
 		personAndThing.setName(name);
-		INumericNode age = new IntNode(5);
+		final INumericNode age = new IntNode(5);
 		personAndThing.setAge(age);
 		personAndThing.setCool(new BooleanNode());
-		INumericNode weight = new IntNode(55);
+		final INumericNode weight = new IntNode(55);
 		personAndThing.setWeight(weight);
-		INumericNode income = new IntNode(555);
+		final INumericNode income = new IntNode(555);
 		personAndThing.setIncome(income);
 
 		assertSame(name, personAndThing.getName());
@@ -215,7 +215,7 @@ public class TypedObjectTest {
 	}
 
 	public void testTypedInterfaceExtendingTypedInterfacesAndOneOrMoreNoTypedInterfaces() {
-		InterfaceImplementingTwoTypedInterfacesAndAnotherNoTypedObjectInterface dummy = TypedObjectNodeFactory
+		final InterfaceImplementingTwoTypedInterfacesAndAnotherNoTypedObjectInterface dummy = TypedObjectNodeFactory
 			.getInstance().getTypedObjectForInterface(
 				InterfaceImplementingTwoTypedInterfacesAndAnotherNoTypedObjectInterface.class);
 		Assert.assertNotNull(dummy);
@@ -223,17 +223,17 @@ public class TypedObjectTest {
 
 	@Test
 	public void testDocumentUseCase() {
-		Document document = this.factory.getTypedObjectForInterface(Document.class);
-		Annotation annotation1 = this.factory.getTypedObjectForInterface(Annotation.class);
-		Annotation annotation2 = this.factory.getTypedObjectForInterface(Annotation.class);
+		final Document document = this.factory.getTypedObjectForInterface(Document.class);
+		final Annotation annotation1 = this.factory.getTypedObjectForInterface(Annotation.class);
+		final Annotation annotation2 = this.factory.getTypedObjectForInterface(Annotation.class);
 
-		TextNode fooText = new TextNode("foo");
-		TextNode barText = new TextNode("bar");
+		final TextNode fooText = new TextNode("foo");
+		final TextNode barText = new TextNode("bar");
 
 		annotation1.setText(fooText);
 		annotation2.setText(barText);
 
-		ArrayNode<Annotation> anAnnotationArray = new ArrayNode<Annotation>();
+		final ArrayNode<Annotation> anAnnotationArray = new ArrayNode<Annotation>();
 		anAnnotationArray.add(annotation1);
 		anAnnotationArray.add(annotation2);
 

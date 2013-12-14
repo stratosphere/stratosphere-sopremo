@@ -45,7 +45,7 @@ public abstract class DynamicInvokable<MemberType extends Member, DeclaringType,
 	 */
 	@SuppressWarnings("unchecked")
 	@Override
-	public void read(Kryo kryo, Input input) {
+	public void read(final Kryo kryo, final Input input) {
 		ReflectUtil.setField(this, DynamicInvokable.class, "name", kryo.readObject(input, String.class));
 		final int size = input.readInt();
 		this.cachedSignatures = new HashMap<Signature, MemberType>();
@@ -53,10 +53,10 @@ public abstract class DynamicInvokable<MemberType extends Member, DeclaringType,
 		for (int index = 0; index < size; index++)
 			try {
 				final int signatureType = input.readByte();
-				Signature signature = kryo.readObject(input, SignatureTypes.get(signatureType));
-				String name = kryo.readObject(input, String.class);
-				Class<DeclaringType> clazz = kryo.readObject(input, Class.class);
-				Class<?>[] params = kryo.readObject(input, Class[].class);
+				final Signature signature = kryo.readObject(input, SignatureTypes.get(signatureType));
+				final String name = kryo.readObject(input, String.class);
+				final Class<DeclaringType> clazz = kryo.readObject(input, Class.class);
+				final Class<?>[] params = kryo.readObject(input, Class[].class);
 				this.originalSignatures.put(signature, this.findMember(name, clazz, params));
 			} catch (final NoSuchMethodException e) {
 				throw new IllegalStateException("Cannot find registered java function " + this.getName(), e);
@@ -64,15 +64,16 @@ public abstract class DynamicInvokable<MemberType extends Member, DeclaringType,
 	}
 
 	@SuppressWarnings("unchecked")
-	private final static List<Class<? extends Signature>> SignatureTypes = Arrays.asList(Signature.class, ArraySignature.class, VarArgSignature.class);
-	
+	private final static List<Class<? extends Signature>> SignatureTypes = Arrays.asList(Signature.class,
+		ArraySignature.class, VarArgSignature.class);
+
 	/*
 	 * (non-Javadoc)
 	 * @see com.esotericsoftware.kryo.KryoSerializable#write(com.esotericsoftware.kryo.Kryo,
 	 * com.esotericsoftware.kryo.io.Output)
 	 */
 	@Override
-	public void write(Kryo kryo, Output output) {
+	public void write(final Kryo kryo, final Output output) {
 		kryo.writeObject(output, this.name);
 		output.writeInt(this.originalSignatures.size());
 		for (final Entry<Signature, MemberType> entry : this.originalSignatures.entrySet()) {
@@ -90,7 +91,7 @@ public abstract class DynamicInvokable<MemberType extends Member, DeclaringType,
 	 */
 	@SuppressWarnings("unchecked")
 	@Override
-	public DynamicInvokable<MemberType, DeclaringType, ReturnType> copy(Kryo kryo) {
+	public DynamicInvokable<MemberType, DeclaringType, ReturnType> copy(final Kryo kryo) {
 		final DynamicInvokable<MemberType, DeclaringType, ReturnType> copy = kryo.newInstance(this.getClass());
 		ReflectUtil.setField(copy, DynamicInvokable.class, "name", this.name);
 		copy.originalSignatures.putAll(this.originalSignatures);
@@ -186,7 +187,8 @@ public abstract class DynamicInvokable<MemberType extends Member, DeclaringType,
 		final Class<?>[] paramTypes = this.getActualParameterTypes(params);
 		final Signature signature = this.findBestSignature(new Signature(paramTypes));
 		if (signature == null)
-			throw new IllegalArgumentException(String.format("No method %s found for parameter types %s", this.getName(),
+			throw new IllegalArgumentException(String.format("No method %s found for parameter types %s",
+				this.getName(),
 				Arrays.toString(paramTypes)));
 		return this.invokeSignature(signature, context, params);
 	}
@@ -238,14 +240,14 @@ public abstract class DynamicInvokable<MemberType extends Member, DeclaringType,
 	}
 
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(final Object obj) {
 		if (this == obj)
 			return true;
 		if (obj == null)
 			return false;
 		if (this.getClass() != obj.getClass())
 			return false;
-		DynamicInvokable<?, ?, ?> other = (DynamicInvokable<?, ?, ?>) obj;
+		final DynamicInvokable<?, ?, ?> other = (DynamicInvokable<?, ?, ?>) obj;
 		return this.name.equals(other.name) && this.originalSignatures.equals(other.originalSignatures);
 	}
 

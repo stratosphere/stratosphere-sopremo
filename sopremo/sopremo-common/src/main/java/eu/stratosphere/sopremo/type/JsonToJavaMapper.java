@@ -54,7 +54,7 @@ public class JsonToJavaMapper extends AbstractTypeMapper<TypeMapper<?, ?>> {
 		 * 
 		 * @param defaultType
 		 */
-		private ArrayToArrayMapper(Type targetType) {
+		private ArrayToArrayMapper(final Type targetType) {
 			super(null);
 			this.elemType = targetType instanceof Class ? ((Class<?>) targetType).getComponentType()
 				: ((GenericArrayType) targetType).getGenericComponentType();
@@ -68,7 +68,7 @@ public class JsonToJavaMapper extends AbstractTypeMapper<TypeMapper<?, ?>> {
 		 * java.lang.reflect.Type)
 		 */
 		@Override
-		public Object mapTo(IArrayNode from, Object target) {
+		public Object mapTo(final IArrayNode from, Object target) {
 			final int fromSize = from.size();
 
 			if (target == null || fromSize != Array.getLength(from))
@@ -89,7 +89,7 @@ public class JsonToJavaMapper extends AbstractTypeMapper<TypeMapper<?, ?>> {
 		/**
 		 * Initializes JsonToJavaMapper.ObjectToMapMapper.
 		 */
-		public ObjectToMapMapper(Type targetType) {
+		public ObjectToMapMapper(final Type targetType) {
 			super(HashMap.class);
 			if (targetType instanceof ParameterizedType) {
 				this.keyType = ((ParameterizedType) targetType).getActualTypeArguments()[0];
@@ -114,20 +114,18 @@ public class JsonToJavaMapper extends AbstractTypeMapper<TypeMapper<?, ?>> {
 		 */
 		@SuppressWarnings("unchecked")
 		@Override
-		public Map mapTo(IObjectNode from, Map target) {
-			Set reusedKeys = this.reusedKeys.get();
+		public Map mapTo(final IObjectNode from, final Map target) {
+			final Set reusedKeys = this.reusedKeys.get();
 			if (this.rawKeyType == String.class) {
 				reusedKeys.addAll(from.getFieldNames());
-				for (String key : from.getFieldNames())
+				for (final String key : from.getFieldNames())
 					target.put(key, INSTANCE.map(from.get(key), target.get(key), this.valueType));
-			}
-			else {
-				for (String key : from.getFieldNames()) {
+			} else
+				for (final String key : from.getFieldNames()) {
 					final Object targetKey = INSTANCE.map(from.get(key), null, this.keyType);
 					target.put(targetKey, INSTANCE.map(from.get(key), target.get(key), this.valueType));
 					reusedKeys.add(targetKey);
 				}
-			}
 
 			Iterables.retainAll(target.keySet(), reusedKeys);
 			reusedKeys.clear();
@@ -144,7 +142,7 @@ public class JsonToJavaMapper extends AbstractTypeMapper<TypeMapper<?, ?>> {
 		 * 
 		 * @param defaultType
 		 */
-		private ArrayToListMapper(Type targetType) {
+		private ArrayToListMapper(final Type targetType) {
 			super(ArrayList.class);
 			this.elemType = targetType instanceof Class ? Object.class
 				: ((ParameterizedType) targetType).getActualTypeArguments()[0];
@@ -156,7 +154,7 @@ public class JsonToJavaMapper extends AbstractTypeMapper<TypeMapper<?, ?>> {
 		 */
 		@SuppressWarnings("unchecked")
 		@Override
-		public List mapTo(IArrayNode from, List target) {
+		public List mapTo(final IArrayNode from, final List target) {
 			final int targetSize = from.size();
 			CollectionUtil.ensureSize(target, targetSize);
 			if (this.elemType == Object.class)
@@ -181,12 +179,12 @@ public class JsonToJavaMapper extends AbstractTypeMapper<TypeMapper<?, ?>> {
 		 * 
 		 * @param defaultType
 		 */
-		private EnumMapper(Type targetType) {
+		private EnumMapper(final Type targetType) {
 			super(null);
 			this.targetType = targetType;
 			@SuppressWarnings("unchecked")
 			final Enum<?>[] enumConstants = ((Class<? extends Enum<?>>) targetType).getEnumConstants();
-			for (Enum<?> constant : enumConstants)
+			for (final Enum<?> constant : enumConstants)
 				this.values.put(TextNode.valueOf(constant.name()), constant);
 		}
 
@@ -195,7 +193,7 @@ public class JsonToJavaMapper extends AbstractTypeMapper<TypeMapper<?, ?>> {
 		 * @see eu.stratosphere.sopremo.type.TypeMapper.Mapper#map(java.lang.Object, java.lang.Object)
 		 */
 		@Override
-		public Enum<?> mapTo(TextNode from, Enum<?> target) {
+		public Enum<?> mapTo(final TextNode from, final Enum<?> target) {
 			final Enum<?> value = this.values.get(from);
 			if (value == null)
 				throw new IllegalArgumentException(String.format("Unknown enum value %s for enum %s", from,
@@ -207,13 +205,14 @@ public class JsonToJavaMapper extends AbstractTypeMapper<TypeMapper<?, ?>> {
 	/**
 	 * @author arv
 	 */
-	private static final TypeMapper<INumericNode, Number> DefaultNumberMapper = new TypeMapper<INumericNode, Number>(null) {
+	private static final TypeMapper<INumericNode, Number> DefaultNumberMapper = new TypeMapper<INumericNode, Number>(
+		null) {
 		/*
 		 * (non-Javadoc)
 		 * @see eu.stratosphere.sopremo.type.TypeMapper.Mapper#map(java.lang.Object, java.lang.Object)
 		 */
 		@Override
-		public Number mapTo(INumericNode from, Number target) {
+		public Number mapTo(final INumericNode from, final Number target) {
 			return from.getJavaValue();
 		}
 	};
@@ -224,25 +223,25 @@ public class JsonToJavaMapper extends AbstractTypeMapper<TypeMapper<?, ?>> {
 	public static final JsonToJavaMapper INSTANCE = new JsonToJavaMapper();
 
 	protected JsonToJavaMapper() {
-		addDefaultTypeMapping(IntNode.class, Integer.class);
-		addDefaultTypeMapping(LongNode.class, Long.class);
-		addDefaultTypeMapping(BigIntegerNode.class, BigInteger.class);
-		addDefaultTypeMapping(DecimalNode.class, BigDecimal.class);
-		addDefaultTypeMapping(DoubleNode.class, Double.class);
-		addDefaultTypeMapping(TextNode.class, String.class);
-		addDefaultTypeMapping(BooleanNode.class, Boolean.class);
-		addDefaultTypeMapping(IObjectNode.class, Map.class);
-		addDefaultTypeMapping(IArrayNode.class, List.class);
+		this.addDefaultTypeMapping(IntNode.class, Integer.class);
+		this.addDefaultTypeMapping(LongNode.class, Long.class);
+		this.addDefaultTypeMapping(BigIntegerNode.class, BigInteger.class);
+		this.addDefaultTypeMapping(DecimalNode.class, BigDecimal.class);
+		this.addDefaultTypeMapping(DoubleNode.class, Double.class);
+		this.addDefaultTypeMapping(TextNode.class, String.class);
+		this.addDefaultTypeMapping(BooleanNode.class, Boolean.class);
+		this.addDefaultTypeMapping(IObjectNode.class, Map.class);
+		this.addDefaultTypeMapping(IArrayNode.class, List.class);
 
-		addMissingAndNullMappers();
-		addBooleanMappers();
+		this.addMissingAndNullMappers();
+		this.addBooleanMappers();
 		this.addStringMappers();
 		this.addIntegerMappers();
 		this.addLongMappers();
 		this.addDoubleMappers();
-		addMapper(DecimalNode.class, BigDecimal.class, DefaultNumberMapper);
-		addMapper(BigIntegerNode.class, BigInteger.class, DefaultNumberMapper);
-		addGeneralMappers();
+		this.addMapper(DecimalNode.class, BigDecimal.class, DefaultNumberMapper);
+		this.addMapper(BigIntegerNode.class, BigInteger.class, DefaultNumberMapper);
+		this.addGeneralMappers();
 	}
 
 	private void addMissingAndNullMappers() {
@@ -252,27 +251,27 @@ public class JsonToJavaMapper extends AbstractTypeMapper<TypeMapper<?, ?>> {
 			 * @see eu.stratosphere.sopremo.type.TypeMapper.Mapper#map(java.lang.Object, java.lang.Object)
 			 */
 			@Override
-			public Object mapTo(IJsonNode from, Object target) {
+			public Object mapTo(final IJsonNode from, final Object target) {
 				return null;
 			}
 		};
-		addMapper(MissingNode.class, Object.class, mapper);
-		addMapper(NullNode.class, Object.class, mapper);
+		this.addMapper(MissingNode.class, Object.class, mapper);
+		this.addMapper(NullNode.class, Object.class, mapper);
 	}
 
 	private void addBooleanMappers() {
-		TypeMapper<BooleanNode, Boolean> toBooleanMapper = new TypeMapper<BooleanNode, Boolean>(null) {
+		final TypeMapper<BooleanNode, Boolean> toBooleanMapper = new TypeMapper<BooleanNode, Boolean>(null) {
 			/*
 			 * (non-Javadoc)
 			 * @see eu.stratosphere.sopremo.type.TypeMapper.Mapper#map(java.lang.Object, java.lang.Object)
 			 */
 			@Override
-			public Boolean mapTo(BooleanNode from, Boolean target) {
+			public Boolean mapTo(final BooleanNode from, final Boolean target) {
 				return Boolean.valueOf(from.getBooleanValue());
 			}
 		};
-		addMapper(BooleanNode.class, Boolean.class, toBooleanMapper);
-		addMapper(BooleanNode.class, Boolean.TYPE, toBooleanMapper);
+		this.addMapper(BooleanNode.class, Boolean.class, toBooleanMapper);
+		this.addMapper(BooleanNode.class, Boolean.TYPE, toBooleanMapper);
 	}
 
 	private void addGeneralMappers() {
@@ -282,23 +281,24 @@ public class JsonToJavaMapper extends AbstractTypeMapper<TypeMapper<?, ?>> {
 			 * @see eu.stratosphere.sopremo.type.TypeMapper.Mapper#map(java.lang.Object, java.lang.Object)
 			 */
 			@Override
-			public String mapTo(IJsonNode from, String target) {
+			public String mapTo(final IJsonNode from, final String target) {
 				return from.toString();
 			}
 		};
-		addMapper(IJsonNode.class, String.class, toStringMapper);
-		addMapper(IJsonNode.class, CharSequence.class, toStringMapper);
-		addMapper(IJsonNode.class, StringBuilder.class, new TypeMapper<IJsonNode, StringBuilder>(StringBuilder.class) {
+		this.addMapper(IJsonNode.class, String.class, toStringMapper);
+		this.addMapper(IJsonNode.class, CharSequence.class, toStringMapper);
+		this.addMapper(IJsonNode.class, StringBuilder.class, new TypeMapper<IJsonNode, StringBuilder>(
+			StringBuilder.class) {
 			/*
 			 * (non-Javadoc)
 			 * @see eu.stratosphere.sopremo.type.TypeMapper.Mapper#map(java.lang.Object, java.lang.Object)
 			 */
 			@Override
-			public StringBuilder mapTo(IJsonNode from, StringBuilder target) {
+			public StringBuilder mapTo(final IJsonNode from, final StringBuilder target) {
 				target.setLength(0);
 				try {
 					from.appendAsString(target);
-				} catch (IOException e) {
+				} catch (final IOException e) {
 				}
 				return target;
 			}
@@ -312,102 +312,104 @@ public class JsonToJavaMapper extends AbstractTypeMapper<TypeMapper<?, ?>> {
 			 * @see eu.stratosphere.sopremo.type.TypeMapper.Mapper#map(java.lang.Object, java.lang.Object)
 			 */
 			@Override
-			public String mapTo(TextNode from, String target) {
+			public String mapTo(final TextNode from, final String target) {
 				return from.toString();
 			}
 		};
-		addMapper(TextNode.class, String.class, toStringMapper);
-		addMapper(TextNode.class, CharSequence.class, toStringMapper);
-		addMapper(TextNode.class, StringBuilder.class, new TypeMapper<TextNode, StringBuilder>(StringBuilder.class) {
+		this.addMapper(TextNode.class, String.class, toStringMapper);
+		this.addMapper(TextNode.class, CharSequence.class, toStringMapper);
+		this.addMapper(TextNode.class, StringBuilder.class,
+			new TypeMapper<TextNode, StringBuilder>(StringBuilder.class) {
+				/*
+				 * (non-Javadoc)
+				 * @see eu.stratosphere.sopremo.type.TypeMapper.Mapper#map(java.lang.Object, java.lang.Object)
+				 */
+				@Override
+				public StringBuilder mapTo(final TextNode from, final StringBuilder target) {
+					target.setLength(0);
+					target.append(from);
+					return target;
+				}
+			});
+		this.addMapper(TextNode.class, StringBuffer.class, new TypeMapper<TextNode, StringBuffer>(StringBuffer.class) {
 			/*
 			 * (non-Javadoc)
 			 * @see eu.stratosphere.sopremo.type.TypeMapper.Mapper#map(java.lang.Object, java.lang.Object)
 			 */
 			@Override
-			public StringBuilder mapTo(TextNode from, StringBuilder target) {
+			public StringBuffer mapTo(final TextNode from, final StringBuffer target) {
 				target.setLength(0);
 				target.append(from);
 				return target;
 			}
 		});
-		addMapper(TextNode.class, StringBuffer.class, new TypeMapper<TextNode, StringBuffer>(StringBuffer.class) {
+		this.addMapper(TextNode.class, char[].class, new TypeMapper<TextNode, char[]>(null) {
 			/*
 			 * (non-Javadoc)
 			 * @see eu.stratosphere.sopremo.type.TypeMapper.Mapper#map(java.lang.Object, java.lang.Object)
 			 */
 			@Override
-			public StringBuffer mapTo(TextNode from, StringBuffer target) {
-				target.setLength(0);
-				target.append(from);
-				return target;
-			}
-		});
-		addMapper(TextNode.class, char[].class, new TypeMapper<TextNode, char[]>(null) {
-			/*
-			 * (non-Javadoc)
-			 * @see eu.stratosphere.sopremo.type.TypeMapper.Mapper#map(java.lang.Object, java.lang.Object)
-			 */
-			@Override
-			public char[] mapTo(TextNode from, char[] target) {
+			public char[] mapTo(final TextNode from, final char[] target) {
 				return from.toArray();
 			}
 		});
 	}
 
 	private void addLongMappers() {
-		addMapper(LongNode.class, Long.class, DefaultNumberMapper);
-		addMapper(LongNode.class, Long.TYPE, DefaultNumberMapper);
+		this.addMapper(LongNode.class, Long.class, DefaultNumberMapper);
+		this.addMapper(LongNode.class, Long.TYPE, DefaultNumberMapper);
 	}
 
 	private void addDoubleMappers() {
-		addMapper(DoubleNode.class, Double.class, DefaultNumberMapper);
-		addMapper(DoubleNode.class, Double.TYPE, DefaultNumberMapper);
+		this.addMapper(DoubleNode.class, Double.class, DefaultNumberMapper);
+		this.addMapper(DoubleNode.class, Double.TYPE, DefaultNumberMapper);
 		final TypeMapper<INumericNode, Float> fromFloat = new TypeMapper<INumericNode, Float>(null) {
 			/*
 			 * (non-Javadoc)
 			 * @see eu.stratosphere.sopremo.type.TypeMapper.Mapper#map(java.lang.Object, java.lang.Object)
 			 */
 			@Override
-			public Float mapTo(INumericNode from, Float target) {
+			public Float mapTo(final INumericNode from, final Float target) {
 				return Float.valueOf((float) from.getDoubleValue());
 			}
 		};
-		addMapper(DoubleNode.class, Float.class, fromFloat);
-		addMapper(DoubleNode.class, Float.TYPE, fromFloat);
+		this.addMapper(DoubleNode.class, Float.class, fromFloat);
+		this.addMapper(DoubleNode.class, Float.TYPE, fromFloat);
 	}
 
 	private void addIntegerMappers() {
-		addMapper(IntNode.class, Integer.class, DefaultNumberMapper);
-		addMapper(IntNode.class, Integer.TYPE, DefaultNumberMapper);
+		this.addMapper(IntNode.class, Integer.class, DefaultNumberMapper);
+		this.addMapper(IntNode.class, Integer.TYPE, DefaultNumberMapper);
 		final TypeMapper<INumericNode, Byte> toByte = new TypeMapper<INumericNode, Byte>(null) {
 			/*
 			 * (non-Javadoc)
 			 * @see eu.stratosphere.sopremo.type.TypeMapper.Mapper#map(java.lang.Object, java.lang.Object)
 			 */
 			@Override
-			public Byte mapTo(INumericNode from, Byte target) {
+			public Byte mapTo(final INumericNode from, final Byte target) {
 				return Byte.valueOf((byte) from.getIntValue());
 			}
 		};
-		addMapper(IntNode.class, Byte.class, toByte);
-		addMapper(IntNode.class, Byte.TYPE, toByte);
+		this.addMapper(IntNode.class, Byte.class, toByte);
+		this.addMapper(IntNode.class, Byte.TYPE, toByte);
 		final TypeMapper<INumericNode, Short> toShort = new TypeMapper<INumericNode, Short>(null) {
 			/*
 			 * (non-Javadoc)
 			 * @see eu.stratosphere.sopremo.type.TypeMapper.Mapper#map(java.lang.Object, java.lang.Object)
 			 */
 			@Override
-			public Short mapTo(INumericNode from, Short target) {
+			public Short mapTo(final INumericNode from, final Short target) {
 				return Short.valueOf((short) from.getIntValue());
 			}
 		};
-		addMapper(IntNode.class, Short.class, toShort);
-		addMapper(IntNode.class, Short.TYPE, toShort);
+		this.addMapper(IntNode.class, Short.class, toShort);
+		this.addMapper(IntNode.class, Short.TYPE, toShort);
 	}
 
-	public <T> T map(IJsonNode from, T to, Type targetType) {
+	public <T> T map(final IJsonNode from, T to, final Type targetType) {
 		@SuppressWarnings("unchecked")
-		TypeMapper<IJsonNode, T> targetMapper = (TypeMapper<IJsonNode, T>) getMapper(from.getClass(), targetType);
+		final TypeMapper<IJsonNode, T> targetMapper =
+			(TypeMapper<IJsonNode, T>) this.getMapper(from.getClass(), targetType);
 		if (targetMapper == null)
 			throw new IllegalArgumentException(String.format("Cannot map %s to %s", from, targetType));
 
@@ -418,21 +420,20 @@ public class JsonToJavaMapper extends AbstractTypeMapper<TypeMapper<?, ?>> {
 	}
 
 	@SuppressWarnings("unchecked")
-	public <F extends IJsonNode, T> TypeMapper<F, T> getMapper(Class<F> fromClass, Class<T> targetType) {
+	public <F extends IJsonNode, T> TypeMapper<F, T> getMapper(final Class<F> fromClass, final Class<T> targetType) {
 		return (TypeMapper<F, T>) super.getMapper(fromClass, targetType);
 	}
 
-	public <T> T map(IJsonNode from, T to, Class<T> targetType) {
-		return map(from, to, (Type) targetType);
+	public <T> T map(final IJsonNode from, final T to, final Class<T> targetType) {
+		return this.map(from, to, (Type) targetType);
 	}
 
 	@Override
 	protected Type findDefaultMappingType(final Class<?> fromClass) {
-		if (fromClass.isArray()) {
+		if (fromClass.isArray())
 			return IArrayNode.class;
-		} else if (ITypedObjectNode.class.isAssignableFrom(fromClass)) {
+		else if (ITypedObjectNode.class.isAssignableFrom(fromClass))
 			return fromClass;
-		}
 
 		return super.findDefaultMappingType(fromClass);
 	}
@@ -443,29 +444,30 @@ public class JsonToJavaMapper extends AbstractTypeMapper<TypeMapper<?, ?>> {
 	 * java.lang.reflect.Type, java.lang.Class)
 	 */
 	@Override
-	protected TypeMapper<?, ?> findMapper(Class<?> fromClass, Class<?> originalFromClass, Type targetType,
-			Class<?> rawTarget) {
+	protected TypeMapper<?, ?> findMapper(final Class<?> fromClass, final Class<?> originalFromClass,
+			final Type targetType,
+			final Class<?> rawTarget) {
 		final TypeMapper<?, ?> mapper;
 		if (rawTarget.isArray())
-			addMapper(fromClass, rawTarget, mapper = new ArrayToArrayMapper(targetType));
+			this.addMapper(fromClass, rawTarget, mapper = new ArrayToArrayMapper(targetType));
 		else if (Collection.class.isAssignableFrom(rawTarget))
-			addMapper(fromClass, rawTarget, mapper = new ArrayToListMapper(targetType));
+			this.addMapper(fromClass, rawTarget, mapper = new ArrayToListMapper(targetType));
 		else if (rawTarget.isEnum())
-			addMapper(fromClass, rawTarget, mapper = new EnumMapper(targetType));
+			this.addMapper(fromClass, rawTarget, mapper = new EnumMapper(targetType));
 		else if (fromClass == rawTarget)
-			addMapper(fromClass, fromClass, mapper = JavaToJsonMapper.SelfMapper);
+			this.addMapper(fromClass, fromClass, mapper = JavaToJsonMapper.SelfMapper);
 		else if (Map.class.isAssignableFrom(rawTarget))
-			addMapper(fromClass, rawTarget, mapper = new ObjectToMapMapper(targetType));
+			this.addMapper(fromClass, rawTarget, mapper = new ObjectToMapMapper(targetType));
 		else
 			mapper = super.findMapper(fromClass, originalFromClass, targetType, rawTarget);
 		return mapper;
 	}
 
-	public <T> T map(IJsonNode from, T to) {
-		return map(from, to, getDefaultMappingType(from.getClass()));
+	public <T> T map(final IJsonNode from, final T to) {
+		return this.map(from, to, this.getDefaultMappingType(from.getClass()));
 	}
 
-	public <T> T map(IJsonNode from) {
-		return map(from, null, getDefaultMappingType(from.getClass()));
+	public <T> T map(final IJsonNode from) {
+		return this.map(from, null, this.getDefaultMappingType(from.getClass()));
 	}
 }

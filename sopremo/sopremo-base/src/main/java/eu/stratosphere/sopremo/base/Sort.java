@@ -40,7 +40,7 @@ public class Sort extends ElementaryOperator<Sort> {
 	 */
 	public Sort() {
 		this.setKeyExpressions(0, ConstantExpression.NULL);
-		setInnerGroupOrder(0, new OrderingExpression());
+		this.setInnerGroupOrder(0, new OrderingExpression());
 	}
 
 	/**
@@ -49,11 +49,11 @@ public class Sort extends ElementaryOperator<Sort> {
 	 * @param orderingExpression
 	 *        the orderingExpression to set
 	 */
-	public void setOrderingExpression(OrderingExpression orderingExpression) {
+	public void setOrderingExpression(final OrderingExpression orderingExpression) {
 		if (orderingExpression == null)
 			throw new NullPointerException("orderingExpression must not be null");
 
-		setInnerGroupOrder(0, orderingExpression);
+		this.setInnerGroupOrder(0, orderingExpression);
 	}
 
 	/**
@@ -65,23 +65,23 @@ public class Sort extends ElementaryOperator<Sort> {
 		return this.getInnerGroupOrder(0).get(0);
 	}
 
-	public Sort withOrderingExpression(OrderingExpression orderingExpression) {
-		setOrderingExpression(orderingExpression);
+	public Sort withOrderingExpression(final OrderingExpression orderingExpression) {
+		this.setOrderingExpression(orderingExpression);
 		return this;
 	}
 
 	@Property
 	@Name(noun = { "direction", "order" })
-	public void setDirection(Order order) {
-		getOrderingExpression().setOrder(order);
+	public void setDirection(final Order order) {
+		this.getOrderingExpression().setOrder(order);
 	}
 
 	public Order getDirection() {
-		return getOrderingExpression().getOrder();
+		return this.getOrderingExpression().getOrder();
 	}
 
-	public Sort withDirection(Order order) {
-		setDirection(order);
+	public Sort withDirection(final Order order) {
+		this.setDirection(order);
 		return this;
 	}
 
@@ -89,15 +89,15 @@ public class Sort extends ElementaryOperator<Sort> {
 		return this.getOrderingExpression().getPath();
 	}
 
-	public Sort withSortingExpression(EvaluationExpression sortingExpression) {
-		setSortingExpression(sortingExpression);
+	public Sort withSortingExpression(final EvaluationExpression sortingExpression) {
+		this.setSortingExpression(sortingExpression);
 		return this;
 	}
 
 	@Property
 	@Name(preposition = "on")
-	public void setSortingExpression(EvaluationExpression sortingExpression) {
-		getOrderingExpression().setPath(sortingExpression);
+	public void setSortingExpression(final EvaluationExpression sortingExpression) {
+		this.getOrderingExpression().setPath(sortingExpression);
 	}
 
 	public static class Implementation extends SopremoReduce {
@@ -107,8 +107,8 @@ public class Sort extends ElementaryOperator<Sort> {
 		 * eu.stratosphere.sopremo.pact.JsonCollector)
 		 */
 		@Override
-		protected void reduce(IStreamNode<IJsonNode> values, JsonCollector<IJsonNode> out) {
-			for (IJsonNode value : values)
+		protected void reduce(final IStreamNode<IJsonNode> values, final JsonCollector<IJsonNode> out) {
+			for (final IJsonNode value : values)
 				out.collect(value);
 		}
 	}

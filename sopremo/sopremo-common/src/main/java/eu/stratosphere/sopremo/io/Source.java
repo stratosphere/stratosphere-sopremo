@@ -60,8 +60,8 @@ public class Source extends ElementaryOperator<Source> {
 			throw new IllegalArgumentException("given format does not support reading");
 
 		if (this.inputPath != null)
-			checkPath();
-		addPropertiesFrom(this.format);
+			this.checkPath();
+		this.addPropertiesFrom(this.format);
 	}
 
 	/**
@@ -114,7 +114,7 @@ public class Source extends ElementaryOperator<Source> {
 
 		this.adhocExpression = null;
 		this.inputPath = inputPath;
-		checkPath();
+		this.checkPath();
 	}
 
 	/**
@@ -122,11 +122,11 @@ public class Source extends ElementaryOperator<Source> {
 	 */
 	private void checkPath() {
 		try {
-			URI uri = new URI(this.inputPath);
+			final URI uri = new URI(this.inputPath);
 			if (uri.getScheme() == null)
 				throw new IllegalStateException(
 					"File name of source does not have a valid schema (such as hdfs or file): " + this.inputPath);
-		} catch (URISyntaxException e) {
+		} catch (final URISyntaxException e) {
 			throw new IllegalArgumentException("Invalid path", e);
 		}
 	}
@@ -147,15 +147,15 @@ public class Source extends ElementaryOperator<Source> {
 	 *        the format to set
 	 */
 	@Property(preferred = true)
-	public void setFormat(SopremoFormat format) {
+	public void setFormat(final SopremoFormat format) {
 		if (format == null)
 			throw new NullPointerException("format must not be null");
 		if (format.getInputFormat() == null)
 			throw new IllegalArgumentException("reading for the given format is not supported");
 
-		removePropertiesFrom(this.format);
+		this.removePropertiesFrom(this.format);
 		this.format = format;
-		addPropertiesFrom(format);
+		this.addPropertiesFrom(format);
 	}
 
 	/**
@@ -173,7 +173,7 @@ public class Source extends ElementaryOperator<Source> {
 	}
 
 	@Override
-	public PactModule asPactModule(final EvaluationContext context, SopremoRecordLayout layout) {
+	public PactModule asPactModule(final EvaluationContext context, final SopremoRecordLayout layout) {
 		final String name = this.getName();
 		GenericDataSource<?> contract;
 		if (this.isAdhoc()) {
@@ -183,12 +183,11 @@ public class Source extends ElementaryOperator<Source> {
 				this.adhocExpression);
 		} else {
 			contract = new GenericDataSource<InputFormat<?, ?>>(this.format.getInputFormat(), name);
-			this.format.configureForInput(contract.getParameters(), this.inputPath);
+			this.format.configureForInput(contract.getParameters(), contract, this.inputPath);
 		}
 		final PactModule pactModule = new PactModule(0, 1);
 		SopremoUtil.setEvaluationContext(contract.getParameters(), context);
-		SopremoUtil.setLayout(contract.getParameters(), layout);
-		contract.setDegreeOfParallelism(getDegreeOfParallelism());
+		contract.setDegreeOfParallelism(this.getDegreeOfParallelism());
 		pactModule.getOutput(0).setInput(contract);
 		// pactModule.setInput(0, contract);
 		return pactModule;
@@ -213,7 +212,7 @@ public class Source extends ElementaryOperator<Source> {
 		if (this.getClass() != obj.getClass())
 			return false;
 		final Source other = (Source) obj;
-		return Equaler.SafeEquals.equal(this.inputPath,	other.inputPath)
+		return Equaler.SafeEquals.equal(this.inputPath, other.inputPath)
 			&& Equaler.SafeEquals.equal(this.format, other.format)
 			&& Equaler.SafeEquals.equal(this.adhocExpression, other.adhocExpression);
 	}
@@ -254,11 +253,11 @@ public class Source extends ElementaryOperator<Source> {
 	 * @see eu.stratosphere.sopremo.operator.ElementaryOperator#appendAsString(java.lang.Appendable)
 	 */
 	@Override
-	public void appendAsString(Appendable appendable) throws IOException {
+	public void appendAsString(final Appendable appendable) throws IOException {
 		appendable.append("Source [");
-		if (this.isAdhoc()) {
+		if (this.isAdhoc())
 			this.adhocExpression.appendAsString(appendable);
-		} else {
+		else {
 			if (this.inputPath != null)
 				appendable.append(this.inputPath).append(", ");
 			this.format.appendAsString(appendable);

@@ -24,7 +24,7 @@ import eu.stratosphere.sopremo.ISopremoType;
  */
 public interface IJsonNode extends ISopremoType, Comparable<IJsonNode> {
 	public void clear();
-	
+
 	public Class<? extends IJsonNode> getType();
 
 	/**

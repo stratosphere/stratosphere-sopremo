@@ -41,7 +41,7 @@ public class SopremoPlanTest extends EqualCloneTest<SopremoPlan> {
 	 * @see eu.stratosphere.sopremo.EqualVerifyTest#createDefaultInstance(int)
 	 */
 	@Override
-	protected SopremoPlan createDefaultInstance(int index) {
+	protected SopremoPlan createDefaultInstance(final int index) {
 		final SopremoPlan plan = new SopremoPlan();
 		final Source source = new Source();
 		plan.setSinks(new Sink("file:///" + String.valueOf(index)).withInputs(source));
@@ -56,10 +56,11 @@ public class SopremoPlanTest extends EqualCloneTest<SopremoPlan> {
 		final PolymorphOperator poly = new PolymorphOperator().withInputs(source);
 		final TwoInputOperator twoInputOperator = new TwoInputOperator().withInputs(poly, poly);
 		plan.setSinks(new Sink("file:///output.csv").withInputs(twoInputOperator));
-		
+
 		final SopremoPlan clone = (SopremoPlan) plan.clone();
 		Assert.assertNotNull(clone);
-		final Operator<?> cloneTwoInput = Iterables.find(clone.getContainedOperators(), Predicates.instanceOf(TwoInputOperator.class));
+		final Operator<?> cloneTwoInput =
+			Iterables.find(clone.getContainedOperators(), Predicates.instanceOf(TwoInputOperator.class));
 		Assert.assertSame(cloneTwoInput.getInput(0), cloneTwoInput.getInput(1));
 	}
 
@@ -68,14 +69,15 @@ public class SopremoPlanTest extends EqualCloneTest<SopremoPlan> {
 		final SopremoPlan plan = new SopremoPlan();
 
 		final Source source = new Source("file:///input.csv");
-		plan.setSinks(new Sink("file:///output1.csv").withInputs(source), new Sink("file:///output2.csv").withInputs(source));
-		
+		plan.setSinks(new Sink("file:///output1.csv").withInputs(source),
+			new Sink("file:///output2.csv").withInputs(source));
+
 		final byte[] byteArray = SopremoUtil.serializable(plan);
 		final SopremoPlan clone = SopremoUtil.deserialize(byteArray, SopremoPlan.class);
 		Assert.assertEquals(2, clone.getSinks().size());
 		Assert.assertSame(clone.getSinks().get(0).getInput(0), clone.getSinks().get(1).getInput(0));
 	}
-	
+
 	@Test
 	public void shouldSerializeDAGs() {
 		final SopremoPlan plan = new SopremoPlan();
@@ -84,29 +86,30 @@ public class SopremoPlanTest extends EqualCloneTest<SopremoPlan> {
 		final PolymorphOperator poly = new PolymorphOperator().withInputs(source);
 		final TwoInputOperator twoInputOperator = new TwoInputOperator().withInputs(poly, poly);
 		plan.setSinks(new Sink("file:///output.csv").withInputs(twoInputOperator));
-		
+
 		final byte[] byteArray = SopremoUtil.serializable(plan);
 		final SopremoPlan clone = SopremoUtil.deserialize(byteArray, SopremoPlan.class);
-		final Operator<?> cloneTwoInput = Iterables.find(clone.getContainedOperators(), Predicates.instanceOf(TwoInputOperator.class));
+		final Operator<?> cloneTwoInput =
+			Iterables.find(clone.getContainedOperators(), Predicates.instanceOf(TwoInputOperator.class));
 		Assert.assertNotNull(clone);
 		Assert.assertSame(cloneTwoInput.getInput(0), cloneTwoInput.getInput(1));
 	}
-	
+
 	@Test
 	public void shouldTranslateDifferentStrategies() {
 		final SopremoPlan plan = new SopremoPlan();
 		final Source source = new Source("file:///input.json");
-		PolymorphOperator operator = new PolymorphOperator().withInputs(source);
+		final PolymorphOperator operator = new PolymorphOperator().withInputs(source);
 		plan.setSinks(new Sink("file:///output.json").withInputs(operator));
 
 		operator.setMethod(PolymorphOperator.Mode.TOKENIZE);
-		expectPact(plan.asPactPlan(), TokenizeLine.Implementation.class);
+		this.expectPact(plan.asPactPlan(), TokenizeLine.Implementation.class);
 
 		operator.setMethod(PolymorphOperator.Mode.IDENTITY);
-		expectPact(plan.asPactPlan(), Identity.Implementation.class);
+		this.expectPact(plan.asPactPlan(), Identity.Implementation.class);
 	}
 
-	private void expectPact(Plan plan, Class<?> pactStub) {
+	private void expectPact(final Plan plan, final Class<?> pactStub) {
 		final PactModule module = PactModule.valueOf(plan.getDataSinks());
 		final ArrayList<Contract> pacts = Lists.newArrayList(module.getReachableNodes());
 
@@ -123,7 +126,7 @@ public class SopremoPlanTest extends EqualCloneTest<SopremoPlan> {
 @InputCardinality(2)
 @OutputCardinality(1)
 class TwoInputOperator extends ElementaryOperator<TwoInputOperator> {
-	
+
 }
 
 @InputCardinality(1)
@@ -142,7 +145,7 @@ class PolymorphOperator extends ElementaryOperator<PolymorphOperator> {
 	 *        the method to set
 	 */
 	@Property
-	public void setMethod(Mode method) {
+	public void setMethod(final Mode method) {
 		if (method == null)
 			throw new NullPointerException("method must not be null");
 
@@ -179,14 +182,14 @@ class PolymorphOperator extends ElementaryOperator<PolymorphOperator> {
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(final Object obj) {
 		if (this == obj)
 			return true;
 		if (!super.equals(obj))
 			return false;
-		if (getClass() != obj.getClass())
+		if (this.getClass() != obj.getClass())
 			return false;
-		PolymorphOperator other = (PolymorphOperator) obj;
+		final PolymorphOperator other = (PolymorphOperator) obj;
 		return this.method == other.method;
 	}
 
@@ -212,7 +215,7 @@ class TokenizeLine extends ElementaryOperator<TokenizeLine> {
 		 */
 		@Override
 		protected void map(final IJsonNode value, final JsonCollector<IJsonNode> out) {
-			final Matcher matcher = WORD_PATTERN.matcher(((TextNode) ((IObjectNode) value).get("line")));
+			final Matcher matcher = WORD_PATTERN.matcher((TextNode) ((IObjectNode) value).get("line"));
 			while (matcher.find())
 				out.collect(JsonUtil.createObjectNode("word", TextNode.valueOf(matcher.group())));
 		}

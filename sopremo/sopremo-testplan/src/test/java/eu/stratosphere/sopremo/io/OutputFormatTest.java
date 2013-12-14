@@ -39,13 +39,11 @@ import eu.stratosphere.sopremo.type.IJsonNode;
 public class OutputFormatTest {
 	public static final SopremoRecordLayout NULL_LAYOUT = SopremoRecordLayout.create();
 
-	public static void writeToFile(final File file, final SopremoFormat format, final SopremoRecordLayout layout,
-			IJsonNode... values)
+	public static void writeToFile(final File file, final SopremoFormat format, final IJsonNode... values)
 			throws IOException {
-		Configuration config = new Configuration();
+		final Configuration config = new Configuration();
 		final EvaluationContext context = new EvaluationContext();
 		SopremoUtil.setEvaluationContext(config, context);
-		SopremoUtil.setLayout(config, layout);
 		SopremoUtil.transferFieldsToConfiguration(format, SopremoFormat.class, config,
 			format.getOutputFormat(), OutputFormat.class);
 		@SuppressWarnings("unchecked")
@@ -53,8 +51,8 @@ public class OutputFormatTest {
 			FormatUtil.openOutput((Class<? extends SopremoFileOutputFormat>) format.getOutputFormat(),
 				file.toURI().toString(), config);
 
-		for (IJsonNode value : values) {
-			final SopremoRecord record = new SopremoRecord(layout);
+		for (final IJsonNode value : values) {
+			final SopremoRecord record = new SopremoRecord();
 			record.setNode(value);
 			outputFormat.writeRecord(record);
 		}
@@ -67,14 +65,13 @@ public class OutputFormatTest {
 	 * @param schema2
 	 * @param values
 	 */
-	public static void writeAndRead(SopremoFormat format, SopremoRecordLayout layout, IJsonNode... values)
-			throws IOException {
+	public static void writeAndRead(final SopremoFormat format, final IJsonNode... values) throws IOException {
 
 		final File file = File.createTempFile("csvTest.csv", null);
 		file.delete();
 
-		writeToFile(file, format, layout, values);
-		final Collection<IJsonNode> readValues = InputFormatTest.readFromFile(file, format, layout);
+		writeToFile(file, format, values);
+		final Collection<IJsonNode> readValues = InputFormatTest.readFromFile(file, format);
 
 		file.delete();
 

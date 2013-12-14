@@ -23,16 +23,19 @@ import eu.stratosphere.sopremo.type.NullNode;
  * @author arv
  */
 public class NotNullOrMissingBooleanExpression extends PathSegmentExpression {
-	/* (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.expressions.PathSegmentExpression#evaluateSegment(eu.stratosphere.sopremo.type.IJsonNode)
+	/*
+	 * (non-Javadoc)
+	 * @see
+	 * eu.stratosphere.sopremo.expressions.PathSegmentExpression#evaluateSegment(eu.stratosphere.sopremo.type.IJsonNode)
 	 */
 	@Override
-	protected IJsonNode evaluateSegment(IJsonNode node) {
+	protected IJsonNode evaluateSegment(final IJsonNode node) {
 		return node != NullNode.getInstance() && node != MissingNode.getInstance() ? BooleanNode.TRUE
 			: BooleanNode.FALSE;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
 	 * @see eu.stratosphere.sopremo.expressions.PathSegmentExpression#segmentHashCode()
 	 */
 	@Override
@@ -40,11 +43,14 @@ public class NotNullOrMissingBooleanExpression extends PathSegmentExpression {
 		return 0;
 	}
 
-	/* (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.expressions.PathSegmentExpression#equalsSameClass(eu.stratosphere.sopremo.expressions.PathSegmentExpression)
+	/*
+	 * (non-Javadoc)
+	 * @see
+	 * eu.stratosphere.sopremo.expressions.PathSegmentExpression#equalsSameClass(eu.stratosphere.sopremo.expressions
+	 * .PathSegmentExpression)
 	 */
 	@Override
-	protected boolean equalsSameClass(PathSegmentExpression other) {
+	protected boolean equalsSameClass(final PathSegmentExpression other) {
 		return true;
 	}
 

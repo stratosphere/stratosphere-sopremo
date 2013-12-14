@@ -31,6 +31,7 @@ import eu.stratosphere.nephele.fs.FileStatus;
 import eu.stratosphere.nephele.fs.FileSystem;
 import eu.stratosphere.nephele.fs.Path;
 import eu.stratosphere.nephele.template.InputSplit;
+import eu.stratosphere.pact.common.contract.GenericDataSource;
 import eu.stratosphere.pact.common.io.statistics.BaseStatistics;
 import eu.stratosphere.pact.generic.io.FileInputFormat;
 import eu.stratosphere.pact.generic.io.FileOutputFormat;
@@ -44,7 +45,6 @@ import eu.stratosphere.sopremo.operator.Name;
 import eu.stratosphere.sopremo.operator.Property;
 import eu.stratosphere.sopremo.pact.SopremoUtil;
 import eu.stratosphere.sopremo.serialization.SopremoRecord;
-import eu.stratosphere.sopremo.serialization.SopremoRecordLayout;
 import eu.stratosphere.sopremo.type.IJsonNode;
 
 /**
@@ -72,7 +72,7 @@ public abstract class SopremoFormat extends ConfigurableSopremoType {
 	 */
 	@Property
 	@Name(noun = "encoding")
-	public void setEncoding(String encoding) {
+	public void setEncoding(final String encoding) {
 		if (encoding == null)
 			throw new NullPointerException("encoding must not be null");
 
@@ -86,7 +86,7 @@ public abstract class SopremoFormat extends ConfigurableSopremoType {
 	 * @param encoding
 	 *        the encoding to set
 	 */
-	public SopremoFormat withEncoding(String encoding) {
+	public SopremoFormat withEncoding(final String encoding) {
 		this.setEncoding(encoding);
 		return this;
 	}
@@ -113,7 +113,7 @@ public abstract class SopremoFormat extends ConfigurableSopremoType {
 	 * Checks if the path specifies a file and whether the ending corresponds to one entry of
 	 * {@link #getPreferredFilenameExtensions()}.
 	 */
-	public boolean canHandleFormat(URI uri) {
+	public boolean canHandleFormat(final URI uri) {
 		final String[] preferredFilenameExtensions = this.getPreferredFilenameExtensions();
 		if (preferredFilenameExtensions.length == 0)
 			return false;
@@ -125,8 +125,8 @@ public abstract class SopremoFormat extends ConfigurableSopremoType {
 		if (separator == -1)
 			return false;
 
-		String ending = uriPath.substring(separator + 1);
-		for (String extension : preferredFilenameExtensions)
+		final String ending = uriPath.substring(separator + 1);
+		for (final String extension : preferredFilenameExtensions)
 			if (ending.equalsIgnoreCase(extension))
 				return true;
 		return false;
@@ -145,14 +145,14 @@ public abstract class SopremoFormat extends ConfigurableSopremoType {
 	}
 
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(final Object obj) {
 		if (this == obj)
 			return true;
 		if (obj == null)
 			return false;
 		if (this.getClass() != obj.getClass())
 			return false;
-		SopremoFormat other = (SopremoFormat) obj;
+		final SopremoFormat other = (SopremoFormat) obj;
 		return this.encoding.equals(other.encoding);
 	}
 
@@ -165,7 +165,7 @@ public abstract class SopremoFormat extends ConfigurableSopremoType {
 	 * @see eu.stratosphere.sopremo.ISopremoType#appendAsString(java.lang.Appendable)
 	 */
 	@Override
-	public void appendAsString(Appendable appendable) throws IOException {
+	public void appendAsString(final Appendable appendable) throws IOException {
 		appendable.append(this.getClass().getSimpleName());
 	}
 
@@ -217,7 +217,7 @@ public abstract class SopremoFormat extends ConfigurableSopremoType {
 	 */
 	@Property
 	@Name(preposition = "into")
-	public void setProjection(EvaluationExpression projection) {
+	public void setProjection(final EvaluationExpression projection) {
 		if (projection == null)
 			throw new NullPointerException("projection must not be null");
 
@@ -248,8 +248,6 @@ public abstract class SopremoFormat extends ConfigurableSopremoType {
 		 */
 		private static final long serialVersionUID = 4820322749775824947L;
 
-		private SopremoRecordLayout layout;
-
 		private EvaluationContext context;
 
 		private String encoding;
@@ -265,10 +263,7 @@ public abstract class SopremoFormat extends ConfigurableSopremoType {
 
 			SopremoEnvironment.getInstance().setConfiguration(parameters);
 			this.context = SopremoEnvironment.getInstance().getEvaluationContext();
-			this.layout = SopremoEnvironment.getInstance().getLayout();
 			SopremoUtil.configureWithTransferredState(this, SopremoFileInputFormat.class, parameters);
-			if (this.layout == null)
-				throw new IllegalStateException("Could not deserialize input schema");
 		}
 
 		/*
@@ -276,7 +271,7 @@ public abstract class SopremoFormat extends ConfigurableSopremoType {
 		 * @see eu.stratosphere.pact.common.io.FileOutputFormat#open(int)
 		 */
 		@Override
-		public void open(int taskNumber) throws IOException {
+		public void open(final int taskNumber) throws IOException {
 			super.open(taskNumber);
 
 			this.open(this.stream, taskNumber);
@@ -312,7 +307,7 @@ public abstract class SopremoFormat extends ConfigurableSopremoType {
 		 */
 		@Override
 		public void writeRecord(final SopremoRecord record) throws IOException {
-			final IJsonNode value = record.getNode();
+			final IJsonNode value = record.getOrParseNode();
 			if (SopremoUtil.DEBUG && SopremoUtil.LOG.isTraceEnabled())
 				SopremoUtil.LOG.trace(String.format("%s output %s", this.context.getOperatorDescription(), value));
 			this.writeValue(value);
@@ -357,7 +352,7 @@ public abstract class SopremoFormat extends ConfigurableSopremoType {
 		 * @see eu.stratosphere.pact.common.io.FileInputFormat#open(eu.stratosphere.nephele.fs.FileInputSplit)
 		 */
 		@Override
-		public void open(T split) throws IOException {
+		public void open(final T split) throws IOException {
 			this.end = false;
 		}
 
@@ -426,7 +421,7 @@ public abstract class SopremoFormat extends ConfigurableSopremoType {
 		 * @see eu.stratosphere.pact.common.io.FileInputFormat#open(eu.stratosphere.nephele.fs.FileInputSplit)
 		 */
 		@Override
-		public void open(FileInputSplit split) throws IOException {
+		public void open(final FileInputSplit split) throws IOException {
 			super.open(split);
 			this.end = false;
 
@@ -436,33 +431,32 @@ public abstract class SopremoFormat extends ConfigurableSopremoType {
 		protected abstract void open(FSDataInputStream stream, FileInputSplit split) throws IOException;
 
 		@Override
-		public FileBaseStatistics getStatistics(BaseStatistics cachedStatistics) throws IOException {
-			final ArrayList<FileStatus> files = getFileStati();
+		public FileBaseStatistics getStatistics(final BaseStatistics cachedStatistics) throws IOException {
+			final ArrayList<FileStatus> files = this.getFileStati();
 
 			long latestModTime = files.get(0).getModificationTime();
 			for (int index = 1; index < files.size(); index++)
 				latestModTime = Math.max(files.get(index).getModificationTime(), latestModTime);
 
 			if (cachedStatistics != null && cachedStatistics instanceof FileBaseStatistics) {
-				FileBaseStatistics fileStatistics = (FileBaseStatistics) cachedStatistics;
+				final FileBaseStatistics fileStatistics = (FileBaseStatistics) cachedStatistics;
 
 				// check whether the cached statistics are still valid, if we have any
-				if (latestModTime <= fileStatistics.getLastModificationTime()) {
+				if (latestModTime <= fileStatistics.getLastModificationTime())
 					return fileStatistics;
-				}
 			}
 
 			// calculate the whole length
 			long len = 0;
-			for (FileStatus s : files) {
+			for (final FileStatus s : files)
 				len += s.getLen();
-			}
 
 			return new FileBaseStatistics(latestModTime, len,
-				getAverageRecordBytes(FileSystem.get(this.filePath.toUri()), files, len));
+				this.getAverageRecordBytes(FileSystem.get(this.filePath.toUri()), files, len));
 		}
-		
-		protected float getAverageRecordBytes(FileSystem fileSystem, ArrayList<FileStatus> files, long fileSize)
+
+		protected float getAverageRecordBytes(final FileSystem fileSystem, final ArrayList<FileStatus> files,
+				final long fileSize)
 				throws IOException {
 			return BaseStatistics.AVG_RECORD_BYTES_UNKNOWN;
 		}
@@ -480,17 +474,14 @@ public abstract class SopremoFormat extends ConfigurableSopremoType {
 
 			// enumerate all files and check their modification time stamp.
 			if (file.isDir()) {
-				FileStatus[] fss = fs.listStatus(filePath);
+				final FileStatus[] fss = fs.listStatus(filePath);
 				files.ensureCapacity(fss.length);
 
-				for (FileStatus s : fss) {
-					if (!s.isDir()) {
+				for (final FileStatus s : fss)
+					if (!s.isDir())
 						files.add(s);
-					}
-				}
-			} else {
+			} else
 				files.add(file);
-			}
 			return files;
 		}
 
@@ -532,8 +523,8 @@ public abstract class SopremoFormat extends ConfigurableSopremoType {
 		}
 	}
 
-	public void configureForOutput(Configuration configuration, String outputPath) {
-		final Class<? extends SopremoOutputFormat> outputFormat = getOutputFormat();
+	public void configureForOutput(final Configuration configuration, final String outputPath) {
+		final Class<? extends SopremoOutputFormat> outputFormat = this.getOutputFormat();
 		if (outputPath != null)
 			configuration.setString(FileOutputFormat.FILE_PARAMETER_KEY, outputPath);
 		else if (FileOutputFormat.class.isAssignableFrom(outputFormat))
@@ -543,10 +534,11 @@ public abstract class SopremoFormat extends ConfigurableSopremoType {
 			outputFormat, OutputFormat.class);
 	}
 
-	public void configureForInput(Configuration configuration, String inputPath) {
-		final Class<? extends SopremoInputFormat<?>> inputFormat = getInputFormat();
+	public void configureForInput(final Configuration configuration, final GenericDataSource<?> source,
+			final String inputPath) {
+		final Class<? extends SopremoInputFormat<?>> inputFormat = this.getInputFormat();
 		if (inputPath != null)
-			configuration.setString("pact.input.file.path", inputPath);
+			FileInputFormat.configureFileFormat(source).filePath(inputPath);
 		else if (FileInputFormat.class.isAssignableFrom(inputFormat))
 			throw new IllegalStateException("No input path was given for the file input format");
 

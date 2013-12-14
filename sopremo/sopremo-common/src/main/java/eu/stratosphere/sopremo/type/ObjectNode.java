@@ -114,7 +114,7 @@ public class ObjectNode extends AbstractJsonNode implements IObjectNode, KryoCop
 	 * @see com.esotericsoftware.kryo.KryoCopyable#copy(com.esotericsoftware.kryo.Kryo)
 	 */
 	@Override
-	public ObjectNode copy(Kryo kryo) {
+	public ObjectNode copy(final Kryo kryo) {
 		final ObjectNode node = new ObjectNode();
 		node.copyValueFrom(this);
 		return node;
@@ -174,7 +174,7 @@ public class ObjectNode extends AbstractJsonNode implements IObjectNode, KryoCop
 		 * com.esotericsoftware.kryo.io.Output, java.lang.Object)
 		 */
 		@Override
-		public void write(Kryo kryo, Output output, ObjectNode object) {
+		public void write(final Kryo kryo, final Output output, final ObjectNode object) {
 			output.writeInt(object.size());
 
 			for (final Entry<String, IJsonNode> entry : object) {
@@ -189,10 +189,10 @@ public class ObjectNode extends AbstractJsonNode implements IObjectNode, KryoCop
 		 * com.esotericsoftware.kryo.io.Input, java.lang.Class)
 		 */
 		@Override
-		public ObjectNode read(Kryo kryo, Input input, Class<ObjectNode> type) {
+		public ObjectNode read(final Kryo kryo, final Input input, final Class<ObjectNode> type) {
 			final int len = input.readInt();
 
-			ObjectNode object = new ObjectNode();
+			final ObjectNode object = new ObjectNode();
 			for (int i = 0; i < len; i++) {
 				final String key = input.readString();
 				object.put(key, (IJsonNode) kryo.readClassAndObject(input));
@@ -200,7 +200,7 @@ public class ObjectNode extends AbstractJsonNode implements IObjectNode, KryoCop
 			return object;
 		}
 
-		private Set<String> currentKeys = new FastSet<String>();
+		private final Set<String> currentKeys = new FastSet<String>();
 
 		/*
 		 * (non-Javadoc)
@@ -208,7 +208,7 @@ public class ObjectNode extends AbstractJsonNode implements IObjectNode, KryoCop
 		 * com.esotericsoftware.kryo.io.Input, java.lang.Object, java.lang.Class)
 		 */
 		@Override
-		public ObjectNode read(Kryo kryo, Input input, ObjectNode object, Class<ObjectNode> type) {
+		public ObjectNode read(final Kryo kryo, final Input input, final ObjectNode object, final Class<ObjectNode> type) {
 			if (object == null)
 				return this.read(kryo, input, type);
 
@@ -222,7 +222,7 @@ public class ObjectNode extends AbstractJsonNode implements IObjectNode, KryoCop
 				this.currentKeys.remove(key);
 				children.put(key, SopremoUtil.deserializeInto(kryo, input, children.get(key)));
 			}
-			for (String currentKey : this.currentKeys)
+			for (final String currentKey : this.currentKeys)
 				children.remove(currentKey);
 			this.currentKeys.clear();
 

@@ -28,7 +28,7 @@ public abstract class TypeMapper<From, To> {
 	public TypeMapper(final Class<? extends To> defaultType) {
 		this.defaultType = defaultType;
 		final Type toBinding =
-			((ParameterizedType) TypeToken.of(getClass()).getSupertype(TypeMapper.class).getType()).getActualTypeArguments()[1];
+			((ParameterizedType) TypeToken.of(this.getClass()).getSupertype(TypeMapper.class).getType()).getActualTypeArguments()[1];
 		this.toType = TypeToken.of(toBinding).getRawType();
 	}
 
@@ -43,7 +43,7 @@ public abstract class TypeMapper<From, To> {
 		return this.defaultType;
 	}
 
-	public boolean isValidTarget(Object possibleTarget) {
+	public boolean isValidTarget(final Object possibleTarget) {
 		return this.toType.isInstance(possibleTarget);
 	}
 
@@ -53,7 +53,8 @@ public abstract class TypeMapper<From, To> {
 	 */
 	@Override
 	public String toString() {
-		ParameterizedType type = (ParameterizedType) TypeToken.of(getClass()).getSupertype(TypeMapper.class).getType();
+		final ParameterizedType type =
+			(ParameterizedType) TypeToken.of(this.getClass()).getSupertype(TypeMapper.class).getType();
 		return "TypeMapper " + Arrays.asList(type.getActualTypeArguments());
 	}
 }

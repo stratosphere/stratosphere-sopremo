@@ -57,23 +57,23 @@ public class JavaMethod extends SopremoFunction {
 	 * @see eu.stratosphere.sopremo.function.Callable#call(java.lang.Object)
 	 */
 	@Override
-	public IJsonNode call(IArrayNode<IJsonNode> params) throws EvaluationException {
+	public IJsonNode call(final IArrayNode<IJsonNode> params) throws EvaluationException {
 		try {
 			return this.method.invoke(null, (Object[]) params.toArray(this.arrayCache));
-		} catch (Throwable e) {
+		} catch (final Throwable e) {
 			throw new EvaluationException(e);
 		}
 	}
 
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(final Object obj) {
 		if (this == obj)
 			return true;
 		if (obj == null)
 			return false;
 		if (this.getClass() != obj.getClass())
 			return false;
-		JavaMethod other = (JavaMethod) obj;
+		final JavaMethod other = (JavaMethod) obj;
 		return this.method.equals(other.method);
 	}
 

@@ -43,7 +43,7 @@ public class ObjectSplit extends ElementaryOperator<ObjectSplit> {
 	 * @param valueProjection
 	 * @return this
 	 */
-	public ObjectSplit withValueProjection(EvaluationExpression valueProjection) {
+	public ObjectSplit withValueProjection(final EvaluationExpression valueProjection) {
 		this.setValueProjection(valueProjection);
 		return this;
 	}
@@ -54,17 +54,17 @@ public class ObjectSplit extends ElementaryOperator<ObjectSplit> {
 	 * @param valueProjection
 	 */
 	@Property
-	public void setValueProjection(EvaluationExpression valueProjection) {
+	public void setValueProjection(final EvaluationExpression valueProjection) {
 		this.valueProjection = valueProjection;
 	}
 
 	@Property
-	public ObjectSplit setObjectProjection(EvaluationExpression objectPath) {
+	public ObjectSplit setObjectProjection(final EvaluationExpression objectPath) {
 		this.objectPath = objectPath;
 		return this;
 	}
 
-	public ObjectSplit withObjectProjection(EvaluationExpression objectProjection) {
+	public ObjectSplit withObjectProjection(final EvaluationExpression objectProjection) {
 		this.setObjectProjection(objectProjection);
 		return this;
 	}
@@ -75,15 +75,16 @@ public class ObjectSplit extends ElementaryOperator<ObjectSplit> {
 		private EvaluationExpression valueProjection;
 
 		@Override
-		protected void map(IJsonNode value, JsonCollector<IJsonNode> out) {
+		protected void map(final IJsonNode value, final JsonCollector<IJsonNode> out) {
 			final IJsonNode targetValue = this.objectPath.evaluate(value);
 			if (!(targetValue instanceof IObjectNode))
 				throw new EvaluationException("Cannot split non-object");
 			final IObjectNode object = (IObjectNode) targetValue;
 
 			final TextNode fieldNode = TextNode.valueOf("");
-			IArrayNode<IJsonNode> contextNode = JsonUtil.asArray(NullNode.getInstance(), fieldNode, object, value);
-			for (Entry<String, IJsonNode> entry : object) {
+			final IArrayNode<IJsonNode> contextNode =
+				JsonUtil.asArray(NullNode.getInstance(), fieldNode, object, value);
+			for (final Entry<String, IJsonNode> entry : object) {
 				fieldNode.setValue(entry.getKey());
 				out.collect(this.valueProjection.evaluate(contextNode));
 			}

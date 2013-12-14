@@ -91,7 +91,7 @@ public class SopremoExecuctionThreadTest {
 			 * eu.stratosphere.sopremo.server.SopremoExecutionThread#getJobGraph(eu.stratosphere.pact.common.plan.Plan)
 			 */
 			@Override
-			JobGraph getJobGraph(Plan pactPlan) {
+			JobGraph getJobGraph(final Plan pactPlan) {
 				return new JobGraph();
 			}
 		};

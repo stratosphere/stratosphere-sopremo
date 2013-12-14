@@ -21,7 +21,7 @@ public class CoerceExpressionTest extends EvaluableExpressionTest<CoerceExpressi
 		switch (index) {
 		case 0:
 			return new CoerceExpression(LongNode.class);
-		case 1:			
+		case 1:
 			return new CoerceExpression(IntNode.class);
 		default:
 			return new CoerceExpression(DoubleNode.class);

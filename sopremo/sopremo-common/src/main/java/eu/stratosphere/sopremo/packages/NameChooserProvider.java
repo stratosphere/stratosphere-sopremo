@@ -14,7 +14,6 @@
  **********************************************************************************************************************/
 package eu.stratosphere.sopremo.packages;
 
-
 /**
  * @author arv
  */
@@ -26,8 +25,8 @@ public interface NameChooserProvider {
 	NameChooser getFunctionNameChooser();
 
 	NameChooser getConstantNameChooser();
-	
+
 	NameChooser getTypeNameChooser();
-	
+
 	NameChooser getFormatNameChooser();
 }

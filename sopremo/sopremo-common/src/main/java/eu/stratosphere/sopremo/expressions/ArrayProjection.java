@@ -35,7 +35,7 @@ public class ArrayProjection extends PathSegmentExpression {
 	/**
 	 * Initializes ArrayProjection.
 	 */
-	public ArrayProjection(EvaluationExpression projection) {
+	public ArrayProjection(final EvaluationExpression projection) {
 		this.projection = projection;
 	}
 
@@ -62,7 +62,7 @@ public class ArrayProjection extends PathSegmentExpression {
 	 * .EvaluationExpression)
 	 */
 	@Override
-	public ArrayProjection withInputExpression(EvaluationExpression inputExpression) {
+	public ArrayProjection withInputExpression(final EvaluationExpression inputExpression) {
 		return (ArrayProjection) super.withInputExpression(inputExpression);
 	}
 
@@ -78,12 +78,12 @@ public class ArrayProjection extends PathSegmentExpression {
 	public ChildIterator iterator() {
 		return new ConcatenatingChildIterator(super.iterator(), new NamedChildIterator("projection") {
 			@Override
-			protected void set(int index, EvaluationExpression childExpression) {
+			protected void set(final int index, final EvaluationExpression childExpression) {
 				ArrayProjection.this.projection = childExpression;
 			}
 
 			@Override
-			protected EvaluationExpression get(int index) {
+			protected EvaluationExpression get(final int index) {
 				return ArrayProjection.this.projection;
 			}
 		});
@@ -96,7 +96,7 @@ public class ArrayProjection extends PathSegmentExpression {
 	 * .PathSegmentExpression)
 	 */
 	@Override
-	public boolean equalsSameClass(PathSegmentExpression other) {
+	public boolean equalsSameClass(final PathSegmentExpression other) {
 		return this.projection.equals(((ArrayProjection) other).projection);
 	}
 
@@ -115,7 +115,7 @@ public class ArrayProjection extends PathSegmentExpression {
 	 * eu.stratosphere.sopremo.expressions.PathSegmentExpression#evaluateSegment(eu.stratosphere.sopremo.type.IJsonNode)
 	 */
 	@Override
-	protected IJsonNode evaluateSegment(IJsonNode node) {
+	protected IJsonNode evaluateSegment(final IJsonNode node) {
 		if (!(node instanceof IArrayNode)) {
 			// virtual projection
 			this.virtualResult.setSource((IStreamNode<?>) node);
@@ -130,15 +130,15 @@ public class ArrayProjection extends PathSegmentExpression {
 		return this.materializedResult;
 	}
 
-	@Override
-	public IJsonNode set(final IJsonNode node, final IJsonNode value) {
-		final EvaluationExpression inputExpression = this.getInputExpression();
-		@SuppressWarnings("unchecked")
-		final IArrayNode<IJsonNode> arrayNode = (ArrayNode<IJsonNode>) node;
-		for (int index = 0, size = arrayNode.size(); index < size; index++)
-			arrayNode.set(index, ((PathSegmentExpression) inputExpression).set(arrayNode.get(index), value));
-		return arrayNode;
-	}
+	// @Override
+	// public IJsonNode set(final IJsonNode node, final IJsonNode value) {
+	// final EvaluationExpression inputExpression = this.getInputExpression();
+	// @SuppressWarnings("unchecked")
+	// final IArrayNode<IJsonNode> arrayNode = (ArrayNode<IJsonNode>) node;
+	// for (int index = 0, size = arrayNode.size(); index < size; index++)
+	// arrayNode.set(index, ((PathSegmentExpression) inputExpression).set(arrayNode.get(index), value));
+	// return arrayNode;
+	// }
 
 	/*
 	 * (non-Javadoc)
@@ -146,9 +146,10 @@ public class ArrayProjection extends PathSegmentExpression {
 	 */
 	@Override
 	public EvaluationExpression simplify() {
-		if (getInputExpression() instanceof ArrayProjection) {
-			ArrayProjection arrayProjection = (ArrayProjection) getInputExpression();
-			return new ArrayProjection(new ChainedSegmentExpression(arrayProjection.getProjection(), getProjection())).withInputExpression(
+		if (this.getInputExpression() instanceof ArrayProjection) {
+			final ArrayProjection arrayProjection = (ArrayProjection) this.getInputExpression();
+			return new ArrayProjection(new ChainedSegmentExpression(arrayProjection.getProjection(),
+				this.getProjection())).withInputExpression(
 				arrayProjection.getInputExpression()).simplify();
 		}
 		return super.simplify();

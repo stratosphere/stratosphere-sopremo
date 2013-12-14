@@ -13,12 +13,12 @@ public abstract class TwoSourceJoinBase<Self extends TwoSourceJoinBase<Self>> ex
 		this.setResultProjection(ObjectCreation.CONCATENATION);
 	}
 
-	public TwoSourceJoinBase(int minInputs, int maxInputs) {
+	public TwoSourceJoinBase(final int minInputs, final int maxInputs) {
 		super(minInputs, maxInputs);
 		this.setResultProjection(ObjectCreation.CONCATENATION);
 	}
 
-	public TwoSourceJoinBase(int inputs) {
+	public TwoSourceJoinBase(final int inputs) {
 		super(inputs);
 		this.setResultProjection(ObjectCreation.CONCATENATION);
 	}

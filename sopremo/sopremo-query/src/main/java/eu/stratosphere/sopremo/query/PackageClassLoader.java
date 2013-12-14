@@ -42,13 +42,13 @@ import eu.stratosphere.util.StreamUtil;
  * @author arv
  */
 public class PackageClassLoader extends ClassLoader {
-	private List<JarInfo> jarInfos = new ArrayList<JarInfo>();
+	private final List<JarInfo> jarInfos = new ArrayList<JarInfo>();
 
 	public PackageClassLoader() {
 		super();
 	}
 
-	public PackageClassLoader(ClassLoader parent) {
+	public PackageClassLoader(final ClassLoader parent) {
 		super(parent);
 	}
 
@@ -57,27 +57,25 @@ public class PackageClassLoader extends ClassLoader {
 	 * @see java.lang.ClassLoader#loadClass(java.lang.String, boolean)
 	 */
 	@Override
-	protected synchronized Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
+	protected synchronized Class<?> loadClass(final String name, final boolean resolve) throws ClassNotFoundException {
 
 		// First, check if the class has already been loaded
-		Class<?> c = findLoadedClass(name);
-		if (c == null) {
+		Class<?> c = this.findLoadedClass(name);
+		if (c == null)
 			try {
-				c = findClass(name);
-			} catch (ClassNotFoundException e) {
-				if (getParent() != null)
-					c = getParent().loadClass(name);
+				c = this.findClass(name);
+			} catch (final ClassNotFoundException e) {
+				if (this.getParent() != null)
+					c = this.getParent().loadClass(name);
 			}
-		}
-		if (resolve) {
-			resolveClass(c);
-		}
+		if (resolve)
+			this.resolveClass(c);
 		return c;
 	}
 
 	@Override
-	protected Class<?> findClass(String name) throws ClassNotFoundException {
-		for (JarInfo jarInfo : this.jarInfos) {
+	protected Class<?> findClass(final String name) throws ClassNotFoundException {
+		for (final JarInfo jarInfo : this.jarInfos) {
 			final Class<?> clazz = jarInfo.findClass(name);
 			if (clazz != null)
 				return clazz;
@@ -86,8 +84,8 @@ public class PackageClassLoader extends ClassLoader {
 	}
 
 	@Override
-	protected URL findResource(String name) {
-		for (JarInfo jarInfo : this.jarInfos) {
+	protected URL findResource(final String name) {
+		for (final JarInfo jarInfo : this.jarInfos) {
 			final URL resource = jarInfo.findResource(name);
 			if (resource != null)
 				return resource;
@@ -96,8 +94,8 @@ public class PackageClassLoader extends ClassLoader {
 	}
 
 	public List<File> getFiles() {
-		List<File> files = new ArrayList<File>();
-		for (JarInfo jarInfo : this.jarInfos)
+		final List<File> files = new ArrayList<File>();
+		for (final JarInfo jarInfo : this.jarInfos)
 			jarInfo.collectFiles(files);
 		return files;
 	}
@@ -105,10 +103,10 @@ public class PackageClassLoader extends ClassLoader {
 	/**
 	 * @param jarFileLocation
 	 */
-	public void addJar(File jarFileLocation) {
+	public void addJar(final File jarFileLocation) {
 		try {
 			this.jarInfos.add(new JarInfo(jarFileLocation));
-		} catch (IOException e) {
+		} catch (final IOException e) {
 			LOG.error("Error loading jar " + jarFileLocation, e);
 		}
 	}
@@ -122,16 +120,16 @@ public class PackageClassLoader extends ClassLoader {
 
 		private InputStream inputStream;
 
-		private Map<String, JarEntry> containedClasses = new HashMap<String, JarEntry>();
+		private final Map<String, JarEntry> containedClasses = new HashMap<String, JarEntry>();
 
-		private Map<String, JarEntry> containedResources = new HashMap<String, JarEntry>();
+		private final Map<String, JarEntry> containedResources = new HashMap<String, JarEntry>();
 
-		private Set<JarInfo> containedInfos = new HashSet<JarInfo>();
+		private final Set<JarInfo> containedInfos = new HashSet<JarInfo>();
 
 		/**
 		 * Initializes PackageClassLoader.JarInfo.
 		 */
-		public JarInfo(InputStream inputStream) {
+		public JarInfo(final InputStream inputStream) {
 			this.inputStream = inputStream;
 		}
 
@@ -142,13 +140,13 @@ public class PackageClassLoader extends ClassLoader {
 		 */
 		public File getFile() {
 			if (this.file == null)
-				cache();
+				this.cache();
 			return this.file;
 		}
 
-		public void collectFiles(List<File> files) {
-			files.add(getFile());
-			for (JarInfo info : this.containedInfos)
+		public void collectFiles(final List<File> files) {
+			files.add(this.getFile());
+			for (final JarInfo info : this.containedInfos)
 				info.collectFiles(files);
 		}
 
@@ -156,12 +154,12 @@ public class PackageClassLoader extends ClassLoader {
 		 * @param name
 		 * @return
 		 */
-		public URL findResource(String name) {
+		public URL findResource(final String name) {
 			if (this.jarFile == null)
-				cache();
+				this.cache();
 			final JarEntry jarEntry = this.containedResources.get(name);
 			if (jarEntry == null) {
-				for (JarInfo info : this.containedInfos) {
+				for (final JarInfo info : this.containedInfos) {
 					final URL resource = info.findResource(name);
 					if (resource != null)
 						return resource;
@@ -171,7 +169,7 @@ public class PackageClassLoader extends ClassLoader {
 			try {
 				return new URL("jar", "", -1,
 					String.format("%s!/%s", this.file.toURI().toURL(), jarEntry.getName()));
-			} catch (MalformedURLException e) {
+			} catch (final MalformedURLException e) {
 				LOG.error("Error loading resource " + name, e);
 				return null;
 			}
@@ -181,23 +179,23 @@ public class PackageClassLoader extends ClassLoader {
 		 * @param name
 		 * @return
 		 */
-		public Class<?> findClass(String name) {
+		public Class<?> findClass(final String name) {
 			if (this.file == null)
-				cache();
+				this.cache();
 			final JarEntry jarEntry = this.containedClasses.get(name);
 			if (jarEntry == null) {
-				for (JarInfo info : this.containedInfos) {
+				for (final JarInfo info : this.containedInfos) {
 					final Class<?> clazz = info.findClass(name);
 					if (clazz != null)
 						return clazz;
 				}
 				return null;
 			}
-			ByteArrayList buffer = new ByteArrayList((int) jarEntry.getSize());
+			final ByteArrayList buffer = new ByteArrayList((int) jarEntry.getSize());
 			try {
 				StreamUtil.readFully(this.jarFile.getInputStream(jarEntry), buffer);
-				return defineClass(name, buffer.elements(), 0, buffer.size());
-			} catch (IOException e) {
+				return PackageClassLoader.this.defineClass(name, buffer.elements(), 0, buffer.size());
+			} catch (final IOException e) {
 				LOG.error("Error loading class " + name, e);
 				return null;
 			}
@@ -209,8 +207,8 @@ public class PackageClassLoader extends ClassLoader {
 		private void cache() {
 			try {
 				this.file = StreamUtil.cacheFile(this.inputStream);
-				loadJar();
-			} catch (IOException e) {
+				this.loadJar();
+			} catch (final IOException e) {
 				LOG.error(e.getMessage(), e);
 			}
 		}
@@ -232,19 +230,19 @@ public class PackageClassLoader extends ClassLoader {
 		 * 
 		 * @param jarFileLocation
 		 */
-		public JarInfo(File jarFileLocation) throws IOException {
+		public JarInfo(final File jarFileLocation) throws IOException {
 			this.file = jarFileLocation;
-			loadJar();
+			this.loadJar();
 		}
 
 		public void loadJar() throws IOException {
 			this.jarFile = new JarFile(this.file);
-			Enumeration<JarEntry> entries = this.jarFile.entries();
+			final Enumeration<JarEntry> entries = this.jarFile.entries();
 			while (entries.hasMoreElements()) {
-				JarEntry jarEntry = entries.nextElement();
+				final JarEntry jarEntry = entries.nextElement();
 				final String entryName = jarEntry.getName();
 				if (entryName.endsWith(".class")) {
-					CharArrayList chars = new CharArrayList(entryName.toCharArray());
+					final CharArrayList chars = new CharArrayList(entryName.toCharArray());
 					final int length = chars.size() - ".class".length();
 					chars.size(length);
 					final char[] charArray = chars.elements();

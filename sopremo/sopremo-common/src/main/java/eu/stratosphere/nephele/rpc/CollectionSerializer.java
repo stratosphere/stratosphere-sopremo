@@ -80,7 +80,7 @@ final class CollectionSerializer extends Serializer<Collection> {
 			if (constructor != null)
 				return true;
 
-		} catch (Exception e) {
+		} catch (final Exception e) {
 		}
 
 		return false;
@@ -98,11 +98,11 @@ final class CollectionSerializer extends Serializer<Collection> {
 		final ArrayList al = kryo.readObject(input, ArrayList.class, this.defaultSerializer);
 
 		try {
-			Constructor<Collection> constructor = type.getDeclaredConstructor(List.class);
+			final Constructor<Collection> constructor = type.getDeclaredConstructor(List.class);
 			constructor.setAccessible(true);
 			return constructor.newInstance(al);
 
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			throw new RuntimeException(e);
 		}
 	}

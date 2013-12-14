@@ -60,7 +60,7 @@ public class JsonStreamExpression extends UnevaluableExpression {
 	 * @param inputIndex
 	 *        the index
 	 */
-	public JsonStreamExpression(int inputIndex) {
+	public JsonStreamExpression(final int inputIndex) {
 		this(null, inputIndex);
 	}
 
@@ -145,8 +145,8 @@ public class JsonStreamExpression extends UnevaluableExpression {
 		if (this.getClass() != obj.getClass())
 			return false;
 		final JsonStreamExpression other = (JsonStreamExpression) obj;
-		Output thisSource = this.stream.getSource();
-		Output otherSource = other.stream.getSource();
+		final Output thisSource = this.stream.getSource();
+		final Output otherSource = other.stream.getSource();
 		if (thisSource.getIndex() != otherSource.getIndex())
 			return false;
 		// at this point we assume that both stream expression could be equal
@@ -166,7 +166,7 @@ public class JsonStreamExpression extends UnevaluableExpression {
 	 *        the inputs in which to look up the index
 	 * @return the index of the stream wrapped in this expression
 	 */
-	public int getInputIndex(List<JsonStream> inputs) {
+	public int getInputIndex(final List<JsonStream> inputs) {
 		if (this.inputIndex != -1)
 			return this.inputIndex;
 		return inputs.indexOf(this.stream);

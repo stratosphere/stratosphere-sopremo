@@ -50,11 +50,11 @@ public class PullingStreamNode<T extends IJsonNode> extends StreamNode<T> {
 	}
 
 	@SuppressWarnings("unchecked")
-	public void setSource(IStreamNode<?> node) {
+	public void setSource(final IStreamNode<?> node) {
 		this.source = (Iterator<IJsonNode>) node.iterator();
 		this.iterator = Iterators.transform(this.source, new Function<IJsonNode, T>() {
 			@Override
-			public T apply(IJsonNode inputNode) {
+			public T apply(final IJsonNode inputNode) {
 				return (T) PullingStreamNode.this.expression.evaluate(inputNode);
 			}
 		});
@@ -65,7 +65,7 @@ public class PullingStreamNode<T extends IJsonNode> extends StreamNode<T> {
 		return this.iterator;
 	}
 
-	public void setExpression(EvaluationExpression expression) {
+	public void setExpression(final EvaluationExpression expression) {
 		this.expression = expression;
 	}
 }

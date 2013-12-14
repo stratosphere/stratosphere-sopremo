@@ -20,7 +20,7 @@ public class AntiJoin extends TwoSourceJoinBase<AntiJoin> {
 	}
 
 	public static class Implementation extends SopremoCoGroup {
-		private IArrayNode<IJsonNode> result = new ArrayNode<IJsonNode>(NullNode.getInstance());
+		private final IArrayNode<IJsonNode> result = new ArrayNode<IJsonNode>(NullNode.getInstance());
 
 		/*
 		 * (non-Javadoc)
@@ -28,7 +28,8 @@ public class AntiJoin extends TwoSourceJoinBase<AntiJoin> {
 		 * eu.stratosphere.sopremo.type.IArrayNode, eu.stratosphere.sopremo.pact.JsonCollector)
 		 */
 		@Override
-		protected void coGroup(IStreamNode<IJsonNode> values1, IStreamNode<IJsonNode> values2, JsonCollector<IJsonNode> out) {
+		protected void coGroup(final IStreamNode<IJsonNode> values1, final IStreamNode<IJsonNode> values2,
+				final JsonCollector<IJsonNode> out) {
 			if (values2.isEmpty())
 				for (final IJsonNode value : values1) {
 					this.result.set(0, value);

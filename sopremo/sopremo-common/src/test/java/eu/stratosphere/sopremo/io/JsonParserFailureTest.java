@@ -25,7 +25,7 @@ public class JsonParserFailureTest {
 
 		final JsonParser parser = new JsonParser("[{id:1},{id:2}{id:3},{id:4}]");
 
-		for (int index = 0; index < 3; index++) 
+		for (int index = 0; index < 3; index++)
 			parser.readValueAsTree();
 	}
 }

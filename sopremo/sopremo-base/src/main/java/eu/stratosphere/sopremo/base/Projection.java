@@ -16,11 +16,13 @@ import eu.stratosphere.sopremo.type.IJsonNode;
 @OutputCardinality(1)
 @Name(verb = "transform")
 public class Projection extends ElementaryOperator<Projection> {
-	/* (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.operator.ElementaryOperator#asPactModule(eu.stratosphere.sopremo.EvaluationContext, eu.stratosphere.sopremo.serialization.SopremoRecordLayout)
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.operator.ElementaryOperator#asPactModule(eu.stratosphere.sopremo.EvaluationContext,
+	 * eu.stratosphere.sopremo.serialization.SopremoRecordLayout)
 	 */
 	@Override
-	public PactModule asPactModule(EvaluationContext context, SopremoRecordLayout layout) {
+	public PactModule asPactModule(final EvaluationContext context, final SopremoRecordLayout layout) {
 		if (this.getResultProjection() == EvaluationExpression.VALUE)
 			return this.createShortCircuitModule();
 		return super.asPactModule(context, layout);

@@ -35,7 +35,7 @@ public class GeneratorInputSplit extends GenericInputSplit {
 
 	static {
 		final String assignerKey = INPUT_SPLIT_CONFIG_KEY_PREFIX + GeneratorInputSplit.class.getSimpleName();
-		Configuration assignerConfig = new Configuration();
+		final Configuration assignerConfig = new Configuration();
 		assignerConfig.setClass(assignerKey, DefaultInputSplitAssigner.class);
 		GlobalConfiguration.includeConfiguration(assignerConfig);
 	}

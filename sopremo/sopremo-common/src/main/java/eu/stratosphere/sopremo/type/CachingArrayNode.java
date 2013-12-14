@@ -29,12 +29,12 @@ public class CachingArrayNode<T extends IJsonNode> extends ArrayNode<T> {
 	/**
 	 * Initializes CachingArrayNode.
 	 */
-	public CachingArrayNode(CachingList<T> objectArrayList) {
+	public CachingArrayNode(final CachingList<T> objectArrayList) {
 		super(objectArrayList);
 	}
 
 	@SuppressWarnings("unchecked")
-	public CachingArrayNode(Class<T> elemType) {
+	public CachingArrayNode(final Class<T> elemType) {
 		this(CachingList.wrap((T[]) Array.newInstance(elemType, 0)));
 	}
 
@@ -55,7 +55,7 @@ public class CachingArrayNode<T extends IJsonNode> extends ArrayNode<T> {
 	}
 
 	@SuppressWarnings("unchecked")
-	public CachingArrayNode<T> addClone(T node) {
+	public CachingArrayNode<T> addClone(final T node) {
 		final T unusedNode = this.reuseUnusedNode();
 		if (unusedNode == null)
 			this.add((T) node.clone());
@@ -73,14 +73,14 @@ public class CachingArrayNode<T extends IJsonNode> extends ArrayNode<T> {
 	 */
 	@Override
 	public void clear() {
-		for (IJsonNode element : this)
+		for (final IJsonNode element : this)
 			element.clear();
 		super.clear();
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public void setSize(int size) {
+	public void setSize(final int size) {
 		((CachingList<T>) this.getChildren()).size(size, (T) MissingNode.getInstance());
 	}
 
@@ -100,7 +100,7 @@ public class CachingArrayNode<T extends IJsonNode> extends ArrayNode<T> {
 	 * @see com.esotericsoftware.kryo.KryoCopyable#copy(com.esotericsoftware.kryo.Kryo)
 	 */
 	@Override
-	public AbstractArrayNode<T> copy(Kryo kryo) {
+	public AbstractArrayNode<T> copy(final Kryo kryo) {
 		final CachingArrayNode<T> node = new CachingArrayNode<T>();
 		node.copyValueFrom(this);
 		return node;

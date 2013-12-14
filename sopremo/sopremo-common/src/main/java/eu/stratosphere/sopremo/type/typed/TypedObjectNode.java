@@ -33,12 +33,12 @@ public abstract class TypedObjectNode implements ITypedObjectNode {
 	@Override
 	public TypedObjectNode clone() {
 		try {
-			TypedObjectNode clone = this.getClass().newInstance();
+			final TypedObjectNode clone = this.getClass().newInstance();
 			clone.backingObject = this.backingObject.clone();
 			return clone;
-		} catch (InstantiationException e) {
+		} catch (final InstantiationException e) {
 			e.printStackTrace();
-		} catch (IllegalAccessException e) {
+		} catch (final IllegalAccessException e) {
 			e.printStackTrace();
 		}
 		return null;
@@ -55,57 +55,57 @@ public abstract class TypedObjectNode implements ITypedObjectNode {
 	}
 
 	@Override
-	public void copyValueFrom(IJsonNode otherNode) {
+	public void copyValueFrom(final IJsonNode otherNode) {
 		this.backingObject.copyValueFrom(otherNode);
 	}
 
 	@Override
-	public int compareTo(IJsonNode other) {
+	public int compareTo(final IJsonNode other) {
 		return this.backingObject.compareTo(other);
 	}
 
 	@Override
-	public int compareToSameType(IJsonNode other) {
+	public int compareToSameType(final IJsonNode other) {
 		return this.backingObject.compareTo(other);
 	}
 
 	@Override
-	public void appendAsString(Appendable appendable) throws IOException {
+	public void appendAsString(final Appendable appendable) throws IOException {
 		this.backingObject.appendAsString(appendable);
 
 	}
 
 	@Override
-	public IObjectNode put(String fieldName, IJsonNode value) {
+	public IObjectNode put(final String fieldName, final IJsonNode value) {
 		return this.backingObject.put(fieldName, value);
 	}
 
-	public IObjectNode putOrNull(String fieldName, IJsonNode value) {
+	public IObjectNode putOrNull(final String fieldName, final IJsonNode value) {
 		return this.backingObject.put(fieldName, value == null ? NullNode.getInstance() : value);
 	}
 
 	@Override
-	public final <T extends IJsonNode> T get(String fieldName) {
+	public final <T extends IJsonNode> T get(final String fieldName) {
 		return this.backingObject.get(fieldName);
 	}
 
 	@SuppressWarnings("cast")
-	public final <T extends IJsonNode> T getOrNull(String fieldName) {
+	public final <T extends IJsonNode> T getOrNull(final String fieldName) {
 		final T result = this.backingObject.get(fieldName);
 		if (result == MissingNode.getInstance() || result == NullNode.getInstance())
 			return null;
 		return (T) result;
 	}
 
-	public final <T extends ITypedObjectNode> T getTyped(String fieldName, T object) {
-		IJsonNode result = this.get(fieldName);
+	public final <T extends ITypedObjectNode> T getTyped(final String fieldName, final T object) {
+		final IJsonNode result = this.get(fieldName);
 		if (result == MissingNode.getInstance() || result == NullNode.getInstance())
 			return null;
 		((TypedObjectNode) object).setBackingNode((IObjectNode) result);
 		return object;
 	}
 
-	public final void putTyped(String fieldName, ITypedObjectNode value) {
+	public final void putTyped(final String fieldName, final ITypedObjectNode value) {
 		this.backingObject.put(fieldName,
 			value == null ? NullNode.getInstance() : ((TypedObjectNode) value).getBackingNode());
 	}
@@ -114,17 +114,17 @@ public abstract class TypedObjectNode implements ITypedObjectNode {
 
 	protected static final JsonToJavaMapper JsonToJavaMapperInstance = JsonToJavaMapper.INSTANCE;
 
-	protected final <T extends ITypedObjectNode> T createWrappingObject(Class<T> aDesiredClass) {
+	protected final <T extends ITypedObjectNode> T createWrappingObject(final Class<T> aDesiredClass) {
 		return TypedObjectNodeFactory.getInstance().getTypedObjectForInterface(aDesiredClass);
 	}
 
 	@Override
-	public void remove(String fieldName) {
+	public void remove(final String fieldName) {
 		this.backingObject.remove(fieldName);
 	}
 
 	@Override
-	public IObjectNode putAll(IObjectNode jsonNode) {
+	public IObjectNode putAll(final IObjectNode jsonNode) {
 		return this.backingObject.putAll(jsonNode);
 	}
 
@@ -142,7 +142,12 @@ public abstract class TypedObjectNode implements ITypedObjectNode {
 		return this.backingObject;
 	}
 
-	public void setBackingNode(IObjectNode backingNode) {
+	public void setBackingNode(final IObjectNode backingNode) {
 		this.backingObject = backingNode;
+	}
+
+	public TypedObjectNode withBackingNode(final IObjectNode backingNode) {
+		this.backingObject = backingNode;
+		return this;
 	}
 }

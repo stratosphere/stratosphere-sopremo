@@ -2,7 +2,6 @@ package eu.stratosphere.sopremo.base;
 
 import org.junit.Test;
 
-import eu.stratosphere.sopremo.CoreFunctions;
 import eu.stratosphere.sopremo.testing.SopremoOperatorTestBase;
 import eu.stratosphere.sopremo.testing.SopremoTestPlan;
 
@@ -12,7 +11,7 @@ public class IntersectionTest extends SopremoOperatorTestBase<Intersection> {
 	 * @see eu.stratosphere.sopremo.EqualVerifyTest#createDefaultInstance(int)
 	 */
 	@Override
-	protected Intersection createDefaultInstance(int index) {
+	protected Intersection createDefaultInstance(final int index) {
 		return new Intersection();
 	}
 

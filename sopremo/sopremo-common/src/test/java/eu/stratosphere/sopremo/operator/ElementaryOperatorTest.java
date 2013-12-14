@@ -54,7 +54,6 @@ public class ElementaryOperatorTest {
 		new OperatorWithUnknownStub().getContract(LAYOUT);
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
 	public void getContractShouldReturnTheMatchingContractToTheFirstStub() {
 		final SopremoRecordLayout layout = SopremoRecordLayout.create(new ObjectAccess("someField"));
@@ -82,7 +81,6 @@ public class ElementaryOperatorTest {
 		assertEquals(null, new OperatorWithNoStubs().getStubClass());
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
 	public void getStubClassShouldReturnTheFirstStub() {
 		final Class<? extends eu.stratosphere.pact.common.stubs.Stub> stubClass = new OperatorWithTwoStubs()
@@ -140,7 +138,7 @@ public class ElementaryOperatorTest {
 		}
 
 		static class Implementation1 extends SopremoReduce {
-			
+
 			/*
 			 * (non-Javadoc)
 			 * @see eu.stratosphere.sopremo.pact.SopremoReduce#reduce(eu.stratosphere.sopremo.type.ArrayNode,
@@ -191,11 +189,11 @@ public class ElementaryOperatorTest {
 		static class UninstanceableContract extends SingleInputContract<Stub> {
 
 			public UninstanceableContract(final Class<? extends Stub> clazz, final String name) {
-				super (new UserCodeClassWrapper<Stub> (clazz), name);
+				super(new UserCodeClassWrapper<Stub>(clazz), name);
 				throw new IllegalStateException("not instanceable");
 			}
 
 		}
 	}
-	
+
 }

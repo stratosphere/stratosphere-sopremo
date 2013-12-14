@@ -14,12 +14,12 @@
  **********************************************************************************************************************/
 package eu.stratosphere.meteor.expression;
 
+import static eu.stratosphere.sopremo.function.FunctionUtil.addToBatch;
+
 import org.junit.Test;
-import static eu.stratosphere.sopremo.function.FunctionUtil.*;
 
 import eu.stratosphere.meteor.MeteorParseTest;
 import eu.stratosphere.sopremo.CoreFunctions;
-import eu.stratosphere.sopremo.aggregation.ArrayAccessAsAggregation;
 import eu.stratosphere.sopremo.base.Grouping;
 import eu.stratosphere.sopremo.base.Selection;
 import eu.stratosphere.sopremo.expressions.ArrayCreation;
@@ -27,8 +27,6 @@ import eu.stratosphere.sopremo.expressions.BatchAggregationExpression;
 import eu.stratosphere.sopremo.expressions.ComparativeExpression;
 import eu.stratosphere.sopremo.expressions.ComparativeExpression.BinaryOperator;
 import eu.stratosphere.sopremo.expressions.ConstantExpression;
-import eu.stratosphere.sopremo.expressions.EvaluationExpression;
-import eu.stratosphere.sopremo.expressions.ExpressionUtil;
 import eu.stratosphere.sopremo.expressions.InputSelection;
 import eu.stratosphere.sopremo.expressions.ObjectAccess;
 import eu.stratosphere.sopremo.expressions.ObjectCreation;
@@ -44,7 +42,7 @@ public class AggregationTest extends MeteorParseTest {
 	@Test
 	public void test() {
 		final SopremoPlan actualPlan =
-			parseScript("$li = read from 'file://lineitem.json';\n" +
+			this.parseScript("$li = read from 'file://lineitem.json';\n" +
 				"$filterLi = filter $li where $li.l_linenumber >= 1;\n" +
 				"$groups = group $filterLi by [$filterLi.l_linestatus, $filterLi.l_returnflag] into {\n" +
 				"     first: $filterLi[0],\n" +
@@ -65,14 +63,18 @@ public class AggregationTest extends MeteorParseTest {
 		final Grouping grouping =
 			new Grouping().
 				withInputs(filter).
-				withGroupingKey(0,
-					new ArrayCreation(JsonUtil.createPath("0", "l_linestatus"), JsonUtil.createPath("0", "l_returnflag"))).
+				withGroupingKey(
+					0,
+					new ArrayCreation(JsonUtil.createPath("0", "l_linestatus"),
+						JsonUtil.createPath("0", "l_returnflag"))).
 				withResultProjection(
 					new ObjectCreation(
 						new ObjectCreation.FieldAssignment("first", addToBatch(batch, CoreFunctions.FIRST)),
 						new ObjectCreation.FieldAssignment("count_qty", addToBatch(batch, CoreFunctions.COUNT)),
-						new ObjectCreation.FieldAssignment("sum_qty", addToBatch(batch, CoreFunctions.SUM, new ObjectAccess("l_quantity"))),
-						new ObjectCreation.FieldAssignment("mean_qty", addToBatch(batch, CoreFunctions.MAX, new ObjectAccess("l_quantity")))
+						new ObjectCreation.FieldAssignment("sum_qty", addToBatch(batch, CoreFunctions.SUM,
+							new ObjectAccess("l_quantity"))),
+						new ObjectCreation.FieldAssignment("mean_qty", addToBatch(batch, CoreFunctions.MAX,
+							new ObjectAccess("l_quantity")))
 					));
 
 		final Sink sink = new Sink("file://q1.json").withInputs(grouping);

@@ -96,12 +96,12 @@ public class UnaryExpression extends BooleanExpression {
 		return new NamedChildIterator("expr") {
 
 			@Override
-			protected void set(int index, EvaluationExpression e) {
+			protected void set(final int index, final EvaluationExpression e) {
 				UnaryExpression.this.expr = e;
 			}
 
 			@Override
-			protected EvaluationExpression get(int index) {
+			protected EvaluationExpression get(final int index) {
 				return UnaryExpression.this.expr;
 			}
 		};
@@ -123,7 +123,7 @@ public class UnaryExpression extends BooleanExpression {
 		this.expr.appendAsString(appendable);
 	}
 
-	public static BooleanExpression not(EvaluationExpression expression) {
+	public static BooleanExpression not(final EvaluationExpression expression) {
 		return new UnaryExpression(expression, true);
 	}
 }

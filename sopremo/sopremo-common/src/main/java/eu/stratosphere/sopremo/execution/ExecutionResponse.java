@@ -43,7 +43,7 @@ public class ExecutionResponse implements IOReadableWritable {
 	 * @param response
 	 *        a detailed response (optional)
 	 */
-	public ExecutionResponse(SopremoID jobId, ExecutionState state, String response) {
+	public ExecutionResponse(final SopremoID jobId, final ExecutionState state, final String response) {
 		this.jobId = jobId;
 		this.state = state;
 		this.details = response;
@@ -85,13 +85,13 @@ public class ExecutionResponse implements IOReadableWritable {
 	public static enum ExecutionState {
 		SETUP, ENQUEUED, RUNNING, FINISHED, ERROR;
 	}
-	
+
 	/*
 	 * (non-Javadoc)
 	 * @see eu.stratosphere.nephele.io.IOReadableWritable#read(java.io.DataInput)
 	 */
 	@Override
-	public void read(DataInput in) throws IOException {
+	public void read(final DataInput in) throws IOException {
 		this.jobId = new SopremoID();
 		this.jobId.read(in);
 		this.state = ExecutionState.values()[in.readInt()];
@@ -103,7 +103,7 @@ public class ExecutionResponse implements IOReadableWritable {
 	 * @see eu.stratosphere.nephele.io.IOReadableWritable#write(java.io.DataOutput)
 	 */
 	@Override
-	public void write(DataOutput out) throws IOException {
+	public void write(final DataOutput out) throws IOException {
 		this.jobId.write(out);
 		out.writeInt(this.state.ordinal());
 		out.writeUTF(this.details);

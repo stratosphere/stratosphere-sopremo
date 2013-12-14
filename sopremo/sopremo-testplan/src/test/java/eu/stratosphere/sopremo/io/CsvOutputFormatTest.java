@@ -36,7 +36,7 @@ public class CsvOutputFormatTest extends OutputFormatTest {
 		final CsvFormat format = new CsvFormat();
 		format.setKeyNames("id", "name", "addr", "city", "phone", "type", "class");
 
-		IJsonNode[] values = {
+		final IJsonNode[] values = {
 			JsonUtil.createObjectNode("id", "1", "name", "arnie morton's of chicago",
 				"addr", "435 s. la cienega blv.", "city", "los angeles",
 				"phone", "310/246-1501", "type", "american", "class", "'0'"),
@@ -47,7 +47,7 @@ public class CsvOutputFormatTest extends OutputFormatTest {
 				"addr", "435 s. la cienega blv.", "city", "los\nangeles", "phone", "310/246-1501",
 				"type", "american", "class", "'0'"), };
 
-		writeAndRead(format, NULL_LAYOUT, values);
+		writeAndRead(format, values);
 	}
 
 	@Test

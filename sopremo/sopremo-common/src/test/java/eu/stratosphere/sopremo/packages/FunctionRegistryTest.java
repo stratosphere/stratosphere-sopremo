@@ -67,7 +67,7 @@ public class FunctionRegistryTest {
 		Assert.assertSame(ARRAY_NODE, this.evaluate("count", new ArrayNode<IJsonNode>()));
 	}
 
-	private IJsonNode evaluate(String name, IJsonNode... parameters) {
+	private IJsonNode evaluate(final String name, final IJsonNode... parameters) {
 		final SopremoFunction method = (SopremoFunction) this.registry.get(name);
 		Assert.assertNotNull(method);
 		return method.call(JsonUtil.asArray(parameters));
@@ -111,7 +111,6 @@ public class FunctionRegistryTest {
 		Assert.assertSame(ONE_INT_VARARG_NODE, this.evaluate("count", new IntNode(1)));
 	}
 
-	@SuppressWarnings("unused")
 	public static class JavaFunctions {
 
 		@Name(verb = "count")

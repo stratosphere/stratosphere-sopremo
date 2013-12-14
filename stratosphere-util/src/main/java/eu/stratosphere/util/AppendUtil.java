@@ -16,16 +16,14 @@ package eu.stratosphere.util;
 
 import java.io.IOException;
 
-
 /**
  * @author arv
- *
  */
 public class AppendUtil {
-	public static void append(Appendable appendable, IAppending... objects) throws IOException {
+	public static void append(final Appendable appendable, final IAppending... objects) throws IOException {
 		appendable.append('[');
 		boolean first = true;
-		for (IAppending object : objects) {
+		for (final IAppending object : objects) {
 			if (first)
 				first = false;
 			else
@@ -34,11 +32,12 @@ public class AppendUtil {
 		}
 		appendable.append(']');
 	}
-	
-	public static void append(Appendable appendable, Iterable<? extends IAppending> objects) throws IOException {
+
+	public static void append(final Appendable appendable, final Iterable<? extends IAppending> objects)
+			throws IOException {
 		appendable.append('[');
 		boolean first = true;
-		for (IAppending object : objects) {
+		for (final IAppending object : objects) {
 			if (first)
 				first = false;
 			else

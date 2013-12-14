@@ -34,7 +34,7 @@ public class GlobalEnumerationTest {
 	public void shouldEnumerate() {
 		final GlobalEnumeration globalEnumeration = new GlobalEnumeration();
 		globalEnumeration.setDegreeOfParallelism(2);
-		SopremoTestPlan plan = new SopremoTestPlan(globalEnumeration);
+		final SopremoTestPlan plan = new SopremoTestPlan(globalEnumeration);
 		for (int index = 0; index < 5; index++)
 			plan.getInput(0).addObject("text", "value");
 		plan.run();
@@ -42,7 +42,7 @@ public class GlobalEnumerationTest {
 		@SuppressWarnings({ "unchecked", "rawtypes" })
 		final List<IObjectNode> results = (List) plan.getActualOutput(0).getAllNodes();
 		Assert.assertEquals(5, results.size());
-		for (IObjectNode result : results)
+		for (final IObjectNode result : results)
 			Assert.assertEquals(TextNode.valueOf("value"), result.get("text"));
 
 		for (int index1 = 0; index1 < results.size(); index1++)

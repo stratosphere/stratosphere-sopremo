@@ -24,7 +24,7 @@ public abstract class SopremoVarargFunction extends SopremoFunction {
 	 * @param minimumNumberOfParameters
 	 * @param maximumNumberOfParameters
 	 */
-	public SopremoVarargFunction(int minimumNumberOfParameters) {
+	public SopremoVarargFunction(final int minimumNumberOfParameters) {
 		super(minimumNumberOfParameters, Integer.MAX_VALUE);
 	}
 }

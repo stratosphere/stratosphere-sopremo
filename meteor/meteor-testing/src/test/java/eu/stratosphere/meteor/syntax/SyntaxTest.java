@@ -33,11 +33,11 @@ public class SyntaxTest extends MeteorParseTest {
 	 * @param error
 	 *        the expected error message
 	 */
-	protected void assertParserError(String query, String partialMessage) {
+	protected void assertParserError(final String query, final String partialMessage) {
 		try {
-			SopremoPlan plan = new QueryParser().tryParse(query);
+			final SopremoPlan plan = new QueryParser().tryParse(query);
 			Assert.fail("Parsing did not fail but produced " + plan);
-		} catch (QueryParserException e) {
+		} catch (final QueryParserException e) {
 			if (e.getRawMessage().equals(AbstractQueryParser.DEFAULT_ERROR_MESSAGE)) {
 				e.printStackTrace();
 				Assert.fail("Generic fail message " + e);

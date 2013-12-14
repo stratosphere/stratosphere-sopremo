@@ -14,8 +14,9 @@
  **********************************************************************************************************************/
 package eu.stratosphere.meteor.expression;
 
+import static eu.stratosphere.sopremo.function.FunctionUtil.createFunctionCall;
+
 import org.junit.Assert;
-import static eu.stratosphere.sopremo.function.FunctionUtil.*;
 import org.junit.Test;
 
 import eu.stratosphere.meteor.MeteorParseTest;
@@ -44,7 +45,7 @@ public class MethodTest extends MeteorParseTest {
 
 	@Test
 	public void testMethodCall() {
-		final SopremoPlan actualPlan = parseScript(
+		final SopremoPlan actualPlan = this.parseScript(
 			"$input = read from 'file://input.json';\n" +
 				"$result = transform $input into { result: $input.count() };\n" +
 				"write $result to 'file://output.json'; ");
@@ -64,7 +65,7 @@ public class MethodTest extends MeteorParseTest {
 
 	@Test
 	public void testMethodCallWithAppendedPathSegment() {
-		final SopremoPlan actualPlan = parseScript(
+		final SopremoPlan actualPlan = this.parseScript(
 			"$input = read from 'file://input.json';\n" +
 				"$result = transform $input into { result: $input.all().count() };\n" +
 				"write $result to 'file://output.json'; ");
@@ -85,7 +86,7 @@ public class MethodTest extends MeteorParseTest {
 
 	@Test
 	public void testMethodCallInPath() {
-		final SopremoPlan actualPlan = parseScript(
+		final SopremoPlan actualPlan = this.parseScript(
 			"$input = read from 'file://input.json';\n" +
 				"$result = transform $input into { result: $input.addresses.all().count() };\n" +
 				"write $result to 'file://output.json'; ");
@@ -108,7 +109,7 @@ public class MethodTest extends MeteorParseTest {
 
 	@Test
 	public void testSafeMethodCall() {
-		final SopremoPlan actualPlan = parseScript(
+		final SopremoPlan actualPlan = this.parseScript(
 			"$input = read from 'file://input.json';\n" +
 				"$result = transform $input into $input.addresses?.count();\n" +
 				"write $result to 'file://output.json'; ");
@@ -140,12 +141,12 @@ public class MethodTest extends MeteorParseTest {
 	@Test
 	public void testMethodCallWithComplexExpression() {
 		final SopremoPlan actualPlan =
-			parseScript(
-			"$input = read from 'file://input.json';\n"
-				+
-				"$result = transform $input into { result: $input.addresses.replace($input.city, '').street.count() };\n"
-				+
-				"write $result to 'file://output.json'; ");
+			this.parseScript(
+				"$input = read from 'file://input.json';\n"
+					+
+					"$result = transform $input into { result: $input.addresses.replace($input.city, '').street.count() };\n"
+					+
+					"write $result to 'file://output.json'; ");
 
 		final SopremoPlan expectedPlan = new SopremoPlan();
 		final Source input = new Source("file://input.json");
@@ -168,12 +169,12 @@ public class MethodTest extends MeteorParseTest {
 	@Test
 	public void testMethodCallWithComplexExpression2() {
 		final SopremoPlan actualPlan =
-			parseScript(
-			"$input = read from 'file://input.json';\n"
-				+
-				"$result = transform $input into { result: $input.addresses.replace($input.city, '')[*].street.count() };\n"
-				+
-				"write $result to 'file://output.json'; ");
+			this.parseScript(
+				"$input = read from 'file://input.json';\n"
+					+
+					"$result = transform $input into { result: $input.addresses.replace($input.city, '')[*].street.count() };\n"
+					+
+					"write $result to 'file://output.json'; ");
 
 		final SopremoPlan expectedPlan = new SopremoPlan();
 		final Source input = new Source("file://input.json");

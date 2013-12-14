@@ -24,24 +24,24 @@ import eu.stratosphere.sopremo.type.IJsonNode;
  * @author Arvid Heise
  */
 public class ArrayAccessAsAggregation extends Aggregation {
-	private int startIndex, endIndex;
+	private final int startIndex, endIndex;
 
 	private transient int elementsToSkip, remainingElements;
 
-	private boolean range;
+	private final boolean range;
 
 	/**
 	 * Initializes ArrayAccessAsAggregation.
 	 * 
 	 * @param name
 	 */
-	public ArrayAccessAsAggregation(int startIndex, int endIndex, boolean range) {
+	public ArrayAccessAsAggregation(final int startIndex, final int endIndex, final boolean range) {
 		this.startIndex = startIndex;
 		this.endIndex = endIndex;
 		this.range = range;
 	}
 
-	public ArrayAccessAsAggregation(int index) {
+	public ArrayAccessAsAggregation(final int index) {
 		this(index, index, false);
 	}
 
@@ -70,7 +70,7 @@ public class ArrayAccessAsAggregation extends Aggregation {
 	 * @see eu.stratosphere.sopremo.aggregation.Aggregation#aggregate(eu.stratosphere.sopremo.type.IJsonNode)
 	 */
 	@Override
-	public void aggregate(IJsonNode element) {
+	public void aggregate(final IJsonNode element) {
 		if (this.elementsToSkip > 0)
 			this.elementsToSkip--;
 		else if (this.remainingElements > 0) {
@@ -93,7 +93,7 @@ public class ArrayAccessAsAggregation extends Aggregation {
 	 * @see eu.stratosphere.sopremo.aggregation.Aggregation#toString(java.lang.StringBuilder)
 	 */
 	@Override
-	public void appendAsString(Appendable appendable) throws IOException {
+	public void appendAsString(final Appendable appendable) throws IOException {
 		// super.appendAsString(appendable);
 		appendable.append("@[");
 		TypeFormat.format(this.startIndex, appendable);

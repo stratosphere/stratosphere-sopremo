@@ -37,15 +37,14 @@ public class TypedObjectNodeFactory {
 	}
 
 	@SuppressWarnings("unchecked")
-	public <T extends ITypedObjectNode> T getTypedObjectForInterface(Class<T> myInterface) {
+	public <T extends ITypedObjectNode> T getTypedObjectForInterface(final Class<T> myInterface) {
 		Class<T> classObject = (Class<T>) this.typesMap.get(myInterface);
-		if (classObject == null) {
+		if (classObject == null)
 			try {
 				this.typesMap.put(myInterface, classObject = this.createSuperClassForInterface(myInterface));
-			} catch (Exception e) {
+			} catch (final Exception e) {
 				throw new IllegalStateException("cannot load class", e);
 			}
-		}
 
 		return ReflectUtil.newInstance(classObject);
 	}
@@ -93,18 +92,19 @@ public class TypedObjectNodeFactory {
 	// return null;
 	// }
 
-	private <T extends ITypedObjectNode> Class<T> createSuperClassForInterface(Class<T> myInterface) throws Exception {
+	private <T extends ITypedObjectNode> Class<T> createSuperClassForInterface(final Class<T> myInterface)
+			throws Exception {
 		Class<T> classObject;
-		String className = myInterface.getName() + "Impl";
-		ASMClassBuilder classBuilder = new ASMClassBuilder(className, myInterface);
+		final String className = myInterface.getName() + "Impl";
+		final ASMClassBuilder classBuilder = new ASMClassBuilder(className, myInterface);
 
-		Set<String> uniqueProperties = new HashSet<String>();
+		final Set<String> uniqueProperties = new HashSet<String>();
 
-		Set<Class<?>> allInterfacesInHierarchyToImplement = this.collectAllInterfacesToImplement(myInterface);
-		for (Class<?> extendedInterface : allInterfacesInHierarchyToImplement) {
-			BeanInfo interfaceInfo = getBeanInfo(extendedInterface);
-			PropertyDescriptor[] props = interfaceInfo.getPropertyDescriptors();
-			for (PropertyDescriptor prop : props)
+		final Set<Class<?>> allInterfacesInHierarchyToImplement = this.collectAllInterfacesToImplement(myInterface);
+		for (final Class<?> extendedInterface : allInterfacesInHierarchyToImplement) {
+			final BeanInfo interfaceInfo = this.getBeanInfo(extendedInterface);
+			final PropertyDescriptor[] props = interfaceInfo.getPropertyDescriptors();
+			for (final PropertyDescriptor prop : props)
 				if (!uniqueProperties.contains(prop.getName())) {
 					uniqueProperties.add(prop.getName());
 					classBuilder.addAccessorsForProperty(prop);
@@ -115,17 +115,17 @@ public class TypedObjectNodeFactory {
 		return classObject;
 	}
 
-	private BeanInfo getBeanInfo(Class<?> clazz) {
+	private BeanInfo getBeanInfo(final Class<?> clazz) {
 		try {
 			return Introspector.getBeanInfo(clazz);
-		} catch (IntrospectionException e) {
+		} catch (final IntrospectionException e) {
 			throw new IllegalStateException("Cannot inspect class " + clazz, e);
 		}
 	}
 
-	private Set<Class<?>> collectAllInterfacesToImplement(Class<?> anInterface) {
-		Set<Class<?>> allInterfacesToImplement = new IdentitySet<Class<?>>();
-		for (Class<?> superInterface : anInterface.getInterfaces())
+	private Set<Class<?>> collectAllInterfacesToImplement(final Class<?> anInterface) {
+		final Set<Class<?>> allInterfacesToImplement = new IdentitySet<Class<?>>();
+		for (final Class<?> superInterface : anInterface.getInterfaces())
 			if (ITypedObjectNode.class.isAssignableFrom(superInterface) && superInterface != ITypedObjectNode.class) {
 				allInterfacesToImplement.add(superInterface);
 				allInterfacesToImplement.addAll(this.collectAllInterfacesToImplement(superInterface));
@@ -136,18 +136,18 @@ public class TypedObjectNodeFactory {
 
 	// taken from http://asm.ow2.org/doc/faq.html#Q5
 	@SuppressWarnings("unchecked")
-	private <T extends ITypedObjectNode> Class<T> loadClass(byte[] b, String className) throws Exception {
+	private <T extends ITypedObjectNode> Class<T> loadClass(final byte[] b, final String className) throws Exception {
 		// override classDefine (as it is protected) and define the class.
 		Class<T> clazz = null;
-		ClassLoader loader = ClassLoader.getSystemClassLoader();
-		Class<?> cls = Class.forName("java.lang.ClassLoader");
-		java.lang.reflect.Method method = cls.getDeclaredMethod("defineClass", new Class[] { String.class,
+		final ClassLoader loader = ClassLoader.getSystemClassLoader();
+		final Class<?> cls = Class.forName("java.lang.ClassLoader");
+		final java.lang.reflect.Method method = cls.getDeclaredMethod("defineClass", new Class[] { String.class,
 			byte[].class, int.class, int.class });
 
 		// protected method invocaton
 		method.setAccessible(true);
 		try {
-			Object[] args = new Object[] { className, b, new Integer(0), new Integer(b.length) };
+			final Object[] args = new Object[] { className, b, new Integer(0), new Integer(b.length) };
 			clazz = (Class<T>) method.invoke(loader, args);
 		} finally {
 			method.setAccessible(false);

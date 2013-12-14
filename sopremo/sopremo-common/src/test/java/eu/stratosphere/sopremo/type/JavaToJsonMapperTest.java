@@ -177,11 +177,11 @@ public class JavaToJsonMapperTest {
 
 	@Test
 	public void shouldMapObject() {
-		Map<String, Object> object = new HashMap<String, Object>();
+		final Map<String, Object> object = new HashMap<String, Object>();
 		object.put("a", 1);
 		object.put("b", "test");
 
-		ObjectNode expected = new ObjectNode();
+		final ObjectNode expected = new ObjectNode();
 		expected.put("a", IntNode.valueOf(1));
 		expected.put("b", TextNode.valueOf("test"));
 		Assert.assertEquals(expected, this.mapper.map(object));
@@ -196,20 +196,20 @@ public class JavaToJsonMapperTest {
 
 	@Test
 	public void shouldNestedMapObject() {
-		Map<String, Object> object = new HashMap<String, Object>();
+		final Map<String, Object> object = new HashMap<String, Object>();
 		object.put("a", 1);
 		object.put("b", "test");
-		Map<String, Object> nested = new HashMap<String, Object>();
+		final Map<String, Object> nested = new HashMap<String, Object>();
 		nested.put("1", "x");
 		nested.put("2", true);
 		object.put("nestedObject", nested);
 
 		final IJsonNode node = this.mapper.map(object);
 
-		ObjectNode expected = new ObjectNode();
+		final ObjectNode expected = new ObjectNode();
 		expected.put("a", IntNode.valueOf(1));
 		expected.put("b", TextNode.valueOf("test"));
-		ObjectNode nestedObjectNode = new ObjectNode();
+		final ObjectNode nestedObjectNode = new ObjectNode();
 		nestedObjectNode.put("1", TextNode.valueOf("x"));
 		nestedObjectNode.put("2", BooleanNode.valueOf(true));
 		expected.put("nestedObject", nestedObjectNode);
@@ -218,13 +218,13 @@ public class JavaToJsonMapperTest {
 
 	@Test
 	public void shouldMapList() {
-		List<Object> object = new ArrayList<Object>();
+		final List<Object> object = new ArrayList<Object>();
 		object.add(1);
 		object.add("test");
 
 		final IJsonNode node = this.mapper.map(object);
 
-		ArrayNode<IJsonNode> expected = new ArrayNode<IJsonNode>();
+		final ArrayNode<IJsonNode> expected = new ArrayNode<IJsonNode>();
 		expected.add(IntNode.valueOf(1));
 		expected.add(TextNode.valueOf("test"));
 		Assert.assertEquals(expected, node);
@@ -248,14 +248,14 @@ public class JavaToJsonMapperTest {
 
 	@Test
 	public void shouldMapTypedList() {
-		List<Object> object = new ArrayList<Object>();
+		final List<Object> object = new ArrayList<Object>();
 		object.add(1);
 		object.add("test");
 
 		final IJsonNode node = this.mapper.map(object, null, new TypeToken<ArrayNode<TextNode>>() {
 		}.getType());
 
-		ArrayNode<TextNode> expected = new ArrayNode<TextNode>();
+		final ArrayNode<TextNode> expected = new ArrayNode<TextNode>();
 		expected.add(TextNode.valueOf("1"));
 		expected.add(TextNode.valueOf("test"));
 		Assert.assertEquals(expected, node);

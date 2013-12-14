@@ -26,14 +26,14 @@ public class SopremoKryo extends Kryo {
 	 */
 	@Override
 	@SuppressWarnings({ "rawtypes", "cast" })
-	public Serializer getDefaultSerializer(Class type) {
+	public Serializer getDefaultSerializer(final Class type) {
 		if (type == null)
 			throw new IllegalArgumentException("type cannot be null.");
 
 		if (!type.isInterface())
 			for (Class<?> baseType = type; baseType != Object.class; baseType = baseType.getSuperclass())
 				if (baseType.isAnnotationPresent(DefaultSerializer.class))
-					return newSerializer(
+					return this.newSerializer(
 						((DefaultSerializer) baseType.getAnnotation(DefaultSerializer.class)).value(), type);
 
 		return super.getDefaultSerializer(type);

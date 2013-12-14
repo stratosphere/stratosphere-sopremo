@@ -37,7 +37,7 @@ public class FunctionCall extends EvaluationExpression {
 
 	private final SopremoFunction function;
 
-	private List<EvaluationExpression> paramExprs;
+	private final List<EvaluationExpression> paramExprs;
 
 	/**
 	 * Initializes a MethodCall with the given function name and expressions
@@ -64,7 +64,7 @@ public class FunctionCall extends EvaluationExpression {
 	public FunctionCall(final SopremoFunction function, final List<EvaluationExpression> params) {
 		if (function == null)
 			throw new NullPointerException("Function must not be null");
-		for (EvaluationExpression param : params)
+		for (final EvaluationExpression param : params)
 			if (param == null)
 				throw new NullPointerException("Params must not be null " + params);
 		this.function = function;
@@ -122,7 +122,7 @@ public class FunctionCall extends EvaluationExpression {
 	 * stratosphere.sopremo.type.IJsonNode)
 	 */
 	@Override
-	public IJsonNode evaluate(IJsonNode node) {
+	public IJsonNode evaluate(final IJsonNode node) {
 		final List<EvaluationExpression> paramExprs = this.paramExprs;
 		this.params.clear();
 		for (int index = 0; index < paramExprs.size(); index++)
@@ -130,7 +130,7 @@ public class FunctionCall extends EvaluationExpression {
 
 		try {
 			return this.function.call(this.params);
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			throw new EvaluationException(e);
 		}
 	}
@@ -141,17 +141,17 @@ public class FunctionCall extends EvaluationExpression {
 	 */
 	@Override
 	public ChildIterator iterator() {
-		String[] paramNames = new String[this.paramExprs.size()];
+		final String[] paramNames = new String[this.paramExprs.size()];
 		for (int index = 0; index < paramNames.length; index++)
 			paramNames[index] = String.format("Param %d", index);
 		return new ConcatenatingChildIterator(super.iterator(), new NamedChildIterator(paramNames) {
 			@Override
-			protected void set(int index, EvaluationExpression childExpression) {
+			protected void set(final int index, final EvaluationExpression childExpression) {
 				FunctionCall.this.paramExprs.set(index, childExpression);
 			}
 
 			@Override
-			protected EvaluationExpression get(int index) {
+			protected EvaluationExpression get(final int index) {
 				return FunctionCall.this.paramExprs.get(index);
 			}
 		});

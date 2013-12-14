@@ -55,17 +55,17 @@ public class SopremoServer implements SopremoExecutionProtocol, Closeable {
 
 	private RPCService rpcService;
 
-	private Configuration configuration;
+	private final Configuration configuration;
 
 	private InetSocketAddress serverAddress, jobManagerAddress;
 
-	private ScheduledExecutorService executorService = createExecutor();
+	private final ScheduledExecutorService executorService = this.createExecutor();
 
-	private Map<SopremoID, SopremoJobInfo> jobInfo = new HashMap<SopremoID, SopremoJobInfo>();
+	private final Map<SopremoID, SopremoJobInfo> jobInfo = new HashMap<SopremoID, SopremoJobInfo>();
 
 	private boolean stopped = false;
 
-	private LibraryTransferAgent libraryTransferAgent = new LibraryTransferAgent();
+	private final LibraryTransferAgent libraryTransferAgent = new LibraryTransferAgent();
 
 	private static final Log LOG = LogFactory.getLog(SopremoServer.class);
 
@@ -75,7 +75,7 @@ public class SopremoServer implements SopremoExecutionProtocol, Closeable {
 		this(GlobalConfiguration.getConfiguration());
 	}
 
-	public SopremoServer(Configuration configuration) {
+	public SopremoServer(final Configuration configuration) {
 		this.configuration = configuration;
 	}
 
@@ -97,8 +97,8 @@ public class SopremoServer implements SopremoExecutionProtocol, Closeable {
 	 * @see eu.stratosphere.meteor.execution.SopremoExecutor#execute(eu.stratosphere.meteor.execution.ExecutionRequest)
 	 */
 	@Override
-	public ExecutionResponse execute(ExecutionRequest request) {
-		SopremoID jobId = SopremoID.generate();
+	public ExecutionResponse execute(final ExecutionRequest request) {
+		final SopremoID jobId = SopremoID.generate();
 		LOG.info("Receive execution request for job " + jobId);
 		final SopremoJobInfo info = new SopremoJobInfo(jobId, request, this.configuration);
 		this.jobInfo.put(jobId, info);
@@ -107,7 +107,7 @@ public class SopremoServer implements SopremoExecutionProtocol, Closeable {
 		else if (request.getMode() == null)
 			info.setStatusAndDetail(ExecutionState.ERROR, "No mode set");
 		else
-			this.executorService.submit(new SopremoExecutionThread(info, getJobManagerAddress()));
+			this.executorService.submit(new SopremoExecutionThread(info, this.getJobManagerAddress()));
 		return this.getState(jobId);
 	}
 
@@ -125,14 +125,16 @@ public class SopremoServer implements SopremoExecutionProtocol, Closeable {
 	}
 
 	@Override
-	public LibraryCacheProfileResponse getLibraryCacheProfile(LibraryCacheProfileRequest request) throws IOException {
+	public LibraryCacheProfileResponse getLibraryCacheProfile(final LibraryCacheProfileRequest request)
+			throws IOException {
 		return this.libraryTransferAgent.getLibraryCacheProfile(request);
 	}
 
 	public InetSocketAddress getServerAddress() {
 		InetSocketAddress serverAddress = this.serverAddress;
 		if (serverAddress == null) {
-			final String address = this.configuration.getString(SopremoConstants.SOPREMO_SERVER_IPC_ADDRESS_KEY, "localhost");
+			final String address =
+				this.configuration.getString(SopremoConstants.SOPREMO_SERVER_IPC_ADDRESS_KEY, "localhost");
 			final int port = this.configuration.getInteger(SopremoConstants.SOPREMO_SERVER_IPC_PORT_KEY,
 				SopremoConstants.DEFAULT_SOPREMO_SERVER_IPC_PORT);
 
@@ -146,11 +148,10 @@ public class SopremoServer implements SopremoExecutionProtocol, Closeable {
 	 * @see eu.stratosphere.meteor.execution.SopremoExecutor#getStatus(java.lang.String)
 	 */
 	@Override
-	public ExecutionResponse getState(SopremoID jobId) {
+	public ExecutionResponse getState(final SopremoID jobId) {
 		final SopremoJobInfo info = this.jobInfo.get(jobId);
-		if (info == null) {
+		if (info == null)
 			return new ExecutionResponse(jobId, ExecutionState.ERROR, "Unknown job");
-		}
 		return new ExecutionResponse(jobId, info.getStatus(), info.getDetail());
 	}
 
@@ -163,14 +164,14 @@ public class SopremoServer implements SopremoExecutionProtocol, Closeable {
 		return this.stopped;
 	}
 
-	public void setJobManagerAddress(InetSocketAddress jobManagerAddress) {
+	public void setJobManagerAddress(final InetSocketAddress jobManagerAddress) {
 		if (jobManagerAddress == null)
 			throw new NullPointerException("jobManagerAddress must not be null");
 
 		this.jobManagerAddress = jobManagerAddress;
 	}
 
-	public void setServerAddress(InetSocketAddress rpcServerAddress) {
+	public void setServerAddress(final InetSocketAddress rpcServerAddress) {
 		if (rpcServerAddress == null)
 			throw new NullPointerException("rpcServerAddress must not be null");
 
@@ -188,7 +189,7 @@ public class SopremoServer implements SopremoExecutionProtocol, Closeable {
 			@Override
 			public void run() {
 				SopremoServer.this.stop();
-				close();
+				SopremoServer.this.close();
 			}
 		});
 	}
@@ -198,7 +199,7 @@ public class SopremoServer implements SopremoExecutionProtocol, Closeable {
 	}
 
 	@Override
-	public void updateLibraryCache(LibraryCacheUpdate update) throws IOException {
+	public void updateLibraryCache(final LibraryCacheUpdate update) throws IOException {
 		this.libraryTransferAgent.updateLibraryCache(update);
 	}
 
@@ -209,7 +210,7 @@ public class SopremoServer implements SopremoExecutionProtocol, Closeable {
 	}
 
 	private void startServer() throws IOException {
-		InetSocketAddress rpcServerAddress = getServerAddress();
+		final InetSocketAddress rpcServerAddress = this.getServerAddress();
 		this.rpcService = new RPCService(rpcServerAddress.getPort(), 2);
 		this.rpcService.setProtocolCallbackHandler(SopremoExecutionProtocol.class, this);
 	}
@@ -229,43 +230,42 @@ public class SopremoServer implements SopremoExecutionProtocol, Closeable {
 		final Options options = new Options();
 		options.addOption(configDirOpt);
 
-		CommandLineParser parser = new GnuParser();
+		final CommandLineParser parser = new GnuParser();
 		CommandLine line = null;
 		try {
 			line = parser.parse(options, args);
 			final String configDir = line.getOptionValue(configDirOpt.getOpt(), null);
 			GlobalConfiguration.loadConfiguration(configDir);
-		} catch (ParseException e) {
+		} catch (final ParseException e) {
 			LOG.error("CLI Parsing failed. Reason: " + e.getMessage());
 			System.exit(1);
 		}
 
 		// start server
-		SopremoServer sopremoServer = new SopremoServer();
+		final SopremoServer sopremoServer = new SopremoServer();
 		try {
 			sopremoServer.start();
-		} catch (IOException e) {
+		} catch (final IOException e) {
 			LOG.error("Cannot start Sopremo server: " + StringUtils.stringifyException(e));
 			sopremoServer.close();
 			return;
 		}
 
 		// and wait for any shutdown signal
-		while (!Thread.interrupted()) {
+		while (!Thread.interrupted())
 			// Sleep
 			try {
 				Thread.sleep(SLEEPINTERVAL);
-			} catch (InterruptedException e) {
+			} catch (final InterruptedException e) {
 				break;
 			}
-			// Do nothing here
-		}
+		// Do nothing here
 
 		sopremoServer.close();
 	}
 
 	@Override
-	public Object getMetaData(SopremoID jobId, String key) {
+	public Object getMetaData(final SopremoID jobId, final String key) {
 		return this.jobInfo.get(jobId).getMetaData(key);
 	}
 

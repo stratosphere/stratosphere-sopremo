@@ -28,7 +28,7 @@ public class SourceTest extends MeteorParseTest {
 
 	@Test
 	public void shouldConfigureEncoding() {
-		final SopremoPlan actualPlan = parseScript(
+		final SopremoPlan actualPlan = this.parseScript(
 			"$input = read json from 'file://input.json'" +
 				"  encoding 'iso-8859-1';\n" +
 				"write $input to 'file://output.json';");
@@ -43,7 +43,7 @@ public class SourceTest extends MeteorParseTest {
 
 	@Test
 	public void shouldDefaultToJson() {
-		final SopremoPlan actualPlan = parseScript(
+		final SopremoPlan actualPlan = this.parseScript(
 			"$input = read from 'file://input.json';\n" +
 				"write $input to 'file://output.json';");
 
@@ -57,7 +57,7 @@ public class SourceTest extends MeteorParseTest {
 
 	@Test
 	public void shouldSupportHdfs() {
-		final SopremoPlan actualPlan = parseScript(
+		final SopremoPlan actualPlan = this.parseScript(
 			"$input = read from hdfs('localhost:8020/input.json');\n" +
 				"write $input to 'file://output.json';");
 
@@ -71,7 +71,7 @@ public class SourceTest extends MeteorParseTest {
 
 	@Test
 	public void shouldUseWorkingDirectory() {
-		final SopremoPlan actualPlan = parseScript(
+		final SopremoPlan actualPlan = this.parseScript(
 			"setWorkingDirectory('hdfs://cluster:1234/mydir');" +
 				"$input = read from hdfs('input.json');\n" +
 				"write $input to 'output.json';");

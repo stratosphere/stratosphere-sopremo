@@ -16,7 +16,7 @@ public class JoinTest extends MeteorParseTest {
 
 	@Test
 	public void testJoin1() {
-		final SopremoPlan actualPlan = parseScript("$users = read from 'file://users.json';\n" +
+		final SopremoPlan actualPlan = this.parseScript("$users = read from 'file://users.json';\n" +
 			"$pages = read from 'file://pages.json';\n" +
 			"$result = join $users, $pages\n" +
 			"  where $users.id == $pages.userid\n" +
@@ -42,7 +42,7 @@ public class JoinTest extends MeteorParseTest {
 
 	@Test
 	public void testJoin2() {
-		final SopremoPlan actualPlan = parseScript("$users = read from 'file://users.json';\n" +
+		final SopremoPlan actualPlan = this.parseScript("$users = read from 'file://users.json';\n" +
 			"$pages = read from 'file://pages.json';\n" +
 			"$result = join $u in $users, $p in $pages\n" +
 			"  where $u.id == $p.userid\n" +
@@ -68,7 +68,7 @@ public class JoinTest extends MeteorParseTest {
 
 	@Test
 	public void testOuterJoin() {
-		final SopremoPlan actualPlan = parseScript("$users = read from 'file://users.json';\n" +
+		final SopremoPlan actualPlan = this.parseScript("$users = read from 'file://users.json';\n" +
 			"$pages = read from 'file://pages.json';\n" +
 			"$result = join $u in $users, $p in $pages\n" +
 			"  preserve $u\n" +
@@ -93,19 +93,19 @@ public class JoinTest extends MeteorParseTest {
 
 		assertPlanEquals(expectedPlan, actualPlan);
 	}
-	
+
 	@Test
 	public void testLeftOuterJoin() {
-		final SopremoPlan actualPlan = parseScript("$stocks = read from 'file://stocks.json';" +
-				"$tweets = read from 'file://tweets.json';" +
-				"$merged = join $s in $stocks, $t in $tweets where $s.date == $t.date" +
-				"    preserve $s" +
-				"    into {" +
-				"        x1_volume: $s.volume," +
-				"        date: $s.date," +
-				"        x2_count: $t.count" +
-				"    };" +
-				"write $merged to 'file://merged.json';");
+		final SopremoPlan actualPlan = this.parseScript("$stocks = read from 'file://stocks.json';" +
+			"$tweets = read from 'file://tweets.json';" +
+			"$merged = join $s in $stocks, $t in $tweets where $s.date == $t.date" +
+			"    preserve $s" +
+			"    into {" +
+			"        x1_volume: $s.volume," +
+			"        date: $s.date," +
+			"        x2_count: $t.count" +
+			"    };" +
+			"write $merged to 'file://merged.json';");
 
 		final SopremoPlan expectedPlan = new SopremoPlan();
 		final Source stocks = new Source("file://stocks.json");

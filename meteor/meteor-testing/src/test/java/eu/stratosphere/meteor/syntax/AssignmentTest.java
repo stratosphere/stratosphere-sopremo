@@ -25,7 +25,6 @@ import eu.stratosphere.sopremo.expressions.ObjectAccess;
 import eu.stratosphere.sopremo.io.Sink;
 import eu.stratosphere.sopremo.io.Source;
 import eu.stratosphere.sopremo.operator.SopremoPlan;
-import eu.stratosphere.sopremo.testing.SopremoTestUtil;
 
 /**
  * @author arv
@@ -35,7 +34,7 @@ public class AssignmentTest extends MeteorParseTest {
 	@Test
 	public void test() {
 		final SopremoPlan actualPlan =
-			parseScript("$li = read from 'file://lineitem.json';\n" +
+			this.parseScript("$li = read from 'file://lineitem.json';\n" +
 				"$li = filter $li where $li.l_linenumber >= 1;\n" +
 				"write $li to 'file://q1.json';\n");
 
@@ -49,7 +48,7 @@ public class AssignmentTest extends MeteorParseTest {
 		final Sink sink = new Sink("file://q1.json").withInputs(filter);
 		final SopremoPlan expectedPlan = new SopremoPlan();
 		expectedPlan.setSinks(sink);
-		
+
 		assertPlanEquals(expectedPlan, actualPlan);
 	}
 }

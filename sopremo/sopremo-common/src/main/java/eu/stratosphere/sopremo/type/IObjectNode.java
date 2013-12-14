@@ -58,6 +58,7 @@ public interface IObjectNode extends IJsonNode, Iterable<Entry<String, IJsonNode
 
 	@Override
 	public abstract void clear();
+
 	//
 	// /**
 	// * Returns a Set of all bindings contained in this node.
@@ -83,7 +84,7 @@ public interface IObjectNode extends IJsonNode, Iterable<Entry<String, IJsonNode
 	 */
 	@Override
 	public abstract Iterator<Entry<String, IJsonNode>> iterator();
-	
+
 	public abstract SortedSet<String> getFieldNames();
 
 	/**

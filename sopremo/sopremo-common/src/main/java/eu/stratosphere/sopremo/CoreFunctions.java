@@ -19,7 +19,6 @@ import eu.stratosphere.sopremo.cache.PatternCache;
 import eu.stratosphere.sopremo.expressions.AggregationExpression;
 import eu.stratosphere.sopremo.expressions.ArithmeticExpression;
 import eu.stratosphere.sopremo.expressions.ArithmeticExpression.ArithmeticOperator;
-import eu.stratosphere.sopremo.expressions.ArrayCreation;
 import eu.stratosphere.sopremo.expressions.ArrayProjection;
 import eu.stratosphere.sopremo.expressions.ChainedSegmentExpression;
 import eu.stratosphere.sopremo.expressions.ComparativeExpression;
@@ -57,10 +56,10 @@ public class CoreFunctions implements BuiltinProvider {
 	@Name(verb = "concat", noun = "concatenation")
 	public static final Aggregation CONCAT = new FixedTypeAssociativeAggregation<TextNode>(new TextNode()) {
 		@Override
-		protected void aggregateInto(TextNode aggregator, IJsonNode element) {
+		protected void aggregateInto(final TextNode aggregator, final IJsonNode element) {
 			try {
 				element.appendAsString(aggregator);
-			} catch (IOException e) {
+			} catch (final IOException e) {
 			}
 		}
 	};
@@ -75,8 +74,8 @@ public class CoreFunctions implements BuiltinProvider {
 
 		@SuppressWarnings("unchecked")
 		@Override
-		protected void aggregateInto(CachingArrayNode<IJsonNode> aggregator, IJsonNode array) {
-			for (IJsonNode element : (IArrayNode<IJsonNode>) array)
+		protected void aggregateInto(final CachingArrayNode<IJsonNode> aggregator, final IJsonNode array) {
+			for (final IJsonNode element : (IArrayNode<IJsonNode>) array)
 				aggregator.addClone(element);
 		}
 	};
@@ -90,8 +89,8 @@ public class CoreFunctions implements BuiltinProvider {
 		private final transient NodeCache nodeCache = new NodeCache();
 
 		@Override
-		protected INumericNode aggregate(INumericNode aggregator,
-				IJsonNode element) {
+		protected INumericNode aggregate(final INumericNode aggregator,
+				final IJsonNode element) {
 			return ArithmeticExpression.ArithmeticOperator.ADDITION.evaluate(
 				aggregator, (INumericNode) element, this.nodeCache);
 		}
@@ -105,7 +104,7 @@ public class CoreFunctions implements BuiltinProvider {
 	@Name(noun = "first")
 	public static final Aggregation FIRST = new AssociativeAggregation<IJsonNode>(NullNode.getInstance()) {
 		@Override
-		protected IJsonNode aggregate(IJsonNode aggregator, IJsonNode element) {
+		protected IJsonNode aggregate(final IJsonNode aggregator, final IJsonNode element) {
 			return aggregator == NullNode.getInstance() ? element : aggregator;
 		}
 	};
@@ -119,8 +118,8 @@ public class CoreFunctions implements BuiltinProvider {
 				// optimized version of map(array, fn(x) { [x] })
 				new ArrayProjection(new EvaluationExpression() {
 					@Override
-					public IJsonNode evaluate(IJsonNode node) {
-						return  new ArrayNode<IJsonNode>(node.clone());
+					public IJsonNode evaluate(final IJsonNode node) {
+						return new ArrayNode<IJsonNode>(node.clone());
 					}
 				}).withInputExpression(new InputSelection(0)))
 		);
@@ -129,14 +128,14 @@ public class CoreFunctions implements BuiltinProvider {
 	public static final ExpressionFunction SORT = new ExpressionFunction(1,
 		new ChainedSegmentExpression(ALL.getDefinition(), new EvaluationExpression() {
 			@Override
-			public void appendAsString(Appendable appendable) throws IOException {
+			public void appendAsString(final Appendable appendable) throws IOException {
 				appendable.append("sort");
 			}
 
 			@Override
-			public IJsonNode evaluate(IJsonNode node) {
+			public IJsonNode evaluate(final IJsonNode node) {
 				final ArrayNode<?> arrayNode = (ArrayNode<?>) node;
-				Object[] elements = arrayNode.getBackingArray();
+				final Object[] elements = arrayNode.getBackingArray();
 				Arrays.sort(elements, 0, arrayNode.size());
 				return node;
 			}
@@ -182,8 +181,8 @@ public class CoreFunctions implements BuiltinProvider {
 	public static final Aggregation ASSEMBLE_ARRAY = new FixedTypeAssociativeAggregation<ArrayNode<IJsonNode>>(
 		new ArrayNode<IJsonNode>()) {
 		@Override
-		protected void aggregateInto(ArrayNode<IJsonNode> aggregator, IJsonNode element) {
-			IArrayNode<?> part = (IArrayNode<?>) element;
+		protected void aggregateInto(final ArrayNode<IJsonNode> aggregator, final IJsonNode element) {
+			final IArrayNode<?> part = (IArrayNode<?>) element;
 			aggregator.add(((INumericNode) part.get(0)).getIntValue(), part.get(1));
 		}
 	};
@@ -293,7 +292,7 @@ public class CoreFunctions implements BuiltinProvider {
 		 * eu.stratosphere.sopremo.type.IArrayNode<IJsonNode>)
 		 */
 		@Override
-		protected IJsonNode call(TextNode format, IArrayNode<IJsonNode> varargs) {
+		protected IJsonNode call(final TextNode format, final IArrayNode<IJsonNode> varargs) {
 			final Object[] paramsAsObjects = this.arrayCache.getArray(varargs
 				.size());
 			for (int index = 0; index < paramsAsObjects.length; index++)
@@ -320,10 +319,10 @@ public class CoreFunctions implements BuiltinProvider {
 		 * eu.stratosphere.sopremo.type.IArrayNode<IJsonNode>)
 		 */
 		@Override
-		protected IJsonNode call(IArrayNode<IJsonNode> input,
-				IArrayNode<IJsonNode> elementsToRemove) {
+		protected IJsonNode call(final IArrayNode<IJsonNode> input,
+				final IArrayNode<IJsonNode> elementsToRemove) {
 			this.filterSet.clear();
-			for (IJsonNode elementToFilter : elementsToRemove)
+			for (final IJsonNode elementToFilter : elementsToRemove)
 				this.filterSet.add(elementToFilter);
 
 			this.result.clear();
@@ -341,9 +340,9 @@ public class CoreFunctions implements BuiltinProvider {
 		private static final transient String REGEX = ".*";
 
 		@Override
-		protected IJsonNode call(TextNode inputNode, TextNode patternNode) {
-			String pattern = patternNode.toString().replaceAll(PLACEHOLDER, REGEX);
-			String value = inputNode.toString();
+		protected IJsonNode call(final TextNode inputNode, final TextNode patternNode) {
+			final String pattern = patternNode.toString().replaceAll(PLACEHOLDER, REGEX);
+			final String value = inputNode.toString();
 
 			return BooleanNode.valueOf(value.matches(pattern));
 		}
@@ -354,7 +353,7 @@ public class CoreFunctions implements BuiltinProvider {
 		private final transient IntNode result = new IntNode();
 
 		@Override
-		protected IJsonNode call(TextNode node) {
+		protected IJsonNode call(final TextNode node) {
 			this.result.setValue(node.length());
 			return this.result;
 		}
@@ -454,7 +453,7 @@ public class CoreFunctions implements BuiltinProvider {
 		private final transient IArrayNode<IJsonNode> union = new ArrayNode<IJsonNode>();
 
 		@Override
-		protected IJsonNode call(IStreamNode<?> firstArray, IArrayNode<IJsonNode> moreArrays) {
+		protected IJsonNode call(final IStreamNode<?> firstArray, final IArrayNode<IJsonNode> moreArrays) {
 			this.union.clear();
 			this.union.addAll(firstArray);
 			for (final IJsonNode param : moreArrays)
@@ -465,7 +464,7 @@ public class CoreFunctions implements BuiltinProvider {
 	};
 
 	@Name(verb = "setWorkingDirectory")
-	public static MissingNode setWorkingDirectory(TextNode node) {
+	public static MissingNode setWorkingDirectory(final TextNode node) {
 		String path = node.toString();
 		if (!path.startsWith("hdfs://"))
 			path = new File(path).toURI().toString();

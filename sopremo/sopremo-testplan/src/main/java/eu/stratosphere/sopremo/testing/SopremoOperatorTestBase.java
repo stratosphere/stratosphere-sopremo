@@ -43,7 +43,7 @@ public abstract class SopremoOperatorTestBase<T extends Operator<T>> extends Equ
 	public void testPlanSerialization() {
 		final Kryo k = new SopremoKryo();
 
-		for (T original : getInstances()) {
+		for (final T original : this.getInstances()) {
 			final SopremoPlan plan = new SopremoPlan();
 			plan.setSinks(new Sink("file:///dummy").withInputs(original));
 
@@ -59,7 +59,7 @@ public abstract class SopremoOperatorTestBase<T extends Operator<T>> extends Equ
 	}
 
 	protected List<T> getInstances() {
-		List<T> instances = new ArrayList<T>();
+		final List<T> instances = new ArrayList<T>();
 		instances.add(this.first);
 		instances.add(this.second);
 		instances.addAll(this.more);
@@ -68,15 +68,14 @@ public abstract class SopremoOperatorTestBase<T extends Operator<T>> extends Equ
 
 	@Test
 	public void testPlanClone() throws IllegalAccessException {
-		for (T original : getInstances()) {
+		for (final T original : this.getInstances()) {
 			final SopremoPlan plan = new SopremoPlan();
 			final int numOutputs = original.getNumOutputs();
 			if (numOutputs == 0)
 				continue;
-			List<Sink> sinks = new ArrayList<Sink>();
-			for (int index = 0; index < numOutputs; index++) {
+			final List<Sink> sinks = new ArrayList<Sink>();
+			for (int index = 0; index < numOutputs; index++)
 				sinks.add(new Sink("file:///out" + index).withInputs(original.getOutput(index)));
-			}
 			plan.setSinks(sinks);
 			final Object clone = plan.clone();
 			this.testPropertyClone(SopremoPlan.class, plan, clone);

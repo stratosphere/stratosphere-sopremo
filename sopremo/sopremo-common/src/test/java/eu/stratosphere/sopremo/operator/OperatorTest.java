@@ -329,7 +329,7 @@ public class OperatorTest extends EqualCloneTest<OperatorTest.OpImpl> {
 		}
 
 		@Override
-		public PactModule asPactModule(final EvaluationContext context, SopremoRecordLayout layout) {
+		public PactModule asPactModule(final EvaluationContext context, final SopremoRecordLayout layout) {
 			return null;
 		}
 

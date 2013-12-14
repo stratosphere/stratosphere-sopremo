@@ -22,10 +22,9 @@ public class ArraySignature extends Signature {
 		if (!arrayType.isArray())
 			throw new IllegalArgumentException();
 	}
-	
+
 	/**
 	 * Initializes ArraySignature.
-	 *
 	 */
 	ArraySignature() {
 	}

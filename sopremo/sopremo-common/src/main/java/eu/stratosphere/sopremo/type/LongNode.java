@@ -129,8 +129,8 @@ public class LongNode extends AbstractNumericNode implements INumericNode {
 
 	@Override
 	public int compareToSameType(final IJsonNode other) {
-		final long thisVal = this.value, anotherVal= ((LongNode) other).value;
-		return thisVal < anotherVal ? -1 : (thisVal==anotherVal ? 0 : 1);
+		final long thisVal = this.value, anotherVal = ((LongNode) other).value;
+		return thisVal < anotherVal ? -1 : thisVal == anotherVal ? 0 : 1;
 	}
 
 	@Override
@@ -144,7 +144,7 @@ public class LongNode extends AbstractNumericNode implements INumericNode {
 	 * @see eu.stratosphere.sopremo.ISopremoType#toString(java.lang.StringBuilder)
 	 */
 	@Override
-	public void appendAsString(Appendable appendable) throws IOException {
+	public void appendAsString(final Appendable appendable) throws IOException {
 		TypeFormat.format(this.value, appendable);
 	}
 }

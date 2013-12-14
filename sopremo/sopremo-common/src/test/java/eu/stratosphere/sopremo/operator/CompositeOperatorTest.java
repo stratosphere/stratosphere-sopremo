@@ -81,7 +81,7 @@ public class CompositeOperatorTest extends EqualCloneTest<CompositeOperatorTest.
 		 * stratosphere.sopremo.EvaluationContext)
 		 */
 		@Override
-		public void addImplementation(SopremoModule module, EvaluationContext context) {
+		public void addImplementation(final SopremoModule module, final EvaluationContext context) {
 			module.embed(new ElementaryOperatorImpl().withInputs(null,
 				new ElementaryOperatorImpl().withInputs(null, null)));
 		}

@@ -15,7 +15,6 @@
 package eu.stratosphere.sopremo.testing;
 
 import org.junit.Assert;
-
 import org.junit.Ignore;
 
 import eu.stratosphere.sopremo.aggregation.Aggregation;
@@ -30,17 +29,17 @@ import eu.stratosphere.sopremo.type.JavaToJsonMapper;
 @Ignore
 public class FunctionTest {
 
-	public static void assertAggregate(Object expected, Aggregation function, Object... items) {
+	public static void assertAggregate(final Object expected, final Aggregation function, final Object... items) {
 		function.initialize();
 
-		for (Object item : items)
+		for (final Object item : items)
 			function.aggregate(JavaToJsonMapper.INSTANCE.map(item));
 
 		final IJsonNode result = function.getFinalAggregate();
 		Assert.assertEquals(JavaToJsonMapper.INSTANCE.map(expected), result);
 	}
 
-	public static void assertReturn(Object expected, SopremoFunction function, Object... items) {
+	public static void assertReturn(final Object expected, final SopremoFunction function, final Object... items) {
 		@SuppressWarnings("unchecked")
 		final IArrayNode<IJsonNode> params = (IArrayNode<IJsonNode>) JavaToJsonMapper.INSTANCE.map(items);
 		final IJsonNode result = function.call(params);

@@ -31,7 +31,7 @@ public abstract class SopremoFunction1<Arg1 extends IJsonNode> extends SopremoFu
 	 */
 	@SuppressWarnings("unchecked")
 	@Override
-	public IJsonNode call(IArrayNode<IJsonNode> params) {
+	public IJsonNode call(final IArrayNode<IJsonNode> params) {
 		return this.call((Arg1) params.get(0));
 	}
 

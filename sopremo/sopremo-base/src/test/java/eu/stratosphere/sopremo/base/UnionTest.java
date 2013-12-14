@@ -11,7 +11,7 @@ public class UnionTest extends SopremoOperatorTestBase<Union> {
 	 * @see eu.stratosphere.sopremo.EqualVerifyTest#createDefaultInstance(int)
 	 */
 	@Override
-	protected Union createDefaultInstance(int index) {
+	protected Union createDefaultInstance(final int index) {
 		return new Union();
 	}
 

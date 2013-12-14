@@ -41,7 +41,7 @@ public class RegexTokenizer extends AbstractTokenizer {
 	 * 
 	 * @param pattern
 	 */
-	public RegexTokenizer(Pattern pattern) {
+	public RegexTokenizer(final Pattern pattern) {
 		this.pattern = pattern;
 	}
 
@@ -60,7 +60,7 @@ public class RegexTokenizer extends AbstractTokenizer {
 	 * @param pattern
 	 *        the pattern to set
 	 */
-	public void setPattern(Pattern pattern) {
+	public void setPattern(final Pattern pattern) {
 		if (pattern == null)
 			throw new NullPointerException("pattern must not be null");
 
@@ -73,7 +73,7 @@ public class RegexTokenizer extends AbstractTokenizer {
 	 * eu.stratosphere.sopremo.type.CachingArrayNode)
 	 */
 	@Override
-	public void tokenizeInto(CharSequence text, CachingArrayNode<TextNode> tokens) {
+	public void tokenizeInto(final CharSequence text, final CachingArrayNode<TextNode> tokens) {
 		final Matcher matcher = this.pattern.matcher(text);
 
 		tokens.clear();
@@ -97,7 +97,7 @@ public class RegexTokenizer extends AbstractTokenizer {
 	 * @see eu.stratosphere.sopremo.ISopremoType#toString(java.lang.StringBuilder)
 	 */
 	@Override
-	public void appendAsString(Appendable appendable) throws IOException {
+	public void appendAsString(final Appendable appendable) throws IOException {
 		appendable.append("RegexTokenizer [pattern=");
 		TextFormat.getInstance(Pattern.class).format(this.pattern, appendable);
 		appendable.append("]");

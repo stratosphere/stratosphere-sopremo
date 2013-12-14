@@ -32,7 +32,7 @@ public class JavaToJsonMapper extends AbstractTypeMapper<TypeMapper<?, ?>> {
 		 * 
 		 * @param defaultType
 		 */
-		private CollectionToArrayMapper(Type targetType) {
+		private CollectionToArrayMapper(final Type targetType) {
 			super(CachingArrayNode.class);
 			Class<?> elemType = targetType instanceof ParameterizedType
 				? TypeToken.of(((ParameterizedType) targetType).getActualTypeArguments()[0]).getRawType()
@@ -44,13 +44,13 @@ public class JavaToJsonMapper extends AbstractTypeMapper<TypeMapper<?, ?>> {
 
 		@SuppressWarnings("unchecked")
 		@Override
-		public IArrayNode mapTo(Collection from, IArrayNode target) {
+		public IArrayNode mapTo(final Collection from, final IArrayNode target) {
 			final int targetSize = from.size();
 
 			final Iterator iterator = from.iterator();
 			((AbstractArrayNode) target).setSize(targetSize);
 
-			for (int index = 0; index < targetSize; index++) 
+			for (int index = 0; index < targetSize; index++)
 				target.set(index, INSTANCE.map(iterator.next(), target.get(index), this.elemType));
 			return target;
 		}
@@ -60,7 +60,7 @@ public class JavaToJsonMapper extends AbstractTypeMapper<TypeMapper<?, ?>> {
 
 	static {
 		PrimitiveNumbers = new HashSet<Class<?>>();
-		for (Class<?> primitive : Primitives.allPrimitiveTypes())
+		for (final Class<?> primitive : Primitives.allPrimitiveTypes())
 			if (Number.class.isAssignableFrom(primitive))
 				PrimitiveNumbers.add(primitive);
 	}
@@ -74,51 +74,50 @@ public class JavaToJsonMapper extends AbstractTypeMapper<TypeMapper<?, ?>> {
 		 * java.lang.reflect.Type)
 		 */
 		@Override
-		public Object mapTo(Object from, Object target) {
+		public Object mapTo(final Object from, final Object target) {
 			return from;
 		}
 	};
 
 	protected JavaToJsonMapper() {
-		addDefaultTypeMapping(Void.class, NullNode.class);
-		addDefaultTypeMapping(Integer.class, IntNode.class);
-		addDefaultTypeMapping(Integer.TYPE, IntNode.class);
-		addDefaultTypeMapping(Short.class, IntNode.class);
-		addDefaultTypeMapping(Short.TYPE, IntNode.class);
-		addDefaultTypeMapping(Byte.class, IntNode.class);
-		addDefaultTypeMapping(Byte.TYPE, IntNode.class);
-		addDefaultTypeMapping(Long.class, LongNode.class);
-		addDefaultTypeMapping(Long.TYPE, LongNode.class);
-		addDefaultTypeMapping(BigInteger.class, BigIntegerNode.class);
-		addDefaultTypeMapping(BigDecimal.class, DecimalNode.class);
-		addDefaultTypeMapping(Double.class, DoubleNode.class);
-		addDefaultTypeMapping(Double.TYPE, DoubleNode.class);
-		addDefaultTypeMapping(Float.class, DoubleNode.class);
-		addDefaultTypeMapping(Float.TYPE, DoubleNode.class);
-		addDefaultTypeMapping(CharSequence.class, TextNode.class);
-		addDefaultTypeMapping(Boolean.class, BooleanNode.class);
-		addDefaultTypeMapping(Boolean.TYPE, BooleanNode.class);
-		addDefaultTypeMapping(Enum.class, TextNode.class);
-		addDefaultTypeMapping(Map.class, ObjectNode.class);
-		addDefaultTypeMapping(Collection.class, CachingArrayNode.class);
+		this.addDefaultTypeMapping(Void.class, NullNode.class);
+		this.addDefaultTypeMapping(Integer.class, IntNode.class);
+		this.addDefaultTypeMapping(Integer.TYPE, IntNode.class);
+		this.addDefaultTypeMapping(Short.class, IntNode.class);
+		this.addDefaultTypeMapping(Short.TYPE, IntNode.class);
+		this.addDefaultTypeMapping(Byte.class, IntNode.class);
+		this.addDefaultTypeMapping(Byte.TYPE, IntNode.class);
+		this.addDefaultTypeMapping(Long.class, LongNode.class);
+		this.addDefaultTypeMapping(Long.TYPE, LongNode.class);
+		this.addDefaultTypeMapping(BigInteger.class, BigIntegerNode.class);
+		this.addDefaultTypeMapping(BigDecimal.class, DecimalNode.class);
+		this.addDefaultTypeMapping(Double.class, DoubleNode.class);
+		this.addDefaultTypeMapping(Double.TYPE, DoubleNode.class);
+		this.addDefaultTypeMapping(Float.class, DoubleNode.class);
+		this.addDefaultTypeMapping(Float.TYPE, DoubleNode.class);
+		this.addDefaultTypeMapping(CharSequence.class, TextNode.class);
+		this.addDefaultTypeMapping(Boolean.class, BooleanNode.class);
+		this.addDefaultTypeMapping(Boolean.TYPE, BooleanNode.class);
+		this.addDefaultTypeMapping(Enum.class, TextNode.class);
+		this.addDefaultTypeMapping(Map.class, ObjectNode.class);
+		this.addDefaultTypeMapping(Collection.class, CachingArrayNode.class);
 
-		addToIntMapper();
-		addToDoubleMapper();
-		addToLongMapper();
-		addToBigDecimalMapper();
-		addToBigIntegerMapper();
-		addToStringMapper();
-		addToBooleanMapper();
-		addToObjectMapper();
+		this.addToIntMapper();
+		this.addToDoubleMapper();
+		this.addToLongMapper();
+		this.addToBigDecimalMapper();
+		this.addToBigIntegerMapper();
+		this.addToStringMapper();
+		this.addToBooleanMapper();
+		this.addToObjectMapper();
 	}
 
 	@Override
 	protected Type findDefaultMappingType(final Class<?> fromClass) {
-		if (fromClass.isArray() || Collection.class.isAssignableFrom(fromClass)) {
+		if (fromClass.isArray() || Collection.class.isAssignableFrom(fromClass))
 			return CachingArrayNode.class;
-		} else if (IJsonNode.class.isAssignableFrom(fromClass)) {
+		else if (IJsonNode.class.isAssignableFrom(fromClass))
 			return fromClass;
-		}
 
 		return super.findDefaultMappingType(fromClass);
 	}
@@ -129,18 +128,19 @@ public class JavaToJsonMapper extends AbstractTypeMapper<TypeMapper<?, ?>> {
 	 * java.lang.reflect.Type, java.lang.Class)
 	 */
 	@Override
-	protected TypeMapper<?, ?> findMapper(Class<?> fromClass, Class<?> originalFromClass, Type targetType,
-			Class<?> rawTarget) {
+	protected TypeMapper<?, ?> findMapper(final Class<?> fromClass, final Class<?> originalFromClass,
+			final Type targetType,
+			final Class<?> rawTarget) {
 		if (fromClass.isArray()) {
 			final ArrayToArrayMapper mapper = new ArrayToArrayMapper(targetType);
-			addMapper(fromClass, targetType, mapper);
+			this.addMapper(fromClass, targetType, mapper);
 			return mapper;
 		} else if (Collection.class.isAssignableFrom(fromClass)) {
 			final CollectionToArrayMapper mapper = new CollectionToArrayMapper(targetType);
-			addMapper(fromClass, targetType, mapper);
+			this.addMapper(fromClass, targetType, mapper);
 			return mapper;
 		} else if (fromClass == rawTarget) {
-			addMapper(fromClass, fromClass, SelfMapper);
+			this.addMapper(fromClass, fromClass, SelfMapper);
 			return SelfMapper;
 		}
 
@@ -154,21 +154,21 @@ public class JavaToJsonMapper extends AbstractTypeMapper<TypeMapper<?, ?>> {
 				Set<String> unusedKeys = new HashSet<String>();
 
 				@Override
-				public IObjectNode mapTo(Map<?, ?> from, IObjectNode target) {
+				public IObjectNode mapTo(final Map<?, ?> from, final IObjectNode target) {
 					this.unusedKeys.addAll(target.getFieldNames());
 
-					for (Map.Entry entry : from.entrySet()) {
+					for (final Map.Entry entry : from.entrySet()) {
 						final String targetKey = entry.getKey().toString();
 						target.put(targetKey, INSTANCE.map(entry.getValue()));
 						this.unusedKeys.remove(targetKey);
 					}
 
-					for (String key : this.unusedKeys)
+					for (final String key : this.unusedKeys)
 						target.remove(key);
 					return target;
 				}
 			};
-		addMapper(Map.class, ObjectNode.class, toObjectMapper);
+		this.addMapper(Map.class, ObjectNode.class, toObjectMapper);
 	}
 
 	/**
@@ -181,7 +181,7 @@ public class JavaToJsonMapper extends AbstractTypeMapper<TypeMapper<?, ?>> {
 		/**
 		 * Initializes JavaToJsonMapper.ArrayToArrayMapper.
 		 */
-		public ArrayToArrayMapper(Type targetType) {
+		public ArrayToArrayMapper(final Type targetType) {
 			super(CachingArrayNode.class);
 			Class<?> elemType =
 				targetType instanceof Class ? ((Class<?>) targetType).getComponentType()
@@ -198,13 +198,13 @@ public class JavaToJsonMapper extends AbstractTypeMapper<TypeMapper<?, ?>> {
 		 */
 		@SuppressWarnings("unchecked")
 		@Override
-		public IArrayNode<IJsonNode> mapTo(Object from, IArrayNode target) {
+		public IArrayNode<IJsonNode> mapTo(final Object from, final IArrayNode target) {
 			final int targetSize = Array.getLength(from);
 
 			if (target instanceof AbstractArrayNode) {
 				((AbstractArrayNode) target).setSize(targetSize);
 
-				for (int index = 0; index < targetSize; index++) 
+				for (int index = 0; index < targetSize; index++)
 					target.set(index, INSTANCE.map(Array.get(from, index), target.get(index), this.elemType));
 			}
 			return target;
@@ -215,114 +215,114 @@ public class JavaToJsonMapper extends AbstractTypeMapper<TypeMapper<?, ?>> {
 		final TypeMapper<CharSequence, TextNode> charSeqToTextMapper =
 			new TypeMapper<CharSequence, TextNode>(TextNode.class) {
 				@Override
-				public TextNode mapTo(CharSequence from, TextNode target) {
+				public TextNode mapTo(final CharSequence from, final TextNode target) {
 					target.setValue(from);
 					return target;
 				}
 			};
-		addMapper(CharSequence.class, TextNode.class, charSeqToTextMapper);
+		this.addMapper(CharSequence.class, TextNode.class, charSeqToTextMapper);
 		final TypeMapper<Object, TextNode> anyToTextMapper = new TypeMapper<Object, TextNode>(TextNode.class) {
 			@Override
-			public TextNode mapTo(Object from, TextNode target) {
+			public TextNode mapTo(final Object from, final TextNode target) {
 				target.setValue(from.toString());
 				return target;
 			}
 		};
-		addMapper(Object.class, TextNode.class, anyToTextMapper);
+		this.addMapper(Object.class, TextNode.class, anyToTextMapper);
 		final TypeMapper<Enum<?>, TextNode> enumToTextMapper = new TypeMapper<Enum<?>, TextNode>(TextNode.class) {
 			@Override
-			public TextNode mapTo(Enum<?> from, TextNode target) {
+			public TextNode mapTo(final Enum<?> from, final TextNode target) {
 				target.setValue(from.name());
 				return target;
 			}
 		};
-		addMapper(Enum.class, TextNode.class, enumToTextMapper);
+		this.addMapper(Enum.class, TextNode.class, enumToTextMapper);
 	}
 
 	private void addToBooleanMapper() {
 		final TypeMapper<Boolean, BooleanNode> toBooleanMapper = new TypeMapper<Boolean, BooleanNode>(null) {
 			@Override
-			public BooleanNode mapTo(Boolean from, BooleanNode target) {
+			public BooleanNode mapTo(final Boolean from, final BooleanNode target) {
 				return BooleanNode.valueOf(from);
 			}
 		};
-		addMapper(Boolean.class, BooleanNode.class, toBooleanMapper);
-		addMapper(Boolean.TYPE, BooleanNode.class, toBooleanMapper);
+		this.addMapper(Boolean.class, BooleanNode.class, toBooleanMapper);
+		this.addMapper(Boolean.TYPE, BooleanNode.class, toBooleanMapper);
 	}
 
 	private void addToIntMapper() {
 		final TypeMapper<Number, IntNode> toIntMapper = new TypeMapper<Number, IntNode>(IntNode.class) {
 			@Override
-			public IntNode mapTo(Number from, IntNode target) {
+			public IntNode mapTo(final Number from, final IntNode target) {
 				target.setValue(from.intValue());
 				return target;
 			}
 		};
-		addMapper(Number.class, IntNode.class, toIntMapper);
-		for (Class<?> primitiveNumber : PrimitiveNumbers)
-			addMapper(primitiveNumber, IntNode.class, toIntMapper);
+		this.addMapper(Number.class, IntNode.class, toIntMapper);
+		for (final Class<?> primitiveNumber : PrimitiveNumbers)
+			this.addMapper(primitiveNumber, IntNode.class, toIntMapper);
 	}
 
 	private void addToDoubleMapper() {
 		final TypeMapper<Number, DoubleNode> toDoubleMapper = new TypeMapper<Number, DoubleNode>(DoubleNode.class) {
 			@Override
-			public DoubleNode mapTo(Number from, DoubleNode target) {
+			public DoubleNode mapTo(final Number from, final DoubleNode target) {
 				target.setValue(from.doubleValue());
 				return target;
 			}
 		};
-		addMapper(Number.class, DoubleNode.class, toDoubleMapper);
-		for (Class<?> primitiveNumber : PrimitiveNumbers)
-			addMapper(primitiveNumber, DoubleNode.class, toDoubleMapper);
+		this.addMapper(Number.class, DoubleNode.class, toDoubleMapper);
+		for (final Class<?> primitiveNumber : PrimitiveNumbers)
+			this.addMapper(primitiveNumber, DoubleNode.class, toDoubleMapper);
 	}
 
 	private void addToLongMapper() {
 		final TypeMapper<Number, LongNode> toLongMapper = new TypeMapper<Number, LongNode>(LongNode.class) {
 			@Override
-			public LongNode mapTo(Number from, LongNode target) {
+			public LongNode mapTo(final Number from, final LongNode target) {
 				target.setValue(from.longValue());
 				return target;
 			}
 		};
-		addMapper(Number.class, LongNode.class, toLongMapper);
-		for (Class<?> primitiveNumber : PrimitiveNumbers)
-			addMapper(primitiveNumber, LongNode.class, toLongMapper);
+		this.addMapper(Number.class, LongNode.class, toLongMapper);
+		for (final Class<?> primitiveNumber : PrimitiveNumbers)
+			this.addMapper(primitiveNumber, LongNode.class, toLongMapper);
 	}
 
 	private void addToBigDecimalMapper() {
 		final TypeMapper<BigDecimal, DecimalNode> toBigDecimalMapper =
 			new TypeMapper<BigDecimal, DecimalNode>(DecimalNode.class) {
 				@Override
-				public DecimalNode mapTo(BigDecimal from, DecimalNode target) {
+				public DecimalNode mapTo(final BigDecimal from, final DecimalNode target) {
 					target.setValue(from);
 					return target;
 				}
 			};
-		addMapper(BigDecimal.class, DecimalNode.class, toBigDecimalMapper);
+		this.addMapper(BigDecimal.class, DecimalNode.class, toBigDecimalMapper);
 	}
 
 	private void addToBigIntegerMapper() {
 		final TypeMapper<BigInteger, BigIntegerNode> toBigIntegerMapper =
 			new TypeMapper<BigInteger, BigIntegerNode>(BigIntegerNode.class) {
 				@Override
-				public BigIntegerNode mapTo(BigInteger from, BigIntegerNode target) {
+				public BigIntegerNode mapTo(final BigInteger from, final BigIntegerNode target) {
 					target.setValue(from);
 					return target;
 				}
 			};
-		addMapper(BigInteger.class, BigIntegerNode.class, toBigIntegerMapper);
+		this.addMapper(BigInteger.class, BigIntegerNode.class, toBigIntegerMapper);
 	}
 
 	@SuppressWarnings("unchecked")
-	public <T extends IJsonNode> T map(Object from, T to, Type targetType) {
+	public <T extends IJsonNode> T map(final Object from, final T to, final Type targetType) {
 		if (from == null)
 			return (T) NullNode.getInstance();
 
-		TypeMapper<Object, T> targetMapper = (TypeMapper<Object, T>) getMapper(from.getClass(), targetType);
+		final TypeMapper<Object, T> targetMapper = (TypeMapper<Object, T>) this.getMapper(from.getClass(), targetType);
 		if (targetMapper == null)
 			throw new IllegalArgumentException(String.format("Cannot map %s to %s ", from, targetType));
 
-		return map(from, to, targetMapper);
+		return this.map(from, to, targetMapper);
 	}
 
 	/*
@@ -330,11 +330,11 @@ public class JavaToJsonMapper extends AbstractTypeMapper<TypeMapper<?, ?>> {
 	 * @see eu.stratosphere.sopremo.type.AbstractTypeMapper#getMapper(java.lang.Object, java.lang.reflect.Type)
 	 */
 	@SuppressWarnings("unchecked")
-	public <F, T extends IJsonNode> TypeMapper<F, T> getMapper(Class<?> fromClass, Class<T> targetType) {
+	public <F, T extends IJsonNode> TypeMapper<F, T> getMapper(final Class<?> fromClass, final Class<T> targetType) {
 		return (TypeMapper<F, T>) super.getMapper(fromClass, targetType);
 	}
 
-	private <T extends IJsonNode> T map(Object from, T to, TypeMapper<Object, T> targetMapper) {
+	private <T extends IJsonNode> T map(final Object from, final T to, final TypeMapper<Object, T> targetMapper) {
 		final T initializedTo;
 		if (to != null && targetMapper.isValidTarget(to))
 			initializedTo = to;
@@ -349,10 +349,10 @@ public class JavaToJsonMapper extends AbstractTypeMapper<TypeMapper<?, ?>> {
 	public IJsonNode map(final Object value) {
 		if (value == null)
 			return NullNode.getInstance();
-		Type type = getDefaultMappingType(value.getClass());
+		final Type type = this.getDefaultMappingType(value.getClass());
 		if (type == null)
 			throw new IllegalArgumentException("Cannot find appropriate json type for " + value);
-		return map(value, null, type);
+		return this.map(value, null, type);
 	}
 
 }

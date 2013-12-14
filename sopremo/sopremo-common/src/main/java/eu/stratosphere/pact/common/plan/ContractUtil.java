@@ -78,9 +78,9 @@ public class ContractUtil {
 		final Class<?> contract = STUB_CONTRACTS.get(stubClass);
 		if (contract != null)
 			return (Class<? extends Contract>) contract;
-		Iterator<Entry<Class<?>, Class<? extends Contract>>> stubContracts = STUB_CONTRACTS.entrySet().iterator();
+		final Iterator<Entry<Class<?>, Class<? extends Contract>>> stubContracts = STUB_CONTRACTS.entrySet().iterator();
 		while (stubContracts.hasNext()) {
-			Map.Entry<Class<?>, Class<? extends Contract>> entry = stubContracts.next();
+			final Map.Entry<Class<?>, Class<? extends Contract>> entry = stubContracts.next();
 			if (entry.getKey().isAssignableFrom(stubClass))
 				return entry.getValue();
 		}
@@ -117,7 +117,7 @@ public class ContractUtil {
 	 * @return all input contracts to this contract
 	 */
 	public static List<List<Contract>> getInputs(final Contract contract) {
-		ArrayList<List<Contract>> inputs = new ArrayList<List<Contract>>();
+		final ArrayList<List<Contract>> inputs = new ArrayList<List<Contract>>();
 
 		if (contract instanceof GenericDataSink)
 			inputs.add(new ArrayList<Contract>(((GenericDataSink) contract).getInputs()));
@@ -136,7 +136,7 @@ public class ContractUtil {
 		if (contract instanceof SingleInputContract)
 			return ((SingleInputContract<?>) contract).getInputs();
 		if (contract instanceof DualInputContract) {
-			ArrayList<Contract> inputs = new ArrayList<Contract>();
+			final ArrayList<Contract> inputs = new ArrayList<Contract>();
 			inputs.addAll(((DualInputContract<?>) contract).getFirstInputs());
 			inputs.addAll(((DualInputContract<?>) contract).getSecondInputs());
 			return inputs;
@@ -181,7 +181,7 @@ public class ContractUtil {
 	 * @param input2
 	 *        the second input index
 	 */
-	public static void swapInputs(Contract contract, int input1, int input2) {
+	public static void swapInputs(final Contract contract, final int input1, final int input2) {
 		final List<List<Contract>> inputs = new ArrayList<List<Contract>>(getInputs(contract));
 		Collections.swap(inputs, input1, input2);
 		setInputs(contract, inputs);

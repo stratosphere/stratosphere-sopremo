@@ -42,26 +42,28 @@ public class SopremoTestUtil {
 		super();
 	}
 
-	public static void assertPlanEquals(SopremoPlan expectedPlan, SopremoPlan actualPlan) {
+	public static void assertPlanEquals(final SopremoPlan expectedPlan, SopremoPlan actualPlan) {
 		// actualPlan may contain operators from loaded packages with their own classloaders
-		// thus, these operators are not equal to the expected plan as the operators are loaded by the default classloader
+		// thus, these operators are not equal to the expected plan as the operators are loaded by the default
+		// classloader
 		// one solution is to use the serializer/deserializer trick to transfer the classes to the default classloader
-		Kryo kryo = expectedPlan.getCompilationContext().getKryo();
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		Output output = new Output(baos);
+		final Kryo kryo = expectedPlan.getCompilationContext().getKryo();
+		final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		final Output output = new Output(baos);
 		kryo.writeObject(output, actualPlan);
 		output.close();
 		actualPlan = kryo.readObject(new Input(baos.toByteArray()), SopremoPlan.class);
-		
+
 		final List<Operator<?>> unmatchingOperators = actualPlan.getUnmatchingOperators(expectedPlan);
 		if (!unmatchingOperators.isEmpty())
 			if (unmatchingOperators.get(0).getClass() == unmatchingOperators.get(1).getClass())
-				Assert.fail("operators are different\nexpected: " + unmatchingOperators.get(1) + "\nbut was: " + unmatchingOperators.get(0));
+				Assert.fail("operators are different\nexpected: " + unmatchingOperators.get(1) + "\nbut was: " +
+					unmatchingOperators.get(0));
 			else
 				Assert.fail("plans are different\nexpected: " + expectedPlan + "\nbut was: " + actualPlan);
 	}
 
-	public static String createTemporaryFile(String prefix) {
+	public static String createTemporaryFile(final String prefix) {
 		try {
 			final File tempFile = File.createTempFile(prefix, ".json");
 			tempFile.deleteOnExit();

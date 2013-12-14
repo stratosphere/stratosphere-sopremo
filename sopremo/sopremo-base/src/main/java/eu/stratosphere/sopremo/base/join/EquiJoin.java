@@ -21,7 +21,7 @@ public class EquiJoin extends TwoSourceJoinBase<EquiJoin> {
 	 * @param mode
 	 *        the mode to set
 	 */
-	public void setMode(Mode mode) {
+	public void setMode(final Mode mode) {
 		if (mode == null)
 			throw new NullPointerException("mode must not be null");
 
@@ -35,7 +35,7 @@ public class EquiJoin extends TwoSourceJoinBase<EquiJoin> {
 	 *        the mode to set
 	 * @return this
 	 */
-	public EquiJoin withMode(Mode mode) {
+	public EquiJoin withMode(final Mode mode) {
 		this.setMode(mode);
 		return this;
 	}
@@ -49,8 +49,8 @@ public class EquiJoin extends TwoSourceJoinBase<EquiJoin> {
 	 *        whether right side should be retained
 	 * @return this
 	 */
-	public EquiJoin withMode(boolean retainLeft, boolean retainRight) {
-		int modeIndex = (retainLeft ? 1 : 0) + 2 * (retainRight ? 1 : 0);
+	public EquiJoin withMode(final boolean retainLeft, final boolean retainRight) {
+		final int modeIndex = (retainLeft ? 1 : 0) + 2 * (retainRight ? 1 : 0);
 		this.setMode(Mode.values()[modeIndex]);
 		return this;
 	}

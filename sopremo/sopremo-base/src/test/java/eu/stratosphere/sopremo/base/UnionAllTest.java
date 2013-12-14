@@ -11,7 +11,7 @@ public class UnionAllTest extends SopremoOperatorTestBase<UnionAll> {
 	 * @see eu.stratosphere.sopremo.EqualVerifyTest#createDefaultInstance(int)
 	 */
 	@Override
-	protected UnionAll createDefaultInstance(int index) {
+	protected UnionAll createDefaultInstance(final int index) {
 		return new UnionAll();
 	}
 

@@ -31,7 +31,7 @@ public class FunctionCallTest extends EvaluableExpressionTest<FunctionCall> {
 	 * @see eu.stratosphere.sopremo.expressions.OrExpressionTest#initVerifier(nl.jqno.equalsverifier.EqualsVerifier)
 	 */
 	@Override
-	protected void initVerifier(EqualsVerifier<FunctionCall> equalVerifier) {
+	protected void initVerifier(final EqualsVerifier<FunctionCall> equalVerifier) {
 		super.initVerifier(equalVerifier);
 		equalVerifier.withPrefabValues(List.class, new ArrayList<Object>(), new ArrayList<EvaluationExpression>(
 			Collections.singleton(EvaluationExpression.VALUE)));

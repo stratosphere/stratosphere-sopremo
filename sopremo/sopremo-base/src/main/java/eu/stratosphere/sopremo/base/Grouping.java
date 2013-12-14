@@ -7,8 +7,8 @@ import java.util.List;
 import com.google.common.base.Function;
 import com.google.common.base.Predicates;
 
-import eu.stratosphere.sopremo.EvaluationContext;
 import eu.stratosphere.sopremo.CoreFunctions;
+import eu.stratosphere.sopremo.EvaluationContext;
 import eu.stratosphere.sopremo.aggregation.AssociativeAggregation;
 import eu.stratosphere.sopremo.expressions.AggregationExpression;
 import eu.stratosphere.sopremo.expressions.ArrayAccess;
@@ -49,13 +49,13 @@ public class Grouping extends CompositeOperator<Grouping> {
 	private EvaluationExpression defaultGroupingKey = GROUP_ALL;
 
 	@Override
-	public void addImplementation(SopremoModule module, EvaluationContext context) {
+	public void addImplementation(final SopremoModule module, final EvaluationContext context) {
 		JsonStream output;
 		switch (this.getNumInputs()) {
 		case 0:
 			throw new IllegalStateException("No input given for grouping");
 		case 1:
-			output = createGrouping(module);
+			output = this.createGrouping(module);
 			break;
 		case 2:
 			output = new CoGroupProjection().withResultProjection(this.resultProjection).
@@ -83,10 +83,10 @@ public class Grouping extends CompositeOperator<Grouping> {
 		module.getOutput(0).setInput(0, output);
 	}
 
-	private JsonStream createGrouping(SopremoModule module) {
-		EvaluationExpression resultProjection = this.resultProjection.clone().remove(new InputSelection(0));
+	private JsonStream createGrouping(final SopremoModule module) {
+		final EvaluationExpression resultProjection = this.resultProjection.clone().remove(new InputSelection(0));
 		final List<AggregationExpression> aggregations = resultProjection.findAll(AggregationExpression.class);
-		for (AggregationExpression aggregationExpression : aggregations)
+		for (final AggregationExpression aggregationExpression : aggregations)
 			// not combinable, if there is a non-associative expression
 			if (!(aggregationExpression.getAggregation() instanceof AssociativeAggregation))
 				return new GroupProjection().withResultProjection(resultProjection).
@@ -97,14 +97,14 @@ public class Grouping extends CompositeOperator<Grouping> {
 		// fill the array with the input expressions of the respective aggregation
 		final ArrayCreation aggregatedValues = new ArrayCreation();
 		aggregatedValues.add(this.getGroupingKey(0).clone().remove(new InputSelection(0)));
-		for (AggregationExpression aggregationExpression : aggregations)
+		for (final AggregationExpression aggregationExpression : aggregations)
 			aggregatedValues.add(aggregationExpression.getInputExpression());
 		final Projection initialValues = new Projection().withResultProjection(aggregatedValues).
 			withInputs(module.getInputs());
 
 		// now we can create a combinable aggregation, that associatively aggregates the elements in the array
 		final ArrayCreation combinableAggregation = new ArrayCreation();
-		BatchAggregationExpression bae = new BatchAggregationExpression();
+		final BatchAggregationExpression bae = new BatchAggregationExpression();
 		combinableAggregation.add(bae.add(CoreFunctions.FIRST, new ArrayAccess(0)));
 		for (int index = 0, size = aggregations.size(); index < size; index++)
 			combinableAggregation.add(bae.add(aggregations.get(index).getAggregation(), new ArrayAccess(index + 1)));
@@ -122,7 +122,7 @@ public class Grouping extends CompositeOperator<Grouping> {
 					int aggregationIndex = 1;
 
 					@Override
-					public EvaluationExpression apply(EvaluationExpression expression) {
+					public EvaluationExpression apply(final EvaluationExpression expression) {
 						return new ArrayAccess(this.aggregationIndex++);
 					}
 				});
@@ -154,7 +154,7 @@ public class Grouping extends CompositeOperator<Grouping> {
 
 	@Property(preferred = true)
 	@Name(preposition = "into")
-	public void setResultProjection(EvaluationExpression resultProjection) {
+	public void setResultProjection(final EvaluationExpression resultProjection) {
 		if (resultProjection == null)
 			throw new NullPointerException("resultProjection must not be null");
 
@@ -163,7 +163,7 @@ public class Grouping extends CompositeOperator<Grouping> {
 				ExpressionUtil.replaceIndexAccessWithAggregation(resultProjection));
 	}
 
-	public Grouping withResultProjection(EvaluationExpression resultProjection) {
+	public Grouping withResultProjection(final EvaluationExpression resultProjection) {
 		this.setResultProjection(resultProjection);
 		return this;
 	}
@@ -182,12 +182,12 @@ public class Grouping extends CompositeOperator<Grouping> {
 		this.setGroupingKey(this.getSafeInputIndex(input), keyExpression);
 	}
 
-	public Grouping withGroupingKey(int inputIndex, EvaluationExpression groupingKey) {
+	public Grouping withGroupingKey(final int inputIndex, final EvaluationExpression groupingKey) {
 		this.setGroupingKey(inputIndex, groupingKey);
 		return this;
 	}
 
-	public Grouping withGroupingKey(EvaluationExpression groupingKey) {
+	public Grouping withGroupingKey(final EvaluationExpression groupingKey) {
 		this.setDefaultGroupingKey(groupingKey);
 		return this;
 	}
@@ -209,7 +209,7 @@ public class Grouping extends CompositeOperator<Grouping> {
 	}
 
 	@Property(hidden = true)
-	public void setDefaultGroupingKey(EvaluationExpression defaultGroupingKey) {
+	public void setDefaultGroupingKey(final EvaluationExpression defaultGroupingKey) {
 		if (defaultGroupingKey == null)
 			throw new NullPointerException("defaultGroupingKey must not be null");
 
@@ -221,13 +221,13 @@ public class Grouping extends CompositeOperator<Grouping> {
 	 * @see eu.stratosphere.sopremo.operator.Operator#appendAsString(java.lang.Appendable)
 	 */
 	@Override
-	public void appendAsString(Appendable appendable) throws IOException {
+	public void appendAsString(final Appendable appendable) throws IOException {
 		super.appendAsString(appendable);
 		appendable.append(" on ");
-		for (int input = 0; input < getNumInputs(); input++) {
+		for (int input = 0; input < this.getNumInputs(); input++) {
 			if (input > 1)
 				appendable.append(", ");
-			getGroupingKey(input).appendAsString(appendable);
+			this.getGroupingKey(input).appendAsString(appendable);
 		}
 		appendable.append(" to ");
 		this.resultProjection.appendAsString(appendable);
@@ -239,8 +239,8 @@ public class Grouping extends CompositeOperator<Grouping> {
 			private final IArrayNode<IStreamNode<IJsonNode>> streams = new ArrayNode<IStreamNode<IJsonNode>>(2);
 
 			@Override
-			protected void coGroup(IStreamNode<IJsonNode> values1, IStreamNode<IJsonNode> values2,
-					JsonCollector<IJsonNode> out) {
+			protected void coGroup(final IStreamNode<IJsonNode> values1, final IStreamNode<IJsonNode> values2,
+					final JsonCollector<IJsonNode> out) {
 				this.streams.set(0, values1);
 				this.streams.set(1, values2);
 				out.collect(this.streams);

@@ -24,22 +24,7 @@ import java.util.Map;
 import org.junit.Assert;
 import org.junit.Ignore;
 
-import com.google.common.base.Function;
-import com.google.common.base.Predicates;
-
-import eu.stratosphere.sopremo.aggregation.Aggregation;
-import eu.stratosphere.sopremo.aggregation.AggregationFunction;
-import eu.stratosphere.sopremo.expressions.AggregationExpression;
-import eu.stratosphere.sopremo.expressions.BatchAggregationExpression;
-import eu.stratosphere.sopremo.expressions.EvaluationExpression;
-import eu.stratosphere.sopremo.expressions.ExpressionUtil;
-import eu.stratosphere.sopremo.expressions.FunctionCall;
-import eu.stratosphere.sopremo.function.Callable;
-import eu.stratosphere.sopremo.function.ExpressionFunction;
-import eu.stratosphere.sopremo.function.MacroBase;
-import eu.stratosphere.sopremo.function.SopremoFunction;
 import eu.stratosphere.sopremo.operator.SopremoPlan;
-import eu.stratosphere.sopremo.packages.DefaultFunctionRegistry;
 import eu.stratosphere.sopremo.query.QueryParserException;
 import eu.stratosphere.sopremo.testing.SopremoTestUtil;
 
@@ -49,7 +34,7 @@ import eu.stratosphere.sopremo.testing.SopremoTestUtil;
 @Ignore
 public class MeteorParseTest {
 
-	private String projectName;
+	private final String projectName;
 
 	private File projectJar;
 
@@ -61,18 +46,18 @@ public class MeteorParseTest {
 	public MeteorParseTest() {
 		this.projectName = MavenUtil.getProjectName();
 		this.projectJar = ProjectJars.get(this.projectName);
-		//FIXME removed if clause
-		//if (this.projectJar == null)
+		// FIXME removed if clause
+		// if (this.projectJar == null)
 		ProjectJars.put(this.projectName, this.projectJar = build(this.projectName));
 	}
 
-	private static File build(String projectName) {
+	private static File build(final String projectName) {
 		try {
-			String projectPath = (new File(".")).getCanonicalPath();
-			File projectJar = MavenUtil.buildJarForProject(projectPath, projectName + "_testing");
+			final String projectPath = new File(".").getCanonicalPath();
+			final File projectJar = MavenUtil.buildJarForProject(projectPath, projectName + "_testing");
 			projectJar.deleteOnExit();
 			return projectJar;
-		} catch (IOException e) {
+		} catch (final IOException e) {
 			Assert.fail(e.getMessage());
 			return null;
 		}
@@ -83,7 +68,7 @@ public class MeteorParseTest {
 		SopremoPlan plan = null;
 		try {
 			final QueryParser queryParser = new QueryParser().withInputDirectory(new File("."));
-			initParser(queryParser);
+			this.initParser(queryParser);
 			plan = queryParser.tryParse(script);
 		} catch (final QueryParserException e) {
 			final AssertionError error =
@@ -103,8 +88,8 @@ public class MeteorParseTest {
 		SopremoPlan plan = null;
 		try {
 			final QueryParser queryParser = new QueryParser().withInputDirectory(script.getParentFile());
-			initParser(queryParser);
-			plan = queryParser.tryParse(loadScriptFromFile(script));
+			this.initParser(queryParser);
+			plan = queryParser.tryParse(this.loadScriptFromFile(script));
 		} catch (final QueryParserException e) {
 			final AssertionError error =
 				new AssertionError(String.format("could not parse script: %s", e.getMessage()));
@@ -118,27 +103,27 @@ public class MeteorParseTest {
 		return plan;
 	}
 
-	private String loadScriptFromFile(File scriptFile) {
+	private String loadScriptFromFile(final File scriptFile) {
 		try {
 			final BufferedReader reader = new BufferedReader(new FileReader(scriptFile));
-			StringBuilder builder = new StringBuilder();
+			final StringBuilder builder = new StringBuilder();
 			int ch;
 			while ((ch = reader.read()) != -1)
 				builder.append((char) ch);
 			reader.close();
 			return builder.toString();
-		} catch (IOException e) {
+		} catch (final IOException e) {
 			throw new RuntimeException(e);
 		}
 
 	}
 
-	protected void initParser(QueryParser queryParser) {
+	protected void initParser(final QueryParser queryParser) {
 		queryParser.getPackageManager().importPackageFrom(this.projectName.substring("sopremo-".length()),
 			this.projectJar);
 	}
 
-	public static void assertPlanEquals(SopremoPlan expectedPlan, SopremoPlan actualPlan) {
+	public static void assertPlanEquals(final SopremoPlan expectedPlan, final SopremoPlan actualPlan) {
 		SopremoTestUtil.assertPlanEquals(expectedPlan, actualPlan);
 	}
 }

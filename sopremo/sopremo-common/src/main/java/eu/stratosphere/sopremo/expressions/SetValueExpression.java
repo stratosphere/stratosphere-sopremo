@@ -29,7 +29,7 @@ public class SetValueExpression extends PathSegmentExpression {
 
 	private final EvaluationExpression replaceExpression;
 
-	public SetValueExpression(PathSegmentExpression valueLocator, EvaluationExpression replaceExpression) {
+	public SetValueExpression(final PathSegmentExpression valueLocator, final EvaluationExpression replaceExpression) {
 		this.valueLocator = valueLocator;
 		this.replaceExpression = replaceExpression;
 	}
@@ -58,7 +58,7 @@ public class SetValueExpression extends PathSegmentExpression {
 	 * .PathSegmentExpression)
 	 */
 	@Override
-	public boolean equalsSameClass(PathSegmentExpression other) {
+	public boolean equalsSameClass(final PathSegmentExpression other) {
 		final SetValueExpression setValueExpression = (SetValueExpression) other;
 		return this.valueLocator.equals(setValueExpression.valueLocator)
 			&& this.replaceExpression.equals(setValueExpression.replaceExpression);
@@ -82,12 +82,6 @@ public class SetValueExpression extends PathSegmentExpression {
 		return this.valueLocator;
 	}
 
-	/**
-	 * If the input node is an array, the evaluation of this array performs a spread operation. In that case, the
-	 * returned node is an array that contains the attribute value of each element node in the input array. In all other
-	 * cases, the return value is the node associated with the field name of this FieldAccess instance or
-	 * {@link NullNode} if no such value exists.
-	 */
 	/*
 	 * (non-Javadoc)
 	 * @see

@@ -163,7 +163,7 @@ public class DoubleNode extends AbstractNumericNode implements INumericNode {
 	 * @see eu.stratosphere.sopremo.ISopremoType#toString(java.lang.StringBuilder)
 	 */
 	@Override
-	public void appendAsString(Appendable appendable) throws IOException {
+	public void appendAsString(final Appendable appendable) throws IOException {
 		TypeFormat.format(this.value, appendable);
 	}
 }

@@ -22,11 +22,11 @@ import eu.stratosphere.sopremo.expressions.EvaluationExpression;
  * @author Arvid Heise
  */
 public class ConcatenatingChildIterator implements ChildIterator {
-	private ChildIterator[] iterators;
+	private final ChildIterator[] iterators;
 
 	private int currentIterator = 0, index = -1;
 
-	public ConcatenatingChildIterator(ChildIterator... iterators) {
+	public ConcatenatingChildIterator(final ChildIterator... iterators) {
 		this.iterators = iterators;
 	}
 
@@ -127,7 +127,7 @@ public class ConcatenatingChildIterator implements ChildIterator {
 	 * @see java.util.ListIterator#set(java.lang.Object)
 	 */
 	@Override
-	public void set(EvaluationExpression e) {
+	public void set(final EvaluationExpression e) {
 		this.checkValidState();
 		this.iterators[this.currentIterator].set(e);
 	}
@@ -137,7 +137,7 @@ public class ConcatenatingChildIterator implements ChildIterator {
 	 * @see java.util.ListIterator#add(java.lang.Object)
 	 */
 	@Override
-	public void add(EvaluationExpression e) {
+	public void add(final EvaluationExpression e) {
 		this.checkValidState();
 		this.iterators[this.currentIterator].add(e);
 	}

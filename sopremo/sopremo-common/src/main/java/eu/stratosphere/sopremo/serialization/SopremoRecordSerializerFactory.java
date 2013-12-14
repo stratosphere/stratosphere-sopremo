@@ -35,7 +35,9 @@ public class SopremoRecordSerializerFactory implements TypeSerializerFactory<Sop
 	public SopremoRecordSerializerFactory() {
 	}
 
-	public SopremoRecordSerializerFactory(SopremoRecordLayout layout) {
+	public SopremoRecordSerializerFactory(final SopremoRecordLayout layout) {
+		if (layout == null)
+			throw new NullPointerException();
 		this.layout = layout;
 	}
 
@@ -57,14 +59,14 @@ public class SopremoRecordSerializerFactory implements TypeSerializerFactory<Sop
 	}
 
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(final Object obj) {
 		if (this == obj)
 			return true;
 		if (obj == null)
 			return false;
-		if (getClass() != obj.getClass())
+		if (this.getClass() != obj.getClass())
 			return false;
-		SopremoRecordSerializerFactory other = (SopremoRecordSerializerFactory) obj;
+		final SopremoRecordSerializerFactory other = (SopremoRecordSerializerFactory) obj;
 		return this.layout.equals(other.layout);
 	}
 
@@ -83,7 +85,7 @@ public class SopremoRecordSerializerFactory implements TypeSerializerFactory<Sop
 	 * configuration.Configuration)
 	 */
 	@Override
-	public void writeParametersToConfig(Configuration config) {
+	public void writeParametersToConfig(final Configuration config) {
 		SopremoUtil.setObject(config, SopremoRecordLayout.LAYOUT_KEY, this.layout);
 	}
 
@@ -93,7 +95,8 @@ public class SopremoRecordSerializerFactory implements TypeSerializerFactory<Sop
 	 * configuration.Configuration, java.lang.ClassLoader)
 	 */
 	@Override
-	public void readParametersFromConfig(Configuration config, ClassLoader cl) throws ClassNotFoundException {
+	public void readParametersFromConfig(final Configuration config, final ClassLoader cl)
+			throws ClassNotFoundException {
 		this.layout = SopremoUtil.getObject(config, SopremoRecordLayout.LAYOUT_KEY, null);
 	}
 }

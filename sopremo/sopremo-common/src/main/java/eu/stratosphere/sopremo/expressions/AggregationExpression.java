@@ -58,7 +58,7 @@ public class AggregationExpression extends PathSegmentExpression {
 	 * eu.stratosphere.sopremo.expressions.PathSegmentExpression#evaluateSegment(eu.stratosphere.sopremo.type.IJsonNode)
 	 */
 	@Override
-	protected IJsonNode evaluateSegment(IJsonNode nodes) {
+	protected IJsonNode evaluateSegment(final IJsonNode nodes) {
 		this.aggregation.initialize();
 		for (final IJsonNode node : (IStreamNode<?>) nodes)
 			this.aggregation.aggregate(node);
@@ -81,7 +81,7 @@ public class AggregationExpression extends PathSegmentExpression {
 	 * .PathSegmentExpression)
 	 */
 	@Override
-	public boolean equalsSameClass(PathSegmentExpression other) {
+	public boolean equalsSameClass(final PathSegmentExpression other) {
 		return this.aggregation.equals(((AggregationExpression) other).aggregation);
 	}
 
@@ -101,7 +101,7 @@ public class AggregationExpression extends PathSegmentExpression {
 	 * .EvaluationExpression)
 	 */
 	@Override
-	public AggregationExpression withInputExpression(EvaluationExpression inputExpression) {
+	public AggregationExpression withInputExpression(final EvaluationExpression inputExpression) {
 		return (AggregationExpression) super.withInputExpression(inputExpression);
 	}
 

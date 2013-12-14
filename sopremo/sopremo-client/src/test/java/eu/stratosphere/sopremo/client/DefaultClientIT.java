@@ -47,12 +47,12 @@ import eu.stratosphere.sopremo.type.JsonUtil;
 public class DefaultClientIT {
 
 	private static final class StateRecorder extends StateListener {
-		private Deque<ExecutionState> states = new LinkedList<ExecutionState>();
+		private final Deque<ExecutionState> states = new LinkedList<ExecutionState>();
 
 		private String lastDetail;
 
 		@Override
-		public void stateChanged(ExecutionState executionStatus, String detail) {
+		public void stateChanged(final ExecutionState executionStatus, final String detail) {
 			this.states.add(executionStatus);
 			this.lastDetail = detail;
 			System.out.println(detail);
@@ -118,7 +118,7 @@ public class DefaultClientIT {
 
 	@Test
 	public void testSuccessfulExecution() throws IOException {
-		final SopremoPlan plan = createPlan("output.json");
+		final SopremoPlan plan = this.createPlan("output.json");
 
 		this.client.submit(plan, this.stateRecorder);
 		Assert.assertSame(ExecutionState.SETUP, this.stateRecorder.getStates().getFirst());
@@ -132,7 +132,7 @@ public class DefaultClientIT {
 
 	@Test
 	public void testSuccessfulExecutionWithStatistics() throws IOException {
-		final SopremoPlan plan = createPlan("output.json");
+		final SopremoPlan plan = this.createPlan("output.json");
 
 		this.client.setExecutionMode(ExecutionMode.RUN_WITH_STATISTICS);
 		this.client.submit(plan, this.stateRecorder);
@@ -147,9 +147,9 @@ public class DefaultClientIT {
 
 	@Test
 	public void testMultipleSuccessfulExecutions() throws IOException {
-		ExecutionResponse[] responses = new ExecutionResponse[3];
+		final ExecutionResponse[] responses = new ExecutionResponse[3];
 		for (int index = 0; index < responses.length; index++) {
-			final SopremoPlan plan = createPlan("output" + index + ".json");
+			final SopremoPlan plan = this.createPlan("output" + index + ".json");
 			this.client.submit(plan, this.stateRecorder);
 			Assert.assertSame(ExecutionState.SETUP, this.stateRecorder.getStates().getFirst());
 			Assert.assertSame(ExecutionState.FINISHED, this.stateRecorder.getStates().getLast());
@@ -173,8 +173,8 @@ public class DefaultClientIT {
 
 	@Test
 	public void testFailIfRuntimeException() throws IOException {
-		final SopremoPlan plan = createPlan("output.json");
-		for (Operator<?> op : plan.getContainedOperators())
+		final SopremoPlan plan = this.createPlan("output.json");
+		for (final Operator<?> op : plan.getContainedOperators())
 			if (op instanceof Selection)
 				((Selection) op).setCondition(new UnaryExpression(new UnevaluableExpression("test failure")));
 
@@ -188,7 +188,7 @@ public class DefaultClientIT {
 	public void testFailIfSubmissionFails() throws IOException {
 		// job manager cannot determine input splits
 		this.testServer.delete("input", true);
-		final SopremoPlan plan = createPlan("output.json");
+		final SopremoPlan plan = this.createPlan("output.json");
 
 		this.client.submit(plan, this.stateRecorder);
 		Assert.assertSame(ExecutionState.SETUP, this.stateRecorder.getStates().getFirst());
@@ -196,7 +196,7 @@ public class DefaultClientIT {
 		Assert.assertNotSame("", this.stateRecorder.getLastDetail());
 	}
 
-	private SopremoPlan createPlan(String outputName) throws IOException {
+	private SopremoPlan createPlan(final String outputName) throws IOException {
 		final SopremoPlan plan = new SopremoPlan();
 		final Source input = new Source(this.inputDir.toURI().toString());
 		final Selection selection = new Selection().

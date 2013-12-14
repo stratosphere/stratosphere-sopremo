@@ -14,10 +14,8 @@
  **********************************************************************************************************************/
 package eu.stratosphere.sopremo.type;
 
-
 /**
  * @author arv
- *
  */
 public interface NodeFactory {
 	public <T extends IJsonNode> T instantiate(Class<T> interfaceType);

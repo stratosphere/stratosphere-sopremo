@@ -51,7 +51,7 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-		<ozone.version>0.4-SNAPSHOT</ozone.version>
+		<ozone.version>0.4-alpha.3-SNAPSHOT</ozone.version>
 		<pact-testplan.version>0.4-SNAPSHOT</pact-testplan.version>
 	</properties>
 
@@ -207,8 +207,8 @@
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>3.1</version>
 				<configuration>
-					<source>1.6</source>
-					<target>1.6</target>
+					<source>1.7</source>
+					<target>1.7</target>
 					<!-- High optimization, no debugging <compilerArgument>-g:none -O</compilerArgument> -->
 				</configuration>
 			</plugin>

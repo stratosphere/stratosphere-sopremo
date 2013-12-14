@@ -38,11 +38,11 @@ public class SopremoTestRecords extends GenericTestRecords<SopremoRecord> {
 		super();
 	}
 
-	public SopremoTestRecords(TypeConfig<SopremoRecord> typeConfig) {
+	public SopremoTestRecords(final TypeConfig<SopremoRecord> typeConfig) {
 		super(typeConfig);
 	}
 
-	public static final TypeConfig<SopremoRecord> getTypeConfig(SopremoRecordLayout layout) {
+	public static final TypeConfig<SopremoRecord> getTypeConfig(final SopremoRecordLayout layout) {
 
 		final TypeConfig<SopremoRecord> typeConfig;
 		final TypeStringifier<SopremoRecord> typeStringifier = DefaultStringifier.get();

@@ -27,8 +27,8 @@ import eu.stratosphere.pact.common.util.Visitable;
 import eu.stratosphere.pact.common.util.Visitor;
 import eu.stratosphere.pact.generic.contract.Contract;
 import eu.stratosphere.pact.generic.contract.ContractUtil;
-import eu.stratosphere.pact.generic.io.SequentialInputFormat;
-import eu.stratosphere.pact.generic.io.SequentialOutputFormat;
+import eu.stratosphere.pact.generic.io.FileInputFormat;
+import eu.stratosphere.pact.generic.io.FileOutputFormat;
 import eu.stratosphere.util.dag.GraphModule;
 import eu.stratosphere.util.dag.GraphPrinter;
 import eu.stratosphere.util.dag.GraphTraverseListener;
@@ -60,10 +60,10 @@ public class PactModule extends GraphModule<Contract, GenericDataSource<?>, Gene
 		super(numberOfInputs, numberOfOutputs, ContractNavigator.INSTANCE);
 		for (int index = 0; index < numberOfInputs; index++)
 			this.setInput(index,
-				new FileDataSource((Class) SequentialInputFormat.class, String.format("file:///%d", index),
+				new FileDataSource((Class) FileInputFormat.class, String.format("file:///%d", index),
 					"Source " + index));
 		for (int index = 0; index < numberOfOutputs; index++)
-			this.setOutput(index, new FileDataSink(SequentialOutputFormat.class, String.format("file:///%d", index),
+			this.setOutput(index, new FileDataSink((Class) FileOutputFormat.class, String.format("file:///%d", index),
 				"Sink " + index));
 	}
 

@@ -38,12 +38,12 @@ public final class NodeCache implements ISopremoCache {
 		this(DefaultNodeFactory.getInstance());
 	}
 
-	public NodeCache(NodeFactory nodeFactory) {
+	public NodeCache(final NodeFactory nodeFactory) {
 		this.nodeFactory = nodeFactory;
 	}
 
 	@SuppressWarnings("unchecked")
-	public <T extends IJsonNode> T getNode(Class<T> type) {
+	public <T extends IJsonNode> T getNode(final Class<T> type) {
 		final IJsonNode cachedValue = this.classCache.get(type);
 		if (cachedValue != null)
 			return (T) cachedValue;
@@ -55,7 +55,7 @@ public final class NodeCache implements ISopremoCache {
 	/**
 	 * Creates a clone and reuses an existing node in the cache with the same type.
 	 */
-	public IJsonNode clone(IJsonNode node) {
+	public IJsonNode clone(final IJsonNode node) {
 		final IJsonNode clone = this.getNode(node.getClass());
 		clone.copyValueFrom(node);
 		return clone;

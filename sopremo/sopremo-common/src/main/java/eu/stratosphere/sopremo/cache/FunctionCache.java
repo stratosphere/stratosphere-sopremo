@@ -35,7 +35,7 @@ public class FunctionCache implements ISopremoCache {
 
 	private final transient SubArrayNode<IJsonNode> subParams = new SubArrayNode<IJsonNode>();
 
-	public FunctionCache(SopremoFunction template) {
+	public FunctionCache(final SopremoFunction template) {
 		this.template = template;
 		this.cachedParams = new ArrayNode<IJsonNode>(template.getMaximumNumberOfParameters());
 		this.subParams.init(this.cachedParams, 0);
@@ -50,13 +50,13 @@ public class FunctionCache implements ISopremoCache {
 		return this.template;
 	}
 
-	public SopremoFunction get(int index) {
+	public SopremoFunction get(final int index) {
 		while (index >= this.functions.size())
 			this.functions.add(this.template.clone());
 		return this.functions.get(index);
 	}
 
-	public IJsonNode call(int functionIndex, IJsonNode... params) {
+	public IJsonNode call(final int functionIndex, final IJsonNode... params) {
 		this.subParams.setSize(params.length);
 		for (int index = 0; index < params.length; index++)
 			this.cachedParams.set(index, params[index]);

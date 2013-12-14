@@ -29,7 +29,7 @@ public class OrderingExpression extends EvaluationExpression {
 
 	private final transient IntNode result = new IntNode();
 
-	public OrderingExpression(Order order, PathSegmentExpression path) {
+	public OrderingExpression(final Order order, final PathSegmentExpression path) {
 		this.order = order;
 		this.path = path;
 	}
@@ -40,12 +40,13 @@ public class OrderingExpression extends EvaluationExpression {
 	public OrderingExpression() {
 		this(Order.ASCENDING, EvaluationExpression.VALUE);
 	}
-	
-	/* (non-Javadoc)
+
+	/*
+	 * (non-Javadoc)
 	 * @see eu.stratosphere.sopremo.expressions.EvaluationExpression#appendAsString(java.lang.Appendable)
 	 */
 	@Override
-	public void appendAsString(Appendable appendable) throws IOException {
+	public void appendAsString(final Appendable appendable) throws IOException {
 		appendable.append(this.order.toString()).append(' ');
 		this.path.appendAsString(appendable);
 	}
@@ -58,7 +59,7 @@ public class OrderingExpression extends EvaluationExpression {
 	public Order getOrder() {
 		return this.order;
 	}
-	
+
 	/**
 	 * Returns the path.
 	 * 
@@ -70,41 +71,43 @@ public class OrderingExpression extends EvaluationExpression {
 
 	/**
 	 * Sets the path to the specified value.
-	 *
-	 * @param path the path to set
+	 * 
+	 * @param path
+	 *        the path to set
 	 */
-	public void setPath(EvaluationExpression path) {
+	public void setPath(final EvaluationExpression path) {
 		if (path == null)
 			throw new NullPointerException("path must not be null");
 
 		this.path = path;
 	}
-	
+
 	/**
 	 * Sets the order to the specified value.
-	 *
-	 * @param order the order to set
+	 * 
+	 * @param order
+	 *        the order to set
 	 */
-	public void setOrder(Order order) {
+	public void setOrder(final Order order) {
 		if (order == null)
 			throw new NullPointerException("order must not be null");
 
 		this.order = order;
 	}
-	
+
 	/*
 	 * (non-Javadoc)
 	 * @see eu.stratosphere.sopremo.expressions.EvaluationExpression#evaluate(eu.stratosphere.sopremo.type.IJsonNode)
 	 */
 	@Override
-	public IntNode evaluate(IJsonNode node) {
+	public IntNode evaluate(final IJsonNode node) {
 		@SuppressWarnings("unchecked")
 		final IArrayNode<IJsonNode> pair = (IArrayNode<IJsonNode>) node;
-		this.result.setValue(compare(pair.get(0), pair.get(1)));
+		this.result.setValue(this.compare(pair.get(0), pair.get(1)));
 		return this.result;
 	}
 
-	public int compare(IJsonNode node1, IJsonNode node2) {
+	public int compare(final IJsonNode node1, final IJsonNode node2) {
 		final int result = this.path.evaluate(node1).compareTo(this.path.evaluate(node2));
 		return this.order == Order.DESCENDING ? -result : result;
 	}
@@ -116,7 +119,7 @@ public class OrderingExpression extends EvaluationExpression {
 			 * @see java.util.Comparator#compare(java.lang.Object, java.lang.Object)
 			 */
 			@Override
-			public int compare(IJsonNode node1, IJsonNode node2) {
+			public int compare(final IJsonNode node1, final IJsonNode node2) {
 				final int result =
 					OrderingExpression.this.path.evaluate(node1).compareTo(OrderingExpression.this.path.evaluate(node2));
 				return OrderingExpression.this.order == Order.DESCENDING ? -result : result;

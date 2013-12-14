@@ -24,13 +24,15 @@ import eu.stratosphere.pact.generic.types.TypeSerializer;
 /**
  * Implementation of the (de)serialization and copying logic for the {@link SopremoRecord}.
  */
-public final class SopremoRecordSerializer extends TypeSerializer<SopremoRecord> {
+public class SopremoRecordSerializer extends TypeSerializer<SopremoRecord> {
 	private final SopremoRecordLayout layout;
 
 	/**
 	 * Creates a new instance of the SopremoRecordSerializers. Private to prevent instantiation.
 	 */
-	SopremoRecordSerializer(SopremoRecordLayout layout) {
+	SopremoRecordSerializer(final SopremoRecordLayout layout) {
+		if (layout == null)
+			throw new NullPointerException();
 		this.layout = layout;
 	}
 
@@ -42,7 +44,7 @@ public final class SopremoRecordSerializer extends TypeSerializer<SopremoRecord>
 	 */
 	@Override
 	public SopremoRecord createInstance() {
-		return new SopremoRecord(this.layout);
+		return new SopremoRecord();
 	}
 
 	/*
@@ -50,7 +52,7 @@ public final class SopremoRecordSerializer extends TypeSerializer<SopremoRecord>
 	 * @see eu.stratosphere.sopremo.serialization.TypeAccessors#createCopy(java.lang.Object)
 	 */
 	@Override
-	public SopremoRecord createCopy(SopremoRecord from) {
+	public SopremoRecord createCopy(final SopremoRecord from) {
 		return from.copy();
 	}
 
@@ -59,7 +61,7 @@ public final class SopremoRecordSerializer extends TypeSerializer<SopremoRecord>
 	 * @see eu.stratosphere.sopremo.serialization.TypeAccessors#copyTo(java.lang.Object, java.lang.Object)
 	 */
 	@Override
-	public void copyTo(SopremoRecord from, SopremoRecord to) {
+	public void copyTo(final SopremoRecord from, final SopremoRecord to) {
 		from.copyTo(to);
 	}
 
@@ -80,8 +82,8 @@ public final class SopremoRecordSerializer extends TypeSerializer<SopremoRecord>
 	 * eu.stratosphere.nephele.services.memorymanager.DataOutputViewV2)
 	 */
 	@Override
-	public void serialize(SopremoRecord record, DataOutputView target) throws IOException {
-		record.write(target);
+	public void serialize(final SopremoRecord record, final DataOutputView target) throws IOException {
+		record.write(target, this.layout);
 	}
 
 	/*
@@ -90,8 +92,9 @@ public final class SopremoRecordSerializer extends TypeSerializer<SopremoRecord>
 	 * eu.stratosphere.nephele.services.memorymanager.DataInputViewV2)
 	 */
 	@Override
-	public void deserialize(SopremoRecord target, DataInputView source) throws IOException {
-		target.read(source);
+	public void deserialize(final SopremoRecord target, final DataInputView source) throws IOException {
+		target.read(source, this.layout);
+		target.getOrParseNode();
 	}
 
 	/*
@@ -100,11 +103,11 @@ public final class SopremoRecordSerializer extends TypeSerializer<SopremoRecord>
 	 * DataInputViewV2, eu.stratosphere.nephele.services.memorymanager.DataOutputViewV2)
 	 */
 	@Override
-	public void copy(DataInputView source, DataOutputView target) throws IOException {
-		int numKeys = this.layout.getNumKeys();
+	public void copy(final DataInputView source, final DataOutputView target) throws IOException {
+		final int numKeys = this.layout.getNumKeys();
 		for (int index = 0; index < numKeys; index++)
 			target.writeInt(source.readInt());
-		int size = source.readInt();
+		final int size = source.readInt();
 		target.writeInt(size);
 		target.write(source, size);
 	}

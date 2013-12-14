@@ -8,7 +8,7 @@ public class BigIntegerNodeTest extends JsonNodeTest<BigIntegerNode> {
 	 * @see eu.stratosphere.sopremo.EqualVerifyTest#createDefaultInstance(int)
 	 */
 	@Override
-	protected BigIntegerNode createDefaultInstance(int index) {
+	protected BigIntegerNode createDefaultInstance(final int index) {
 		return new BigIntegerNode(BigInteger.valueOf(index));
 	}
 }

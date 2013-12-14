@@ -24,7 +24,7 @@ public abstract class Callable<Result, InputType> extends AbstractSopremoType im
 
 	private final int minimumNumberOfParameters, maximumNumberOfParameters;
 
-	public Callable(int minimumNumberOfParameters, int maximumNumberOfParameters) {
+	public Callable(final int minimumNumberOfParameters, final int maximumNumberOfParameters) {
 		this.minimumNumberOfParameters = minimumNumberOfParameters;
 		this.maximumNumberOfParameters = maximumNumberOfParameters;
 	}
@@ -32,7 +32,7 @@ public abstract class Callable<Result, InputType> extends AbstractSopremoType im
 	/**
 	 * Returns true if the function can be called with the given number of parameters.
 	 */
-	public boolean accepts(int numberOfArguments) {
+	public boolean accepts(final int numberOfArguments) {
 		return this.minimumNumberOfParameters <= numberOfArguments &&
 			numberOfArguments <= this.maximumNumberOfParameters;
 	}
@@ -67,14 +67,14 @@ public abstract class Callable<Result, InputType> extends AbstractSopremoType im
 	}
 
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(final Object obj) {
 		if (this == obj)
 			return true;
 		if (obj == null)
 			return false;
 		if (this.getClass() != obj.getClass())
 			return false;
-		Callable<?, ?> other = (Callable<?, ?>) obj;
+		final Callable<?, ?> other = (Callable<?, ?>) obj;
 		return this.maximumNumberOfParameters == other.maximumNumberOfParameters &&
 			this.minimumNumberOfParameters == other.minimumNumberOfParameters;
 	}

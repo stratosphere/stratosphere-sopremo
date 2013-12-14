@@ -33,7 +33,8 @@ public class SopremoFunctionWithDefaultParameters extends SopremoFunction {
 	 * @param minimumNumberOfParameters
 	 * @param maximumNumberOfParameters
 	 */
-	public SopremoFunctionWithDefaultParameters(SopremoFunction originalFunction, int minimumNumberOfParameters) {
+	public SopremoFunctionWithDefaultParameters(final SopremoFunction originalFunction,
+			final int minimumNumberOfParameters) {
 		super(minimumNumberOfParameters, originalFunction.getMaximumNumberOfParameters());
 		this.originalFunction = originalFunction;
 	}
@@ -45,8 +46,9 @@ public class SopremoFunctionWithDefaultParameters extends SopremoFunction {
 	 * @param minimumNumberOfParameters
 	 * @param maximumNumberOfParameters
 	 */
-	public SopremoFunctionWithDefaultParameters(SopremoFunction originalFunction, int minimumNumberOfParameters,
-			int maximumNumberOfParameters) {
+	public SopremoFunctionWithDefaultParameters(final SopremoFunction originalFunction,
+			final int minimumNumberOfParameters,
+			final int maximumNumberOfParameters) {
 		super(minimumNumberOfParameters, maximumNumberOfParameters);
 		this.originalFunction = originalFunction;
 	}
@@ -64,17 +66,17 @@ public class SopremoFunctionWithDefaultParameters extends SopremoFunction {
 	 * @see eu.stratosphere.sopremo.function.Callable#call(java.lang.Object)
 	 */
 	@Override
-	public IJsonNode call(IArrayNode<IJsonNode> params) {
+	public IJsonNode call(final IArrayNode<IJsonNode> params) {
 		for (int index = params.size(); index < this.getMaximumNumberOfParameters(); index++)
 			params.set(index, this.defaultParameters.get(index));
 		return this.originalFunction.call(params);
 	}
 
-	public IJsonNode getDefaultParameter(int index) {
+	public IJsonNode getDefaultParameter(final int index) {
 		return this.defaultParameters.get(index);
 	}
 
-	public void setDefaultParameter(int index, IJsonNode node) {
+	public void setDefaultParameter(final int index, final IJsonNode node) {
 		this.defaultParameters.set(index, node);
 	}
 

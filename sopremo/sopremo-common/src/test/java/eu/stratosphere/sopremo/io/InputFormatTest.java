@@ -39,13 +39,11 @@ import eu.stratosphere.sopremo.type.IJsonNode;
 public class InputFormatTest {
 	public static final SopremoRecordLayout NULL_LAYOUT = SopremoRecordLayout.create();
 
-	public static Collection<IJsonNode> readFromFile(final File file, final SopremoFormat format,
-			final SopremoRecordLayout layout) throws IOException {
+	public static Collection<IJsonNode> readFromFile(final File file, final SopremoFormat format) throws IOException {
 
-		Configuration config = new Configuration();
+		final Configuration config = new Configuration();
 		final EvaluationContext context = new EvaluationContext();
 		SopremoUtil.setEvaluationContext(config, context);
-		SopremoUtil.setLayout(config, layout);
 		SopremoUtil.transferFieldsToConfiguration(format, SopremoFormat.class, config,
 			format.getInputFormat(), InputFormat.class);
 		@SuppressWarnings("unchecked")
@@ -53,9 +51,9 @@ public class InputFormatTest {
 			FormatUtil.openInput((Class<? extends SopremoFileInputFormat>) format.getInputFormat(),
 				file.toURI().toString(), config);
 
-		List<IJsonNode> values = new ArrayList<IJsonNode>();
+		final List<IJsonNode> values = new ArrayList<IJsonNode>();
 		while (!inputFormat.reachedEnd()) {
-			final SopremoRecord record = new SopremoRecord(layout);
+			final SopremoRecord record = new SopremoRecord();
 			if (inputFormat.nextRecord(record))
 				values.add(record.getNode().clone());
 		}

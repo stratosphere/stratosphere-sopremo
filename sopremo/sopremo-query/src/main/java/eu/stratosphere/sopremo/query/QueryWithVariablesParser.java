@@ -25,14 +25,14 @@ import eu.stratosphere.sopremo.packages.IRegistry;
  * @author Arvid Heise
  */
 public abstract class QueryWithVariablesParser<VarType extends ISopremoType> extends AbstractQueryParser {
-	private StackedRegistry<VarType, IRegistry<VarType>> variableRegistry =
+	private final StackedRegistry<VarType, IRegistry<VarType>> variableRegistry =
 		new StackedRegistry<VarType, IRegistry<VarType>>(new DefaultRegistry<VarType>());
 
-	public QueryWithVariablesParser(TokenStream input, RecognizerSharedState state) {
+	public QueryWithVariablesParser(final TokenStream input, final RecognizerSharedState state) {
 		super(input, state);
 	}
 
-	public QueryWithVariablesParser(TokenStream input) {
+	public QueryWithVariablesParser(final TokenStream input) {
 		super(input);
 	}
 

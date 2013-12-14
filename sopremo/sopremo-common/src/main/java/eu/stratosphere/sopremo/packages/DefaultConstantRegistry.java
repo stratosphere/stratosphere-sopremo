@@ -15,7 +15,7 @@ public class DefaultConstantRegistry extends DefaultRegistry<EvaluationExpressio
 	 * 
 	 * @param nameChooserProvider
 	 */
-	public DefaultConstantRegistry(NameChooser constantNameChooser) {
+	public DefaultConstantRegistry(final NameChooser constantNameChooser) {
 		super(constantNameChooser);
 	}
 
@@ -34,7 +34,7 @@ public class DefaultConstantRegistry extends DefaultRegistry<EvaluationExpressio
 			if (EvaluationExpression.class.isAssignableFrom(field.getType()))
 				try {
 					this.put(field.getName(), (EvaluationExpression) field.get(null));
-				} catch (Exception e) {
+				} catch (final Exception e) {
 					SopremoUtil.LOG.warn(String.format("Cannot access constant %s: %s", field, e));
 				}
 

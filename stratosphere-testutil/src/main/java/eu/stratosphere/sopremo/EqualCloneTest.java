@@ -18,14 +18,15 @@ import eu.stratosphere.util.reflect.ReflectUtil;
 public abstract class EqualCloneTest<T extends ICloneable> extends EqualVerifyTest<T> {
 	@Test
 	public void testClone() throws IllegalAccessException {
-		for (T original : Iterables.concat(Arrays.asList(this.first, this.second), this.more)) {
+		for (final T original : Iterables.concat(Arrays.asList(this.first, this.second), this.more)) {
 			final Object clone = original.clone();
 			this.testPropertyClone(this.first.getClass(), original, clone);
 		}
 	}
 
-	protected void testPropertyClone(Class<?> type, Object original, Object clone) throws IllegalAccessException {
-		for (Field field : type.getDeclaredFields()) {
+	protected void testPropertyClone(final Class<?> type, final Object original, final Object clone)
+			throws IllegalAccessException {
+		for (final Field field : type.getDeclaredFields()) {
 			// final Class<?> propertyType = field.getType();
 			if ((field.getModifiers() & (Modifier.STATIC | Modifier.TRANSIENT)) != 0)
 				continue;
@@ -47,7 +48,7 @@ public abstract class EqualCloneTest<T extends ICloneable> extends EqualVerifyTe
 			this.testPropertyClone(type.getSuperclass(), original, clone);
 	}
 
-	private boolean isImmutable(Class<?> type) {
+	private boolean isImmutable(final Class<?> type) {
 		return type == String.class
 			|| type.isEnum()
 			|| type == Class.class

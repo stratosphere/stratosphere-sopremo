@@ -42,7 +42,7 @@ public class ArrayNode<T extends IJsonNode> extends AbstractArrayNode<T> {
 	 * This method is only applicable if ArrayNode<T> is untyped.
 	 */
 	@SuppressWarnings("unchecked")
-	public ArrayNode(int size) {
+	public ArrayNode(final int size) {
 		this(new ArrayList<T>(size));
 		for (int index = 0; index < size; index++)
 			this.add((T) MissingNode.getInstance());
@@ -51,7 +51,7 @@ public class ArrayNode<T extends IJsonNode> extends AbstractArrayNode<T> {
 	/**
 	 * Initializes an empty ArrayNode<T> directly with the given list.
 	 */
-	protected ArrayNode(ObjectArrayList<T> children) {
+	protected ArrayNode(final ObjectArrayList<T> children) {
 		this.children = children;
 	}
 
@@ -59,7 +59,7 @@ public class ArrayNode<T extends IJsonNode> extends AbstractArrayNode<T> {
 	 * Initializes an empty ArrayNode<T> directly with the given list.
 	 */
 	@SuppressWarnings("unchecked")
-	protected ArrayNode(Class<T> elemType, int size) {
+	protected ArrayNode(final Class<T> elemType, final int size) {
 		this(ObjectArrayList.wrap((T[]) Array.newInstance(elemType, size)));
 	}
 
@@ -106,7 +106,7 @@ public class ArrayNode<T extends IJsonNode> extends AbstractArrayNode<T> {
 	 */
 	@SuppressWarnings("unchecked")
 	public static <T extends IJsonNode> ArrayNode<T> deepClone(final IStreamNode<? extends T> nodes) {
-		ArrayNode<T> clone = new ArrayNode<T>();
+		final ArrayNode<T> clone = new ArrayNode<T>();
 		for (final T node : nodes)
 			clone.children.add((T) node.clone());
 		return clone;
@@ -122,7 +122,7 @@ public class ArrayNode<T extends IJsonNode> extends AbstractArrayNode<T> {
 	@SuppressWarnings("unchecked")
 	public static <T extends IJsonNode> ArrayNode<T> deepClone(final Class<T> elemType,
 			final IStreamNode<? extends T> nodes) {
-		ArrayNode<T> clone = new ArrayNode<T>(elemType, 0);
+		final ArrayNode<T> clone = new ArrayNode<T>(elemType, 0);
 		for (final T node : nodes)
 			clone.children.add((T) node.clone());
 		return clone;
@@ -215,7 +215,7 @@ public class ArrayNode<T extends IJsonNode> extends AbstractArrayNode<T> {
 	 * .sopremo.type.IJsonNode)
 	 */
 	@Override
-	public boolean contains(IJsonNode node) {
+	public boolean contains(final IJsonNode node) {
 		return this.children.contains(node);
 	}
 
@@ -271,13 +271,13 @@ public class ArrayNode<T extends IJsonNode> extends AbstractArrayNode<T> {
 	}
 
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(final Object obj) {
 		if (this == obj)
 			return true;
 		if (this.getClass() != obj.getClass())
 			return super.equals(obj);
-		ArrayNode<?> other = (ArrayNode<?>) obj;
-		int size = this.size();
+		final ArrayNode<?> other = (ArrayNode<?>) obj;
+		final int size = this.size();
 		if (other.size() != size)
 			return false;
 		for (int index = 0; index < size; index++)
@@ -288,7 +288,7 @@ public class ArrayNode<T extends IJsonNode> extends AbstractArrayNode<T> {
 
 	@Override
 	public Iterator<T> iterator() {
-		return Iterators.limit(this.children.iterator(), size());
+		return Iterators.limit(this.children.iterator(), this.size());
 	}
 
 	/**
@@ -323,8 +323,8 @@ public class ArrayNode<T extends IJsonNode> extends AbstractArrayNode<T> {
 	 * .sopremo.type.IJsonNode[])
 	 */
 	@Override
-	protected void fillArray(IJsonNode[] result) {
-		IJsonNode[] array = this.children.toArray(new IJsonNode[this.children
+	protected void fillArray(final IJsonNode[] result) {
+		final IJsonNode[] array = this.children.toArray(new IJsonNode[this.children
 			.size()]);
 		for (int i = 0; i < this.children.size(); i++)
 			result[i] = array[i];

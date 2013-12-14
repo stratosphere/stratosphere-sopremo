@@ -39,9 +39,9 @@ import eu.stratosphere.util.reflect.ReflectUtil;
  * @author Arvid Heise
  */
 public class DefaultFunctionRegistry extends DefaultRegistry<Callable<?, ?>> implements IFunctionRegistry {
-	private Map<String, Callable<?, ?>> methods = new HashMap<String, Callable<?, ?>>();
+	private final Map<String, Callable<?, ?>> methods = new HashMap<String, Callable<?, ?>>();
 
-	public DefaultFunctionRegistry(NameChooser nameChooser) {
+	public DefaultFunctionRegistry(final NameChooser nameChooser) {
 		super(nameChooser);
 	}
 
@@ -58,7 +58,7 @@ public class DefaultFunctionRegistry extends DefaultRegistry<Callable<?, ?>> imp
 	 * .lang.String)
 	 */
 	@Override
-	public Callable<?, ?> get(String name) {
+	public Callable<?, ?> get(final String name) {
 		return this.methods.get(name);
 	}
 
@@ -69,7 +69,7 @@ public class DefaultFunctionRegistry extends DefaultRegistry<Callable<?, ?>> imp
 	 * (java.lang.String, eu.stratosphere.sopremo.function.MeteorMethod)
 	 */
 	@Override
-	public void put(String name, Callable<?, ?> method) {
+	public void put(final String name, final Callable<?, ?> method) {
 		this.methods.put(name, method);
 	}
 
@@ -89,7 +89,7 @@ public class DefaultFunctionRegistry extends DefaultRegistry<Callable<?, ?>> imp
 	 * eu.stratosphere.sopremo.ISopremoType#toString(java.lang.StringBuilder)
 	 */
 	@Override
-	public void appendAsString(Appendable appendable) throws IOException {
+	public void appendAsString(final Appendable appendable) throws IOException {
 		appendable.append("Method registry: {");
 		boolean first = true;
 		for (final Entry<String, Callable<?, ?>> method : this.methods.entrySet()) {
@@ -125,7 +125,7 @@ public class DefaultFunctionRegistry extends DefaultRegistry<Callable<?, ?>> imp
 	 * java.lang.Class, java.lang.String)
 	 */
 	@Override
-	public void put(String registeredName, Class<?> clazz, String staticMethodName) {
+	public void put(final String registeredName, final Class<?> clazz, final String staticMethodName) {
 		final List<Method> functions =
 			this.getCompatibleMethods(ReflectUtil.getMethods(clazz, staticMethodName, Modifier.STATIC | Modifier.PUBLIC));
 
@@ -136,11 +136,11 @@ public class DefaultFunctionRegistry extends DefaultRegistry<Callable<?, ?>> imp
 		Callable<?, ?> javaMethod = this.get(registeredName);
 		if (javaMethod == null || !(javaMethod instanceof JavaMethod))
 			this.put(registeredName, javaMethod = this.createJavaMethod(registeredName, functions.get(0)));
-		for (Method method : functions)
+		for (final Method method : functions)
 			((JavaMethod) javaMethod).addSignature(method);
 	}
 
-	protected JavaMethod createJavaMethod(String registeredName, final Method implementation) {
+	protected JavaMethod createJavaMethod(final String registeredName, final Method implementation) {
 		final JavaMethod javaMethod = new JavaMethod(registeredName);
 		javaMethod.addSignature(implementation);
 		return javaMethod;
@@ -161,14 +161,14 @@ public class DefaultFunctionRegistry extends DefaultRegistry<Callable<?, ?>> imp
 				try {
 					if (Aggregation.class.isAssignableFrom(innerClass)) {
 						final Aggregation aggregation = (Aggregation) ReflectUtil.newInstance(innerClass);
-						for (String name : this.getNames(innerClass))
+						for (final String name : this.getNames(innerClass))
 							this.put(name, new AggregationFunction(aggregation));
 					} else if (SopremoFunction.class.isAssignableFrom(innerClass)) {
 						final SopremoFunction function = (SopremoFunction) ReflectUtil.newInstance(innerClass);
-						for (String name : this.getNames(innerClass))
+						for (final String name : this.getNames(innerClass))
 							this.put(name, function);
 					}
-				} catch (Exception e) {
+				} catch (final Exception e) {
 					SopremoUtil.LOG.warn(String.format("Cannot access inner class %s: %s", innerClass, e));
 				}
 
@@ -179,14 +179,14 @@ public class DefaultFunctionRegistry extends DefaultRegistry<Callable<?, ?>> imp
 			try {
 				if (Aggregation.class.isAssignableFrom(field.getType())) {
 					final Aggregation aggregation = (Aggregation) field.get(null);
-					for (String name : this.getNames(field))
+					for (final String name : this.getNames(field))
 						this.put(name, new AggregationFunction(aggregation));
 				} else if (SopremoFunction.class.isAssignableFrom(field.getType())) {
 					final SopremoFunction function = (SopremoFunction) field.get(null);
-					for (String name : this.getNames(field))
+					for (final String name : this.getNames(field))
 						this.put(name, function);
 				}
-			} catch (Throwable e) {
+			} catch (final Throwable e) {
 				SopremoUtil.LOG.warn(String.format("Cannot access field %s: %s", field, e));
 			}
 
@@ -199,7 +199,7 @@ public class DefaultFunctionRegistry extends DefaultRegistry<Callable<?, ?>> imp
 		String[] names = this.getNames(method);
 		if (names == null)
 			names = new String[] { method.getName() };
-		for (String name : names) {
+		for (final String name : names) {
 			Callable<?, ?> javaMethod = this.get(name);
 			if (javaMethod == null || !(javaMethod instanceof JavaMethod))
 				this.put(name, javaMethod = this.createJavaMethod(name, method));
@@ -229,14 +229,14 @@ public class DefaultFunctionRegistry extends DefaultRegistry<Callable<?, ?>> imp
 	}
 
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(final Object obj) {
 		if (this == obj)
 			return true;
 		if (obj == null)
 			return false;
-		if (getClass() != obj.getClass())
+		if (this.getClass() != obj.getClass())
 			return false;
-		DefaultFunctionRegistry other = (DefaultFunctionRegistry) obj;
+		final DefaultFunctionRegistry other = (DefaultFunctionRegistry) obj;
 		return this.methods.equals(other.methods);
 	}
 }

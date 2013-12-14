@@ -32,6 +32,7 @@ import eu.stratosphere.nephele.fs.FileStatus;
 import eu.stratosphere.nephele.fs.FileSystem;
 import eu.stratosphere.nephele.fs.LineReader;
 import eu.stratosphere.nephele.fs.Path;
+import eu.stratosphere.pact.common.contract.GenericDataSource;
 import eu.stratosphere.sopremo.operator.Name;
 import eu.stratosphere.sopremo.operator.Property;
 import eu.stratosphere.sopremo.type.IArrayNode;
@@ -71,13 +72,13 @@ public class CsvFormat extends SopremoFormat {
 	 */
 	@Property
 	@Name(noun = "delimiter")
-	public void setFieldDelimiter(String fieldDelimiter) {
+	public void setFieldDelimiter(final String fieldDelimiter) {
 		if (fieldDelimiter.length() != 1)
 			throw new IllegalArgumentException("field delimiter needs to be exactly one character");
 		this.fieldDelimiter = fieldDelimiter.charAt(0);
 	}
 
-	public CsvFormat withFieldDelimiter(String fieldDelimiter) {
+	public CsvFormat withFieldDelimiter(final String fieldDelimiter) {
 		this.setFieldDelimiter(fieldDelimiter);
 		return this;
 	}
@@ -99,7 +100,7 @@ public class CsvFormat extends SopremoFormat {
 	 */
 	@Property
 	@Name(noun = "columns")
-	public void setKeyNames(String... keyNames) {
+	public void setKeyNames(final String... keyNames) {
 		if (keyNames == null)
 			throw new NullPointerException("keyNames must not be null");
 
@@ -112,7 +113,7 @@ public class CsvFormat extends SopremoFormat {
 	 * @param keyNames
 	 *        the keyNames to set
 	 */
-	public CsvFormat withKeyNames(String... keyNames) {
+	public CsvFormat withKeyNames(final String... keyNames) {
 		this.setKeyNames(keyNames);
 		return this;
 	}
@@ -134,7 +135,7 @@ public class CsvFormat extends SopremoFormat {
 	 */
 	@Property
 	@Name(verb = "quote")
-	public void setQuotation(Boolean quotation) {
+	public void setQuotation(final Boolean quotation) {
 		this.quotation = quotation;
 	}
 
@@ -144,7 +145,7 @@ public class CsvFormat extends SopremoFormat {
 	 * @param quotation
 	 *        the quotation to set
 	 */
-	public CsvFormat withQuotation(Boolean quotation) {
+	public CsvFormat withQuotation(final Boolean quotation) {
 		this.setQuotation(quotation);
 		return this;
 	}
@@ -162,12 +163,13 @@ public class CsvFormat extends SopremoFormat {
 	 * (non-Javadoc)
 	 * @see
 	 * eu.stratosphere.sopremo.io.SopremoFormat#configureForInput(eu.stratosphere.nephele.configuration.Configuration,
-	 * java.net.URI)
+	 * eu.stratosphere.pact.common.contract.GenericDataSource, java.lang.String)
 	 */
 	@Override
-	public void configureForInput(Configuration configuration, String inputPath) {
-		configureDelimiter(inputPath);
-		super.configureForInput(configuration, inputPath);
+	public void configureForInput(final Configuration configuration, final GenericDataSource<?> source,
+			final String inputPath) {
+		this.configureDelimiter(inputPath);
+		super.configureForInput(configuration, source, inputPath);
 	}
 
 	/*
@@ -177,16 +179,16 @@ public class CsvFormat extends SopremoFormat {
 	 * java.net.URI)
 	 */
 	@Override
-	public void configureForOutput(Configuration configuration, String outputPath) {
-		configureDelimiter(outputPath);
+	public void configureForOutput(final Configuration configuration, final String outputPath) {
+		this.configureDelimiter(outputPath);
 		super.configureForOutput(configuration, outputPath);
 	}
 
-	private void configureDelimiter(String outputPath) {
+	private void configureDelimiter(final String outputPath) {
 		if (this.fieldDelimiter == AUTO)
 			try {
 				this.fieldDelimiter = new URI(outputPath).getPath().endsWith(".tsv") ? '\t' : ',';
-			} catch (URISyntaxException e) {
+			} catch (final URISyntaxException e) {
 				// cannot happen - path has been validated by operator
 			}
 	}
@@ -202,7 +204,7 @@ public class CsvFormat extends SopremoFormat {
 	 * @param numLineSamples
 	 *        the numLineSamples to set
 	 */
-	public void setNumLineSamples(int numLineSamples) {
+	public void setNumLineSamples(final int numLineSamples) {
 		if (numLineSamples <= 0)
 			throw new IllegalArgumentException("numLineSamples must be positive");
 
@@ -230,14 +232,14 @@ public class CsvFormat extends SopremoFormat {
 	}
 
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(final Object obj) {
 		if (this == obj)
 			return true;
 		if (!super.equals(obj))
 			return false;
 		if (this.getClass() != obj.getClass())
 			return false;
-		CsvFormat other = (CsvFormat) obj;
+		final CsvFormat other = (CsvFormat) obj;
 		return this.fieldDelimiter == other.fieldDelimiter
 			&& this.numLineSamples == other.numLineSamples
 			&& Equaler.SafeEquals.equal(this.quotation, other.quotation)
@@ -264,7 +266,7 @@ public class CsvFormat extends SopremoFormat {
 		 * FSDataOutputStream, int)
 		 */
 		@Override
-		protected void open(FSDataOutputStream stream, int taskNumber) throws IOException {
+		protected void open(final FSDataOutputStream stream, final int taskNumber) throws IOException {
 			this.writer = new BufferedWriter(new OutputStreamWriter(stream, this.getEncoding()));
 		}
 
@@ -285,7 +287,7 @@ public class CsvFormat extends SopremoFormat {
 		 * IJsonNode)
 		 */
 		@Override
-		public void writeValue(IJsonNode value) throws IOException {
+		public void writeValue(final IJsonNode value) throws IOException {
 			if (this.keyNames.length == 0)
 				if (value instanceof IArrayNode<?>) {
 					this.writeArray(value);
@@ -303,7 +305,7 @@ public class CsvFormat extends SopremoFormat {
 		/**
 		 * @param value
 		 */
-		private void writeObject(IObjectNode value) throws IOException {
+		private void writeObject(final IObjectNode value) throws IOException {
 			this.write(value.get(this.keyNames[0]));
 			for (int index = 1; index < this.keyNames.length; index++) {
 				this.writeSeparator();
@@ -312,7 +314,7 @@ public class CsvFormat extends SopremoFormat {
 			this.writeLineTerminator();
 		}
 
-		protected void detectKeyNames(IJsonNode value) {
+		protected void detectKeyNames(final IJsonNode value) {
 			final List<Entry<String, IJsonNode>> values = Lists.newArrayList(((IObjectNode) value).iterator());
 			this.keyNames = new String[values.size()];
 			for (int index = 0; index < this.keyNames.length; index++)
@@ -321,8 +323,8 @@ public class CsvFormat extends SopremoFormat {
 				throw new IllegalStateException("Found empty object and cannot detect key names");
 		}
 
-		private void writeArray(IJsonNode value) throws IOException {
-			IArrayNode<?> array = (IArrayNode<?>) value;
+		private void writeArray(final IJsonNode value) throws IOException {
+			final IArrayNode<?> array = (IArrayNode<?>) value;
 			if (!array.isEmpty()) {
 				this.write(array.get(0));
 				for (int index = 1; index < array.size(); index++) {
@@ -350,8 +352,8 @@ public class CsvFormat extends SopremoFormat {
 		/**
 		 * @param object
 		 */
-		private void write(IJsonNode node) throws IOException {
-			String string = node.toString();
+		private void write(final IJsonNode node) throws IOException {
+			final String string = node.toString();
 			if (this.quotation != Boolean.FALSE) {
 				this.writer.write('"');
 				this.writer.write(this.escapeString(string));
@@ -365,7 +367,7 @@ public class CsvFormat extends SopremoFormat {
 		protected String escapeString(String string) {
 			this.escapePositions.clear();
 			for (int index = 0, count = string.length(); index < count; index++) {
-				char ch = string.charAt(index);
+				final char ch = string.charAt(index);
 				if (ch == '\"' || ch == '\\')
 					this.escapePositions.add(index);
 			}
@@ -390,7 +392,7 @@ public class CsvFormat extends SopremoFormat {
 		}
 	}
 
-	static char inferFieldDelimiter(Path path) {
+	static char inferFieldDelimiter(final Path path) {
 		return path.getName().endsWith("tsv") ? '\t' : ',';
 	}
 
@@ -413,12 +415,12 @@ public class CsvFormat extends SopremoFormat {
 
 		private int numLineSamples;
 
-		private Deque<State> state = new LinkedList<State>();
+		private final Deque<State> state = new LinkedList<State>();
 
 		private CountingReader reader;
 
 		@Override
-		protected void open(FSDataInputStream stream, FileInputSplit split) throws IOException {
+		protected void open(final FSDataInputStream stream, final FileInputSplit split) throws IOException {
 			this.setState(State.TOP_LEVEL);
 
 			this.reader = new CountingReader(stream, this.getEncoding(), split.getStart() + split.getLength());
@@ -462,7 +464,7 @@ public class CsvFormat extends SopremoFormat {
 		 * Reads the key names from the first line of the first split.
 		 */
 		private String[] extractKeyNames() throws IOException {
-			List<String> keyNames = new ArrayList<String>();
+			final List<String> keyNames = new ArrayList<String>();
 			int lastCharacter;
 			do {
 				lastCharacter = this.fillBuilderWithNextField();
@@ -521,9 +523,9 @@ public class CsvFormat extends SopremoFormat {
 					}
 					break;
 				case UNICODE:
-					int digit = Character.digit(ch, 16);
+					final int digit = Character.digit(ch, 16);
 					if (digit != -1)
-						this.unicodeChar = (char) ((this.unicodeChar << 4) | digit);
+						this.unicodeChar = (char) (this.unicodeChar << 4 | digit);
 					else
 						throw new IOException("Cannot parse unicode character at position: " + this.pos +
 							" split start: " + this.splitStart);
@@ -531,8 +533,8 @@ public class CsvFormat extends SopremoFormat {
 						this.builder.append(this.unicodeChar);
 						this.unicodeChar = 0;
 						this.unicodeCount = 0;
-						revertToPreviousState();
-						revertToPreviousState();
+						this.revertToPreviousState();
+						this.revertToPreviousState();
 					}
 					break;
 				}
@@ -576,7 +578,7 @@ public class CsvFormat extends SopremoFormat {
 		/**
 		 * @param escaped
 		 */
-		private void setState(State newState) {
+		private void setState(final State newState) {
 			this.state.push(newState);
 		}
 
@@ -584,7 +586,7 @@ public class CsvFormat extends SopremoFormat {
 		 * @param fieldIndex
 		 * @param string
 		 */
-		private void addToObject(int fieldIndex, String string) {
+		private void addToObject(final int fieldIndex, final String string) {
 			if (fieldIndex < this.keyNames.length)
 				this.objectNode.put(this.keyNames[fieldIndex], TextNode.valueOf(string));
 		}
@@ -617,7 +619,8 @@ public class CsvFormat extends SopremoFormat {
 		 * eu.stratosphere.sopremo.io.SopremoFormat.SopremoFileInputFormat#getAverageRecordBytes(java.util.ArrayList)
 		 */
 		@Override
-		protected float getAverageRecordBytes(FileSystem fs, ArrayList<FileStatus> files, long fileSize)
+		protected float getAverageRecordBytes(final FileSystem fs, final ArrayList<FileStatus> files,
+				final long fileSize)
 				throws IOException {
 			// make the samples small for very small files
 			int numSamples = Math.min(this.numLineSamples, (int) (fileSize / 1024));
@@ -626,7 +629,7 @@ public class CsvFormat extends SopremoFormat {
 
 			long offset = 0;
 			long bytes = 0; // one byte for the line-break
-			long stepSize = fileSize / numSamples;
+			final long stepSize = fileSize / numSamples;
 
 			int fileNum = 0;
 			int samplesTaken = 0;
@@ -638,8 +641,8 @@ public class CsvFormat extends SopremoFormat {
 
 				try {
 					inStream = fs.open(currentFile.getPath());
-					LineReader lineReader = new LineReader(inStream, offset, currentFile.getLen() - offset, 1024);
-					byte[] line = lineReader.readLine();
+					final LineReader lineReader = new LineReader(inStream, offset, currentFile.getLen() - offset, 1024);
+					final byte[] line = lineReader.readLine();
 					lineReader.close();
 
 					if (line != null && line.length > 0) {
@@ -651,7 +654,7 @@ public class CsvFormat extends SopremoFormat {
 					if (inStream != null)
 						try {
 							inStream.close();
-						} catch (Throwable t) {
+						} catch (final Throwable t) {
 						}
 				}
 
@@ -687,7 +690,7 @@ public class CsvFormat extends SopremoFormat {
 
 		private final Charset cs;
 
-		public CountingReader(FSDataInputStream stream, String charset, long limit) {
+		public CountingReader(final FSDataInputStream stream, final String charset, final long limit) {
 			this.stream = stream;
 			this.cs = Charset.forName(charset);
 			this.decoder = this.cs.newDecoder();
@@ -700,7 +703,7 @@ public class CsvFormat extends SopremoFormat {
 			return this.reachedLimit;
 		}
 
-		public void seek(long absolutePos) throws IOException {
+		public void seek(final long absolutePos) throws IOException {
 			this.absolutePos = absolutePos;
 			this.stream.seek(absolutePos);
 			// mark as empty
@@ -720,11 +723,11 @@ public class CsvFormat extends SopremoFormat {
 		 * @see java.io.Reader#read(char[], int, int)
 		 */
 		@Override
-		public int read(char[] cbuf, int off, int len) throws IOException {
+		public int read(final char[] cbuf, final int off, final int len) throws IOException {
 			int toRead = len - off;
 			while (toRead > 0) {
 				this.fillCharBufferIfEmpty();
-				int currentReadCount = Math.min(toRead, this.charBuffer.length());
+				final int currentReadCount = Math.min(toRead, this.charBuffer.length());
 				this.charBuffer.get(cbuf, off, currentReadCount);
 				toRead -= currentReadCount;
 			}

@@ -56,31 +56,31 @@ public class SopremoTestServer implements Closeable, SopremoExecutionProtocol {
 
 	private RPCService rpcService;
 
-	private SopremoServer server;
+	private final SopremoServer server;
 
 	private SopremoExecutionProtocol executor;
 
-	private NepheleMiniCluster cluster = new NepheleMiniCluster();
+	private final NepheleMiniCluster cluster = new NepheleMiniCluster();
 
-	private Set<String> filesToCleanup = new HashSet<String>();
+	private final Set<String> filesToCleanup = new HashSet<String>();
 
 	private String tempDir;
 
 	/**
 	 * Initializes EqualCloneTestServer.
 	 */
-	public SopremoTestServer(boolean rpc) {
+	public SopremoTestServer(final boolean rpc) {
 
 		try {
 			this.cluster.start();
-		} catch (Exception e) {
-			fail(e, "Cannot start mini cluster");
+		} catch (final Exception e) {
+			this.fail(e, "Cannot start mini cluster");
 		}
 		this.server = new SopremoServer();
 		this.server.setJobManagerAddress(
 			new InetSocketAddress("localhost", this.cluster.getJobManagerRpcPort()));
 
-		if (rpc) {
+		if (rpc)
 			try {
 				this.server.setServerAddress(
 					new InetSocketAddress("localhost", SopremoConstants.DEFAULT_SOPREMO_SERVER_IPC_PORT));
@@ -88,12 +88,11 @@ public class SopremoTestServer implements Closeable, SopremoExecutionProtocol {
 				this.rpcService = new RPCService();
 				this.executor =
 					this.rpcService.getProxy(this.server.getServerAddress(), SopremoExecutionProtocol.class);
-			} catch (IOException e) {
-				fail(e, "Cannot start rpc sopremo server");
+			} catch (final IOException e) {
+				this.fail(e, "Cannot start rpc sopremo server");
 			}
-		} else {
+		else
 			this.executor = this.server;
-		}
 
 		this.tempDir = System.getProperty("java.io.tmpdir");
 		if (!this.tempDir.endsWith(File.separator))
@@ -107,9 +106,10 @@ public class SopremoTestServer implements Closeable, SopremoExecutionProtocol {
 	 * .librarycache.LibraryCacheProfileRequest)
 	 */
 	@Override
-	public LibraryCacheProfileResponse getLibraryCacheProfile(LibraryCacheProfileRequest request) throws IOException {
-		LibraryCacheProfileResponse response = new LibraryCacheProfileResponse(request);
-		String[] requiredLibraries = request.getRequiredLibraries();
+	public LibraryCacheProfileResponse getLibraryCacheProfile(final LibraryCacheProfileRequest request)
+			throws IOException {
+		final LibraryCacheProfileResponse response = new LibraryCacheProfileResponse(request);
+		final String[] requiredLibraries = request.getRequiredLibraries();
 
 		// since the test server is executed locally, all libraries are available
 		for (int i = 0; i < requiredLibraries.length; i++)
@@ -125,11 +125,11 @@ public class SopremoTestServer implements Closeable, SopremoExecutionProtocol {
 	 * .librarycache.LibraryCacheUpdate)
 	 */
 	@Override
-	public void updateLibraryCache(LibraryCacheUpdate update) throws IOException {
+	public void updateLibraryCache(final LibraryCacheUpdate update) throws IOException {
 	}
 
-	public void checkContentsOf(String fileName, IJsonNode... expected) throws IOException {
-		List<IJsonNode> remainingValues = new ArrayList<IJsonNode>(Arrays.asList(expected));
+	public void checkContentsOf(final String fileName, final IJsonNode... expected) throws IOException {
+		final List<IJsonNode> remainingValues = new ArrayList<IJsonNode>(Arrays.asList(expected));
 
 		final String outputFile = this.tempDir + fileName;
 		this.filesToCleanup.add(outputFile);
@@ -160,15 +160,15 @@ public class SopremoTestServer implements Closeable, SopremoExecutionProtocol {
 	 */
 	@Override
 	public void close() throws IOException {
-		for (String fileToClean : this.filesToCleanup)
+		for (final String fileToClean : this.filesToCleanup)
 			try {
-				delete(fileToClean, true);
-			} catch (IOException e) {
+				this.delete(fileToClean, true);
+			} catch (final IOException e) {
 			}
 
 		try {
 			this.cluster.stop();
-		} catch (Exception e) {
+		} catch (final Exception e) {
 		}
 		this.server.close();
 		if (this.executor != this.server)
@@ -176,47 +176,47 @@ public class SopremoTestServer implements Closeable, SopremoExecutionProtocol {
 		FileSystem.closeAll();
 	}
 
-	public File createDir(String dirName) {
-		this.filesToCleanup.add(getTempName(dirName));
-		final File file = new File(getTempName(dirName));
+	public File createDir(final String dirName) {
+		this.filesToCleanup.add(this.getTempName(dirName));
+		final File file = new File(this.getTempName(dirName));
 		file.mkdirs();
 		return file;
 	}
 
-	public File createFile(String fileName, IJsonNode... nodes) throws IOException {
-		this.filesToCleanup.add(getTempName(fileName));
-		return createFile(getTempName(fileName), getJsonString(nodes));
+	public File createFile(final String fileName, final IJsonNode... nodes) throws IOException {
+		this.filesToCleanup.add(this.getTempName(fileName));
+		return this.createFile(this.getTempName(fileName), this.getJsonString(nodes));
 	}
 
-	public File getOutputFile(String fileName) {
-		this.filesToCleanup.add(getTempName(fileName));
-		final File file = new File(getTempName(fileName));
+	public File getOutputFile(final String fileName) {
+		this.filesToCleanup.add(this.getTempName(fileName));
+		final File file = new File(this.getTempName(fileName));
 		file.delete();
 		return file;
 	}
 
-	private File createFile(String fileName, String fileContent) throws IOException {
-		File f = new File(fileName);
+	private File createFile(final String fileName, final String fileContent) throws IOException {
+		final File f = new File(fileName);
 		if (this.filesToCleanup.contains(fileContent))
 			throw new IllegalArgumentException("file already exists");
 
-		FileWriter fw = new FileWriter(f);
+		final FileWriter fw = new FileWriter(f);
 		fw.write(fileContent);
 		fw.close();
 
 		return f;
 	}
 
-	public boolean delete(String path, boolean recursive) throws IOException {
-		final File file = new File(getTempName(path));
+	public boolean delete(final String path, final boolean recursive) throws IOException {
+		final File file = new File(this.getTempName(path));
 		if (recursive && file.isDirectory())
-			for (String subFile : file.list())
-				delete(path + File.separator + subFile, recursive);
+			for (final String subFile : file.list())
+				this.delete(path + File.separator + subFile, recursive);
 		return file.delete();
 	}
 
 	@Override
-	public ExecutionResponse execute(ExecutionRequest request) throws IOException, InterruptedException {
+	public ExecutionResponse execute(final ExecutionRequest request) throws IOException, InterruptedException {
 		return this.executor.execute(request);
 	}
 
@@ -225,21 +225,21 @@ public class SopremoTestServer implements Closeable, SopremoExecutionProtocol {
 	}
 
 	@Override
-	public ExecutionResponse getState(SopremoID jobId) throws IOException, InterruptedException {
+	public ExecutionResponse getState(final SopremoID jobId) throws IOException, InterruptedException {
 		return this.executor.getState(jobId);
 	}
 
-	private void fail(Exception e, final String message) throws AssertionFailedError {
+	private void fail(final Exception e, final String message) throws AssertionFailedError {
 		final AssertionFailedError assertionFailedError = new AssertionFailedError(message);
 		assertionFailedError.initCause(e);
 		throw assertionFailedError;
 	}
 
-	private String getJsonString(IJsonNode... nodes) throws IOException {
+	private String getJsonString(final IJsonNode... nodes) throws IOException {
 		final StringWriter jsonWriter = new StringWriter();
-		JsonGenerator generator = new JsonGenerator(jsonWriter);
+		final JsonGenerator generator = new JsonGenerator(jsonWriter);
 		generator.writeStartArray();
-		for (IJsonNode node : nodes)
+		for (final IJsonNode node : nodes)
 			generator.writeTree(node);
 		generator.writeEndArray();
 		generator.close();
@@ -247,12 +247,13 @@ public class SopremoTestServer implements Closeable, SopremoExecutionProtocol {
 		return jsonString;
 	}
 
-	private String getTempName(String name) {
+	private String getTempName(final String name) {
 		return this.tempDir + name;
 	}
 
-	public static ExecutionResponse waitForStateToFinish(SopremoExecutionProtocol server, ExecutionResponse response,
-			ExecutionState status) throws IOException, InterruptedException {
+	public static ExecutionResponse waitForStateToFinish(final SopremoExecutionProtocol server,
+			ExecutionResponse response,
+			final ExecutionState status) throws IOException, InterruptedException {
 		for (int waits = 0; response.getState() == status && waits < 1000; waits++) {
 			Thread.sleep(100);
 			response = server.getState(response.getJobId());
@@ -261,7 +262,7 @@ public class SopremoTestServer implements Closeable, SopremoExecutionProtocol {
 	}
 
 	@Override
-	public Object getMetaData(SopremoID jobId, String key) throws IOException, InterruptedException {
+	public Object getMetaData(final SopremoID jobId, final String key) throws IOException, InterruptedException {
 		return this.executor.getMetaData(jobId, key);
 	}
 

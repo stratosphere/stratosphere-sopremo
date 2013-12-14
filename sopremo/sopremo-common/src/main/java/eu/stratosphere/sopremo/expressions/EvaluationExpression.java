@@ -77,7 +77,7 @@ public abstract class EvaluationExpression extends AbstractSopremoType implement
 		 * .EvaluationExpression)
 		 */
 		@Override
-		public void setInputExpression(EvaluationExpression inputExpression) {
+		public void setInputExpression(final EvaluationExpression inputExpression) {
 			throw new IllegalStateException();
 		}
 
@@ -96,7 +96,7 @@ public abstract class EvaluationExpression extends AbstractSopremoType implement
 		 * EvaluationExpression)
 		 */
 		@Override
-		public PathSegmentExpression withTail(EvaluationExpression tail) {
+		public PathSegmentExpression withTail(final EvaluationExpression tail) {
 			if (tail instanceof PathSegmentExpression)
 				return (PathSegmentExpression) tail;
 			return new ChainedSegmentExpression(tail);
@@ -127,7 +127,7 @@ public abstract class EvaluationExpression extends AbstractSopremoType implement
 		 * .PathSegmentExpression)
 		 */
 		@Override
-		public boolean equalsSameClass(PathSegmentExpression other) {
+		public boolean equalsSameClass(final PathSegmentExpression other) {
 			return true;
 		}
 
@@ -136,7 +136,7 @@ public abstract class EvaluationExpression extends AbstractSopremoType implement
 		 * @see eu.stratosphere.sopremo.expressions.PathSegmentExpression#equals(java.lang.Object)
 		 */
 		@Override
-		public boolean equals(Object obj) {
+		public boolean equals(final Object obj) {
 			return obj == this;
 		}
 
@@ -147,7 +147,7 @@ public abstract class EvaluationExpression extends AbstractSopremoType implement
 		 * )
 		 */
 		@Override
-		protected IJsonNode evaluateSegment(IJsonNode node) {
+		protected IJsonNode evaluateSegment(final IJsonNode node) {
 			return node;
 		}
 
@@ -156,7 +156,7 @@ public abstract class EvaluationExpression extends AbstractSopremoType implement
 		 * @see eu.stratosphere.sopremo.expressions.EvaluationExpression#appendAsString(java.lang.Appendable)
 		 */
 		@Override
-		public void appendAsString(Appendable appendable) throws IOException {
+		public void appendAsString(final Appendable appendable) throws IOException {
 			appendable.append('x');
 		}
 	}
@@ -210,7 +210,7 @@ public abstract class EvaluationExpression extends AbstractSopremoType implement
 	public EvaluationExpression findFirst(final Predicate<? super EvaluationExpression> predicate) {
 		if (predicate.apply(this))
 			return this;
-		for (EvaluationExpression child : this) {
+		for (final EvaluationExpression child : this) {
 			final EvaluationExpression expr = child.findFirst(predicate);
 			if (expr != null)
 				return child.findFirst(predicate);
@@ -239,7 +239,7 @@ public abstract class EvaluationExpression extends AbstractSopremoType implement
 		if (predicate.apply(this))
 			expressions.add(this);
 
-		for (EvaluationExpression child : this)
+		for (final EvaluationExpression child : this)
 			child.findAll(predicate, expressions);
 	}
 
@@ -255,7 +255,7 @@ public abstract class EvaluationExpression extends AbstractSopremoType implement
 	public EvaluationExpression transformRecursively(final Function<EvaluationExpression, EvaluationExpression> function) {
 		final ChildIterator iterator = this.iterator();
 		while (iterator.hasNext()) {
-			EvaluationExpression evaluationExpression = iterator.next();
+			final EvaluationExpression evaluationExpression = iterator.next();
 			iterator.set(evaluationExpression.transformRecursively(function));
 		}
 		return function.apply(this);
@@ -332,9 +332,9 @@ public abstract class EvaluationExpression extends AbstractSopremoType implement
 	}
 
 	private void removeRecursively(final Predicate<? super EvaluationExpression> predicate) {
-		final ChildIterator iterator = iterator();
+		final ChildIterator iterator = this.iterator();
 		while (iterator.hasNext()) {
-			EvaluationExpression child = iterator.next();
+			final EvaluationExpression child = iterator.next();
 			if (predicate.apply(child)) {
 				if (!iterator.canChildBeRemoved())
 					iterator.set(VALUE);
@@ -402,7 +402,7 @@ public abstract class EvaluationExpression extends AbstractSopremoType implement
 	public EvaluationExpression simplify() {
 		final ChildIterator iterator = this.iterator();
 		while (iterator.hasNext()) {
-			EvaluationExpression evaluationExpression = iterator.next();
+			final EvaluationExpression evaluationExpression = iterator.next();
 			iterator.set(evaluationExpression.simplify());
 		}
 		return this;
@@ -420,22 +420,22 @@ public abstract class EvaluationExpression extends AbstractSopremoType implement
 	}
 
 	public String printAsTree() {
-		StringBuilder builder = new StringBuilder();
+		final StringBuilder builder = new StringBuilder();
 		try {
 			this.printAsTree(builder, 0);
-		} catch (IOException e) {
+		} catch (final IOException e) {
 		}
 		return builder.toString();
 	}
 
-	protected void printAsTree(final Appendable appendable, int level) throws IOException {
+	protected void printAsTree(final Appendable appendable, final int level) throws IOException {
 		for (int index = 0; index < level; index++)
 			appendable.append(' ');
 		appendable.append(this.getClass().getSimpleName()).append(' ');
 		this.appendAsString(appendable);
 		appendable.append('\n');
 
-		for (EvaluationExpression child : this)
+		for (final EvaluationExpression child : this)
 			child.printAsTree(appendable, level + 1);
 	}
 

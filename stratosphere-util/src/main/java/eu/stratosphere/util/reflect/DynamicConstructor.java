@@ -63,7 +63,7 @@ public class DynamicConstructor<DeclaringClass> extends
 	}
 
 	@Override
-	protected Constructor<DeclaringClass> findMember(String name, final Class<DeclaringClass> clazz,
+	protected Constructor<DeclaringClass> findMember(final String name, final Class<DeclaringClass> clazz,
 			final Class<?>[] parameterTypes)
 			throws NoSuchMethodException {
 		return clazz.getDeclaredConstructor(parameterTypes);

@@ -226,7 +226,7 @@ public abstract class ElementaryOperator<Self extends ElementaryOperator<Self>>
 	public void setInnerGroupOrder(final int inputIndex, final OrderingExpression... innerGroupOrder) {
 		if (innerGroupOrder == null)
 			throw new NullPointerException("innerGroupOrders must not be null");
-		setInnerGroupOrder(inputIndex, Arrays.asList(innerGroupOrder));
+		this.setInnerGroupOrder(inputIndex, Arrays.asList(innerGroupOrder));
 	}
 
 	/**
@@ -299,7 +299,7 @@ public abstract class ElementaryOperator<Self extends ElementaryOperator<Self>>
 	}
 
 	@Override
-	public PactModule asPactModule(final EvaluationContext context, SopremoRecordLayout layout) {
+	public PactModule asPactModule(final EvaluationContext context, final SopremoRecordLayout layout) {
 		final Contract contract = this.getContract(layout);
 		context.setResultProjection(this.resultProjection);
 		this.configureContract(contract, contract.getParameters(), context, layout);
@@ -351,14 +351,13 @@ public abstract class ElementaryOperator<Self extends ElementaryOperator<Self>>
 	 */
 	@SuppressWarnings("unchecked")
 	protected void configureContract(final Contract contract, final Configuration stubConfiguration,
-			final EvaluationContext context, SopremoRecordLayout layout) {
+			final EvaluationContext context, final SopremoRecordLayout layout) {
 
 		SopremoUtil.transferFieldsToConfiguration(this, ElementaryOperator.class, stubConfiguration,
 			(Class<? extends AbstractStub>) contract.getUserCodeWrapper().getUserCodeClass(), AbstractStub.class);
 
 		contract.setDegreeOfParallelism(this.getDegreeOfParallelism());
 		SopremoUtil.setEvaluationContext(stubConfiguration, context);
-		SopremoUtil.setLayout(contract.getParameters(), layout);
 	}
 
 	@Override
@@ -392,26 +391,26 @@ public abstract class ElementaryOperator<Self extends ElementaryOperator<Self>>
 		final String name = this.toString();
 		try {
 			if (contractClass == GenericReduceContract.class) {
-				int[] keyIndices = this.getKeyIndices(layout, this.getKeyExpressions(0));
+				final int[] keyIndices = this.getKeyIndices(layout, this.getKeyExpressions(0));
 				final SopremoReduceContract contract = new SopremoReduceContract(this, stubClass, keyIndices, name);
-				if (!getInnerGroupOrder(0).isEmpty())
-					contract.setInnerGroupOrder(createOrdering(layout, getInnerGroupOrder(0)));
+				if (!this.getInnerGroupOrder(0).isEmpty())
+					contract.setInnerGroupOrder(this.createOrdering(layout, this.getInnerGroupOrder(0)));
 				return contract;
 			}
 			else if (contractClass == GenericCoGroupContract.class) {
-				int[] keyIndices1 = this.getKeyIndices(layout, this.getKeyExpressions(0));
-				int[] keyIndices2 = this.getKeyIndices(layout, this.getKeyExpressions(1));
+				final int[] keyIndices1 = this.getKeyIndices(layout, this.getKeyExpressions(0));
+				final int[] keyIndices2 = this.getKeyIndices(layout, this.getKeyExpressions(1));
 				final SopremoCoGroupContract contract =
 					new SopremoCoGroupContract(this, stubClass, keyIndices1, keyIndices2, name);
-				if (!getInnerGroupOrder(0).isEmpty())
-					contract.setFirstInnerGroupOrdering(createOrdering(layout, getInnerGroupOrder(0)));
-				if (!getInnerGroupOrder(1).isEmpty())
-					contract.setFirstInnerGroupOrdering(createOrdering(layout, getInnerGroupOrder(1)));
+				if (!this.getInnerGroupOrder(0).isEmpty())
+					contract.setFirstInnerGroupOrdering(this.createOrdering(layout, this.getInnerGroupOrder(0)));
+				if (!this.getInnerGroupOrder(1).isEmpty())
+					contract.setFirstInnerGroupOrdering(this.createOrdering(layout, this.getInnerGroupOrder(1)));
 				return contract;
 			}
 			else if (contractClass == GenericMatchContract.class) {
-				int[] keyIndices1 = this.getKeyIndices(layout, this.getKeyExpressions(0));
-				int[] keyIndices2 = this.getKeyIndices(layout, this.getKeyExpressions(1));
+				final int[] keyIndices1 = this.getKeyIndices(layout, this.getKeyExpressions(0));
+				final int[] keyIndices2 = this.getKeyIndices(layout, this.getKeyExpressions(1));
 
 				return new GenericMatchContract(stubClass, keyIndices1, keyIndices2, name);
 			} else if (contractClass == GenericMapContract.class)
@@ -427,11 +426,11 @@ public abstract class ElementaryOperator<Self extends ElementaryOperator<Self>>
 		}
 	}
 
-	protected Ordering createOrdering(SopremoRecordLayout layout, List<OrderingExpression> innerGroupOrder) {
-		List<EvaluationExpression> paths = new ArrayList<EvaluationExpression>();
-		for (OrderingExpression orderingExpression : innerGroupOrder)
+	protected Ordering createOrdering(final SopremoRecordLayout layout, final List<OrderingExpression> innerGroupOrder) {
+		final List<EvaluationExpression> paths = new ArrayList<EvaluationExpression>();
+		for (final OrderingExpression orderingExpression : innerGroupOrder)
 			paths.add(orderingExpression.getPath());
-		int[] keyIndices = this.getKeyIndices(layout, paths);
+		final int[] keyIndices = this.getKeyIndices(layout, paths);
 		final Ordering ordering = new Ordering();
 		for (int index = 0; index < keyIndices.length; index++)
 			ordering.appendOrdering(keyIndices[index], null, innerGroupOrder.get(index).getOrder());
@@ -456,7 +455,7 @@ public abstract class ElementaryOperator<Self extends ElementaryOperator<Self>>
 	 *        the combinable to set
 	 * @see eu.stratosphere.pact.generic.contract.GenericReduceContract.Combinable
 	 */
-	public void setCombinable(boolean combinable) {
+	public void setCombinable(final boolean combinable) {
 		this.combinable = combinable;
 	}
 
@@ -467,9 +466,9 @@ public abstract class ElementaryOperator<Self extends ElementaryOperator<Self>>
 	 *        the combinable to set
 	 * @see eu.stratosphere.pact.generic.contract.GenericReduceContract.Combinable
 	 */
-	public Self withCombinable(boolean combinable) {
-		setCombinable(combinable);
-		return self();
+	public Self withCombinable(final boolean combinable) {
+		this.setCombinable(combinable);
+		return this.self();
 	}
 
 	/**
@@ -489,7 +488,7 @@ public abstract class ElementaryOperator<Self extends ElementaryOperator<Self>>
 	 *        the combinableFirst to set
 	 * @see eu.stratosphere.pact.generic.contract.GenericCoGroupContract.CombinableFirst
 	 */
-	public void setCombinableFirst(boolean combinableFirst) {
+	public void setCombinableFirst(final boolean combinableFirst) {
 		this.combinableFirst = combinableFirst;
 	}
 
@@ -500,9 +499,9 @@ public abstract class ElementaryOperator<Self extends ElementaryOperator<Self>>
 	 *        the combinableFirst to set
 	 * @see eu.stratosphere.pact.generic.contract.GenericCoGroupContract.CombinableFirst
 	 */
-	public Self withCombinableFirst(boolean combinableFirst) {
+	public Self withCombinableFirst(final boolean combinableFirst) {
 		this.combinableFirst = combinableFirst;
-		return self();
+		return this.self();
 	}
 
 	/**
@@ -522,7 +521,7 @@ public abstract class ElementaryOperator<Self extends ElementaryOperator<Self>>
 	 *        the combinableSecond to set
 	 * @see eu.stratosphere.pact.generic.contract.GenericCoGroupContract.CombinableSecond
 	 */
-	public void setCombinableSecond(boolean combinableSecond) {
+	public void setCombinableSecond(final boolean combinableSecond) {
 		this.combinableSecond = combinableSecond;
 	}
 
@@ -533,7 +532,7 @@ public abstract class ElementaryOperator<Self extends ElementaryOperator<Self>>
 	 *        the combinableSecond to set
 	 * @see eu.stratosphere.pact.generic.contract.GenericCoGroupContract.CombinableSecond
 	 */
-	public void withCombinableSecond(boolean combinableSecond) {
+	public void withCombinableSecond(final boolean combinableSecond) {
 		this.combinableSecond = combinableSecond;
 	}
 
@@ -542,7 +541,7 @@ public abstract class ElementaryOperator<Self extends ElementaryOperator<Self>>
 		final List<JsonStream> inputs = this.getInputs();
 		for (int index = 0; index < inputs.size(); index++) {
 			allKeys.addAll(this.getKeyExpressions(index));
-			for (OrderingExpression orderingExpression : this.getInnerGroupOrder(index))
+			for (final OrderingExpression orderingExpression : this.getInnerGroupOrder(index))
 				allKeys.add(orderingExpression.getPath());
 		}
 		return allKeys;
@@ -577,7 +576,7 @@ public abstract class ElementaryOperator<Self extends ElementaryOperator<Self>>
 	 * @see eu.stratosphere.sopremo.operator.Operator#appendAsString(java.lang.Appendable)
 	 */
 	@Override
-	public void appendAsString(Appendable appendable) throws IOException {
+	public void appendAsString(final Appendable appendable) throws IOException {
 		super.appendAsString(appendable);
 		if (this.getResultProjection() != EvaluationExpression.VALUE) {
 			appendable.append(" to ");

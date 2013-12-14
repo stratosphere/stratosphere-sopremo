@@ -25,12 +25,12 @@ public class ExpressionFunction extends SopremoFunction {
 		super(0, 0);
 		this.definition = null;
 	}
-	
-	public EvaluationExpression inline(final EvaluationExpression... paramList ) {
-		return getDefinition().clone().replace(Predicates.instanceOf(InputSelection.class),
+
+	public EvaluationExpression inline(final EvaluationExpression... paramList) {
+		return this.getDefinition().clone().replace(Predicates.instanceOf(InputSelection.class),
 			new TransformFunction() {
 				@Override
-				public EvaluationExpression apply(EvaluationExpression in) {
+				public EvaluationExpression apply(final EvaluationExpression in) {
 					return paramList[((InputSelection) in).getIndex()].clone();
 				}
 			}).simplify();
@@ -41,7 +41,7 @@ public class ExpressionFunction extends SopremoFunction {
 	 * @see eu.stratosphere.sopremo.ISopremoType#toString(java.lang.StringBuilder)
 	 */
 	@Override
-	public void appendAsString(Appendable appendable) throws IOException {
+	public void appendAsString(final Appendable appendable) throws IOException {
 		appendable.append("Sopremo function ");
 		this.definition.appendAsString(appendable);
 	}
@@ -64,14 +64,14 @@ public class ExpressionFunction extends SopremoFunction {
 	}
 
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(final Object obj) {
 		if (this == obj)
 			return true;
 		if (!super.equals(obj))
 			return false;
 		if (this.getClass() != obj.getClass())
 			return false;
-		ExpressionFunction other = (ExpressionFunction) obj;
+		final ExpressionFunction other = (ExpressionFunction) obj;
 		return this.definition.equals(other.definition);
 	}
 

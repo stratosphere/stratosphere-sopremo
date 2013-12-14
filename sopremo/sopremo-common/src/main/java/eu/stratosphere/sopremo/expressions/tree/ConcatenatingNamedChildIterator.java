@@ -25,11 +25,11 @@ import eu.stratosphere.sopremo.expressions.EvaluationExpression;
  * @author Arvid Heise
  */
 public class ConcatenatingNamedChildIterator extends NamedChildIterator {
-	private NamedChildIterator[] iterators;
+	private final NamedChildIterator[] iterators;
 
-	private int[] startIndexes;
+	private final int[] startIndexes;
 
-	public ConcatenatingNamedChildIterator(NamedChildIterator... iterators) {
+	public ConcatenatingNamedChildIterator(final NamedChildIterator... iterators) {
 		super(concatenateNames(iterators));
 		this.iterators = iterators;
 		this.startIndexes = new int[iterators.length];
@@ -38,15 +38,16 @@ public class ConcatenatingNamedChildIterator extends NamedChildIterator {
 		for (int index = 1; index < iterators.length; index++)
 			this.startIndexes[index] = this.startIndexes[index - 1] + iterators[index - 1].getSize();
 	}
-	
-	private static String[] concatenateNames(NamedChildIterator[] iterators) {
-		ObjectList<String> names = new ObjectArrayList<String>();
-		for (NamedChildIterator namedChildIterator : iterators) 
+
+	private static String[] concatenateNames(final NamedChildIterator[] iterators) {
+		final ObjectList<String> names = new ObjectArrayList<String>();
+		for (final NamedChildIterator namedChildIterator : iterators)
 			names.addElements(names.size(), namedChildIterator.getChildNames());
 		return names.toArray(new String[names.size()]);
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
 	 * @see eu.stratosphere.sopremo.expressions.tree.NamedChildIterator#hasNext()
 	 */
 	@Override
@@ -59,12 +60,12 @@ public class ConcatenatingNamedChildIterator extends NamedChildIterator {
 	 * @see eu.stratosphere.sopremo.expressions.tree.NamedChildIterator#get(int)
 	 */
 	@Override
-	protected EvaluationExpression get(int index) {
-		int iteratorIndex = this.getIteratorIndex(index);
+	protected EvaluationExpression get(final int index) {
+		final int iteratorIndex = this.getIteratorIndex(index);
 		return this.iterators[iteratorIndex].get(index - this.startIndexes[iteratorIndex]);
 	}
 
-	private int getIteratorIndex(int index) {
+	private int getIteratorIndex(final int index) {
 		int iteratorIndex = Arrays.binarySearch(this.startIndexes, index);
 		if (iteratorIndex < 0)
 			iteratorIndex = -iteratorIndex - 2;
@@ -77,8 +78,8 @@ public class ConcatenatingNamedChildIterator extends NamedChildIterator {
 	 * eu.stratosphere.sopremo.expressions.EvaluationExpression)
 	 */
 	@Override
-	protected void set(int index, EvaluationExpression childExpression) {
-		int iteratorIndex = this.getIteratorIndex(index);
+	protected void set(final int index, final EvaluationExpression childExpression) {
+		final int iteratorIndex = this.getIteratorIndex(index);
 		this.iterators[iteratorIndex].set(index - this.startIndexes[iteratorIndex], childExpression);
 	}
 

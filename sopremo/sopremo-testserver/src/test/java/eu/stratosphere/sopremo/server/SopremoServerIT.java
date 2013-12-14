@@ -17,9 +17,8 @@ package eu.stratosphere.sopremo.server;
 import java.io.File;
 import java.io.IOException;
 
-import org.junit.Assert;
-
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -73,11 +72,11 @@ public class SopremoServerIT {
 
 	@Test
 	public void testSuccessfulExecution() throws IOException, InterruptedException {
-		final SopremoPlan plan = createPlan("output.json");
+		final SopremoPlan plan = this.createPlan("output.json");
 
 		ExecutionResponse response = this.testServer.execute(new ExecutionRequest(plan));
-		response = waitForStateToFinish(response, ExecutionState.ENQUEUED);
-		response = waitForStateToFinish(response, ExecutionState.RUNNING);
+		response = this.waitForStateToFinish(response, ExecutionState.ENQUEUED);
+		response = this.waitForStateToFinish(response, ExecutionState.RUNNING);
 
 		Assert.assertSame(ExecutionState.FINISHED, response.getState());
 		Assert.assertSame("", response.getDetails());
@@ -87,22 +86,22 @@ public class SopremoServerIT {
 			JsonUtil.createObjectNode("name", "Jane Dean", "income", 72000, "mgr", true));
 	}
 
-	private ExecutionResponse waitForStateToFinish(ExecutionResponse response, ExecutionState status)
+	private ExecutionResponse waitForStateToFinish(final ExecutionResponse response, final ExecutionState status)
 			throws IOException, InterruptedException {
 		return SopremoTestServer.waitForStateToFinish(this.testServer, response, status);
 	}
 
 	@Test
 	public void testMultipleSuccessfulExecutions() throws IOException, InterruptedException {
-		ExecutionResponse[] responses = new ExecutionResponse[3];
+		final ExecutionResponse[] responses = new ExecutionResponse[3];
 		for (int index = 0; index < responses.length; index++) {
-			final SopremoPlan plan = createPlan("output" + index + ".json");
+			final SopremoPlan plan = this.createPlan("output" + index + ".json");
 			responses[index] = this.testServer.execute(new ExecutionRequest(plan));
 		}
 
 		for (int index = 0; index < responses.length; index++) {
-			responses[index] = waitForStateToFinish(responses[index], ExecutionState.ENQUEUED);
-			responses[index] = waitForStateToFinish(responses[index], ExecutionState.RUNNING);
+			responses[index] = this.waitForStateToFinish(responses[index], ExecutionState.ENQUEUED);
+			responses[index] = this.waitForStateToFinish(responses[index], ExecutionState.RUNNING);
 
 			Assert.assertSame(ExecutionState.FINISHED, responses[index].getState());
 			Assert.assertSame("", responses[index].getDetails());
@@ -119,7 +118,7 @@ public class SopremoServerIT {
 		plan.setSinks(new Sink("file:///invalidSink"));
 
 		ExecutionResponse response = this.testServer.execute(new ExecutionRequest(plan));
-		response = waitForStateToFinish(response, ExecutionState.ENQUEUED);
+		response = this.waitForStateToFinish(response, ExecutionState.ENQUEUED);
 
 		Assert.assertSame(ExecutionState.ERROR, response.getState());
 		Assert.assertNotSame("", response.getDetails());
@@ -127,14 +126,14 @@ public class SopremoServerIT {
 
 	@Test
 	public void testFailIfRuntimeException() throws IOException, InterruptedException {
-		final SopremoPlan plan = createPlan("output.json");
-		for (ConfigurableSopremoType op : plan.getContainedOperators())
+		final SopremoPlan plan = this.createPlan("output.json");
+		for (final ConfigurableSopremoType op : plan.getContainedOperators())
 			if (op instanceof Selection)
 				((Selection) op).setCondition(new UnaryExpression(new UnevaluableExpression("test failure")));
 
 		ExecutionResponse response = this.testServer.execute(new ExecutionRequest(plan));
-		response = waitForStateToFinish(response, ExecutionState.ENQUEUED);
-		response = waitForStateToFinish(response, ExecutionState.RUNNING);
+		response = this.waitForStateToFinish(response, ExecutionState.ENQUEUED);
+		response = this.waitForStateToFinish(response, ExecutionState.RUNNING);
 
 		Assert.assertSame(ExecutionState.ERROR, response.getState());
 		Assert.assertNotSame("", response.getDetails());
@@ -144,17 +143,17 @@ public class SopremoServerIT {
 	public void testFailIfSubmissionFails() throws IOException, InterruptedException {
 		// job manager cannot determine input splits
 		this.testServer.delete("input", true);
-		final SopremoPlan plan = createPlan("output.json");
+		final SopremoPlan plan = this.createPlan("output.json");
 
 		ExecutionResponse response = this.testServer.execute(new ExecutionRequest(plan));
-		response = waitForStateToFinish(response, ExecutionState.ENQUEUED);
-		response = waitForStateToFinish(response, ExecutionState.RUNNING);
+		response = this.waitForStateToFinish(response, ExecutionState.ENQUEUED);
+		response = this.waitForStateToFinish(response, ExecutionState.RUNNING);
 
 		Assert.assertSame(ExecutionState.ERROR, response.getState());
 		Assert.assertNotSame("", response.getDetails());
 	}
 
-	private SopremoPlan createPlan(String outputName) throws IOException {
+	private SopremoPlan createPlan(final String outputName) throws IOException {
 		final SopremoPlan plan = new SopremoPlan();
 		final Source input = new Source(this.inputDir.toURI().toString());
 		final Selection selection = new Selection().

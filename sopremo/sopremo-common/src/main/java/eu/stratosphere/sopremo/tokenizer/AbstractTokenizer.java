@@ -22,7 +22,8 @@ import eu.stratosphere.sopremo.type.TextNode;
  * @author Arvid Heise
  */
 public abstract class AbstractTokenizer extends AbstractSopremoType implements Tokenizer {
-	protected void addToken(CachingArrayNode<TextNode> tokens, CharSequence text, int tokenStart, int tokenEnd) {
+	protected void addToken(final CachingArrayNode<TextNode> tokens, final CharSequence text, final int tokenStart,
+			final int tokenEnd) {
 		TextNode textNode = tokens.reuseUnusedNode();
 		if (textNode == null)
 			tokens.add(textNode = new TextNode());

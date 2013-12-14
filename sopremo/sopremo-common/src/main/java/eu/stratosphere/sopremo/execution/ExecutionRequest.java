@@ -50,7 +50,7 @@ public class ExecutionRequest implements KryoSerializable, KryoCopyable<Executio
 	 * @param query
 	 *        the query to execute
 	 */
-	public ExecutionRequest(SopremoPlan query) {
+	public ExecutionRequest(final SopremoPlan query) {
 		this.query = query;
 	}
 
@@ -73,7 +73,7 @@ public class ExecutionRequest implements KryoSerializable, KryoCopyable<Executio
 		return this.query;
 	}
 
-	public void setMode(ExecutionMode mode) {
+	public void setMode(final ExecutionMode mode) {
 		if (mode == null)
 			throw new NullPointerException("mode must not be null");
 
@@ -90,7 +90,7 @@ public class ExecutionRequest implements KryoSerializable, KryoCopyable<Executio
 	 * com.esotericsoftware.kryo.io.Output)
 	 */
 	@Override
-	public void write(Kryo kryo, Output output) {
+	public void write(final Kryo kryo, final Output output) {
 		kryo.writeObject(output, this.mode);
 		kryo.writeObject(output, new ArrayList<String>(this.query.getRequiredPackages()));
 		kryo.writeObject(output, this.query);
@@ -103,25 +103,25 @@ public class ExecutionRequest implements KryoSerializable, KryoCopyable<Executio
 	 */
 	@SuppressWarnings("unchecked")
 	@Override
-	public void read(Kryo kryo, Input input) {
+	public void read(final Kryo kryo, final Input input) {
 		this.mode = kryo.readObject(input, ExecutionMode.class);
-		ArrayList<String> requiredPackages = kryo.readObject(input, ArrayList.class);
+		final ArrayList<String> requiredPackages = kryo.readObject(input, ArrayList.class);
 
 		final JobID dummId = JobID.generate();
-		ClassLoader oldClassLoader = kryo.getClassLoader();
+		final ClassLoader oldClassLoader = kryo.getClassLoader();
 		try {
 			LibraryCacheManager.register(dummId,
 				requiredPackages.toArray(new String[requiredPackages.size()]));
 			kryo.setClassLoader(LibraryCacheManager.getClassLoader(dummId));
 			this.query = kryo.readObject(input, SopremoPlan.class);
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			SopremoUtil.LOG.error(e.getMessage());
 			throw new KryoException(e);
 		} finally {
 			kryo.setClassLoader(oldClassLoader);
 			try {
 				LibraryCacheManager.unregister(dummId);
-			} catch (Throwable e) {
+			} catch (final Throwable e) {
 				SopremoUtil.LOG.error(e.getMessage());
 			}
 		}
@@ -132,7 +132,7 @@ public class ExecutionRequest implements KryoSerializable, KryoCopyable<Executio
 	 * @see com.esotericsoftware.kryo.KryoCopyable#copy(com.esotericsoftware.kryo.Kryo)
 	 */
 	@Override
-	public ExecutionRequest copy(Kryo kryo) {
+	public ExecutionRequest copy(final Kryo kryo) {
 		final ExecutionRequest er = new ExecutionRequest(this.query);
 		er.setMode(this.mode);
 		return er;
@@ -143,14 +143,14 @@ public class ExecutionRequest implements KryoSerializable, KryoCopyable<Executio
 	 * @see eu.stratosphere.nephele.io.IOReadableWritable#read(java.io.DataInput)
 	 */
 	@Override
-	public void read(DataInput in) throws IOException {
+	public void read(final DataInput in) throws IOException {
 		this.mode = ExecutionMode.values()[in.readInt()];
 
-		ArrayList<String> requiredPackages = new ArrayList<String>();
+		final ArrayList<String> requiredPackages = new ArrayList<String>();
 		for (int count = in.readInt(); count > 0; count--)
 			requiredPackages.add(in.readUTF());
 		this.query = null;
-		byte[] planBuffer = new byte[in.readInt()];
+		final byte[] planBuffer = new byte[in.readInt()];
 		in.readFully(planBuffer);
 
 		final JobID dummId = new JobID();
@@ -159,12 +159,12 @@ public class ExecutionRequest implements KryoSerializable, KryoCopyable<Executio
 				requiredPackages.toArray(new String[requiredPackages.size()]));
 			SopremoEnvironment.getInstance().setClassLoader(LibraryCacheManager.getClassLoader(dummId));
 			this.query = SopremoUtil.deserialize(planBuffer, SopremoPlan.class);
-		} catch (IOException e) {
+		} catch (final IOException e) {
 			e.printStackTrace();
 		} finally {
 			try {
 				LibraryCacheManager.unregister(dummId);
-			} catch (IOException e) {
+			} catch (final IOException e) {
 			}
 		}
 
@@ -175,12 +175,12 @@ public class ExecutionRequest implements KryoSerializable, KryoCopyable<Executio
 	 * @see eu.stratosphere.nephele.io.IOReadableWritable#write(java.io.DataOutput)
 	 */
 	@Override
-	public void write(DataOutput out) throws IOException {
+	public void write(final DataOutput out) throws IOException {
 		out.writeInt(this.mode.ordinal());
 
 		final List<String> requiredPackages = this.query.getRequiredPackages();
 		out.writeInt(requiredPackages.size());
-		for (String packageName : requiredPackages)
+		for (final String packageName : requiredPackages)
 			out.writeUTF(packageName);
 
 		final byte[] planBuffer = SopremoUtil.serializable(this.query);

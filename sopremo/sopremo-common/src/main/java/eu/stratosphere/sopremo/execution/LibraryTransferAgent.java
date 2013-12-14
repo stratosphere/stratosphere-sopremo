@@ -30,10 +30,11 @@ public class LibraryTransferAgent implements LibraryTransferProtocol {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public LibraryCacheProfileResponse getLibraryCacheProfile(LibraryCacheProfileRequest request) throws IOException {
+	public LibraryCacheProfileResponse getLibraryCacheProfile(final LibraryCacheProfileRequest request)
+			throws IOException {
 
-		LibraryCacheProfileResponse response = new LibraryCacheProfileResponse(request);
-		String[] requiredLibraries = request.getRequiredLibraries();
+		final LibraryCacheProfileResponse response = new LibraryCacheProfileResponse(request);
+		final String[] requiredLibraries = request.getRequiredLibraries();
 
 		for (int i = 0; i < requiredLibraries.length; i++)
 			if (LibraryCacheManager.contains(requiredLibraries[i]) == null)
@@ -48,7 +49,7 @@ public class LibraryTransferAgent implements LibraryTransferProtocol {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public void updateLibraryCache(LibraryCacheUpdate update) throws IOException {
+	public void updateLibraryCache(final LibraryCacheUpdate update) throws IOException {
 
 		// Nothing to to here
 	}

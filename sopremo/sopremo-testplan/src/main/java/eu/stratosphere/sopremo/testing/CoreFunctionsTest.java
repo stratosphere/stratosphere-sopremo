@@ -198,7 +198,7 @@ public class CoreFunctionsTest {
 
 	@Test
 	public void shouldCalculateMeanWithDifferentNodes() {
-		List<Object> numbers = new ArrayList<Object>();
+		final List<Object> numbers = new ArrayList<Object>();
 		for (int i = 1; i < 500; i++)
 			numbers.add(i % 2 == 0 ? IntNode.valueOf(i) : DoubleNode.valueOf(i));
 

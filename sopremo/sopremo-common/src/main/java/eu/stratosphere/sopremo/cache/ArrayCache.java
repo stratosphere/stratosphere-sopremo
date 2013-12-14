@@ -27,16 +27,16 @@ public class ArrayCache<T> implements ISopremoCache {
 
 	private final transient Int2ObjectMap<T[]> cache = new Int2ObjectArrayMap<T[]>();
 
-	public ArrayCache(Class<T> type) {
+	public ArrayCache(final Class<T> type) {
 		this.type = type;
 	}
 
-	public T[] getArray(int size) {
+	public T[] getArray(final int size) {
 		final T[] cachedArray = this.cache.get(size);
 		if (cachedArray != null)
 			return cachedArray;
 		@SuppressWarnings("unchecked")
-		T[] newArray = (T[]) Array.newInstance(this.type, size);
+		final T[] newArray = (T[]) Array.newInstance(this.type, size);
 		this.cache.put(size, newArray);
 		return newArray;
 	}

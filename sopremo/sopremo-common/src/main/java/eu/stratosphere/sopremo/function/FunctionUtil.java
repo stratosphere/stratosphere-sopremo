@@ -31,47 +31,53 @@ import eu.stratosphere.sopremo.packages.DefaultFunctionRegistry;
  */
 public class FunctionUtil {
 
-	public static EvaluationExpression createFunctionCall(Class<?> methodProvider, String methodName, EvaluationExpression... params) {
-		DefaultFunctionRegistry registry = new DefaultFunctionRegistry();
+	public static EvaluationExpression createFunctionCall(final Class<?> methodProvider, final String methodName,
+			final EvaluationExpression... params) {
+		final DefaultFunctionRegistry registry = new DefaultFunctionRegistry();
 		registry.put(methodProvider);
 		return createMethodCall(registry.get(methodName), null, params);
 	}
 
-	public static EvaluationExpression createFunctionCall(Callable<?, ?> callable, EvaluationExpression... params) {
+	public static EvaluationExpression createFunctionCall(final Callable<?, ?> callable,
+			final EvaluationExpression... params) {
 		return createMethodCall(callable, null, params);
 	}
 
-	public static EvaluationExpression createFunctionCall(Aggregation aggregation, EvaluationExpression... params) {
+	public static EvaluationExpression createFunctionCall(final Aggregation aggregation,
+			final EvaluationExpression... params) {
 		return createMethodCall(new AggregationFunction(aggregation), null, params);
 	}
 
-	public static EvaluationExpression addToBatch(BatchAggregationExpression bae, Aggregation aggregation,
-			EvaluationExpression preprocessing) {
+	public static EvaluationExpression addToBatch(final BatchAggregationExpression bae, final Aggregation aggregation,
+			final EvaluationExpression preprocessing) {
 		return bae.add(aggregation, preprocessing);
 	}
 
-	public static EvaluationExpression addToBatch(BatchAggregationExpression bae, Aggregation aggregation) {
+	public static EvaluationExpression addToBatch(final BatchAggregationExpression bae, final Aggregation aggregation) {
 		return bae.add(aggregation);
 	}
 
-	public static EvaluationExpression addToBatch(final BatchAggregationExpression bae, ExpressionFunction aggregation) {
+	public static EvaluationExpression addToBatch(final BatchAggregationExpression bae,
+			final ExpressionFunction aggregation) {
 		return addToBatch(bae, aggregation, EvaluationExpression.VALUE);
 	}
 
-	public static EvaluationExpression addToBatch(final BatchAggregationExpression bae, ExpressionFunction aggregation,
+	public static EvaluationExpression addToBatch(final BatchAggregationExpression bae,
+			final ExpressionFunction aggregation,
 			final EvaluationExpression preprocessing) {
 		return aggregation.inline(preprocessing).replace(Predicates.instanceOf(AggregationExpression.class),
 			new Function<EvaluationExpression, EvaluationExpression>() {
 				@Override
-				public EvaluationExpression apply(EvaluationExpression expression) {
-					AggregationExpression ae = (AggregationExpression) expression;
+				public EvaluationExpression apply(final EvaluationExpression expression) {
+					final AggregationExpression ae = (AggregationExpression) expression;
 					return bae.add(ae.getAggregation(),
 						ExpressionUtil.replaceArrayProjections(ae.getInputExpression()));
 				}
 			});
 	}
 
-	public static EvaluationExpression createMethodCall(Callable<?, ?> callable, EvaluationExpression object,
+	public static EvaluationExpression createMethodCall(final Callable<?, ?> callable,
+			final EvaluationExpression object,
 			EvaluationExpression... params) {
 		if (callable instanceof MacroBase)
 			return ((MacroBase) callable).call(params);
@@ -79,7 +85,7 @@ public class FunctionUtil {
 			throw new IllegalArgumentException(String.format("Unknown callable %s", callable));
 
 		if (object != null) {
-			EvaluationExpression[] shiftedParams = new EvaluationExpression[params.length + 1];
+			final EvaluationExpression[] shiftedParams = new EvaluationExpression[params.length + 1];
 			System.arraycopy(params, 0, shiftedParams, 1, params.length);
 			params = shiftedParams;
 			params[0] = object;

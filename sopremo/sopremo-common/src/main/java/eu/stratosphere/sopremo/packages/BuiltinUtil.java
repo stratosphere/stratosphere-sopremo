@@ -23,11 +23,11 @@ import eu.stratosphere.sopremo.operator.Name;
  * @author arv
  */
 public class BuiltinUtil {
-	public static String[] getNames(Object element, NameChooser nameChooser) {
+	public static String[] getNames(final Object element, final NameChooser nameChooser) {
 		final Class<? extends Object> clazz = element.getClass();
 		// if this a non-anonymous class, it should be self-descriptive
 		Name nameAnnotation = clazz.getAnnotation(Name.class);
-		String[] names ;
+		String[] names;
 		if (nameAnnotation != null && (names = nameChooser.getNames(nameAnnotation)) != null)
 			return names;
 
@@ -37,18 +37,17 @@ public class BuiltinUtil {
 		// anonymous inner class
 		// find the field and check if there is an annotation
 		final Field[] fields = clazz.getEnclosingClass().getFields();
-		for (Field field : fields) {
+		for (final Field field : fields)
 			if (Modifier.isStatic(field.getModifiers()))
 				try {
 					if (field.get(null).getClass() == clazz) {
 						nameAnnotation = field.getAnnotation(Name.class);
-						if (nameAnnotation  != null && (names = nameChooser.getNames(nameAnnotation)) != null)
+						if (nameAnnotation != null && (names = nameChooser.getNames(nameAnnotation)) != null)
 							return names;
 					}
-				} catch (Exception e) {
+				} catch (final Exception e) {
 					throw new RuntimeException(e);
 				}
-		}
 
 		// fall through
 		return new String[] { "unknown" };

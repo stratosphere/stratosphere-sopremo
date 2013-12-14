@@ -33,7 +33,7 @@ public abstract class AbstractRegistry<T> extends AbstractSopremoType implements
 	/**
 	 * Initializes AbstractRegistry.
 	 */
-	public AbstractRegistry(NameChooser nameChooser) {
+	public AbstractRegistry(final NameChooser nameChooser) {
 		if (nameChooser == null)
 			throw new NullPointerException();
 		this.nameChooser = nameChooser;
@@ -47,10 +47,10 @@ public abstract class AbstractRegistry<T> extends AbstractSopremoType implements
 	}
 
 	@Override
-	public void put(Name nameAnnotation, T element) {
-		final String[] names = getNameChooser().getNames(nameAnnotation);
-		for (String name : names)
-			put(name, element);
+	public void put(final Name nameAnnotation, final T element) {
+		final String[] names = this.getNameChooser().getNames(nameAnnotation);
+		for (final String name : names)
+			this.put(name, element);
 	}
 
 	/*
@@ -58,8 +58,8 @@ public abstract class AbstractRegistry<T> extends AbstractSopremoType implements
 	 * @see eu.stratosphere.sopremo.packages.IRegistry#get(eu.stratosphere.sopremo.operator.Name)
 	 */
 	@Override
-	public T get(Name nameAnnotation) {
-		return get(getNameChooser().getNames(nameAnnotation)[0]);
+	public T get(final Name nameAnnotation) {
+		return this.get(this.getNameChooser().getNames(nameAnnotation)[0]);
 	}
 
 	/*
@@ -71,24 +71,24 @@ public abstract class AbstractRegistry<T> extends AbstractSopremoType implements
 		return this.nameChooser;
 	}
 
-	protected String[] getNames(Class<?> object) {
+	protected String[] getNames(final Class<?> object) {
 		final Name nameAnnotation = object.getAnnotation(Name.class);
 		if (nameAnnotation == null) {
 			if (object.getAnnotation(Internal.class) != null)
 				return new String[] { String.format("__%s", object.getSimpleName()) };
 			throw new IllegalArgumentException(object + " has no name annotation");
 		}
-		return getNameChooser().getNames(nameAnnotation);
+		return this.getNameChooser().getNames(nameAnnotation);
 	}
 
-	protected String[] getNames(AccessibleObject object) {
+	protected String[] getNames(final AccessibleObject object) {
 		final Name nameAnnotation = object.getAnnotation(Name.class);
 		if (nameAnnotation == null) {
 			if (object.getAnnotation(Internal.class) != null)
 				return new String[] { String.format("__%s", ((Member) object).getName()) };
 			throw new IllegalArgumentException(object + " has no name annotation");
 		}
-		return getNameChooser().getNames(nameAnnotation);
+		return this.getNameChooser().getNames(nameAnnotation);
 	}
 
 	@Override
@@ -100,14 +100,14 @@ public abstract class AbstractRegistry<T> extends AbstractSopremoType implements
 	}
 
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(final Object obj) {
 		if (this == obj)
 			return true;
 		if (obj == null)
 			return false;
-		if (getClass() != obj.getClass())
+		if (this.getClass() != obj.getClass())
 			return false;
-		AbstractRegistry<?> other = (AbstractRegistry<?>) obj;
+		final AbstractRegistry<?> other = (AbstractRegistry<?>) obj;
 		return this.nameChooser.equals(other.nameChooser);
 	}
 

@@ -35,7 +35,7 @@ public class Difference extends CompositeOperator<Difference> {
 	 * , eu.stratosphere.sopremo.EvaluationContext)
 	 */
 	@Override
-	public void addImplementation(SopremoModule module, EvaluationContext context) {
+	public void addImplementation(final SopremoModule module, final EvaluationContext context) {
 		final Source leftInput = module.getInput(0);
 		final List<Source> otherInputs = module.getInputs().subList(1, module.getInputs().size());
 		if (otherInputs.isEmpty())

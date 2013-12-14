@@ -15,7 +15,6 @@ import eu.stratosphere.sopremo.operator.Name;
 import eu.stratosphere.sopremo.operator.Property;
 import eu.stratosphere.sopremo.pact.JsonCollector;
 import eu.stratosphere.sopremo.pact.SopremoMap;
-import eu.stratosphere.sopremo.pact.SopremoUtil;
 import eu.stratosphere.sopremo.serialization.SopremoRecordLayout;
 import eu.stratosphere.sopremo.type.IJsonNode;
 import eu.stratosphere.sopremo.type.IObjectNode;
@@ -44,7 +43,7 @@ public class GlobalEnumeration extends ElementaryOperator<GlobalEnumeration> {
 	}
 
 	public IdGeneration getIdGeneration() {
-		for (IdGeneration idGeneration : IdGeneration.values())
+		for (final IdGeneration idGeneration : IdGeneration.values())
 			if (idGeneration.getGenerator().equals(this.getIdGenerator()))
 				return idGeneration;
 
@@ -72,8 +71,9 @@ public class GlobalEnumeration extends ElementaryOperator<GlobalEnumeration> {
 	 * eu.stratosphere.sopremo.serialization.SopremoRecordLayout)
 	 */
 	@Override
-	protected void configureContract(Contract contract, Configuration stubConfiguration, EvaluationContext context,
-			SopremoRecordLayout layout) {
+	protected void configureContract(final Contract contract, final Configuration stubConfiguration,
+			final EvaluationContext context,
+			final SopremoRecordLayout layout) {
 		if (this.enumerationExpression == AUTO_ENUMERATION)
 			this.enumerationExpression = new AutoProjection(this.idFieldName, this.valueFieldName);
 		super.configureContract(contract, stubConfiguration, context, layout);
@@ -99,22 +99,22 @@ public class GlobalEnumeration extends ElementaryOperator<GlobalEnumeration> {
 		this.idFieldName = enumerationFieldName;
 	}
 
-	public GlobalEnumeration withIdFieldName(String enumerationFieldName) {
+	public GlobalEnumeration withIdFieldName(final String enumerationFieldName) {
 		this.setIdFieldName(enumerationFieldName);
 		return this;
 	}
 
-	public GlobalEnumeration withValueFieldName(String valueFieldName) {
+	public GlobalEnumeration withValueFieldName(final String valueFieldName) {
 		this.setValueFieldName(valueFieldName);
 		return this;
 	}
 
-	public GlobalEnumeration withEnumerationExpression(EvaluationExpression enumerationExpression) {
+	public GlobalEnumeration withEnumerationExpression(final EvaluationExpression enumerationExpression) {
 		this.setEnumerationExpression(enumerationExpression);
 		return this;
 	}
 
-	public GlobalEnumeration withIdGeneration(IdGeneration idGeneration) {
+	public GlobalEnumeration withIdGeneration(final IdGeneration idGeneration) {
 		this.setIdGeneration(idGeneration);
 		return this;
 	}
@@ -124,7 +124,7 @@ public class GlobalEnumeration extends ElementaryOperator<GlobalEnumeration> {
 
 		private final IdGenerator generator;
 
-		private IdGeneration(IdGenerator generator) {
+		private IdGeneration(final IdGenerator generator) {
 			this.generator = generator;
 		}
 
@@ -150,8 +150,8 @@ public class GlobalEnumeration extends ElementaryOperator<GlobalEnumeration> {
 		 * @see eu.stratosphere.util.IAppending#appendAsString(java.lang.Appendable)
 		 */
 		@Override
-		public void appendAsString(Appendable appendable) throws IOException {
-			appendable.append(getClass().getSimpleName());
+		public void appendAsString(final Appendable appendable) throws IOException {
+			appendable.append(this.getClass().getSimpleName());
 		}
 
 		/*
@@ -159,8 +159,8 @@ public class GlobalEnumeration extends ElementaryOperator<GlobalEnumeration> {
 		 * @see java.lang.Object#equals(java.lang.Object)
 		 */
 		@Override
-		public boolean equals(Object obj) {
-			return getClass().equals(obj.getClass());
+		public boolean equals(final Object obj) {
+			return this.getClass().equals(obj.getClass());
 		}
 
 		/*
@@ -169,7 +169,7 @@ public class GlobalEnumeration extends ElementaryOperator<GlobalEnumeration> {
 		 */
 		@Override
 		public int hashCode() {
-			return getClass().getSimpleName().hashCode();
+			return this.getClass().getSimpleName().hashCode();
 		}
 	}
 
@@ -183,7 +183,7 @@ public class GlobalEnumeration extends ElementaryOperator<GlobalEnumeration> {
 		 * @see eu.stratosphere.sopremo.base.GlobalEnumeration.IdGenerator#generate(long)
 		 */
 		@Override
-		public IJsonNode generate(long localId) {
+		public IJsonNode generate(final long localId) {
 			this.result.setValue(localId | this.prefix);
 			return this.result;
 		}
@@ -193,8 +193,8 @@ public class GlobalEnumeration extends ElementaryOperator<GlobalEnumeration> {
 		 * @see eu.stratosphere.sopremo.base.GlobalEnumeration.IdGenerator#setup(int, int)
 		 */
 		@Override
-		public void setup(int taskId, int numTasks) {
-			int freeBits = Long.numberOfLeadingZeros(numTasks - 1);
+		public void setup(final int taskId, final int numTasks) {
+			final int freeBits = Long.numberOfLeadingZeros(numTasks - 1);
 			this.prefix = (long) taskId << freeBits;
 		}
 	}
@@ -207,7 +207,7 @@ public class GlobalEnumeration extends ElementaryOperator<GlobalEnumeration> {
 		 * @see eu.stratosphere.sopremo.base.GlobalEnumeration.IdGenerator#generate(long)
 		 */
 		@Override
-		public IJsonNode generate(long localId) {
+		public IJsonNode generate(final long localId) {
 			return this.result;
 		}
 
@@ -216,7 +216,7 @@ public class GlobalEnumeration extends ElementaryOperator<GlobalEnumeration> {
 		 * @see eu.stratosphere.sopremo.base.GlobalEnumeration.IdGenerator#setup(int, int)
 		 */
 		@Override
-		public void setup(int taskId, int numTasks) {
+		public void setup(final int taskId, final int numTasks) {
 			this.result.setValue(taskId);
 		}
 	}
@@ -236,7 +236,7 @@ public class GlobalEnumeration extends ElementaryOperator<GlobalEnumeration> {
 	 * @param idGenerator
 	 *        the idGenerator to set
 	 */
-	public void setIdGenerator(IdGenerator idGenerator) {
+	public void setIdGenerator(final IdGenerator idGenerator) {
 		if (idGenerator == null)
 			throw new NullPointerException("idGenerator must not be null");
 
@@ -249,7 +249,7 @@ public class GlobalEnumeration extends ElementaryOperator<GlobalEnumeration> {
 
 	@Property
 	@Name(verb = "retain value in")
-	public void setValueFieldName(String valueFieldName) {
+	public void setValueFieldName(final String valueFieldName) {
 		if (valueFieldName == null)
 			throw new NullPointerException("valueFieldName must not be null");
 
@@ -262,7 +262,7 @@ public class GlobalEnumeration extends ElementaryOperator<GlobalEnumeration> {
 	static final class AutoProjection extends PathSegmentExpression {
 		private final String idFieldName, valueFieldName;
 
-		AutoProjection(String idFieldName, String valueFieldName) {
+		AutoProjection(final String idFieldName, final String valueFieldName) {
 			this.idFieldName = idFieldName;
 			this.valueFieldName = valueFieldName;
 		}
@@ -281,12 +281,12 @@ public class GlobalEnumeration extends ElementaryOperator<GlobalEnumeration> {
 		 * eu.stratosphere.sopremo.type.IJsonNode)
 		 */
 		@Override
-		protected IJsonNode setSegment(IJsonNode node, IJsonNode value) {
+		protected IJsonNode setSegment(final IJsonNode node, final IJsonNode value) {
 			if (node instanceof IObjectNode) {
 				((IObjectNode) node).put(this.idFieldName, value);
 				return node;
 			}
-			ObjectNode objectNode = new ObjectNode();
+			final ObjectNode objectNode = new ObjectNode();
 			objectNode.put(this.idFieldName, value);
 			objectNode.put(this.valueFieldName, node);
 			return objectNode;
@@ -299,7 +299,7 @@ public class GlobalEnumeration extends ElementaryOperator<GlobalEnumeration> {
 		 * )
 		 */
 		@Override
-		protected IJsonNode evaluateSegment(IJsonNode node) {
+		protected IJsonNode evaluateSegment(final IJsonNode node) {
 			return node;
 		}
 
@@ -319,7 +319,7 @@ public class GlobalEnumeration extends ElementaryOperator<GlobalEnumeration> {
 		 * .PathSegmentExpression)
 		 */
 		@Override
-		protected boolean equalsSameClass(PathSegmentExpression other) {
+		protected boolean equalsSameClass(final PathSegmentExpression other) {
 			return true;
 		}
 	}
@@ -338,7 +338,7 @@ public class GlobalEnumeration extends ElementaryOperator<GlobalEnumeration> {
 		 * @see eu.stratosphere.sopremo.base.GlobalEnumeration.IdGenerator#setup(int, int)
 		 */
 		@Override
-		public void setup(int taskId, int numTasks) {
+		public void setup(final int taskId, final int numTasks) {
 			this.result.setLength(0);
 			this.result.append(taskId);
 			this.result.append('_');
@@ -350,7 +350,7 @@ public class GlobalEnumeration extends ElementaryOperator<GlobalEnumeration> {
 		 * @see eu.stratosphere.sopremo.base.GlobalEnumeration.IdGenerator#generate(long)
 		 */
 		@Override
-		public IJsonNode generate(long localId) {
+		public IJsonNode generate(final long localId) {
 			this.result.setLength(this.prefixLength);
 			this.result.append(localId);
 			return this.result;
@@ -365,11 +365,11 @@ public class GlobalEnumeration extends ElementaryOperator<GlobalEnumeration> {
 		private long counter;
 
 		@Override
-		public void open(Configuration parameters) {
+		public void open(final Configuration parameters) {
 			super.open(parameters);
 			this.counter = 0;
-			this.idGenerator.setup(getRuntimeContext().getIndexOfThisSubtask(),
-				getRuntimeContext().getNumberOfParallelSubtasks());
+			this.idGenerator.setup(this.getRuntimeContext().getIndexOfThisSubtask(),
+				this.getRuntimeContext().getNumberOfParallelSubtasks());
 		}
 
 		@Override

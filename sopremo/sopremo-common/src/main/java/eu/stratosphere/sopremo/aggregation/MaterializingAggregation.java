@@ -29,7 +29,7 @@ public class MaterializingAggregation extends AssociativeAggregation<CachingArra
 	 * @see eu.stratosphere.sopremo.aggregation.Aggregation#aggregate(eu.stratosphere.sopremo.type.IJsonNode)
 	 */
 	@Override
-	public void aggregate(IJsonNode element) {
+	public void aggregate(final IJsonNode element) {
 		this.aggregator.addClone(element);
 	}
 
@@ -39,7 +39,8 @@ public class MaterializingAggregation extends AssociativeAggregation<CachingArra
 	 * eu.stratosphere.sopremo.type.IJsonNode)
 	 */
 	@Override
-	protected CachingArrayNode<IJsonNode> aggregate(CachingArrayNode<IJsonNode> aggregator, IJsonNode element) {
+	protected CachingArrayNode<IJsonNode> aggregate(final CachingArrayNode<IJsonNode> aggregator,
+			final IJsonNode element) {
 		this.aggregator.addClone(element);
 		return this.aggregator;
 	}

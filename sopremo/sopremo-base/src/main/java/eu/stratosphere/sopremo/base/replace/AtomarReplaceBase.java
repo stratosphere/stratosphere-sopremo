@@ -29,7 +29,7 @@ public abstract class AtomarReplaceBase<Self extends AtomarReplaceBase<Self>> ex
 	protected EvaluationExpression dictionaryValueExtraction = new ArrayAccess(1);
 
 	@Property
-	public void setReplaceExpression(PathSegmentExpression inputKeyExtractor) {
+	public void setReplaceExpression(final PathSegmentExpression inputKeyExtractor) {
 		if (inputKeyExtractor == null)
 			throw new NullPointerException("inputKeyExtractor must not be null");
 
@@ -40,20 +40,20 @@ public abstract class AtomarReplaceBase<Self extends AtomarReplaceBase<Self>> ex
 		return this.replaceExpression;
 	}
 
-	public Self withReplaceExpression(PathSegmentExpression replaceExpression) {
+	public Self withReplaceExpression(final PathSegmentExpression replaceExpression) {
 		this.setReplaceExpression(replaceExpression);
 		return this.self();
 	}
 
 	@Property
-	public void setDictionaryValueExtraction(EvaluationExpression dictionaryValueExtraction) {
+	public void setDictionaryValueExtraction(final EvaluationExpression dictionaryValueExtraction) {
 		if (dictionaryValueExtraction == null)
 			throw new NullPointerException("dictionaryValueExtraction must not be null");
 
 		this.dictionaryValueExtraction = dictionaryValueExtraction;
 	}
 
-	public Self withDictionaryValueExtraction(EvaluationExpression dictionaryValueExtraction) {
+	public Self withDictionaryValueExtraction(final EvaluationExpression dictionaryValueExtraction) {
 		this.setDictionaryValueExtraction(dictionaryValueExtraction);
 		return this.self();
 	}

@@ -201,7 +201,7 @@ public class ReflectUtil {
 	public static Object invoke(final Object object, final String function, final Object... params) throws Throwable {
 		try {
 			return getDynamicClass((Class<Object>) object.getClass()).getMethod(function).invoke(object, params);
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			throw new IllegalArgumentException(e);
 		}
 	}
@@ -248,7 +248,7 @@ public class ReflectUtil {
 	public static <T> T newInstance(final Class<T> type) throws IllegalArgumentException {
 		try {
 			return getDynamicClass(type).newInstance();
-		} catch (Throwable e) {
+		} catch (final Throwable e) {
 			throw new IllegalArgumentException(e);
 		}
 	}
@@ -274,7 +274,7 @@ public class ReflectUtil {
 	public static <T> T newInstance(final Class<T> type, final Object... params) throws IllegalArgumentException {
 		try {
 			return getDynamicClass(type).newInstance(params);
-		} catch (Throwable e) {
+		} catch (final Throwable e) {
 			throw new IllegalArgumentException(e);
 		}
 	}
@@ -315,16 +315,17 @@ public class ReflectUtil {
 		return fields;
 	}
 
-	public static void setField(Object object, String fieldName, Object value) {
+	public static void setField(final Object object, final String fieldName, final Object value) {
 		setField(object, object.getClass(), fieldName, value);
 	}
 
-	public static void setField(Object object, Class<?> declaringClass, String fieldName, Object value) {
+	public static void setField(final Object object, final Class<?> declaringClass, final String fieldName,
+			final Object value) {
 		try {
 			final Field field = declaringClass.getDeclaredField(fieldName);
 			field.setAccessible(true);
 			field.set(object, value);
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			throw new IllegalArgumentException(
 				String.format("Cannot set field %s of %s to %s", fieldName, object, value), e);
 		}

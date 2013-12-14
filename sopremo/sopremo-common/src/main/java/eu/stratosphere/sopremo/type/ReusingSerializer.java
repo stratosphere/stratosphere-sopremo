@@ -28,9 +28,9 @@ public abstract class ReusingSerializer<T> extends Serializer<T> {
 	 * com.esotericsoftware.kryo.io.Input, java.lang.Class)
 	 */
 	public abstract T read(Kryo kryo, Input input, T oldInstance, Class<T> type);
-	
+
 	@Override
-	public T read(Kryo kryo, Input input, Class<T> type) {
-		return read(kryo, input, null, type);
+	public T read(final Kryo kryo, final Input input, final Class<T> type) {
+		return this.read(kryo, input, null, type);
 	}
 }

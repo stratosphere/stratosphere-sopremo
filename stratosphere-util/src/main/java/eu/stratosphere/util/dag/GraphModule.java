@@ -155,7 +155,7 @@ public abstract class GraphModule<Node, InputNode extends Node, OutputNode exten
 	 * @param name
 	 *        the name to set
 	 */
-	public void setName(String name) {
+	public void setName(final String name) {
 		if (name == null)
 			throw new NullPointerException("name must not be null");
 
@@ -245,7 +245,7 @@ public abstract class GraphModule<Node, InputNode extends Node, OutputNode exten
 	}
 
 	/**
-	 * Returns the nodes 
+	 * Returns the nodes
 	 */
 	public List<Node> getUnmatchingNodes(final GraphModule<Node, InputNode, OutputNode> other) {
 		final IdentitySet<Node> seen = new IdentitySet<Node>();

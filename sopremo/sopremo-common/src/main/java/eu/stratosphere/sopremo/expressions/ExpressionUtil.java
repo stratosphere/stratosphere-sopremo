@@ -48,9 +48,10 @@ public class ExpressionUtil {
 		if (expressions.size() == 0)
 			return EvaluationExpression.VALUE;
 
-		PathSegmentExpression result = expressions.get(expressions.size() - 1), last = result;
+		final PathSegmentExpression result = expressions.get(expressions.size() - 1);
+		PathSegmentExpression last = result;
 		for (int index = expressions.size() - 2; index >= 0; index--) {
-			PathSegmentExpression expression = expressions.get(index);
+			final PathSegmentExpression expression = expressions.get(index);
 			last.getLast().setInputExpression(expression);
 			last = expression;
 		}
@@ -71,11 +72,11 @@ public class ExpressionUtil {
 	/**
 	 * Replaces fragments in the form of path expression (InputSelection, ArrayAccess).
 	 */
-	public static EvaluationExpression replaceIndexAccessWithAggregation(EvaluationExpression baseExpression) {
+	public static EvaluationExpression replaceIndexAccessWithAggregation(final EvaluationExpression baseExpression) {
 		return baseExpression.replace(Predicates.instanceOf(ArrayAccess.class), new TransformFunction() {
 			@Override
-			public EvaluationExpression apply(EvaluationExpression argument) {
-				ArrayAccess arrayAccess = (ArrayAccess) argument;
+			public EvaluationExpression apply(final EvaluationExpression argument) {
+				final ArrayAccess arrayAccess = (ArrayAccess) argument;
 				if (arrayAccess.getStartIndex() < 0 || arrayAccess.getEndIndex() < 0)
 					throw new IllegalArgumentException("Negative indexes cannot replaced currently");
 				if (arrayAccess.getStartIndex() > arrayAccess.getEndIndex())
@@ -94,7 +95,7 @@ public class ExpressionUtil {
 		});
 	}
 
-	public static EvaluationExpression replaceAggregationWithBatchAggregation(EvaluationExpression baseExpression) {
+	public static EvaluationExpression replaceAggregationWithBatchAggregation(final EvaluationExpression baseExpression) {
 		final Map<FunctionCall, EvaluationExpression> aggregatingFunctionCalls =
 			new IdentityHashMap<FunctionCall, EvaluationExpression>();
 		final Map<AggregationExpression, EvaluationExpression> aggregatingExpressions =
@@ -107,15 +108,15 @@ public class ExpressionUtil {
 		EvaluationExpression result = baseExpression;
 		final Int2ObjectMap<BatchAggregationExpression> aggregationPerInput =
 			new Int2ObjectOpenHashMap<BatchAggregationExpression>();
-		for (FunctionCall functionCall : aggregatingFunctionCalls.keySet()) {
-			AggregationFunction aggregationFunction = (AggregationFunction) functionCall.getFunction();
+		for (final FunctionCall functionCall : aggregatingFunctionCalls.keySet()) {
+			final AggregationFunction aggregationFunction = (AggregationFunction) functionCall.getFunction();
 			final List<InputSelection> inputs = functionCall.findAll(InputSelection.class);
 			if (inputs.isEmpty())
 				// if no input selection, it is probably some constant calculation, ignore function call
 				continue;
 
 			final Aggregation aggregation = aggregationFunction.getAggregation();
-			int input = inputs.get(0).getIndex();
+			final int input = inputs.get(0).getIndex();
 			for (int index = 1; index < inputs.size(); index++)
 				if (inputs.get(index).getIndex() != input)
 					throw new IllegalArgumentException("Cannot batch process aggregations with multiple inputs");
@@ -135,14 +136,14 @@ public class ExpressionUtil {
 			else
 				parent.replace(functionCall, partial);
 		}
-		for (AggregationExpression expression : aggregatingExpressions.keySet()) {
+		for (final AggregationExpression expression : aggregatingExpressions.keySet()) {
 			final Aggregation aggregation = expression.getAggregation();
 
 			final List<InputSelection> inputs = expression.getInputExpression().findAll(InputSelection.class);
 			if (inputs.isEmpty())
 				// if no input selection, it is probably some constant calculation, ignore function call
 				continue;
-			int input = inputs.get(0).getIndex();
+			final int input = inputs.get(0).getIndex();
 			for (int index = 1; index < inputs.size(); index++)
 				if (inputs.get(index).getIndex() != input)
 					throw new IllegalArgumentException("Cannot batch process aggregations with multiple inputs");
@@ -155,7 +156,8 @@ public class ExpressionUtil {
 			}
 
 			final EvaluationExpression parent = aggregatingExpressions.get(expression);
-			final EvaluationExpression partial = batch.add(aggregation, replaceArrayProjections(expression.getInputExpression()));
+			final EvaluationExpression partial =
+				batch.add(aggregation, replaceArrayProjections(expression.getInputExpression()));
 			if (parent == null)
 				result = partial;
 			else
@@ -164,16 +166,17 @@ public class ExpressionUtil {
 		return result;
 	}
 
-	private static void findAggregatingFunctionCalls(EvaluationExpression expression,
-			Map<FunctionCall, EvaluationExpression> aggregatingFunctionCalls,
-			Map<AggregationExpression, EvaluationExpression> aggregatingExpressions, EvaluationExpression parent) {
+	private static void findAggregatingFunctionCalls(final EvaluationExpression expression,
+			final Map<FunctionCall, EvaluationExpression> aggregatingFunctionCalls,
+			final Map<AggregationExpression, EvaluationExpression> aggregatingExpressions,
+			final EvaluationExpression parent) {
 		if (expression instanceof FunctionCall &&
 			((FunctionCall) expression).getFunction() instanceof AggregationFunction)
 			aggregatingFunctionCalls.put((FunctionCall) expression, parent);
 		else if (expression instanceof AggregationExpression)
 			aggregatingExpressions.put((AggregationExpression) expression, parent);
 
-		for (EvaluationExpression child : expression)
+		for (final EvaluationExpression child : expression)
 			findAggregatingFunctionCalls(child, aggregatingFunctionCalls, aggregatingExpressions, expression);
 	}
 
@@ -181,10 +184,10 @@ public class ExpressionUtil {
 		return evaluationExpression.clone().remove(InputSelection.class).replace(
 			Predicates.instanceOf(ArrayProjection.class), new TransformFunction() {
 				@Override
-				public EvaluationExpression apply(EvaluationExpression argument) {
+				public EvaluationExpression apply(final EvaluationExpression argument) {
 					final ArrayProjection arrayProjection = (ArrayProjection) argument;
 					final EvaluationExpression projection = arrayProjection.getProjection();
-					return projection;
+					return new ChainedSegmentExpression(arrayProjection.getInputExpression(), projection);
 				}
 			}).simplify();
 	}
@@ -196,7 +199,7 @@ public class ExpressionUtil {
 		};
 	};
 
-	public static <T extends IJsonNode> T getConstant(EvaluationExpression expression, Class<T> type) {
+	public static <T extends IJsonNode> T getConstant(final EvaluationExpression expression, final Class<T> type) {
 		final IJsonNode constant = expression.evaluate(MissingNode.getInstance());
 		return TypeCoercer.INSTANCE.coerce(constant, NodeCache.get(), type);
 	}

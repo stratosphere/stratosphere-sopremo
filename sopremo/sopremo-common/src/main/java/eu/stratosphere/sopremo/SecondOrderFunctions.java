@@ -42,7 +42,7 @@ public class SecondOrderFunctions implements BuiltinProvider {
 		private final transient FunctionCacheCache caches = new FunctionCacheCache();
 
 		@Override
-		protected IJsonNode call(IArrayNode<IJsonNode> input, final FunctionNode mapExpression) {
+		protected IJsonNode call(final IArrayNode<IJsonNode> input, final FunctionNode mapExpression) {
 			SopremoUtil.assertArguments(mapExpression.getFunction(), 1);
 
 			this.result.clear();
@@ -61,7 +61,7 @@ public class SecondOrderFunctions implements BuiltinProvider {
 				parameters = new ArrayNode<IJsonNode>(1);
 
 		@Override
-		protected IJsonNode call(IArrayNode<IJsonNode> input, final FunctionNode filterExpression) {
+		protected IJsonNode call(final IArrayNode<IJsonNode> input, final FunctionNode filterExpression) {
 			SopremoUtil.assertArguments(filterExpression.getFunction(), 1);
 
 			this.result.clear();
@@ -82,7 +82,8 @@ public class SecondOrderFunctions implements BuiltinProvider {
 		private final transient IArrayNode<IJsonNode> parameters = new ArrayNode<IJsonNode>();
 
 		@Override
-		protected IJsonNode call(IArrayNode<IJsonNode> input, IJsonNode initial, final FunctionNode foldExpression) {
+		protected IJsonNode call(final IArrayNode<IJsonNode> input, final IJsonNode initial,
+				final FunctionNode foldExpression) {
 			SopremoUtil.assertArguments(foldExpression.getFunction(), 2);
 
 			final IJsonNode aggregator = this.nodeCache.clone(initial);
@@ -103,7 +104,7 @@ public class SecondOrderFunctions implements BuiltinProvider {
 		private final transient IArrayNode<IJsonNode> parameters = new ArrayNode<IJsonNode>(1);
 
 		@Override
-		protected IJsonNode call(IArrayNode<IJsonNode> input, final FunctionNode filterExpression) {
+		protected IJsonNode call(final IArrayNode<IJsonNode> input, final FunctionNode filterExpression) {
 			SopremoUtil.assertArguments(filterExpression.getFunction(), 1);
 
 			final SopremoFunction function = filterExpression.getFunction();

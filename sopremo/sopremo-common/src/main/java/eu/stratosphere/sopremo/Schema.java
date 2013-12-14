@@ -31,13 +31,12 @@ import eu.stratosphere.sopremo.expressions.EvaluationExpression;
 public class Schema extends AbstractSopremoType {
 	private final List<EvaluationExpression> keyExpressions = new ArrayList<EvaluationExpression>();
 
-	public Schema(List<EvaluationExpression> keyExpressions) {
-		for (EvaluationExpression keyExpression : keyExpressions) {
+	public Schema(final List<EvaluationExpression> keyExpressions) {
+		for (final EvaluationExpression keyExpression : keyExpressions)
 			if (keyExpression instanceof ArrayAccess && ((ArrayAccess) keyExpression).isFixedSize())
 				this.keyExpressions.addAll(((ArrayAccess) keyExpression).decompose());
 			else
 				this.keyExpressions.add(keyExpression);
-		}
 	}
 
 	/**
@@ -60,7 +59,7 @@ public class Schema extends AbstractSopremoType {
 	 * @see eu.stratosphere.sopremo.ISopremoType#appendAsString(java.lang.Appendable)
 	 */
 	@Override
-	public void appendAsString(Appendable appendable) throws IOException {
+	public void appendAsString(final Appendable appendable) throws IOException {
 		TextFormat.getInstance(this.keyExpressions.getClass()).format(this.keyExpressions, appendable);
 	}
 
@@ -68,10 +67,10 @@ public class Schema extends AbstractSopremoType {
 	 * @param expression
 	 * @return
 	 */
-	public IntCollection indicesOf(EvaluationExpression expression) {
+	public IntCollection indicesOf(final EvaluationExpression expression) {
 		final IntArrayList indices = new IntArrayList();
 		if (expression instanceof ArrayAccess && ((ArrayAccess) expression).isFixedSize())
-			for (ArrayAccess arrayAccess : ((ArrayAccess) expression).decompose())
+			for (final ArrayAccess arrayAccess : ((ArrayAccess) expression).decompose())
 				indices.add(this.keyExpressions.indexOf(arrayAccess));
 		else
 			indices.add(this.keyExpressions.indexOf(expression));

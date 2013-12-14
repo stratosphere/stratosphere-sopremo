@@ -32,7 +32,7 @@ public class ExpressionCacheCache<E extends EvaluationExpression> implements ISo
 			};
 		};
 
-	public ExpressionCache<E> get(E expression) {
+	public ExpressionCache<E> get(final E expression) {
 		final ExpressionCache<E> cache = this.caches.get().get(expression);
 		if (cache != null)
 			return cache;

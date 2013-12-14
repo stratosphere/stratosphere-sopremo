@@ -43,8 +43,8 @@ public class SopremoPlan extends AbstractSopremoType implements Serializable {
 	 * @return the converted Pact plan
 	 */
 	public Plan asPactPlan() {
-		final Plan plan = new PlanWithSopremoPostPass(this.checkForSinks(this.assemblePact()));
-		return plan;
+		final Collection<GenericDataSink> sinks = this.checkForSinks(this.assemblePact());
+		return new PlanWithSopremoPostPass(this.layout, sinks);
 	}
 
 	/**
@@ -66,14 +66,14 @@ public class SopremoPlan extends AbstractSopremoType implements Serializable {
 	 * @param requiredPackages
 	 *        the requiredPackages to set
 	 */
-	public void setRequiredPackages(List<String> packageNames) {
+	public void setRequiredPackages(final List<String> packageNames) {
 		if (packageNames == null)
 			throw new NullPointerException("requiredPackages must not be null");
 
 		this.requiredPackages = packageNames;
 	}
 
-	public void addRequiredPackage(String packageName) {
+	public void addRequiredPackage(final String packageName) {
 		this.requiredPackages.add(packageName);
 	}
 
@@ -96,7 +96,7 @@ public class SopremoPlan extends AbstractSopremoType implements Serializable {
 		for (final Sink sink : sinks)
 			this.module.addInternalOutput(sink);
 	}
-	
+
 	public List<Sink> getSinks() {
 		return this.module.getInternalOutputNodes();
 	}
@@ -110,7 +110,7 @@ public class SopremoPlan extends AbstractSopremoType implements Serializable {
 	 * @see eu.stratosphere.sopremo.ISopremoType#appendAsString(java.lang.Appendable)
 	 */
 	@Override
-	public void appendAsString(Appendable appendable) throws IOException {
+	public void appendAsString(final Appendable appendable) throws IOException {
 		this.module.appendAsString(appendable);
 	}
 

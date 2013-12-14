@@ -8,6 +8,7 @@ import eu.stratosphere.sopremo.expressions.ConstantExpression;
 import eu.stratosphere.sopremo.testing.SopremoTestPlan;
 import eu.stratosphere.sopremo.type.IntNode;
 import eu.stratosphere.sopremo.type.TextNode;
+
 //import eu.stratosphere.sopremo.testing.SopremoTestPlan;
 
 public class SourceTest extends EqualCloneTest<Source> {
@@ -16,7 +17,7 @@ public class SourceTest extends EqualCloneTest<Source> {
 	 * @see eu.stratosphere.sopremo.EqualVerifyTest#createDefaultInstance(int)
 	 */
 	@Override
-	protected Source createDefaultInstance(int index) {
+	protected Source createDefaultInstance(final int index) {
 		return new Source("file:///" + String.valueOf(index));
 	}
 

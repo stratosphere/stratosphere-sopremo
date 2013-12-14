@@ -54,21 +54,18 @@ public abstract class CompositeOperator<Self extends CompositeOperator<Self>> ex
 	 * @return a module of ElementaryOperators
 	 */
 	@Override
-	public final ElementarySopremoModule asElementaryOperators(EvaluationContext context) {
-		SopremoModule module = new SopremoModule(this.getNumInputs(), this.getNumOutputs());
-		module.setName(getName());
+	public final ElementarySopremoModule asElementaryOperators(final EvaluationContext context) {
+		final SopremoModule module = new SopremoModule(this.getNumInputs(), this.getNumOutputs());
+		module.setName(this.getName());
 		this.addImplementation(module, context);
 
 		// inherit the CompositeOperator's DoP, if it was not changed by the
 		// Operator developer explicitly.
-		if (this.getDegreeOfParallelism() != Operator.STANDARD_DEGREE_OF_PARALLELISM) {
-			for (Operator<?> moduleOperator : module.getReachableNodes()) {
-				if (moduleOperator.getDegreeOfParallelism() == Operator.STANDARD_DEGREE_OF_PARALLELISM) {
+		if (this.getDegreeOfParallelism() != Operator.STANDARD_DEGREE_OF_PARALLELISM)
+			for (final Operator<?> moduleOperator : module.getReachableNodes())
+				if (moduleOperator.getDegreeOfParallelism() == Operator.STANDARD_DEGREE_OF_PARALLELISM)
 					moduleOperator.setDegreeOfParallelism(this.getDegreeOfParallelism());
-				}
-			}
-		}
-		
+
 		module.validate();
 		return module.asElementary(context);
 	}
@@ -76,7 +73,7 @@ public abstract class CompositeOperator<Self extends CompositeOperator<Self>> ex
 	public abstract void addImplementation(SopremoModule module, EvaluationContext context);
 
 	@Override
-	public PactModule asPactModule(final EvaluationContext context, SopremoRecordLayout layout) {
+	public PactModule asPactModule(final EvaluationContext context, final SopremoRecordLayout layout) {
 		if (LOG.isTraceEnabled())
 			LOG.trace("Transforming\n" + this);
 		final ElementarySopremoModule elementaryPlan = this.asElementaryOperators(context);

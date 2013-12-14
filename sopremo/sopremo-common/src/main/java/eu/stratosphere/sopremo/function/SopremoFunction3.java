@@ -23,7 +23,7 @@ import eu.stratosphere.sopremo.type.IJsonNode;
 public abstract class SopremoFunction3<Arg1 extends IJsonNode, Arg2 extends IJsonNode, Arg3 extends IJsonNode>
 		extends SopremoFunction {
 	public SopremoFunction3() {
-		super( 3);
+		super(3);
 	}
 
 	/*
@@ -32,7 +32,7 @@ public abstract class SopremoFunction3<Arg1 extends IJsonNode, Arg2 extends IJso
 	 */
 	@SuppressWarnings("unchecked")
 	@Override
-	public IJsonNode call(IArrayNode<IJsonNode> params) {
+	public IJsonNode call(final IArrayNode<IJsonNode> params) {
 		return this.call((Arg1) params.get(0), (Arg2) params.get(1), (Arg3) params.get(2));
 	}
 

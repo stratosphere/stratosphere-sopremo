@@ -31,8 +31,8 @@ public class SopremoRecordComparatorFactory implements TypeComparatorFactory<Sop
 
 	private boolean[] ascending;
 
-	public SopremoRecordComparatorFactory(SopremoRecordLayout layout, int[] keyExpressions,
-			boolean[] ascending) {
+	public SopremoRecordComparatorFactory(final SopremoRecordLayout layout, final int[] keyExpressions,
+			final boolean[] ascending) {
 		this.layout = layout;
 		this.keyExpressions = keyExpressions;
 		this.ascending = ascending;
@@ -55,15 +55,16 @@ public class SopremoRecordComparatorFactory implements TypeComparatorFactory<Sop
 	}
 
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(final Object obj) {
 		if (this == obj)
 			return true;
 		if (obj == null)
 			return false;
-		if (getClass() != obj.getClass())
+		if (this.getClass() != obj.getClass())
 			return false;
-		SopremoRecordComparatorFactory other = (SopremoRecordComparatorFactory) obj;
-		return Arrays.equals(this.ascending, other.ascending) && Arrays.equals(this.keyExpressions, other.keyExpressions) &&
+		final SopremoRecordComparatorFactory other = (SopremoRecordComparatorFactory) obj;
+		return Arrays.equals(this.ascending, other.ascending) &&
+			Arrays.equals(this.keyExpressions, other.keyExpressions) &&
 			this.layout.equals(other.layout);
 	}
 
@@ -73,7 +74,7 @@ public class SopremoRecordComparatorFactory implements TypeComparatorFactory<Sop
 	 * configuration.Configuration)
 	 */
 	@Override
-	public void writeParametersToConfig(Configuration config) {
+	public void writeParametersToConfig(final Configuration config) {
 		SopremoUtil.setObject(config, SopremoRecordLayout.LAYOUT_KEY, this.layout);
 		SopremoUtil.setObject(config, KEYS, this.keyExpressions);
 		SopremoUtil.setObject(config, DIRECTION, this.ascending);
@@ -85,7 +86,8 @@ public class SopremoRecordComparatorFactory implements TypeComparatorFactory<Sop
 	 * configuration.Configuration, java.lang.ClassLoader)
 	 */
 	@Override
-	public void readParametersFromConfig(Configuration config, ClassLoader cl) throws ClassNotFoundException {
+	public void readParametersFromConfig(final Configuration config, final ClassLoader cl)
+			throws ClassNotFoundException {
 		this.ascending = SopremoUtil.getObject(config, DIRECTION, null);
 		this.keyExpressions = SopremoUtil.getObject(config, KEYS, null);
 		this.layout = SopremoUtil.getObject(config, SopremoRecordLayout.LAYOUT_KEY, null);

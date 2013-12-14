@@ -17,11 +17,14 @@ package eu.stratosphere.sopremo.serialization;
 
 import eu.stratosphere.pact.generic.types.TypePairComparator;
 import eu.stratosphere.sopremo.cache.NodeCache;
+import eu.stratosphere.sopremo.expressions.EvaluationExpression;
 import eu.stratosphere.sopremo.type.IJsonNode;
 
 public class SopremoRecordPairComparator extends TypePairComparator<SopremoRecord, SopremoRecord>
 {
 	private final int[] keyFields1, keyFields2;
+
+	private final EvaluationExpression[] keyExpressions1, keyExpressions2;
 
 	private final IJsonNode[] keyHolders1;
 
@@ -29,15 +32,17 @@ public class SopremoRecordPairComparator extends TypePairComparator<SopremoRecor
 
 	private final int numKeys;
 
-	public SopremoRecordPairComparator(int[] keyFieldsReference,
-			int[] keyFieldsCandidate) {
+	public SopremoRecordPairComparator(final int[] keyFieldsReference, final EvaluationExpression[] keyExpressions1,
+			final int[] keyFieldsCandidate,
+			final EvaluationExpression[] keyExpressions2) {
 		this.numKeys = keyFieldsReference.length;
-		if (this.numKeys != keyFieldsCandidate.length) {
+		if (this.numKeys != keyFieldsCandidate.length)
 			throw new IllegalArgumentException(
 				"The arrays describing the key expressions must be of the same length.");
-		}
 		this.keyFields1 = keyFieldsReference;
 		this.keyFields2 = keyFieldsCandidate;
+		this.keyExpressions1 = keyExpressions1;
+		this.keyExpressions2 = keyExpressions2;
 
 		// instantiate fields to extract keys into
 		this.keyHolders1 = new IJsonNode[this.numKeys];
@@ -57,10 +62,14 @@ public class SopremoRecordPairComparator extends TypePairComparator<SopremoRecor
 	 * @see eu.stratosphere.sopremo.serialization.TypeComparator#setReference(java.lang.Object)
 	 */
 	@Override
-	public void setReference(SopremoRecord reference) {
-		for (int index = 0; index < this.numKeys; index++) {
-			this.keyHolders1[index] = reference.getKey(this.keyFields1[index], this.nodeCache1[index]);
-		}
+	public void setReference(final SopremoRecord reference) {
+		final IJsonNode node = reference.getNode();
+		if (node == null)
+			for (int index = 0; index < this.numKeys; index++)
+				this.keyHolders1[index] = reference.getKey(this.keyFields1[index], this.nodeCache1[index]);
+		else
+			for (int index = 0; index < this.numKeys; index++)
+				this.keyHolders1[index] = this.keyExpressions1[index].evaluate(node);
 	}
 
 	/*
@@ -68,12 +77,20 @@ public class SopremoRecordPairComparator extends TypePairComparator<SopremoRecor
 	 * @see eu.stratosphere.sopremo.serialization.TypeComparator#equalToReference(java.lang.Object)
 	 */
 	@Override
-	public boolean equalToReference(SopremoRecord candidate) {
-		for (int index = 0; index < this.numKeys; index++) {
-			IJsonNode k = candidate.getKey(this.keyFields2[index], this.nodeCache2[index]);
-			if (!k.equals(this.keyHolders1[index]))
-				return false;
-		}
+	public boolean equalToReference(final SopremoRecord candidate) {
+		final IJsonNode node = candidate.getNode();
+		if (node == null)
+			for (int index = 0; index < this.numKeys; index++) {
+				final IJsonNode k = candidate.getKey(this.keyFields2[index], this.nodeCache2[index]);
+				if (!k.equals(this.keyHolders1[index]))
+					return false;
+			}
+		else
+			for (int index = 0; index < this.numKeys; index++) {
+				final IJsonNode k = this.keyExpressions2[index].evaluate(node);
+				if (!k.equals(this.keyHolders1[index]))
+					return false;
+			}
 		return true;
 	}
 
@@ -82,13 +99,22 @@ public class SopremoRecordPairComparator extends TypePairComparator<SopremoRecor
 	 * @see eu.stratosphere.sopremo.serialization.TypePairComparator#compareToReference(java.lang.Object)
 	 */
 	@Override
-	public int compareToReference(SopremoRecord candidate) {
-		for (int index = 0; index < this.numKeys; index++) {
-			IJsonNode k = candidate.getKey(this.keyFields2[index], this.nodeCache2[index]);
-			final int comparison = k.compareTo(this.keyHolders1[index]);
-			if (comparison != 0)
-				return comparison;
-		}
+	public int compareToReference(final SopremoRecord candidate) {
+		final IJsonNode node = candidate.getNode();
+		if (node == null)
+			for (int index = 0; index < this.numKeys; index++) {
+				final IJsonNode k = candidate.getKey(this.keyFields2[index], this.nodeCache2[index]);
+				final int comparison = k.compareTo(this.keyHolders1[index]);
+				if (comparison != 0)
+					return comparison;
+			}
+		else
+			for (int index = 0; index < this.numKeys; index++) {
+				final IJsonNode k = this.keyExpressions2[index].evaluate(node);
+				final int comparison = k.compareTo(this.keyHolders1[index]);
+				if (comparison != 0)
+					return comparison;
+			}
 		return 0;
 	}
 }

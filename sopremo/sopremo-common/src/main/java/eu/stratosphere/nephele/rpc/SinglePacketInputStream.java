@@ -89,7 +89,7 @@ final class SinglePacketInputStream extends InputStream {
 	}
 
 	@Override
-	public long skip(long n) {
+	public long skip(final long n) {
 
 		final int dataLeftInBuffer = this.len - this.read;
 

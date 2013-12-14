@@ -130,12 +130,12 @@ final class NetworkThread extends Thread {
 
 			try {
 				this.socket.receive(dataDP);
-			} catch (SocketException se) {
+			} catch (final SocketException se) {
 				if (this.shutdownRequested)
 					return;
 				Log.error("Shutting down receiver thread due to error: ", se);
 				return;
-			} catch (IOException ioe) {
+			} catch (final IOException ioe) {
 				Log.error("Shutting down receiver thread due to error: ", ioe);
 				return;
 			}
@@ -176,7 +176,7 @@ final class NetworkThread extends Thread {
 				ackDP.setSocketAddress(remoteSocketAddress);
 				try {
 					this.socket.send(ackDP);
-				} catch (IOException ioe) {
+				} catch (final IOException ioe) {
 					if (this.shutdownRequested)
 						return;
 					Log.error("Shutting down receiver thread due to error: ", ioe);
@@ -213,7 +213,7 @@ final class NetworkThread extends Thread {
 					ackDP.setSocketAddress(remoteSocketAddress);
 					try {
 						this.socket.send(ackDP);
-					} catch (IOException ioe) {
+					} catch (final IOException ioe) {
 						if (this.shutdownRequested)
 							return;
 						Log.error("Shutting down receiver thread due to error: ", ioe);
@@ -230,7 +230,7 @@ final class NetworkThread extends Thread {
 					ackDP.setSocketAddress(remoteSocketAddress);
 					try {
 						this.socket.send(ackDP);
-					} catch (IOException ioe) {
+					} catch (final IOException ioe) {
 						if (this.shutdownRequested)
 							return;
 						Log.error("Shutting down receiver thread due to error: ", ioe);

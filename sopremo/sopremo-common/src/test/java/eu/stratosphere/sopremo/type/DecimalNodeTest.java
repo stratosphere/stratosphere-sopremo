@@ -9,7 +9,7 @@ public class DecimalNodeTest extends JsonNodeTest<DecimalNode> {
 	 * @see eu.stratosphere.sopremo.EqualVerifyTest#createDefaultInstance(int)
 	 */
 	@Override
-	protected DecimalNode createDefaultInstance(int index) {
+	protected DecimalNode createDefaultInstance(final int index) {
 		return new DecimalNode(BigDecimal.valueOf(index));
 	}
 }

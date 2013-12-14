@@ -27,7 +27,7 @@ public class ListChildIterator extends GenericListChildIterator<EvaluationExpres
 	 * 
 	 * @param expressionIterator
 	 */
-	public ListChildIterator(ListIterator<EvaluationExpression> expressionIterator) {
+	public ListChildIterator(final ListIterator<EvaluationExpression> expressionIterator) {
 		super(expressionIterator);
 	}
 
@@ -38,7 +38,7 @@ public class ListChildIterator extends GenericListChildIterator<EvaluationExpres
 	 * .EvaluationExpression)
 	 */
 	@Override
-	protected final EvaluationExpression convert(EvaluationExpression childExpression) {
+	protected final EvaluationExpression convert(final EvaluationExpression childExpression) {
 		return childExpression;
 	}
 }

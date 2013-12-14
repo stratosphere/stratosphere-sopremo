@@ -36,8 +36,8 @@ public class DefaultNodeFactory implements NodeFactory {
 		return Instance;
 	}
 
-	public <T extends IJsonNode> DefaultNodeFactory register(Class<T> interfaceType,
-			Class<? extends T> implementationType) {
+	public <T extends IJsonNode> DefaultNodeFactory register(final Class<T> interfaceType,
+			final Class<? extends T> implementationType) {
 		this.interfaceImplementations.put(interfaceType, implementationType);
 		return this;
 	}
@@ -48,7 +48,7 @@ public class DefaultNodeFactory implements NodeFactory {
 	 */
 	@SuppressWarnings("unchecked")
 	@Override
-	public <T extends IJsonNode> T instantiate(Class<T> interfaceType) {
+	public <T extends IJsonNode> T instantiate(final Class<T> interfaceType) {
 		final Class<? extends IJsonNode> defaultImplementation = this.interfaceImplementations.get(interfaceType);
 		if (defaultImplementation != null)
 			return (T) ReflectUtil.newInstance(defaultImplementation);

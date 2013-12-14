@@ -25,7 +25,7 @@ public class Union extends CompositeOperator<Union> {
 	 * , eu.stratosphere.sopremo.EvaluationContext)
 	 */
 	@Override
-	public void addImplementation(SopremoModule module, EvaluationContext context) {
+	public void addImplementation(final SopremoModule module, final EvaluationContext context) {
 		module.embed(new Unique().withInputs(new UnionAll().withInputs(module.getInputs())));
 	}
 

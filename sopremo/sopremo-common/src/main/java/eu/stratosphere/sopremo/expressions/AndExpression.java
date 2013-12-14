@@ -119,7 +119,7 @@ public class AndExpression extends BooleanExpression {
 			 * .EvaluationExpression)
 			 */
 			@Override
-			protected BooleanExpression convert(EvaluationExpression childExpression) {
+			protected BooleanExpression convert(final EvaluationExpression childExpression) {
 				return BooleanExpression.ensureBooleanExpression(childExpression);
 			}
 		};

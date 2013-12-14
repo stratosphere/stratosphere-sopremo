@@ -35,10 +35,9 @@ public class NestedOperatorExpression extends UnevaluableExpression {
 		super("Nested operator: " + operator);
 		this.operator = operator;
 	}
-	
+
 	/**
 	 * Initializes NestedOperatorExpression.
-	 *
 	 */
 	NestedOperatorExpression() {
 		super("");

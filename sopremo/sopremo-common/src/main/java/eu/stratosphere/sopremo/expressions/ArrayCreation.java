@@ -61,7 +61,7 @@ public class ArrayCreation extends EvaluationExpression {
 		this.elements = new ArrayList<EvaluationExpression>();
 	}
 
-	public ArrayCreation add(EvaluationExpression expression) {
+	public ArrayCreation add(final EvaluationExpression expression) {
 		this.elements.add(expression);
 		return this;
 	}
@@ -69,8 +69,8 @@ public class ArrayCreation extends EvaluationExpression {
 	public int size() {
 		return this.elements.size();
 	}
-	
-	public EvaluationExpression get(int index) {
+
+	public EvaluationExpression get(final int index) {
 		return this.elements.get(index);
 	}
 
@@ -92,7 +92,7 @@ public class ArrayCreation extends EvaluationExpression {
 	public List<EvaluationExpression> getElements() {
 		return this.elements;
 	}
-	
+
 	@Override
 	public IJsonNode evaluate(final IJsonNode node) {
 		this.result.clear();

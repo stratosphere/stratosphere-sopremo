@@ -45,15 +45,15 @@ public abstract class MeteorParserBase extends QueryWithVariablesParser<JsonStre
 	static DefaultNameChooserProvider NameChooserProvider =
 		new DefaultNameChooserProvider(new DefaultNameChooser(3, 0, 1, 2));
 
-	private StackedConstantRegistry constantRegistry = new StackedConstantRegistry(
+	private final StackedConstantRegistry constantRegistry = new StackedConstantRegistry(
 		NameChooserProvider.getConstantNameChooser());
 
-	public MeteorParserBase(TokenStream input) {
+	public MeteorParserBase(final TokenStream input) {
 		super(input);
 		this.init();
 	}
 
-	public MeteorParserBase(TokenStream input, RecognizerSharedState state) {
+	public MeteorParserBase(final TokenStream input, final RecognizerSharedState state) {
 		super(input, state);
 		this.init();
 	}
@@ -62,7 +62,7 @@ public abstract class MeteorParserBase extends QueryWithVariablesParser<JsonStre
 		this.constantRegistry.push(new DefaultConstantRegistry());
 	}
 
-	protected String getAssignmentName(EvaluationExpression expression) {
+	protected String getAssignmentName(final EvaluationExpression expression) {
 		if (expression instanceof ObjectAccess)
 			return ((ObjectAccess) expression).getField();
 		return expression.toString();
@@ -91,24 +91,24 @@ public abstract class MeteorParserBase extends QueryWithVariablesParser<JsonStre
 		return JsonFormat.class;
 	}
 
-	protected JsonStreamExpression getVariable(Token name) {
+	protected JsonStreamExpression getVariable(final Token name) {
 		return this.getVariableRegistry().get(name.getText());
 	}
 
-	protected JsonStreamExpression getVariableSafely(Token name) throws RecognitionException {
-		JsonStreamExpression variable = getVariable(name);
+	protected JsonStreamExpression getVariableSafely(final Token name) throws RecognitionException {
+		final JsonStreamExpression variable = this.getVariable(name);
 		if (variable == null)
 			throw new RecognitionExceptionWithUsageHint(name, String.format(
 				"Unknown varible %s; possible alternatives %s", name,
-				this.inputSuggestion.suggest(name.getText(), getVariableRegistry().keySet())));
+				this.inputSuggestion.suggest(name.getText(), this.getVariableRegistry().keySet())));
 		return variable;
 	}
 
-	protected void putVariable(Token name, JsonStreamExpression expression) {
+	protected void putVariable(final Token name, final JsonStreamExpression expression) {
 		this.getVariableRegistry().put(name.getText(), expression);
 	}
 
-	protected void putVariable(Token name, JsonStreamExpression expression, int depth) {
+	protected void putVariable(final Token name, final JsonStreamExpression expression, final int depth) {
 		this.getVariableRegistry().getRegistry(depth).put(name.getText(), expression);
 	}
 
@@ -124,7 +124,7 @@ public abstract class MeteorParserBase extends QueryWithVariablesParser<JsonStre
 
 		this.constantRegistry.push(super.getConstantRegistry());
 	}
-	
+
 	static {
 		NameChooserProvider.setFunctionNameChooser(new DefaultNameChooser(1, 0, 2, 3));
 	}

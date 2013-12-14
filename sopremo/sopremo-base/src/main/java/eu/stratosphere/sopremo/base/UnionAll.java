@@ -27,12 +27,13 @@ public class UnionAll extends ElementaryOperator<UnionAll> {
 	 * @see eu.stratosphere.sopremo.ElementaryOperator#asPactModule(eu.stratosphere.sopremo.EvaluationContext)
 	 */
 	@Override
-	public PactModule asPactModule(EvaluationContext context, SopremoRecordLayout layout) {
+	public PactModule asPactModule(final EvaluationContext context, final SopremoRecordLayout layout) {
 		final List<JsonStream> inputs = this.getInputs();
 		final PactModule module = new PactModule(inputs.size(), 1);
 		// // TODO: remove identity map, when Pact/Nephele can deal with direct source->sink connections
-		GenericMapContract<SopremoNop> contract = new GenericMapContract<SopremoNop>(SopremoNop.class, "union-nop");
-		for (Contract input : module.getInputs())
+		final GenericMapContract<SopremoNop> contract =
+			new GenericMapContract<SopremoNop>(SopremoNop.class, "union-nop");
+		for (final Contract input : module.getInputs())
 			contract.addInput(input);
 		module.getOutput(0).setInput(contract);
 		// // without identity mapper

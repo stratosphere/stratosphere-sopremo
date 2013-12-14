@@ -27,13 +27,13 @@ public class JsonParserSuccessParamTest {
 
 	private JsonParser parser;
 
-	private String input;
+	private final String input;
 
-	private IJsonNode[] expectedResults;
+	private final IJsonNode[] expectedResults;
 
 	int counter;
 
-	public JsonParserSuccessParamTest(final String input, final IJsonNode[] expectedResults, int expectedCounter) {
+	public JsonParserSuccessParamTest(final String input, final IJsonNode[] expectedResults, final int expectedCounter) {
 		this.input = input;
 		this.expectedResults = expectedResults;
 		this.counter = expectedCounter;
@@ -46,8 +46,8 @@ public class JsonParserSuccessParamTest {
 
 	@Test
 	public void shouldParseCorrectly() throws JsonParseException {
-		for (IJsonNode expectedResult : this.expectedResults) {
-			IJsonNode result = this.parser.readValueAsTree();
+		for (final IJsonNode expectedResult : this.expectedResults) {
+			final IJsonNode result = this.parser.readValueAsTree();
 			Assert.assertEquals(expectedResult, result);
 		}
 	}
@@ -112,7 +112,7 @@ public class JsonParserSuccessParamTest {
 		});
 	}
 
-	private static IJsonNode[] create(IJsonNode... elements) {
+	private static IJsonNode[] create(final IJsonNode... elements) {
 		return elements;
 	}
 }

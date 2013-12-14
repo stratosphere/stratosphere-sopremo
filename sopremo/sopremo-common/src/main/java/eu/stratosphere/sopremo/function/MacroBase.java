@@ -10,11 +10,11 @@ public abstract class MacroBase extends Callable<EvaluationExpression, Evaluatio
 	 * @param minimumNumberOfParameters
 	 * @param maximumNumberOfParameters
 	 */
-	public MacroBase(int minimumNumberOfParameters, int maximumNumberOfParameters) {
+	public MacroBase(final int minimumNumberOfParameters, final int maximumNumberOfParameters) {
 		super(minimumNumberOfParameters, maximumNumberOfParameters);
 	}
 
-	public MacroBase(int numberOfParameters) {
+	public MacroBase(final int numberOfParameters) {
 		super(numberOfParameters, numberOfParameters);
 	}
 
@@ -23,10 +23,10 @@ public abstract class MacroBase extends Callable<EvaluationExpression, Evaluatio
 	 * @see eu.stratosphere.sopremo.function.Callable#call(java.lang.Object)
 	 */
 	@Override
-	public final EvaluationExpression call(EvaluationExpression[] params) {
-		if (!accepts(params.length))
+	public final EvaluationExpression call(final EvaluationExpression[] params) {
+		if (!this.accepts(params.length))
 			throw new IllegalArgumentException("Incorrect number of parameters");
-		return process(params);
+		return this.process(params);
 	}
 
 	protected abstract EvaluationExpression process(EvaluationExpression[] params);

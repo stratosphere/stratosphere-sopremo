@@ -65,7 +65,7 @@ public class SparseNodeSchema extends AbstractSchema<EvaluationExpression> {
 	 * @see eu.stratosphere.pact.compiler.postpass.AbstractSchema#addType(int, java.lang.Object)
 	 */
 	@Override
-	public void addType(int pos, EvaluationExpression expression) throws ConflictingFieldTypeInfoException {
+	public void addType(final int pos, final EvaluationExpression expression) throws ConflictingFieldTypeInfoException {
 		CollectionUtil.ensureSize(this.keyExpressions, pos + 1, EvaluationExpression.VALUE);
 		this.keyExpressions.set(pos, expression);
 	}
@@ -75,7 +75,7 @@ public class SparseNodeSchema extends AbstractSchema<EvaluationExpression> {
 	 * @see eu.stratosphere.pact.compiler.postpass.AbstractSchema#getType(int)
 	 */
 	@Override
-	public EvaluationExpression getType(int field) {
+	public EvaluationExpression getType(final int field) {
 		return this.keyExpressions.get(field);
 	}
 

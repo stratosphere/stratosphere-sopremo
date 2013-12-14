@@ -34,7 +34,7 @@ public class MutableEntry<K, V> implements Map.Entry<K, V> {
 		return this.key;
 	}
 
-	public void setKey(K key) {
+	public void setKey(final K key) {
 		this.key = key;
 	}
 
@@ -52,7 +52,7 @@ public class MutableEntry<K, V> implements Map.Entry<K, V> {
 	 * @see java.util.Map.Entry#setValue(java.lang.Object)
 	 */
 	@Override
-	public V setValue(V value) {
+	public V setValue(final V value) {
 		final V oldValue = this.value;
 		this.value = value;
 		return oldValue;
@@ -60,7 +60,7 @@ public class MutableEntry<K, V> implements Map.Entry<K, V> {
 
 	@Override
 	public String toString() {
-		StringBuilder builder = new StringBuilder();
+		final StringBuilder builder = new StringBuilder();
 		builder.append("[");
 		builder.append(this.key).append("=");
 		builder.append(this.value);
@@ -71,7 +71,7 @@ public class MutableEntry<K, V> implements Map.Entry<K, V> {
 	/**
 	 * @param nextMapping
 	 */
-	public void copyFrom(Entry<? extends K, ? extends V> entry) {
+	public void copyFrom(final Entry<? extends K, ? extends V> entry) {
 		this.setKey(entry.getKey());
 		this.setValue(entry.getValue());
 	}

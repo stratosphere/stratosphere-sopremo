@@ -38,7 +38,7 @@ public class ArraySplit extends ElementaryOperator<ArraySplit> {
 		return this.splitProjection;
 	}
 
-	public ArraySplit withArrayPath(EvaluationExpression arrayPath) {
+	public ArraySplit withArrayPath(final EvaluationExpression arrayPath) {
 		this.arrayPath = arrayPath;
 		return this;
 	}
@@ -51,7 +51,7 @@ public class ArraySplit extends ElementaryOperator<ArraySplit> {
 	 */
 	@Property
 	@Name(preposition = "on")
-	public void setArrayPath(EvaluationExpression arrayPath) {
+	public void setArrayPath(final EvaluationExpression arrayPath) {
 		if (arrayPath == null)
 			throw new NullPointerException("arrayPath must not be null");
 
@@ -64,7 +64,7 @@ public class ArraySplit extends ElementaryOperator<ArraySplit> {
 	 * @param valueProjection
 	 * @return this
 	 */
-	public ArraySplit withSplitProjection(EvaluationExpression valueProjection) {
+	public ArraySplit withSplitProjection(final EvaluationExpression valueProjection) {
 		this.setSplitProjection(valueProjection);
 		return this;
 	}
@@ -76,7 +76,7 @@ public class ArraySplit extends ElementaryOperator<ArraySplit> {
 	 */
 	@Property
 	@Name(preposition = "into")
-	public void setSplitProjection(EvaluationExpression elementProjection) {
+	public void setSplitProjection(final EvaluationExpression elementProjection) {
 		if (elementProjection == null)
 			throw new NullPointerException("elementProjection must not be null");
 		this.splitProjection = elementProjection;
@@ -88,7 +88,7 @@ public class ArraySplit extends ElementaryOperator<ArraySplit> {
 	 * @param valueProjection
 	 * @return this
 	 */
-	public ArraySplit withSplitProjection(ResultField... fields) {
+	public ArraySplit withSplitProjection(final ResultField... fields) {
 		this.setSplitProjection(fields);
 		return this;
 	}
@@ -98,8 +98,8 @@ public class ArraySplit extends ElementaryOperator<ArraySplit> {
 	 * 
 	 * @param valueProjection
 	 */
-	public void setSplitProjection(ResultField... fields) {
-		int[] indices = new int[fields.length];
+	public void setSplitProjection(final ResultField... fields) {
+		final int[] indices = new int[fields.length];
 		for (int index = 0; index < indices.length; index++)
 			indices[index] = fields[index].ordinal();
 		this.setSplitProjection(ArrayAccess.arrayWithIndices(indices));
@@ -111,16 +111,16 @@ public class ArraySplit extends ElementaryOperator<ArraySplit> {
 		private EvaluationExpression splitProjection;
 
 		@Override
-		protected void map(final IJsonNode value, JsonCollector<IJsonNode> out) {
+		protected void map(final IJsonNode value, final JsonCollector<IJsonNode> out) {
 			final IJsonNode target = this.arrayPath.evaluate(value);
-			if (!(target instanceof IArrayNode<?>))				
+			if (!(target instanceof IArrayNode<?>))
 				throw new EvaluationException("Cannot split non-array");
 			final IArrayNode<?> array = (IArrayNode<?>) target;
 
 			int index = 0;
-			IntNode indexNode = IntNode.valueOf(0);
-			IArrayNode<IJsonNode> contextNode = JsonUtil.asArray(NullNode.getInstance(), indexNode, array, value);
-			for (IJsonNode element : array) {
+			final IntNode indexNode = IntNode.valueOf(0);
+			final IArrayNode<IJsonNode> contextNode = JsonUtil.asArray(NullNode.getInstance(), indexNode, array, value);
+			for (final IJsonNode element : array) {
 				contextNode.set(0, element);
 				indexNode.setValue(index);
 				out.collect(this.splitProjection.evaluate(contextNode));

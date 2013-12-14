@@ -24,7 +24,7 @@ import eu.stratosphere.sopremo.expressions.TransformFunction;
  */
 public final class ReplaceInputSelectionWithArray implements TransformFunction {
 	@Override
-	public EvaluationExpression apply(EvaluationExpression argument) {
+	public EvaluationExpression apply(final EvaluationExpression argument) {
 		return new ArrayAccess(((InputSelection) argument).getIndex());
 	}
 }

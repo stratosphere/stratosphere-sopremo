@@ -150,9 +150,9 @@ public class SopremoTestPlanTest extends EqualVerifyTest<SopremoTestPlan> {
 		super.initVerifier(equalVerifier);
 		final SopremoRecordLayout redSchema = SopremoRecordLayout.create(new ObjectAccess("redField"));
 		final SopremoRecordLayout blackSchema = SopremoRecordLayout.create(new ObjectAccess("blackField"));
-		SopremoRecord redRecord = new SopremoRecord(redSchema);
+		final SopremoRecord redRecord = new SopremoRecord();
 		redRecord.setNode(JsonUtil.createObjectNode("color", "red"));
-		SopremoRecord blackRecord = new SopremoRecord(redSchema);
+		final SopremoRecord blackRecord = new SopremoRecord();
 		blackRecord.setNode(JsonUtil.createObjectNode("color", "black"));
 
 		equalVerifier.
@@ -274,7 +274,7 @@ public class SopremoTestPlanTest extends EqualVerifyTest<SopremoTestPlan> {
 			 */
 			@Override
 			protected void map(final IJsonNode value, final JsonCollector<IJsonNode> out) {
-				final Matcher matcher = WORD_PATTERN.matcher(((TextNode) ((IObjectNode) value).get("line")));
+				final Matcher matcher = WORD_PATTERN.matcher((TextNode) ((IObjectNode) value).get("line"));
 				while (matcher.find())
 					out.collect(JsonUtil.createObjectNode("word", TextNode.valueOf(matcher.group())));
 			}

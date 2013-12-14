@@ -52,7 +52,7 @@ import eu.stratosphere.sopremo.type.JsonUtil;
 public class SopremoServerTest {
 	private SopremoServer server;
 
-	private SopremoPlan plan = createPlan();
+	private final SopremoPlan plan = createPlan();
 
 	private ExecutionRequest request;
 
@@ -80,7 +80,7 @@ public class SopremoServerTest {
 	public void testJobEnqueueing() {
 		when(this.mockInfo.getStatus()).thenReturn(ExecutionState.ENQUEUED);
 
-		ExecutionResponse response = this.server.execute(this.request);
+		final ExecutionResponse response = this.server.execute(this.request);
 		Assert.assertSame(ExecutionState.ENQUEUED, response.getState());
 	}
 
@@ -90,8 +90,8 @@ public class SopremoServerTest {
 			ExecutionState.FINISHED);
 
 		ExecutionResponse response = this.server.execute(this.request);
-		response = waitForStateToFinish(response, ExecutionState.ENQUEUED);
-		response = waitForStateToFinish(response, ExecutionState.RUNNING);
+		response = this.waitForStateToFinish(response, ExecutionState.ENQUEUED);
+		response = this.waitForStateToFinish(response, ExecutionState.RUNNING);
 		Assert.assertSame(ExecutionState.FINISHED, response.getState());
 	}
 
@@ -100,8 +100,8 @@ public class SopremoServerTest {
 		when(this.mockInfo.getStatus()).thenReturn(ExecutionState.ENQUEUED).thenReturn(ExecutionState.ERROR);
 
 		ExecutionResponse response = this.server.execute(this.request);
-		response = waitForStateToFinish(response, ExecutionState.ENQUEUED);
-		response = waitForStateToFinish(response, ExecutionState.RUNNING);
+		response = this.waitForStateToFinish(response, ExecutionState.ENQUEUED);
+		response = this.waitForStateToFinish(response, ExecutionState.RUNNING);
 		Assert.assertSame(ExecutionState.ERROR, response.getState());
 	}
 
@@ -111,16 +111,16 @@ public class SopremoServerTest {
 			ExecutionState.ERROR);
 
 		ExecutionResponse response = this.server.execute(this.request);
-		response = waitForStateToFinish(response, ExecutionState.ENQUEUED);
-		response = waitForStateToFinish(response, ExecutionState.RUNNING);
+		response = this.waitForStateToFinish(response, ExecutionState.ENQUEUED);
+		response = this.waitForStateToFinish(response, ExecutionState.RUNNING);
 		Assert.assertSame(ExecutionState.ERROR, response.getState());
 	}
 
-	private ExecutionResponse waitForStateToFinish(ExecutionResponse response, ExecutionState status) {
-		
+	private ExecutionResponse waitForStateToFinish(final ExecutionResponse response, final ExecutionState status) {
+
 		try {
 			return SopremoTestServer.waitForStateToFinish(this.server, response, status);
-		} catch(Exception e) {
+		} catch (final Exception e) {
 			e.printStackTrace();
 			return null;
 		}
@@ -141,7 +141,7 @@ public class SopremoServerTest {
 		return plan;
 	}
 
-	public static String createTemporaryFile(String prefix) {
+	public static String createTemporaryFile(final String prefix) {
 		try {
 			final File tempFile = File.createTempFile(prefix, ".json");
 			tempFile.deleteOnExit();

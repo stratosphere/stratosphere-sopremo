@@ -17,7 +17,6 @@ package eu.stratosphere.sopremo;
 import eu.stratosphere.nephele.configuration.Configuration;
 import eu.stratosphere.pact.common.stubs.RuntimeContext;
 import eu.stratosphere.sopremo.pact.SopremoUtil;
-import eu.stratosphere.sopremo.serialization.SopremoRecordLayout;
 
 /**
  * @author Arvid Heise
@@ -35,13 +34,11 @@ public class SopremoEnvironment {
 
 	private EvaluationContext evaluationContext = new EvaluationContext();
 
-	private ClassLoader classLoader = getClass().getClassLoader();
+	private ClassLoader classLoader = this.getClass().getClassLoader();
 
 	private Configuration configuration;
 
 	private RuntimeContext runtimeContext;
-
-	private SopremoRecordLayout layout;
 
 	public static SopremoEnvironment getInstance() {
 		return INSTANCE.get();
@@ -64,13 +61,14 @@ public class SopremoEnvironment {
 	public ClassLoader getClassLoader() {
 		return this.classLoader;
 	}
-	
+
 	/**
 	 * Sets the classLoader to the specified value.
-	 *
-	 * @param classLoader the classLoader to set
+	 * 
+	 * @param classLoader
+	 *        the classLoader to set
 	 */
-	public void setClassLoader(ClassLoader classLoader) {
+	public void setClassLoader(final ClassLoader classLoader) {
 		if (classLoader == null)
 			throw new NullPointerException("classLoader must not be null");
 
@@ -87,21 +85,12 @@ public class SopremoEnvironment {
 	}
 
 	/**
-	 * Returns the layout.
-	 * 
-	 * @return the layout
-	 */
-	public SopremoRecordLayout getLayout() {
-		return this.layout;
-	}
-
-	/**
 	 * Sets the evaluationContext to the specified value.
 	 * 
 	 * @param evaluationContext
 	 *        the evaluationContext to set
 	 */
-	public void setEvaluationContext(EvaluationContext evaluationContext) {
+	public void setEvaluationContext(final EvaluationContext evaluationContext) {
 		if (evaluationContext == null)
 			throw new NullPointerException("evaluationContext must not be null");
 
@@ -114,7 +103,7 @@ public class SopremoEnvironment {
 	 * @param runtimeContext
 	 *        the runtimeContext to set
 	 */
-	public void setRuntimeContext(RuntimeContext context) {
+	public void setRuntimeContext(final RuntimeContext context) {
 		if (context == null)
 			throw new NullPointerException("runtimeContext must not be null");
 
@@ -136,18 +125,17 @@ public class SopremoEnvironment {
 	 * @param classLoader
 	 *        the classLoader to set
 	 */
-	public void setConfiguration(Configuration configuration) {
+	public void setConfiguration(final Configuration configuration) {
 		if (configuration == null)
 			throw new NullPointerException("configuration must not be null");
 
 		this.configuration = configuration;
 		this.classLoader = configuration.getClassLoader();
 		this.evaluationContext = SopremoUtil.getEvaluationContext(configuration);
-		this.layout = SopremoUtil.getLayout(configuration);
 	}
 
-	public void setConfigurationAndContext(Configuration parameters, RuntimeContext runtimeContext) {
-		setConfiguration(parameters);
-		setRuntimeContext(runtimeContext);
+	public void setConfigurationAndContext(final Configuration parameters, final RuntimeContext runtimeContext) {
+		this.setConfiguration(parameters);
+		this.setRuntimeContext(runtimeContext);
 	}
 }

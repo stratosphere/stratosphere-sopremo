@@ -27,7 +27,7 @@ import java.io.OutputStream;
  */
 public class StreamUtil {
 
-	public static File cacheFile(InputStream inputStream) throws IOException {
+	public static File cacheFile(final InputStream inputStream) throws IOException {
 		OutputStream outputStream = null;
 		File cachedFile = null;
 		try {
@@ -36,7 +36,7 @@ public class StreamUtil {
 			outputStream = new FileOutputStream(cachedFile);
 			copyStreams(inputStream, outputStream);
 			return cachedFile;
-		} catch (IOException e) {
+		} catch (final IOException e) {
 			if (cachedFile != null)
 				cachedFile.delete();
 			throw e;
@@ -47,16 +47,16 @@ public class StreamUtil {
 		}
 	}
 
-	public static void copyStreams(InputStream inputStream, OutputStream outputStream) throws IOException {
+	public static void copyStreams(final InputStream inputStream, final OutputStream outputStream) throws IOException {
 		int read;
-		byte[] buf = new byte[8192];
+		final byte[] buf = new byte[8192];
 		while ((read = inputStream.read(buf)) != -1)
 			outputStream.write(buf, 0, read);
 	}
 
-	public static void readFully(InputStream inputStream, ByteList buffer) throws IOException {
+	public static void readFully(final InputStream inputStream, final ByteList buffer) throws IOException {
 		int read, total = 0;
-		byte[] buf = new byte[8192];
+		final byte[] buf = new byte[8192];
 		while ((read = inputStream.read(buf)) != -1) {
 			buffer.addElements(total, buf, 0, read);
 			total += read;

@@ -26,7 +26,7 @@ public abstract class AbstractNumericNode extends AbstractJsonNode implements IN
 		return false;
 	}
 
-	public static void checkNumber(IJsonNode node) {
+	public static void checkNumber(final IJsonNode node) {
 		if (!(node instanceof INumericNode))
 			throw new IllegalArgumentException("Not a number " + node);
 	}
@@ -45,7 +45,7 @@ public abstract class AbstractNumericNode extends AbstractJsonNode implements IN
 	 * @see eu.stratosphere.sopremo.type.AbstractJsonNode#compareToOtherType(eu.stratosphere.pact.common.type.Key)
 	 */
 	@Override
-	protected int compareToOtherType(IJsonNode other) {
+	protected int compareToOtherType(final IJsonNode other) {
 		if (other instanceof INumericNode)
 			return Double.compare(this.getDoubleValue(), ((INumericNode) other).getDoubleValue());
 		return super.compareToOtherType(other);

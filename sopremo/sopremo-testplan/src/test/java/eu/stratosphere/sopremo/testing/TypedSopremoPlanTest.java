@@ -62,7 +62,7 @@ public class TypedSopremoPlanTest {
 	@InputCardinality(1)
 	public static class TestAnnotationOperator extends ElementaryOperator<TestAnnotationOperator> {
 		public static class Implementation extends GenericSopremoMap<TestAnnotatedText, TestAnnotatedText> {
-			private TestAnnotation annotation = TypedObjectNodeFactory.getInstance().getTypedObjectForInterface(
+			private final TestAnnotation annotation = TypedObjectNodeFactory.getInstance().getTypedObjectForInterface(
 				TestAnnotation.class);
 
 			/*
@@ -71,11 +71,11 @@ public class TypedSopremoPlanTest {
 			 * eu.stratosphere.sopremo.pact.JsonCollector)
 			 */
 			@Override
-			protected void map(TestAnnotatedText value, JsonCollector<TestAnnotatedText> out) {
+			protected void map(final TestAnnotatedText value, final JsonCollector<TestAnnotatedText> out) {
 				IArrayNode<TestAnnotation> annotations = value.getAnnotations();
-				if(annotations == null)
+				if (annotations == null)
 					value.setAnnotations(annotations = new ArrayNode<TestAnnotation>());
-				int num = annotations.size();
+				final int num = annotations.size();
 
 				this.annotation.setStart(num * 10);
 				this.annotation.setEnd(num * 10 + 5);
@@ -88,20 +88,20 @@ public class TypedSopremoPlanTest {
 
 	@Test
 	public void testAnnotation() {
-		SopremoTestPlan plan = new SopremoTestPlan(new TestAnnotationOperator());
+		final SopremoTestPlan plan = new SopremoTestPlan(new TestAnnotationOperator());
 
 		plan.getInput(0).
 			addObject("text", "lorum").
-			addObject("text", "ipsum", "annotations", JsonUtil.asArray(getExpectedAnnotation(0)));
+			addObject("text", "ipsum", "annotations", JsonUtil.asArray(this.getExpectedAnnotation(0)));
 		plan.getExpectedOutput(0).
-			addObject("text", "lorum", "annotations", JsonUtil.asArray(getExpectedAnnotation(0))).
+			addObject("text", "lorum", "annotations", JsonUtil.asArray(this.getExpectedAnnotation(0))).
 			addObject("text", "ipsum", "annotations",
-				JsonUtil.asArray(getExpectedAnnotation(0), getExpectedAnnotation(1)));
+				JsonUtil.asArray(this.getExpectedAnnotation(0), this.getExpectedAnnotation(1)));
 
 		plan.run();
 	}
 
-	protected ObjectNode getExpectedAnnotation(int num) {
+	protected ObjectNode getExpectedAnnotation(final int num) {
 		return JsonUtil.createObjectNode("start", num * 10, "end", num * 10 + 5, "tag",
 			TestAnnotationTag.values()[num % TestAnnotationTag.values().length].toString());
 	}

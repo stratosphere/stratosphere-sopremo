@@ -24,7 +24,7 @@ import eu.stratosphere.nephele.rpc.RPCProtocol;
  * @author Arvid Heise
  */
 public interface SopremoExecutionProtocol extends LibraryTransferProtocol, RPCProtocol {
-	
+
 	/**
 	 * Executes the query specified in the {@link ExecutionRequest}.
 	 * 
@@ -42,6 +42,6 @@ public interface SopremoExecutionProtocol extends LibraryTransferProtocol, RPCPr
 	 * @return the {@link ExecutionResponse} with the state
 	 */
 	ExecutionResponse getState(SopremoID jobId) throws IOException, InterruptedException;
-	
-	Object getMetaData (SopremoID jobId, String key) throws IOException, InterruptedException;
+
+	Object getMetaData(SopremoID jobId, String key) throws IOException, InterruptedException;
 }

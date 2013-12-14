@@ -11,37 +11,37 @@ import eu.stratosphere.sopremo.packages.IRegistry;
 import eu.stratosphere.sopremo.packages.NameChooser;
 
 public class StackedRegistry<T, R extends IRegistry<T>> extends AbstractRegistry<T> implements IRegistry<T> {
-	private LinkedList<R> registryStack = new LinkedList<R>();
+	private final LinkedList<R> registryStack = new LinkedList<R>();
 
 	StackedRegistry() {
 		super();
 	}
 
-	public StackedRegistry(NameChooser nameChooser, R defaultRegistry) {
+	public StackedRegistry(final NameChooser nameChooser, final R defaultRegistry) {
 		super(nameChooser);
 		this.registryStack.add(defaultRegistry);
 	}
 
-	public StackedRegistry(R defaultRegistry) {
+	public StackedRegistry(final R defaultRegistry) {
 		super(defaultRegistry.getNameChooser());
 		this.registryStack.add(defaultRegistry);
 	}
 
 	@Override
-	public T get(String name) {
-		for (R registry : this.registryStack) {
-			T element = registry.get(name);
+	public T get(final String name) {
+		for (final R registry : this.registryStack) {
+			final T element = registry.get(name);
 			if (element != null)
 				return element;
 		}
 		return null;
 	}
 
-	public void push(R e) {
+	public void push(final R e) {
 		this.registryStack.push(e);
 	}
 
-	public void addLast(R e) {
+	public void addLast(final R e) {
 		this.registryStack.addLast(e);
 	}
 
@@ -54,20 +54,20 @@ public class StackedRegistry<T, R extends IRegistry<T>> extends AbstractRegistry
 	 * 
 	 * @return the registryStack
 	 */
-	public R getRegistry(int level) {
+	public R getRegistry(final int level) {
 		return this.registryStack.get(level);
 	}
 
 	@Override
 	public Set<String> keySet() {
 		final HashSet<String> keys = new HashSet<String>();
-		for (R registry : this.registryStack)
+		for (final R registry : this.registryStack)
 			keys.addAll(registry.keySet());
 		return keys;
 	}
 
 	@Override
-	public void put(String name, T element) {
+	public void put(final String name, final T element) {
 		this.getTopRegistry().put(name, element);
 	}
 
@@ -85,9 +85,9 @@ public class StackedRegistry<T, R extends IRegistry<T>> extends AbstractRegistry
 	}
 
 	@Override
-	public void appendAsString(Appendable appendable) throws IOException {
+	public void appendAsString(final Appendable appendable) throws IOException {
 		appendable.append("Registry with ");
-		for (R registry : this.registryStack) {
+		for (final R registry : this.registryStack) {
 			appendable.append("\n ");
 			registry.appendAsString(appendable);
 		}
@@ -102,14 +102,14 @@ public class StackedRegistry<T, R extends IRegistry<T>> extends AbstractRegistry
 	}
 
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(final Object obj) {
 		if (this == obj)
 			return true;
 		if (obj == null)
 			return false;
-		if (getClass() != obj.getClass())
+		if (this.getClass() != obj.getClass())
 			return false;
-		StackedRegistry<?, ?> other = (StackedRegistry<?, ?>) obj;
+		final StackedRegistry<?, ?> other = (StackedRegistry<?, ?>) obj;
 		return this.registryStack.equals(other.registryStack);
 	}
 }

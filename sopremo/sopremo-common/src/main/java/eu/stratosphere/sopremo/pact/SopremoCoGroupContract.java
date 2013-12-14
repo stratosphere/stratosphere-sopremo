@@ -24,8 +24,8 @@ public class SopremoCoGroupContract extends GenericCoGroupContract {
 
 	private Ordering firstInnerGroupOrdering, secondInnerGroupOrdering;
 
-	public SopremoCoGroupContract(ElementaryOperator<?> operator, Class udf, int[] keyPositions1,
-			int[] keyPositions2, String name) {
+	public SopremoCoGroupContract(final ElementaryOperator<?> operator, final Class udf, final int[] keyPositions1,
+			final int[] keyPositions2, final String name) {
 		super(udf, keyPositions1, keyPositions2, name);
 		this.operator = operator;
 	}
@@ -52,7 +52,7 @@ public class SopremoCoGroupContract extends GenericCoGroupContract {
 		return this.firstInnerGroupOrdering;
 	}
 
-	public void setFirstInnerGroupOrdering(Ordering firstInnerGroupOrdering) {
+	public void setFirstInnerGroupOrdering(final Ordering firstInnerGroupOrdering) {
 		if (firstInnerGroupOrdering == null)
 			throw new NullPointerException("firstInnerGroupOrdering must not be null");
 
@@ -63,7 +63,7 @@ public class SopremoCoGroupContract extends GenericCoGroupContract {
 		return this.secondInnerGroupOrdering;
 	}
 
-	public void setSecondInnerGroupOrdering(Ordering secondInnerGroupOrdering) {
+	public void setSecondInnerGroupOrdering(final Ordering secondInnerGroupOrdering) {
 		if (secondInnerGroupOrdering == null)
 			throw new NullPointerException("secondInnerGroupOrdering must not be null");
 

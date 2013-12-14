@@ -1,6 +1,6 @@
 /***********************************************************************************************************************
  *
- * Copyright (C) 2012 by the Stratosphere project (http://stratosphere.eu)
+ * Copyright (C) 2010 by the Stratosphere project (http://stratosphere.eu)
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -14,157 +14,208 @@
  **********************************************************************************************************************/
 package eu.stratosphere.sopremo.serialization;
 
-import it.unimi.dsi.fastutil.booleans.BooleanArrayList;
-import it.unimi.dsi.fastutil.booleans.BooleanList;
-import it.unimi.dsi.fastutil.ints.IntArrayList;
-import it.unimi.dsi.fastutil.ints.IntList;
-
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.util.Iterator;
-import java.util.List;
-
-import com.google.common.collect.Iterables;
-import com.google.common.reflect.TypeToken;
-
-import eu.stratosphere.nephele.configuration.Configuration;
 import eu.stratosphere.pact.common.contract.GenericDataSink;
 import eu.stratosphere.pact.common.contract.Ordering;
 import eu.stratosphere.pact.common.util.FieldList;
-import eu.stratosphere.pact.common.util.Visitor;
+import eu.stratosphere.pact.compiler.CompilerException;
+import eu.stratosphere.pact.compiler.CompilerPostPassException;
 import eu.stratosphere.pact.compiler.plan.candidate.Channel;
 import eu.stratosphere.pact.compiler.plan.candidate.DualInputPlanNode;
 import eu.stratosphere.pact.compiler.plan.candidate.OptimizedPlan;
 import eu.stratosphere.pact.compiler.plan.candidate.PlanNode;
 import eu.stratosphere.pact.compiler.plan.candidate.SingleInputPlanNode;
 import eu.stratosphere.pact.compiler.plan.candidate.SinkPlanNode;
-import eu.stratosphere.pact.compiler.plan.candidate.SourcePlanNode;
-import eu.stratosphere.pact.compiler.postpass.OptimizerPostPass;
-import eu.stratosphere.pact.generic.stub.AbstractStub;
+import eu.stratosphere.pact.compiler.postpass.ConflictingFieldTypeInfoException;
+import eu.stratosphere.pact.compiler.postpass.GenericRecordPostPass;
+import eu.stratosphere.pact.compiler.postpass.MissingFieldTypeInfoException;
+import eu.stratosphere.pact.generic.contract.DualInputContract;
+import eu.stratosphere.pact.generic.contract.SingleInputContract;
+import eu.stratosphere.pact.generic.types.TypeComparatorFactory;
+import eu.stratosphere.pact.generic.types.TypePairComparatorFactory;
+import eu.stratosphere.pact.generic.types.TypeSerializerFactory;
+import eu.stratosphere.sopremo.operator.PlanWithSopremoPostPass;
 import eu.stratosphere.sopremo.pact.SopremoCoGroupContract;
 import eu.stratosphere.sopremo.pact.SopremoReduceContract;
-import eu.stratosphere.sopremo.pact.SopremoStub;
-import eu.stratosphere.sopremo.pact.SopremoUtil;
 import eu.stratosphere.sopremo.type.IJsonNode;
-import eu.stratosphere.util.reflect.ReflectUtil;
 
 /**
- * Post pass implementation for the PactRecord data model. Does only type inference and creates
- * serializers and comparators.
+ * @author arvid
  */
-public class SopremoRecordPostPass implements OptimizerPostPass {
+public class SopremoRecordPostPass extends GenericRecordPostPass<Class<? extends IJsonNode>, SopremoRecordSchema> {
+
+	private SopremoRecordLayout layout;
+
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.pact.compiler.postpass.GenericRecordPostPass#createEmptySchema()
+	 */
+	@Override
+	protected SopremoRecordSchema createEmptySchema() {
+		return new SopremoRecordSchema();
+	}
+
+	private void addOrderingToSchema(final Ordering o, final SopremoRecordSchema schema) {
+		for (int i = 0; i < o.getNumberOfFields(); i++)
+			schema.add(o.getFieldNumber(i));
+	}
+
+	@Override
+	protected void getSinkSchema(final SinkPlanNode sinkPlanNode, final SopremoRecordSchema schema)
+			throws CompilerPostPassException {
+		final GenericDataSink sink = sinkPlanNode.getSinkNode().getPactContract();
+		final Ordering partitioning = sink.getPartitionOrdering();
+		final Ordering sorting = sink.getLocalOrder();
+
+		if (partitioning != null)
+			this.addOrderingToSchema(partitioning, schema);
+		if (sorting != null)
+			this.addOrderingToSchema(sorting, schema);
+	}
+
+	@Override
+	protected void getSingleInputNodeSchema(final SingleInputPlanNode node, final SopremoRecordSchema schema)
+			throws CompilerPostPassException, ConflictingFieldTypeInfoException
+	{
+		// check that we got the right types
+		final SingleInputContract<?> contract = node.getSingleInputNode().getPactContract();
+
+		// add the information to the schema
+		final int[] localPositions = contract.getKeyColumns(0);
+		for (int i = 0; i < localPositions.length; i++)
+			schema.add(localPositions[i]);
+
+		// this is a temporary fix, we should solve this more generic
+		if (contract instanceof SopremoReduceContract) {
+			final Ordering groupOrder = ((SopremoReduceContract) contract).getInnerGroupOrder();
+			if (groupOrder != null)
+				this.addOrderingToSchema(groupOrder, schema);
+		}
+	}
+
+	@Override
+	protected void getDualInputNodeSchema(final DualInputPlanNode node, final SopremoRecordSchema input1Schema,
+			final SopremoRecordSchema input2Schema)
+	{
+		// add the nodes local information. this automatically consistency checks
+		final DualInputContract<?> contract = node.getTwoInputNode().getPactContract();
+
+		final int[] localPositions1 = contract.getKeyColumns(0);
+		final int[] localPositions2 = contract.getKeyColumns(1);
+
+		if (localPositions1.length != localPositions2.length)
+			throw new CompilerException(
+				"Error: The keys for the first and second input have a different number of fields.");
+
+		for (int i = 0; i < localPositions1.length; i++)
+			input1Schema.add(localPositions1[i]);
+		for (int i = 0; i < localPositions2.length; i++)
+			input2Schema.add(localPositions2[i]);
+
+		// this is a temporary fix, we should solve this more generic
+		if (contract instanceof SopremoCoGroupContract) {
+			final Ordering groupOrder1 = ((SopremoCoGroupContract) contract).getFirstInnerGroupOrdering();
+			final Ordering groupOrder2 = ((SopremoCoGroupContract) contract).getSecondInnerGroupOrdering();
+
+			if (groupOrder1 != null)
+				this.addOrderingToSchema(groupOrder1, input1Schema);
+			if (groupOrder2 != null)
+				this.addOrderingToSchema(groupOrder2, input2Schema);
+		}
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * @see
-	 * eu.stratosphere.pact.compiler.postpass.OptimizerPostPass#postPass(eu.stratosphere.pact.compiler.plan.candidate
+	 * eu.stratosphere.pact.compiler.postpass.GenericRecordPostPass#createSerializer(eu.stratosphere.pact.compiler.postpass
+	 * .AbstractSchema)
+	 */
+	@Override
+	protected TypeSerializerFactory<?> createSerializer(final SopremoRecordSchema schema)
+			throws MissingFieldTypeInfoException {
+		return new SopremoRecordSerializerFactory(this.layout);
+	}
+
+	{
+		this.setPropagateParentSchemaDown(false);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see
+	 * eu.stratosphere.pact.compiler.postpass.GenericRecordPostPass#postPass(eu.stratosphere.pact.compiler.plan.candidate
 	 * .OptimizedPlan)
 	 */
 	@Override
-	public void postPass(OptimizedPlan plan) {
-		final Configuration parameters =
-			Iterables.getFirst(plan.getDataSinks(), null).getPactContract().getParameters();
-		final SopremoRecordLayout layout = SopremoUtil.getLayout(parameters);
+	public void postPass(final OptimizedPlan plan) {
+		this.layout = ((PlanWithSopremoPostPass) plan.getOriginalPactPlan()).getLayout();
 
-		plan.accept(new Visitor<PlanNode>() {
-			@Override
-			public boolean preVisit(PlanNode node) {
-				processNode(layout, node);
-				return true;
-			}
-
-			@Override
-			public void postVisit(PlanNode visitable) {
-			}
-		});
+		super.postPass(plan);
 	}
 
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	protected void processNode(final SopremoRecordLayout layout, PlanNode node) {
-		if (node instanceof SingleInputPlanNode) {
-			SingleInputPlanNode sn = (SingleInputPlanNode) node;
-			// parameterize the node's driver strategy
-			if (sn.getDriverStrategy().requiresComparator()) {
-				sn.setComparator(createComparator(sn.getKeys(), sn.getSortOrders(), layout));
-			}
-			// processChannel(layout, sn.getInput());
-
-			if (node instanceof SinkPlanNode)
-				setOrdering(((SingleInputPlanNode) node).getInput(),
-					((GenericDataSink) node.getPactContract()).getLocalOrder());
-			else if (node.getPactContract() instanceof SopremoReduceContract)
-				setOrdering(((SingleInputPlanNode) node).getInput(),
-					((SopremoReduceContract) node.getPactContract()).getInnerGroupOrder());
-
-		} else if (node instanceof DualInputPlanNode) {
-			DualInputPlanNode dn = (DualInputPlanNode) node;
-			// parameterize the node's driver strategy
-			if (dn.getDriverStrategy().requiresComparator()) {
-				dn.setComparator1(createComparator(dn.getKeysForInput1(), dn.getSortOrders(), layout));
-				dn.setComparator2(createComparator(dn.getKeysForInput2(), dn.getSortOrders(), layout));
-				dn.setPairComparator(SopremoRecordPairComparatorFactory.get());
-			}
-			// processChannel(layout, dn.getInput1());
-			// processChannel(layout, dn.getInput2());
-			if (node.getPactContract() instanceof SopremoCoGroupContract) {
-				setOrdering(((DualInputPlanNode) node).getInput1(),
-					((SopremoCoGroupContract) node.getPactContract()).getFirstInnerGroupOrdering());
-				setOrdering(((DualInputPlanNode) node).getInput2(),
-					((SopremoCoGroupContract) node.getPactContract()).getSecondInnerGroupOrdering());
-			}
-
-		} else if (node instanceof SourcePlanNode) {
-			((SourcePlanNode) node).setSerializer(new SopremoRecordSerializerFactory(layout));
-		}
-
-		final Iterator<Channel> inputs = node.getInputs();
-		final Class<?> userCodeClass = node.getPactContract().getUserCodeWrapper().getUserCodeClass();
-
-		if (SopremoStub.class.isAssignableFrom(userCodeClass)) {
-			final List<Type> hierarchy = ReflectUtil.getHierarchy(AbstractStub.class, userCodeClass);
-			final Class genericSopremoStubClass =
-				(Class) ((ParameterizedType) hierarchy.get(hierarchy.size() - 2)).getRawType();
-			final ParameterizedType boundType =
-				(ParameterizedType) TypeToken.of(userCodeClass).getSupertype(genericSopremoStubClass).getType();
-			for (int index = 0; inputs.hasNext(); index++)
-				processChannel(node, layout, inputs.next(), boundType.getActualTypeArguments()[index]);
-		} else
-			while (inputs.hasNext())
-				processChannel(node, layout, inputs.next(), IJsonNode.class);
+	/*
+	 * (non-Javadoc)
+	 * @see
+	 * eu.stratosphere.pact.compiler.postpass.GenericRecordPostPass#createComparator(eu.stratosphere.pact.common.util
+	 * .FieldList, boolean[], eu.stratosphere.pact.compiler.postpass.AbstractSchema)
+	 */
+	@Override
+	protected TypeComparatorFactory<?> createComparator(final FieldList fields, final boolean[] directions,
+			final SopremoRecordSchema schema) {
+		return new SopremoRecordComparatorFactory(this.layout, fields.toArray(), directions);
 	}
 
-	private void setOrdering(Channel input, Ordering localOrder) {
-		if (localOrder != null)
-			input.getLocalProperties().setOrdering(localOrder);
-	}
-
-	private void processChannel(PlanNode node, SopremoRecordLayout layout, Channel channel, Type type) {
-		if (!type.equals(layout.getTargetType())) {
-			layout = layout.copy();
-			layout.setTargetType(TypeToken.of(type).getRawType());
-		}
-		channel.setSerializer(new SopremoRecordSerializerFactory(layout));
+	/*
+	 * (non-Javadoc)
+	 * @see
+	 * eu.stratosphere.pact.compiler.postpass.GenericRecordPostPass#traverse(eu.stratosphere.pact.compiler.plan.candidate
+	 * .PlanNode, eu.stratosphere.pact.compiler.postpass.AbstractSchema, boolean)
+	 */
+	@Override
+	protected void traverse(final PlanNode node, final SopremoRecordSchema parentSchema, final boolean createUtilities) {
 		// FIXME: workaround for Stratosphere #206
-		if (node.getPactContract() instanceof SopremoReduceContract &&
-			((SopremoReduceContract) node.getPactContract()).getInnerGroupOrder() != null) {
-			final Ordering innerGroupOrder = ((SopremoReduceContract) node.getPactContract()).getInnerGroupOrder();
-			IntList keyIndices = new IntArrayList(channel.getLocalStrategyKeys().toArray());
-			BooleanList sortDirections = new BooleanArrayList(channel.getLocalStrategySortOrder());
-			keyIndices.addElements(keyIndices.size(), innerGroupOrder.getFieldPositions());
-			sortDirections.addElements(sortDirections.size(), innerGroupOrder.getFieldSortDirections());
-			channel.setLocalStrategyComparator(createComparator(new FieldList(keyIndices.toIntArray()),
-				sortDirections.toBooleanArray(), layout));
+		if (node instanceof SinkPlanNode)
+			this.setOrdering(((SingleInputPlanNode) node).getInput(),
+				((GenericDataSink) node.getPactContract()).getLocalOrder());
+		else if (node.getPactContract() instanceof SopremoReduceContract)
+			this.setOrdering(((SingleInputPlanNode) node).getInput(),
+				((SopremoReduceContract) node.getPactContract()).getInnerGroupOrder());
+		else if (node.getPactContract() instanceof SopremoCoGroupContract) {
+			this.setOrdering(((DualInputPlanNode) node).getInput1(),
+				((SopremoCoGroupContract) node.getPactContract()).getFirstInnerGroupOrdering());
+			this.setOrdering(((DualInputPlanNode) node).getInput2(),
+				((SopremoCoGroupContract) node.getPactContract()).getSecondInnerGroupOrdering());
 		}
-		else if (channel.getLocalStrategy().requiresComparator())
-			channel.setLocalStrategyComparator(createComparator(channel.getLocalStrategyKeys(),
-				channel.getLocalStrategySortOrder(), layout));
-		if (channel.getShipStrategy().requiresComparator())
-			channel.setShipStrategyComparator(createComparator(channel.getShipStrategyKeys(),
-				channel.getShipStrategySortOrder(), layout));
+		super.traverse(node, parentSchema, createUtilities);
 	}
 
-	private SopremoRecordComparatorFactory createComparator(FieldList fields, boolean[] directions,
-			SopremoRecordLayout layout) {
-		return new SopremoRecordComparatorFactory(layout, fields.toArray(), directions);
+	private void setOrdering(final Channel input, final Ordering localOrder) {
+		if (localOrder != null) {
+			input.getLocalProperties().setOrdering(localOrder);
+			input.setLocalStrategy(input.getLocalStrategy(), new FieldList(localOrder.getFieldPositions()),
+				localOrder.getFieldSortDirections());
+		}
+	}
+
+	//
+	// private SopremoRecordLayout getProjectedLayout(BitSet keyIndices) {
+	// SopremoRecordLayout layout = this.projectedLayouts.get(keyIndices);
+	// if (layout == null)
+	// this.projectedLayouts.put(keyIndices, layout = this.layout.project(keyIndices));
+	// return layout;
+	// }
+
+	/*
+	 * (non-Javadoc)
+	 * @see
+	 * eu.stratosphere.pact.compiler.postpass.GenericRecordPostPass#createPairComparator(eu.stratosphere.pact.common
+	 * .util.FieldList, eu.stratosphere.pact.common.util.FieldList, boolean[],
+	 * eu.stratosphere.pact.compiler.postpass.AbstractSchema, eu.stratosphere.pact.compiler.postpass.AbstractSchema)
+	 */
+	@Override
+	protected TypePairComparatorFactory<?, ?> createPairComparator(final FieldList fields1, final FieldList fields2,
+			final boolean[] sortDirections,
+			final SopremoRecordSchema schema1, final SopremoRecordSchema schema2) throws MissingFieldTypeInfoException {
+		return new SopremoRecordPairComparatorFactory();
 	}
 
 }

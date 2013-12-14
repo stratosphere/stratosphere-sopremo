@@ -21,7 +21,7 @@ public class DefaultNameChooser extends AbstractSopremoType implements NameChoos
 	}
 
 	@Override
-	public String[] getNames(Name nameAnnotation) {
+	public String[] getNames(final Name nameAnnotation) {
 		return this.choose(nameAnnotation.noun(), nameAnnotation.verb(), nameAnnotation.adjective(),
 			nameAnnotation.preposition());
 	}
@@ -29,10 +29,9 @@ public class DefaultNameChooser extends AbstractSopremoType implements NameChoos
 	public String[] choose(final String[] nouns, final String[] verbs, final String[] adjectives,
 			final String[] prepositions) {
 		final String[][] names = { nouns, verbs, adjectives, prepositions };
-		for (final int pos : this.preferredOrder) {
+		for (final int pos : this.preferredOrder)
 			if (names[pos] != null && names[pos].length > 0)
 				return names[pos];
-		}
 		return null;
 	}
 
@@ -41,7 +40,7 @@ public class DefaultNameChooser extends AbstractSopremoType implements NameChoos
 	 * @see eu.stratosphere.util.IAppending#appendAsString(java.lang.Appendable)
 	 */
 	@Override
-	public void appendAsString(Appendable appendable) throws IOException {
+	public void appendAsString(final Appendable appendable) throws IOException {
 		appendable.append(Arrays.toString(this.preferredOrder));
 	}
 
@@ -54,14 +53,14 @@ public class DefaultNameChooser extends AbstractSopremoType implements NameChoos
 	}
 
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(final Object obj) {
 		if (this == obj)
 			return true;
 		if (obj == null)
 			return false;
-		if (getClass() != obj.getClass())
+		if (this.getClass() != obj.getClass())
 			return false;
-		DefaultNameChooser other = (DefaultNameChooser) obj;
+		final DefaultNameChooser other = (DefaultNameChooser) obj;
 		if (!Arrays.equals(this.preferredOrder, other.preferredOrder))
 			return false;
 		return true;

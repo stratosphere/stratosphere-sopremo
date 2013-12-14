@@ -44,7 +44,7 @@ public class Selection extends ElementaryOperator<Selection> {
 
 	@Property(preferred = true)
 	@Name(preposition = "where")
-	public void setCondition(EvaluationExpression condition) {
+	public void setCondition(final EvaluationExpression condition) {
 		if (condition == null)
 			throw new NullPointerException("condition must not be null");
 
@@ -52,7 +52,7 @@ public class Selection extends ElementaryOperator<Selection> {
 			new InputSelection(0)).simplify();
 	}
 
-	public Selection withCondition(BooleanExpression condition) {
+	public Selection withCondition(final BooleanExpression condition) {
 		this.setCondition(condition);
 		return this;
 	}

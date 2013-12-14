@@ -40,7 +40,7 @@ public class ObjectCreation extends EvaluationExpression {
 	 */
 	public static final ObjectCreation CONCATENATION = new Concatenation();
 
-	private List<Mapping<?>> mappings;
+	private final List<Mapping<?>> mappings;
 
 	/**
 	 * Initializes an ObjectCreation with empty mappings.
@@ -211,7 +211,7 @@ public class ObjectCreation extends EvaluationExpression {
 	private final class MappingIterator implements ChildIterator {
 		private boolean lastReturnedWasKey = false;
 
-		private ListIterator<Mapping<?>> iterator = ObjectCreation.this.mappings.listIterator();
+		private final ListIterator<Mapping<?>> iterator = ObjectCreation.this.mappings.listIterator();
 
 		private Mapping<?> lastMapping;
 
@@ -297,7 +297,7 @@ public class ObjectCreation extends EvaluationExpression {
 		 */
 		@SuppressWarnings({ "rawtypes", "unchecked" })
 		@Override
-		public void set(EvaluationExpression e) {
+		public void set(final EvaluationExpression e) {
 			if (this.lastReturnedWasKey)
 				((Mapping) this.lastMapping).target = e;
 			else
@@ -309,7 +309,7 @@ public class ObjectCreation extends EvaluationExpression {
 		 * @see java.util.ListIterator#add(java.lang.Object)
 		 */
 		@Override
-		public void add(EvaluationExpression e) {
+		public void add(final EvaluationExpression e) {
 			throw new UnsupportedOperationException();
 		}
 
@@ -408,7 +408,7 @@ public class ObjectCreation extends EvaluationExpression {
 		 * @see eu.stratosphere.sopremo.expressions.ObjectCreation.Mapping#appendTarget(java.lang.Appendable)
 		 */
 		@Override
-		protected void appendTarget(Appendable appendable) throws IOException {
+		protected void appendTarget(final Appendable appendable) throws IOException {
 			appendable.append(this.target);
 		}
 	}
@@ -464,7 +464,7 @@ public class ObjectCreation extends EvaluationExpression {
 		 * @see eu.stratosphere.sopremo.expressions.ObjectCreation.Mapping#appendTarget(java.lang.Appendable)
 		 */
 		@Override
-		protected void appendTarget(Appendable appendable) throws IOException {
+		protected void appendTarget(final Appendable appendable) throws IOException {
 			this.target.appendAsString(appendable);
 		}
 	}
@@ -503,7 +503,7 @@ public class ObjectCreation extends EvaluationExpression {
 		 * @see eu.stratosphere.sopremo.expressions.ObjectCreation.Mapping#appendTarget(java.lang.Appendable)
 		 */
 		@Override
-		protected void appendTarget(Appendable appendable) throws IOException {
+		protected void appendTarget(final Appendable appendable) throws IOException {
 			this.target.appendAsString(appendable);
 		}
 	}
@@ -580,7 +580,7 @@ public class ObjectCreation extends EvaluationExpression {
 		public abstract PathSegmentExpression getTargetExpression();
 
 		public EvaluationExpression getTargetTagExpression() {
-			return getTargetExpression();
+			return this.getTargetExpression();
 		}
 
 		@Override

@@ -30,9 +30,9 @@ public class Unique extends ElementaryOperator<Unique> {
 	 * Initializes Unique.
 	 */
 	public Unique() {
-		setKeyExpressions(0, EvaluationExpression.VALUE);
+		this.setKeyExpressions(0, EvaluationExpression.VALUE);
 	}
-	
+
 	public static class Implementation extends SopremoReduce {
 		/*
 		 * (non-Javadoc)
@@ -40,7 +40,7 @@ public class Unique extends ElementaryOperator<Unique> {
 		 * eu.stratosphere.sopremo.pact.JsonCollector)
 		 */
 		@Override
-		protected void reduce(IStreamNode<IJsonNode> values, JsonCollector<IJsonNode> out) {
+		protected void reduce(final IStreamNode<IJsonNode> values, final JsonCollector<IJsonNode> out) {
 			out.collect(values.iterator().next());
 		}
 	}

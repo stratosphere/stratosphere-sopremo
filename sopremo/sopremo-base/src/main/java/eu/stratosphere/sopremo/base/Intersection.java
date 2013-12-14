@@ -33,7 +33,7 @@ public class Intersection extends CompositeOperator<Intersection> {
 	 * , eu.stratosphere.sopremo.EvaluationContext)
 	 */
 	@Override
-	public void addImplementation(SopremoModule module, EvaluationContext context) {
+	public void addImplementation(final SopremoModule module, final EvaluationContext context) {
 		final UnionAll merged = new UnionAll().withInputs(module.getInputs());
 		module.embed(new FilterLess().withThreshold(module.getNumInputs()).withInputs(merged));
 	}
@@ -46,10 +46,10 @@ public class Intersection extends CompositeOperator<Intersection> {
 		 * Initializes Unique.
 		 */
 		public FilterLess() {
-			setKeyExpressions(0, EvaluationExpression.VALUE);
+			this.setKeyExpressions(0, EvaluationExpression.VALUE);
 		}
 
-		public FilterLess withThreshold(int threshold) {
+		public FilterLess withThreshold(final int threshold) {
 			this.threshold = threshold;
 			return this;
 		}
@@ -69,7 +69,7 @@ public class Intersection extends CompositeOperator<Intersection> {
 		 * @param threshold
 		 *        the threshold to set
 		 */
-		public void setThreshold(int threshold) {
+		public void setThreshold(final int threshold) {
 			this.threshold = threshold;
 		}
 
@@ -82,7 +82,7 @@ public class Intersection extends CompositeOperator<Intersection> {
 			 * eu.stratosphere.sopremo.pact.JsonCollector)
 			 */
 			@Override
-			protected void reduce(IStreamNode<IJsonNode> values, JsonCollector<IJsonNode> out) {
+			protected void reduce(final IStreamNode<IJsonNode> values, final JsonCollector<IJsonNode> out) {
 				final Iterator<IJsonNode> iterator = values.iterator();
 				final IJsonNode value = iterator.next();
 				int count = 1;

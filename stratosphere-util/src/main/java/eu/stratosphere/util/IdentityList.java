@@ -32,7 +32,7 @@ public class IdentityList<E> extends AbstractList<E> {
 	 * @param elements
 	 *        the list of elements
 	 */
-	public IdentityList(Collection<? extends E> elements) {
+	public IdentityList(final Collection<? extends E> elements) {
 		this.addAll(elements);
 	}
 

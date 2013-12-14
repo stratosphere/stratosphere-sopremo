@@ -51,7 +51,7 @@ public class GenerateExpression extends EvaluationExpression {
 		this.context = SopremoEnvironment.getInstance().getEvaluationContext();
 	}
 
-	private void readObject(ObjectInputStream ois) throws IOException, ClassNotFoundException {
+	private void readObject(final ObjectInputStream ois) throws IOException, ClassNotFoundException {
 		ois.defaultReadObject();
 		this.context = SopremoEnvironment.getInstance().getEvaluationContext();
 	}

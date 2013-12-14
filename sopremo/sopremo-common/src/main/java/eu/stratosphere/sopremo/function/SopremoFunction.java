@@ -14,11 +14,11 @@ import eu.stratosphere.sopremo.type.IJsonNode;
  */
 public abstract class SopremoFunction extends Callable<IJsonNode, IArrayNode<IJsonNode>> {
 
-	public SopremoFunction(int numberOfParameters) {
+	public SopremoFunction(final int numberOfParameters) {
 		super(numberOfParameters, numberOfParameters);
 	}
 
-	public SopremoFunction(int minimumNumberOfParameters, int maximumNumberOfParameters) {
+	public SopremoFunction(final int minimumNumberOfParameters, final int maximumNumberOfParameters) {
 		super(minimumNumberOfParameters, maximumNumberOfParameters);
 	}
 
@@ -34,7 +34,7 @@ public abstract class SopremoFunction extends Callable<IJsonNode, IArrayNode<IJs
 	 * @see eu.stratosphere.sopremo.ISopremoType#toString(java.lang.StringBuilder)
 	 */
 	@Override
-	public void appendAsString(Appendable appendable) throws IOException {
+	public void appendAsString(final Appendable appendable) throws IOException {
 		appendable.append(BuiltinUtil.getNames(this,
 			SopremoEnvironment.getInstance().getEvaluationContext().getNameChooserProvider().getFunctionNameChooser())[0]);
 	}
@@ -48,7 +48,7 @@ public abstract class SopremoFunction extends Callable<IJsonNode, IArrayNode<IJs
 		return (SopremoFunction) super.clone();
 	}
 
-	public SopremoFunction withDefaultParameters(IJsonNode... defaultValues) {
+	public SopremoFunction withDefaultParameters(final IJsonNode... defaultValues) {
 		final int fixedParameters = this.getMinimumNumberOfParameters() - defaultValues.length;
 		final SopremoFunctionWithDefaultParameters sfdp =
 			new SopremoFunctionWithDefaultParameters(this, fixedParameters);
@@ -60,7 +60,7 @@ public abstract class SopremoFunction extends Callable<IJsonNode, IArrayNode<IJs
 	/**
 	 * Binds a function by setting the last X parameters to predefined values.
 	 */
-	public SopremoFunction bind(IJsonNode... boundParameters) {
+	public SopremoFunction bind(final IJsonNode... boundParameters) {
 		final int fixedParameters = this.getMinimumNumberOfParameters() - boundParameters.length;
 		final SopremoFunctionWithDefaultParameters sfdp =
 			new SopremoFunctionWithDefaultParameters(this, fixedParameters, fixedParameters);

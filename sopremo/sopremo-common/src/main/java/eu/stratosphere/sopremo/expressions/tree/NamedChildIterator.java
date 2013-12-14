@@ -24,7 +24,7 @@ public abstract class NamedChildIterator implements ChildIterator {
 
 	private final String[] childNames;
 
-	public NamedChildIterator(String... childNames) {
+	public NamedChildIterator(final String... childNames) {
 		this.childNames = childNames;
 	}
 
@@ -106,7 +106,7 @@ public abstract class NamedChildIterator implements ChildIterator {
 	 * @see java.util.ListIterator#set(java.lang.Object)
 	 */
 	@Override
-	public void set(EvaluationExpression childExpression) {
+	public void set(final EvaluationExpression childExpression) {
 		this.set(this.index, childExpression);
 	}
 
@@ -117,7 +117,7 @@ public abstract class NamedChildIterator implements ChildIterator {
 	 * @see java.util.ListIterator#add(java.lang.Object)
 	 */
 	@Override
-	public void add(EvaluationExpression childExpression) {
+	public void add(final EvaluationExpression childExpression) {
 		throw new UnsupportedOperationException();
 	}
 
@@ -129,7 +129,7 @@ public abstract class NamedChildIterator implements ChildIterator {
 	public boolean canChildBeRemoved() {
 		return false;
 	}
-	
+
 	/**
 	 * Returns the childNames.
 	 * 

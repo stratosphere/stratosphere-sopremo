@@ -62,7 +62,7 @@ public class DynamicMethod<ReturnType> extends DynamicInvokable<Method, Object, 
 	 * com.esotericsoftware.kryo.io.Input)
 	 */
 	@Override
-	public void read(Kryo kryo, Input input) {
+	public void read(final Kryo kryo, final Input input) {
 		super.read(kryo, input);
 		this.returnType = kryo.readObject(input, Class.class);
 	}
@@ -73,7 +73,7 @@ public class DynamicMethod<ReturnType> extends DynamicInvokable<Method, Object, 
 	 * com.esotericsoftware.kryo.io.Output)
 	 */
 	@Override
-	public void write(Kryo kryo, Output output) {
+	public void write(final Kryo kryo, final Output output) {
 		super.write(kryo, output);
 		kryo.writeObject(output, this.returnType);
 	}
@@ -83,7 +83,7 @@ public class DynamicMethod<ReturnType> extends DynamicInvokable<Method, Object, 
 	 * @see eu.stratosphere.util.reflect.DynamicInvokable#copy(com.esotericsoftware.kryo.Kryo)
 	 */
 	@Override
-	public DynamicMethod<ReturnType> copy(Kryo kryo) {
+	public DynamicMethod<ReturnType> copy(final Kryo kryo) {
 		final DynamicMethod<ReturnType> copy = (DynamicMethod<ReturnType>) super.copy(kryo);
 		copy.returnType = this.returnType;
 		return copy;
@@ -98,7 +98,7 @@ public class DynamicMethod<ReturnType> extends DynamicInvokable<Method, Object, 
 		return (member.getModifiers() & Modifier.STATIC) == 0;
 	}
 
-	public Method getMethod(Signature signature) {
+	public Method getMethod(final Signature signature) {
 		return super.getMember(signature);
 	}
 
@@ -126,14 +126,14 @@ public class DynamicMethod<ReturnType> extends DynamicInvokable<Method, Object, 
 	}
 
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(final Object obj) {
 		if (this == obj)
 			return true;
 		if (!super.equals(obj))
 			return false;
 		if (this.getClass() != obj.getClass())
 			return false;
-		DynamicMethod<?> other = (DynamicMethod<?>) obj;
+		final DynamicMethod<?> other = (DynamicMethod<?>) obj;
 		return this.returnType.equals(other.returnType);
 	}
 

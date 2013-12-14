@@ -1,5 +1,7 @@
 package eu.stratosphere.sopremo.pact;
 
+import com.google.common.reflect.TypeToken;
+
 import eu.stratosphere.nephele.configuration.Configuration;
 import eu.stratosphere.pact.common.stubs.Collector;
 import eu.stratosphere.pact.generic.stub.AbstractStub;
@@ -7,8 +9,9 @@ import eu.stratosphere.pact.generic.stub.GenericMapper;
 import eu.stratosphere.sopremo.EvaluationContext;
 import eu.stratosphere.sopremo.SopremoEnvironment;
 import eu.stratosphere.sopremo.serialization.SopremoRecord;
-import eu.stratosphere.sopremo.serialization.SopremoRecordLayout;
 import eu.stratosphere.sopremo.type.IJsonNode;
+import eu.stratosphere.sopremo.type.IObjectNode;
+import eu.stratosphere.sopremo.type.typed.TypedObjectNode;
 
 /**
  * An abstract implementation of the {@link GenericMapper}. GenericSopremoMap provides the functionality to convert the
@@ -21,17 +24,16 @@ public abstract class GenericSopremoMap<In extends IJsonNode, Out extends IJsonN
 
 	private JsonCollector<Out> collector;
 
+	private TypedObjectNode typedInputNode;
+
 	@Override
 	public void open(final Configuration parameters) {
 		SopremoEnvironment.getInstance().setConfiguration(parameters);
-		//	SopremoEnvironment.getInstance().setConfigurationAndContext(parameters, getRuntimeContext());
 		this.context = SopremoEnvironment.getInstance().getEvaluationContext();
-		this.collector = createCollector(SopremoEnvironment.getInstance().getLayout());
+		this.collector = new JsonCollector<>(this.context);
+		this.typedInputNode =
+			SopremoUtil.getTypedNodes(TypeToken.of(this.getClass()).getSupertype(GenericSopremoMap.class))[0];
 		SopremoUtil.configureWithTransferredState(this, GenericSopremoMap.class, parameters);
-	}
-
-	protected JsonCollector<Out> createCollector(final SopremoRecordLayout layout) {
-		return new JsonCollector<Out>(layout);
 	}
 
 	@Override
@@ -58,12 +60,14 @@ public abstract class GenericSopremoMap<In extends IJsonNode, Out extends IJsonN
 	@SuppressWarnings("unchecked")
 	@Override
 	public void map(final SopremoRecord record, final Collector<SopremoRecord> out) {
-		this.collector.configure(out, this.context);
-		final In input = (In) record.getNode();
+		final IJsonNode input = record.getNode();
 		if (SopremoUtil.LOG.isTraceEnabled())
 			SopremoUtil.LOG.trace(String.format("%s %s", this.getContext().getOperatorDescription(), input));
+		this.collector.configure(out);
 		try {
-			this.map(input, this.collector);
+			this.map(
+				(In) (this.typedInputNode == null ? input : this.typedInputNode.withBackingNode((IObjectNode) input)),
+				this.collector);
 		} catch (final RuntimeException e) {
 			SopremoUtil.LOG.error(String.format(
 				"Error occurred @ %s with %s: %s", this.getContext().getOperatorDescription(), input, e));

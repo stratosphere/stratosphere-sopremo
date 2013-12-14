@@ -57,7 +57,8 @@ public class PackageInfo extends AbstractSopremoType implements ISopremoType, Pa
 	 * @param packageName
 	 * @param packagePath
 	 */
-	public PackageInfo(String packageName, ClassLoader classLoader, NameChooserProvider nameChooserProvider) {
+	public PackageInfo(final String packageName, final ClassLoader classLoader,
+			final NameChooserProvider nameChooserProvider) {
 		this.packageName = packageName;
 		this.classLoader = new PackageClassLoader(classLoader);
 		this.operatorRegistry = new DefaultConfObjectRegistry<Operator<?>>(
@@ -78,7 +79,7 @@ public class PackageInfo extends AbstractSopremoType implements ISopremoType, Pa
 	 * 
 	 * @param packageName2
 	 */
-	public PackageInfo(String packageName, NameChooserProvider nameChooserProvider) {
+	public PackageInfo(final String packageName, final NameChooserProvider nameChooserProvider) {
 		this(packageName, new PackageClassLoader(ClassLoader.getSystemClassLoader()), nameChooserProvider);
 	}
 
@@ -92,7 +93,7 @@ public class PackageInfo extends AbstractSopremoType implements ISopremoType, Pa
 
 	private final ITypeRegistry typeRegistry;
 
-	private String packageName;
+	private final String packageName;
 
 	private File packagePath;
 
@@ -129,7 +130,7 @@ public class PackageInfo extends AbstractSopremoType implements ISopremoType, Pa
 	}
 
 	@SuppressWarnings("unchecked")
-	private void importClass(String className) {
+	private void importClass(final String className) {
 		Class<?> clazz;
 		try {
 			clazz = this.classLoader.loadClass(className);
@@ -149,45 +150,46 @@ public class PackageInfo extends AbstractSopremoType implements ISopremoType, Pa
 				this.addFunctionsAndConstants(clazz);
 			} else if (IJsonNode.class.isAssignableFrom(clazz))
 				this.getTypeRegistry().put((Class<? extends IJsonNode>) clazz);
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			QueryUtil.LOG.warn("could not load operator " + className + ": " + StringUtils.stringifyException(e));
 		}
 	}
 
 	public void importFromProject() {
-		Queue<File> directories = new LinkedList<File>();
+		final Queue<File> directories = new LinkedList<File>();
 		directories.add(this.packagePath);
 		while (!directories.isEmpty())
-			for (File file : directories.poll().listFiles())
+			for (final File file : directories.poll().listFiles())
 				if (file.isDirectory())
 					directories.add(file);
 				else if (file.getName().endsWith(".class") && !file.getName().contains("$"))
 					this.importFromFile(file, this.packagePath);
 	}
 
-	private void importFromFile(File file, File packagePath) {
-		String classFileName = file.getAbsolutePath().substring(packagePath.getAbsolutePath().length() + 1);
-		String className = classFileName.replaceAll(".class$", "").replaceAll("/|\\\\", ".").replaceAll("^\\.", "");
+	private void importFromFile(final File file, final File packagePath) {
+		final String classFileName = file.getAbsolutePath().substring(packagePath.getAbsolutePath().length() + 1);
+		final String className =
+			classFileName.replaceAll(".class$", "").replaceAll("/|\\\\", ".").replaceAll("^\\.", "");
 		this.importClass(className);
 	}
 
-	private void addFunctionsAndConstants(Class<?> clazz) {
+	private void addFunctionsAndConstants(final Class<?> clazz) {
 		this.getFunctionRegistry().put(clazz);
 		if (ConstantRegistryCallback.class.isAssignableFrom(clazz))
 			((ConstantRegistryCallback) ReflectUtil.newInstance(clazz)).registerConstants(this.getConstantRegistry());
 	}
 
-	public void importFromJar(File jarFileLocation) throws IOException {
+	public void importFromJar(final File jarFileLocation) throws IOException {
 		final JarFile jarFile = new JarFile(jarFileLocation);
 		try {
 			this.classLoader.addJar(jarFileLocation);
 
-			Enumeration<JarEntry> entries = jarFile.entries();
+			final Enumeration<JarEntry> entries = jarFile.entries();
 			while (entries.hasMoreElements()) {
-				JarEntry jarEntry = entries.nextElement();
+				final JarEntry jarEntry = entries.nextElement();
 				final String entryName = jarEntry.getName();
 				if (entryName.endsWith(".class") && !entryName.contains("$")) {
-					String className =
+					final String className =
 						entryName.replaceAll(".class$", "").replaceAll("/|\\\\", ".").replaceAll("^\\.", "");
 					this.importClass(className);
 				}
@@ -198,7 +200,7 @@ public class PackageInfo extends AbstractSopremoType implements ISopremoType, Pa
 	}
 
 	@Override
-	public void appendAsString(Appendable appendable) throws IOException {
+	public void appendAsString(final Appendable appendable) throws IOException {
 		appendable.append("Package ").append(this.packageName);
 		appendable.append("\n  ");
 		this.operatorRegistry.appendAsString(appendable);
@@ -238,13 +240,13 @@ public class PackageInfo extends AbstractSopremoType implements ISopremoType, Pa
 	 * @param packageName
 	 * @param packagePath
 	 */
-	public void importFrom(File packagePath, String packageName) throws IOException {
+	public void importFrom(final File packagePath, final String packageName) throws IOException {
 		this.packagePath = packagePath.getAbsoluteFile();
 		if (packagePath.getName().endsWith(".jar"))
 			this.importFromJar(this.packagePath);
 		// FIXME hack for testing in eclipse
 		else {
-			File jarFileInParentDirectory = getJarFileInParentDirectory(packagePath, packageName);
+			final File jarFileInParentDirectory = this.getJarFileInParentDirectory(packagePath, packageName);
 			if (jarFileInParentDirectory.exists()) {
 				this.packagePath = jarFileInParentDirectory;
 				this.importFromJar(jarFileInParentDirectory);
@@ -253,10 +255,10 @@ public class PackageInfo extends AbstractSopremoType implements ISopremoType, Pa
 		}
 	}
 
-	private File getJarFileInParentDirectory(File packagePath, final String packageName) {
+	private File getJarFileInParentDirectory(final File packagePath, final String packageName) {
 		final File[] jarsInParentDir = packagePath.getParentFile().listFiles(new FilenameFilter() {
 			@Override
-			public boolean accept(File dir, String name) {
+			public boolean accept(final File dir, final String name) {
 				return new File(dir, name).isFile() &&
 					name.toLowerCase().endsWith(".jar") &&
 					name.contains(PackageManager.getJarFileNameForPackageName(packageName));

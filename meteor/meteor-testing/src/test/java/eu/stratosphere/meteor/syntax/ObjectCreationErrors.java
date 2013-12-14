@@ -23,7 +23,7 @@ public class ObjectCreationErrors extends SyntaxTest {
 
 	@Test
 	public void testGrouping1() {
-		String query = "$daily = read from 'file://NYSE_dividends.json';\n" +
+		final String query = "$daily = read from 'file://NYSE_dividends.json';\n" +
 			"$grpd  = group $daily by $daily.symbol into { all($daily) };\n" +
 			"write $grpd to 'file://hdfs://localhost:9000/grouped';\n";
 
@@ -32,7 +32,7 @@ public class ObjectCreationErrors extends SyntaxTest {
 
 	@Test
 	public void testGrouping2() {
-		String query = "$daily = read from 'file://NYSE_dividends.json';\n" +
+		final String query = "$daily = read from 'file://NYSE_dividends.json';\n" +
 			"$grpd  = group $daily by $daily.symbol into { " +
 			"  mean: mean($daily) " +
 			"  count: count($daily) " +

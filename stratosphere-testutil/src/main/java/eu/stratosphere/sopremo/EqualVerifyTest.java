@@ -72,12 +72,11 @@ public abstract class EqualVerifyTest<T> {
 	@SuppressWarnings("unchecked")
 	@Test
 	public void testKryoSerialization() {
-		for (Object original : Iterables.concat(Arrays.asList(this.first, this.second), this.more)) {
-			testKryoSerialization(original);
-		}
+		for (final Object original : Iterables.concat(Arrays.asList(this.first, this.second), this.more))
+			this.testKryoSerialization(original);
 	}
 
-	protected void testKryoSerialization(Object original) {
+	protected void testKryoSerialization(final Object original) {
 		final Kryo kryo = KryoUtil.getKryo();
 
 		kryo.reset();
@@ -140,7 +139,7 @@ public abstract class EqualVerifyTest<T> {
 			this.first.getClass().getDeclaredMethod("equals", Object.class);
 			this.shouldComplyEqualsContract(this.first, this.second,
 				this.more.toArray((T[]) Array.newInstance(this.type, this.more.size())));
-		} catch (NoSuchMethodException e) {
+		} catch (final NoSuchMethodException e) {
 			// then we do not have to test it
 		}
 	}

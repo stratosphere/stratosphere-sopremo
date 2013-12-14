@@ -46,7 +46,7 @@ public interface Equaler<T> {
 		 * @see eu.stratosphere.pact.testing.Equaler#equal(java.lang.Object, java.lang.Object)
 		 */
 		@Override
-		public boolean equal(Object object1, Object object2) {
+		public boolean equal(final Object object1, final Object object2) {
 			return object1.equals(object2);
 		}
 	}
@@ -62,7 +62,7 @@ public interface Equaler<T> {
 		 * @see eu.stratosphere.pact.testing.Equaler#equal(java.lang.Object, java.lang.Object)
 		 */
 		@Override
-		public boolean equal(Object object1, Object object2) {
+		public boolean equal(final Object object1, final Object object2) {
 			return object1 == null ? object2 == null : object1.equals(object2);
 		}
 	}

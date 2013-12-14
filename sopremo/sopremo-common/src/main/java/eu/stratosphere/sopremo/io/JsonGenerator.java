@@ -78,10 +78,9 @@ public class JsonGenerator {
 	 */
 	public void writeTree(final IJsonNode iJsonNode) throws IOException {
 		if (iJsonNode != null) {
-			if (!this.isFirst) {
+			if (!this.isFirst)
 				this.writer.write(",\n");
-			}
-			JsonTypeWriter<IJsonNode> typeWriter = JsonTypeWriterPool.getJsonTypeWriterFor(iJsonNode);
+			final JsonTypeWriter<IJsonNode> typeWriter = JsonTypeWriterPool.getJsonTypeWriterFor(iJsonNode);
 			typeWriter.write(iJsonNode, this.writer);
 			this.isFirst = false;
 		}
@@ -149,7 +148,7 @@ public class JsonGenerator {
 		private static TextNodeTypeWriter Instance = new TextNodeTypeWriter();
 
 		@Override
-		public void write(TextNode node, Writer writer) throws IOException {
+		public void write(final TextNode node, final Writer writer) throws IOException {
 			writer.append('\"');
 			final CharSequence textValue = node;
 			for (int index = 0, count = textValue.length(); index < count; index++) {
@@ -162,6 +161,7 @@ public class JsonGenerator {
 			writer.append('\"');
 		}
 	}
+
 	/**
 	 * This class implements the JSON-Serialization for TextNodes
 	 * 
@@ -172,7 +172,7 @@ public class JsonGenerator {
 		private static NullNodeTypeWriter Instance = new NullNodeTypeWriter();
 
 		@Override
-		public void write(NullNode node, Writer writer) throws IOException {
+		public void write(final NullNode node, final Writer writer) throws IOException {
 			writer.append("null");
 		}
 	}
@@ -187,11 +187,11 @@ public class JsonGenerator {
 		private static ArrayNodeTypeWriter Instance = new ArrayNodeTypeWriter();
 
 		@Override
-		public void write(IStreamNode<?> node, Writer writer) throws IOException {
+		public void write(final IStreamNode<?> node, final Writer writer) throws IOException {
 			writer.append('[');
 
 			boolean first = true;
-			for (IJsonNode elem : node) {
+			for (final IJsonNode elem : node) {
 				if (first)
 					first = false;
 				else
@@ -214,7 +214,7 @@ public class JsonGenerator {
 		private static ObjectNodeTypeWriter Instance = new ObjectNodeTypeWriter();
 
 		@Override
-		public void write(IObjectNode node, Writer writer) throws IOException {
+		public void write(final IObjectNode node, final Writer writer) throws IOException {
 			writer.append('{');
 
 			boolean first = true;
@@ -243,7 +243,7 @@ public class JsonGenerator {
 		private static GenericNodeTypeWriter<IJsonNode> Instance = new GenericNodeTypeWriter<IJsonNode>();
 
 		@Override
-		public void write(IJsonNode node, Writer writer) throws IOException {
+		public void write(final IJsonNode node, final Writer writer) throws IOException {
 			node.appendAsString(writer);
 		}
 	}
@@ -273,7 +273,7 @@ public class JsonGenerator {
 		 *         without
 		 *         a specifically defined writer.
 		 */
-		public static JsonTypeWriter<IJsonNode> getJsonTypeWriterFor(IJsonNode aJsonNode) {
+		public static JsonTypeWriter<IJsonNode> getJsonTypeWriterFor(final IJsonNode aJsonNode) {
 			JsonTypeWriter<IJsonNode> writerToReturn = writerMap.get(aJsonNode.getType());
 			if (writerToReturn == null)
 				writerToReturn = GenericNodeTypeWriter.Instance;

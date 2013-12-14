@@ -44,7 +44,7 @@ public class DelimiterTokenizer extends AbstractTokenizer implements Tokenizer {
 	 * 
 	 * @param delimiters
 	 */
-	public DelimiterTokenizer(Collection<Character> delimiters) {
+	public DelimiterTokenizer(final Collection<Character> delimiters) {
 		this.delimiters.addAll(delimiters);
 	}
 
@@ -53,11 +53,11 @@ public class DelimiterTokenizer extends AbstractTokenizer implements Tokenizer {
 	 * 
 	 * @param delimiters
 	 */
-	public DelimiterTokenizer(Character... delimiters) {
+	public DelimiterTokenizer(final Character... delimiters) {
 		this(Arrays.asList(delimiters));
 	}
 
-	public DelimiterTokenizer addDelimiter(char delimiter) {
+	public DelimiterTokenizer addDelimiter(final char delimiter) {
 		this.delimiters.add(delimiter);
 		return this;
 	}
@@ -68,7 +68,7 @@ public class DelimiterTokenizer extends AbstractTokenizer implements Tokenizer {
 	 * @param delimiters
 	 *        the delimiters to set
 	 */
-	public void setDelimiters(Collection<Character> delimiters) {
+	public void setDelimiters(final Collection<Character> delimiters) {
 		if (delimiters == null)
 			throw new NullPointerException("delimiters must not be null");
 
@@ -81,7 +81,7 @@ public class DelimiterTokenizer extends AbstractTokenizer implements Tokenizer {
 	 * @see eu.stratosphere.sopremo.ISopremoType#toString(java.lang.StringBuilder)
 	 */
 	@Override
-	public void appendAsString(Appendable appendable) throws IOException {
+	public void appendAsString(final Appendable appendable) throws IOException {
 		appendable.append("DelimiterTokenizer [");
 		appendable.append("delimiters=");
 		TextFormat.getInstance(CharSet.class).format(this.delimiters, appendable);
@@ -94,7 +94,7 @@ public class DelimiterTokenizer extends AbstractTokenizer implements Tokenizer {
 	 * eu.stratosphere.sopremo.type.CachingArrayNode)
 	 */
 	@Override
-	public void tokenizeInto(CharSequence text, CachingArrayNode<TextNode> tokens) {
+	public void tokenizeInto(final CharSequence text, final CachingArrayNode<TextNode> tokens) {
 		tokens.setSize(0);
 
 		int textIndex = 0, tokenStart = 0;

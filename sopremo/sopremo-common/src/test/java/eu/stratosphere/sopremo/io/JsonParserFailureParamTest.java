@@ -14,7 +14,7 @@ public class JsonParserFailureParamTest {
 
 	private JsonParser parser;
 
-	private String input;
+	private final String input;
 
 	public JsonParserFailureParamTest(final String input) {
 		this.input = input;

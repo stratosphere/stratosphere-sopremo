@@ -1,18 +1,10 @@
 package eu.stratosphere.sopremo.io;
 
-import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 import eu.stratosphere.sopremo.testing.SopremoTestPlan;
-import eu.stratosphere.sopremo.type.IJsonNode;
-import eu.stratosphere.sopremo.type.JsonUtil;
-import eu.stratosphere.sopremo.type.ObjectNode;
 
 public class CsvInputFormatTest {
 

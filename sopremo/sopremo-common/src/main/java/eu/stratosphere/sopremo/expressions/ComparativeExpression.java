@@ -88,7 +88,7 @@ public class ComparativeExpression extends BinaryBooleanExpression {
 		return new NamedChildIterator("expr1", "expr2") {
 
 			@Override
-			protected void set(int index, EvaluationExpression childExpression) {
+			protected void set(final int index, final EvaluationExpression childExpression) {
 				if (index == 0)
 					ComparativeExpression.this.expr1 = childExpression;
 				else
@@ -96,7 +96,7 @@ public class ComparativeExpression extends BinaryBooleanExpression {
 			}
 
 			@Override
-			protected EvaluationExpression get(int index) {
+			protected EvaluationExpression get(final int index) {
 				if (index == 0)
 					return ComparativeExpression.this.expr1;
 				return ComparativeExpression.this.expr2;

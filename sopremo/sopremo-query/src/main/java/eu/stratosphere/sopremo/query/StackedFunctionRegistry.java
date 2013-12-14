@@ -10,19 +10,18 @@ import eu.stratosphere.sopremo.packages.NameChooser;
 public class StackedFunctionRegistry extends StackedRegistry<Callable<?, ?>, IFunctionRegistry> implements
 		IFunctionRegistry {
 
-	public StackedFunctionRegistry(NameChooser functionNameChooser) {
+	public StackedFunctionRegistry(final NameChooser functionNameChooser) {
 		super(functionNameChooser, new DefaultFunctionRegistry(functionNameChooser));
 	}
-	
+
 	/**
 	 * Initializes StackedFunctionRegistry.
-	 *
 	 */
 	StackedFunctionRegistry() {
 	}
 
 	@Override
-	public void put(Method method) {
+	public void put(final Method method) {
 		this.getTopRegistry().put(method);
 	}
 
@@ -31,12 +30,12 @@ public class StackedFunctionRegistry extends StackedRegistry<Callable<?, ?>, IFu
 	 * @see eu.stratosphere.sopremo.packages.IFunctionRegistry#put(java.lang.String, java.lang.Class, java.lang.String)
 	 */
 	@Override
-	public void put(String registeredName, Class<?> clazz, String staticMethodName) {
+	public void put(final String registeredName, final Class<?> clazz, final String staticMethodName) {
 		this.getTopRegistry().put(registeredName, clazz, staticMethodName);
 	}
 
 	@Override
-	public void put(Class<?> javaFunctions) {
+	public void put(final Class<?> javaFunctions) {
 		this.getTopRegistry().put(javaFunctions);
 	}
 }

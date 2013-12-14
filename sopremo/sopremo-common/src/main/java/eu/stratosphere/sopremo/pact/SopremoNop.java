@@ -7,11 +7,13 @@ import eu.stratosphere.sopremo.serialization.SopremoRecord;
 
 public class SopremoNop extends AbstractStub implements GenericMapper<SopremoRecord, SopremoRecord> {
 
-	/* (non-Javadoc)
-	 * @see eu.stratosphere.pact.generic.stub.GenericMapper#map(java.lang.Object, eu.stratosphere.pact.common.stubs.Collector)
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.pact.generic.stub.GenericMapper#map(java.lang.Object,
+	 * eu.stratosphere.pact.common.stubs.Collector)
 	 */
 	@Override
-	public void map(SopremoRecord record, Collector<SopremoRecord> out) throws Exception {
+	public void map(final SopremoRecord record, final Collector<SopremoRecord> out) throws Exception {
 		out.collect(record);
 	}
 }

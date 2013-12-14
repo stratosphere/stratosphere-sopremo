@@ -4,7 +4,6 @@ import eu.stratosphere.pact.common.stubs.Collector;
 import eu.stratosphere.sopremo.EvaluationContext;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
 import eu.stratosphere.sopremo.serialization.SopremoRecord;
-import eu.stratosphere.sopremo.serialization.SopremoRecordLayout;
 import eu.stratosphere.sopremo.type.IJsonNode;
 
 /**
@@ -15,11 +14,9 @@ public class JsonCollector<T extends IJsonNode> implements Collector<T> {
 
 	private Collector<SopremoRecord> collector;
 
-	private EvaluationContext context;
+	private final EvaluationExpression resultProjection;
 
-	private EvaluationExpression resultProjection = EvaluationExpression.VALUE;
-
-	private final SopremoRecord sopremoRecord;
+	private final SopremoRecord record = new SopremoRecord();
 
 	/**
 	 * Initializes a JsonCollector with the given {@link Schema}.
@@ -27,26 +24,8 @@ public class JsonCollector<T extends IJsonNode> implements Collector<T> {
 	 * @param schema
 	 *        the schema that should be used for the IJsonNode - PactRecord conversion.
 	 */
-	public JsonCollector(final SopremoRecordLayout sopremoRecordLayout) {
-		this.sopremoRecord = new SopremoRecord(sopremoRecordLayout);
-	}
-
-	/**
-	 * Returns the sopremoRecord.
-	 * 
-	 * @return the sopremoRecord
-	 */
-	SopremoRecord getSopremoRecord() {
-		return this.sopremoRecord;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.pact.common.stubs.Collector#close()
-	 */
-	@Override
-	public void close() {
-		this.collector.close();
+	public JsonCollector(final EvaluationContext context) {
+		this.resultProjection = context.getResultProjection();
 	}
 
 	/**
@@ -55,19 +34,8 @@ public class JsonCollector<T extends IJsonNode> implements Collector<T> {
 	 * @param collector
 	 *        the collector to set
 	 */
-	public void configure(final Collector<SopremoRecord> collector, final EvaluationContext context) {
-		this.collector = collector;
-		this.context = context;
-		this.resultProjection = context.getResultProjection();
-	}
-
-	/**
-	 * Returns the context.
-	 * 
-	 * @return the context
-	 */
-	public EvaluationContext getContext() {
-		return this.context;
+	public void configure(final Collector<SopremoRecord> out) {
+		this.collector = out;
 	}
 
 	/**
@@ -79,9 +47,18 @@ public class JsonCollector<T extends IJsonNode> implements Collector<T> {
 	@Override
 	public void collect(final T value) {
 		final IJsonNode resultValue = this.resultProjection.evaluate(value);
-		if (SopremoUtil.LOG.isTraceEnabled())
+		if (SopremoUtil.DEBUG && SopremoUtil.LOG.isTraceEnabled())
 			SopremoUtil.LOG.trace(String.format(" to %s", resultValue));
-		this.sopremoRecord.setNode(resultValue);
-		this.collector.collect(this.sopremoRecord);
+		this.record.setNode(resultValue);
+		this.collector.collect(this.record);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.pact.common.stubs.Collector#close()
+	 */
+	@Override
+	public void close() {
+		this.collector.close();
 	}
 }

@@ -56,9 +56,9 @@ public class ConfObjectInfo<Obj extends ConfigurableSopremoType> extends Abstrac
 		}
 
 		public Object getValue(final ConfigurableSopremoType operator, final int index) {
-			final ConfigurableSopremoType delegate = getDelegate(operator);
+			final ConfigurableSopremoType delegate = this.getDelegate(operator);
 			if (delegate != operator)
-				return getValue(delegate, index);
+				return this.getValue(delegate, index);
 			try {
 				return this.getDescriptor().getIndexedReadMethod().invoke(operator, new Object[] { index });
 			} catch (final Exception e) {
@@ -68,9 +68,9 @@ public class ConfObjectInfo<Obj extends ConfigurableSopremoType> extends Abstrac
 		}
 
 		public void setValue(final ConfigurableSopremoType operator, final int index, final Object value) {
-			final ConfigurableSopremoType delegate = getDelegate(operator);
+			final ConfigurableSopremoType delegate = this.getDelegate(operator);
 			if (delegate != operator) {
-				setValue(delegate, index, value);
+				this.setValue(delegate, index, value);
 				return;
 			}
 			try {
@@ -83,9 +83,9 @@ public class ConfObjectInfo<Obj extends ConfigurableSopremoType> extends Abstrac
 
 		public void setValue(final ConfigurableSopremoType operator, final int index,
 				final EvaluationExpression expression) {
-			final ConfigurableSopremoType delegate = getDelegate(operator);
+			final ConfigurableSopremoType delegate = this.getDelegate(operator);
 			if (delegate != operator) {
-				setValue(delegate, index, expression);
+				this.setValue(delegate, index, expression);
 				return;
 			}
 			try {
@@ -113,9 +113,9 @@ public class ConfObjectInfo<Obj extends ConfigurableSopremoType> extends Abstrac
 		}
 
 		public Object getValue(final ConfigurableSopremoType operator) {
-			final ConfigurableSopremoType delegate = getDelegate(operator);
+			final ConfigurableSopremoType delegate = this.getDelegate(operator);
 			if (delegate != operator)
-				return getValue(delegate);
+				return this.getValue(delegate);
 			try {
 				return this.getDescriptor().getReadMethod().invoke(operator, new Object[0]);
 			} catch (final Exception e) {
@@ -125,9 +125,9 @@ public class ConfObjectInfo<Obj extends ConfigurableSopremoType> extends Abstrac
 		}
 
 		public void setValue(final ConfigurableSopremoType operator, final Object value) {
-			final ConfigurableSopremoType delegate = getDelegate(operator);
+			final ConfigurableSopremoType delegate = this.getDelegate(operator);
 			if (delegate != operator) {
-				setValue(delegate, value);
+				this.setValue(delegate, value);
 				return;
 			}
 			try {
@@ -139,9 +139,9 @@ public class ConfObjectInfo<Obj extends ConfigurableSopremoType> extends Abstrac
 		}
 
 		public void setValue(final ConfigurableSopremoType operator, final EvaluationExpression expression) {
-			final ConfigurableSopremoType delegate = getDelegate(operator);
+			final ConfigurableSopremoType delegate = this.getDelegate(operator);
 			if (delegate != operator) {
-				setValue(delegate, expression);
+				this.setValue(delegate, expression);
 				return;
 			}
 			try {
@@ -204,23 +204,23 @@ public class ConfObjectInfo<Obj extends ConfigurableSopremoType> extends Abstrac
 		 * @see eu.stratosphere.sopremo.ISopremoType#appendAsString(java.lang.Appendable)
 		 */
 		@Override
-		public void appendAsString(Appendable appendable) throws IOException {
+		public void appendAsString(final Appendable appendable) throws IOException {
 			appendable.append(this.name);
 		}
 
-		protected ConfigurableSopremoType getDelegate(ConfigurableSopremoType operator) {
+		protected ConfigurableSopremoType getDelegate(final ConfigurableSopremoType operator) {
 			final ConfigurableSopremoType[] additionalBeanInfo = operator.getAdditionalBeanInfo();
 			if (additionalBeanInfo != null)
-				for (ConfigurableSopremoType delegate : additionalBeanInfo) {
+				for (final ConfigurableSopremoType delegate : additionalBeanInfo) {
 					final ConfObjectInfo<?> info = this.additionalInfoResolver.get(delegate);
 					if (info.getOperatorPropertyRegistry(delegate).get(this.name) == this)
-						return getDelegate(delegate);
+						return this.getDelegate(delegate);
 				}
 			return operator;
 		}
 	}
 
-	private Class<Obj> operatorClass;
+	private final Class<Obj> operatorClass;
 
 	private final String name;
 
@@ -241,7 +241,7 @@ public class ConfObjectInfo<Obj extends ConfigurableSopremoType> extends Abstrac
 		this.operatorClass = operatorClass;
 		try {
 			this.beanInfo = Introspector.getBeanInfo(this.operatorClass);
-		} catch (IntrospectionException e) {
+		} catch (final IntrospectionException e) {
 			throw new RuntimeException(e);
 		}
 		this.name = name;
@@ -249,7 +249,7 @@ public class ConfObjectInfo<Obj extends ConfigurableSopremoType> extends Abstrac
 		this.additionalInfoResolver = additionalInfoResolver;
 	}
 
-	public static Object coerce(EvaluationExpression expression, Class<?> propertyType) {
+	public static Object coerce(final EvaluationExpression expression, final Class<?> propertyType) {
 		if (EvaluationExpression.class.isAssignableFrom(propertyType))
 			return expression;
 		final IJsonNode constantExpressionResult = expression.evaluate(MissingNode.getInstance());
@@ -259,25 +259,25 @@ public class ConfObjectInfo<Obj extends ConfigurableSopremoType> extends Abstrac
 	private void initProperties() {
 		final PropertyDescriptor[] propertyDescriptors = this.beanInfo.getPropertyDescriptors();
 		for (final PropertyDescriptor propertyDescriptor : propertyDescriptors) {
-			Name nameAnnotation = (Name) propertyDescriptor.getValue(ConfigurableSopremoType.Info.NAME);
+			final Name nameAnnotation = (Name) propertyDescriptor.getValue(ConfigurableSopremoType.Info.NAME);
 			String[] names;
 			if (nameAnnotation == null || (names = this.propertyNameChooser.getNames(nameAnnotation)) == null)
 				names = new String[] { propertyDescriptor.getName() };
 
 			if (propertyDescriptor.getValue(ConfigurableSopremoType.Info.INPUT) == Boolean.TRUE)
-				for (String name : names)
+				for (final String name : names)
 					this.inputPropertyRegistry.put(name, new ConfObjectIndexedPropertyInfo(this.additionalInfoResolver,
 						name,
 						(IndexedPropertyDescriptor) propertyDescriptor));
 			else
-				for (String name : names)
+				for (final String name : names)
 					this.operatorPropertyRegistry.put(name, new ConfObjectPropertyInfo(this.additionalInfoResolver,
 						name,
 						propertyDescriptor));
 		}
 	}
 
-	private AtomicBoolean needsInitialization = new AtomicBoolean(true);
+	private final AtomicBoolean needsInitialization = new AtomicBoolean(true);
 
 	protected boolean needsInitialization() {
 		return this.needsInitialization.getAndSet(false);
@@ -287,13 +287,13 @@ public class ConfObjectInfo<Obj extends ConfigurableSopremoType> extends Abstrac
 		if (this.needsInitialization())
 			this.initProperties();
 		if (object != null) {
-			ConfigurableSopremoType[] additionalBeanInfos = object.getAdditionalBeanInfo();
+			final ConfigurableSopremoType[] additionalBeanInfos = object.getAdditionalBeanInfo();
 			if (additionalBeanInfos != null && additionalBeanInfos.length > 0) {
-				StackedRegistry<ConfObjectIndexedPropertyInfo, IRegistry<ConfObjectIndexedPropertyInfo>> stackedRegistry =
+				final StackedRegistry<ConfObjectIndexedPropertyInfo, IRegistry<ConfObjectIndexedPropertyInfo>> stackedRegistry =
 					new StackedRegistry<ConfObjectIndexedPropertyInfo, IRegistry<ConfObjectIndexedPropertyInfo>>(
 						this.inputPropertyRegistry);
-				for (ConfigurableSopremoType beanInfo : additionalBeanInfos) {
-					ConfObjectInfo<?> additionalConfInfo = this.additionalInfoResolver.get(beanInfo);
+				for (final ConfigurableSopremoType beanInfo : additionalBeanInfos) {
+					final ConfObjectInfo<?> additionalConfInfo = this.additionalInfoResolver.get(beanInfo);
 					stackedRegistry.push(additionalConfInfo.getInputPropertyRegistry(beanInfo));
 				}
 				return stackedRegistry;
@@ -319,13 +319,13 @@ public class ConfObjectInfo<Obj extends ConfigurableSopremoType> extends Abstrac
 		if (this.needsInitialization())
 			this.initProperties();
 		if (object != null) {
-			ConfigurableSopremoType[] additionalBeanInfos = object.getAdditionalBeanInfo();
+			final ConfigurableSopremoType[] additionalBeanInfos = object.getAdditionalBeanInfo();
 			if (additionalBeanInfos != null && additionalBeanInfos.length > 0) {
-				StackedRegistry<ConfObjectPropertyInfo, IRegistry<ConfObjectPropertyInfo>> stackedRegistry =
+				final StackedRegistry<ConfObjectPropertyInfo, IRegistry<ConfObjectPropertyInfo>> stackedRegistry =
 					new StackedRegistry<ConfObjectPropertyInfo, IRegistry<ConfObjectPropertyInfo>>(
 						this.operatorPropertyRegistry);
-				for (ConfigurableSopremoType beanInfo : additionalBeanInfos) {
-					ConfObjectInfo<?> additionalConfInfo = this.additionalInfoResolver.get(beanInfo);
+				for (final ConfigurableSopremoType beanInfo : additionalBeanInfos) {
+					final ConfObjectInfo<?> additionalConfInfo = this.additionalInfoResolver.get(beanInfo);
 					stackedRegistry.push(additionalConfInfo.getOperatorPropertyRegistry(beanInfo));
 				}
 				return stackedRegistry;
@@ -343,7 +343,7 @@ public class ConfObjectInfo<Obj extends ConfigurableSopremoType> extends Abstrac
 	 * @see eu.stratosphere.sopremo.ISopremoType#appendAsString(java.lang.Appendable)
 	 */
 	@Override
-	public void appendAsString(Appendable appendable) throws IOException {
+	public void appendAsString(final Appendable appendable) throws IOException {
 		appendable.append(this.name);
 	}
 }

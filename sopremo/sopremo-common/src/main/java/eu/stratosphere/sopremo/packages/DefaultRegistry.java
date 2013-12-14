@@ -31,23 +31,23 @@ import eu.stratosphere.sopremo.ISopremoType;
 public class DefaultRegistry<T extends ISopremoType> extends AbstractRegistry<T> implements IRegistry<T> {
 	private final Map<String, T> elements = new HashMap<String, T>();
 
-	public DefaultRegistry(NameChooser nameChooser) {
+	public DefaultRegistry(final NameChooser nameChooser) {
 		super(nameChooser);
 	}
 
 	/**
 	 * Initializes DefaultRegistry.
 	 */
-	public DefaultRegistry() {		
+	public DefaultRegistry() {
 	}
 
 	@Override
-	public T get(String name) {
+	public T get(final String name) {
 		return this.elements.get(name);
 	}
 
 	@Override
-	public void put(String name, T element) {
+	public void put(final String name, final T element) {
 		this.elements.put(name, element);
 	}
 
@@ -62,7 +62,7 @@ public class DefaultRegistry<T extends ISopremoType> extends AbstractRegistry<T>
 	 * eu.stratosphere.sopremo.ISopremoType#toString(java.lang.StringBuilder)
 	 */
 	@Override
-	public void appendAsString(Appendable appendable) throws IOException {
+	public void appendAsString(final Appendable appendable) throws IOException {
 		appendable.append("Registry: {");
 		boolean first = true;
 		for (final Entry<String, T> method : this.elements.entrySet()) {
@@ -85,14 +85,14 @@ public class DefaultRegistry<T extends ISopremoType> extends AbstractRegistry<T>
 	}
 
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(final Object obj) {
 		if (this == obj)
 			return true;
 		if (obj == null)
 			return false;
 		if (!super.equals(obj))
 			return false;
-		DefaultRegistry<?> other = (DefaultRegistry<?>) obj;
+		final DefaultRegistry<?> other = (DefaultRegistry<?>) obj;
 		return this.elements.equals(other.elements);
 	}
 }

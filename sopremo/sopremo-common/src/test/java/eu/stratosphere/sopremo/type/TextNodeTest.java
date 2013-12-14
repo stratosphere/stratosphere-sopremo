@@ -9,7 +9,7 @@ public class TextNodeTest extends JsonNodeTest<TextNode> {
 	 * @see eu.stratosphere.sopremo.EqualVerifyTest#createDefaultInstance(int)
 	 */
 	@Override
-	protected TextNode createDefaultInstance(int index) {
+	protected TextNode createDefaultInstance(final int index) {
 		return new TextNode(String.valueOf(index));
 	}
 
@@ -22,7 +22,7 @@ public class TextNodeTest extends JsonNodeTest<TextNode> {
 		Assert.assertEquals(0, new TextNode("abcdef").indexOf(new TextNode("")));
 		Assert.assertEquals(5, new TextNode("abcdef").indexOf(new TextNode("f")));
 	}
-	
+
 	@Test
 	public void shouldIndicateAbsenceOfSubstring() {
 		Assert.assertEquals(-1, new TextNode("abcdef").indexOf(new TextNode("cdefg")));

@@ -55,7 +55,7 @@ public class CoerceExpression extends PathSegmentExpression {
 	 * .EvaluationExpression)
 	 */
 	@Override
-	public CoerceExpression withInputExpression(EvaluationExpression inputExpression) {
+	public CoerceExpression withInputExpression(final EvaluationExpression inputExpression) {
 		return (CoerceExpression) super.withInputExpression(inputExpression);
 	}
 
@@ -93,7 +93,7 @@ public class CoerceExpression extends PathSegmentExpression {
 	 * .PathSegmentExpression)
 	 */
 	@Override
-	public boolean equalsSameClass(PathSegmentExpression other) {
+	public boolean equalsSameClass(final PathSegmentExpression other) {
 		return this.targetType.equals(((CoerceExpression) other).targetType);
 	}
 }

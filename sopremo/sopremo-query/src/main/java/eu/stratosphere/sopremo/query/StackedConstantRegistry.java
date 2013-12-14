@@ -7,13 +7,12 @@ import eu.stratosphere.sopremo.packages.NameChooser;
 
 public class StackedConstantRegistry extends StackedRegistry<EvaluationExpression, IConstantRegistry> implements
 		IConstantRegistry {
-	public StackedConstantRegistry(NameChooser constantNameChooser) {
+	public StackedConstantRegistry(final NameChooser constantNameChooser) {
 		super(new DefaultConstantRegistry(constantNameChooser));
 	}
-	
+
 	/**
 	 * Initializes StackedConstantRegistry.
-	 *
 	 */
 	StackedConstantRegistry() {
 	}
@@ -23,7 +22,7 @@ public class StackedConstantRegistry extends StackedRegistry<EvaluationExpressio
 	 * @see eu.stratosphere.sopremo.packages.IConstantRegistry#put(java.lang.Class)
 	 */
 	@Override
-	public void put(Class<?> javaConstants) {
+	public void put(final Class<?> javaConstants) {
 		this.getTopRegistry().put(javaConstants);
 	}
 }

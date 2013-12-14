@@ -37,7 +37,7 @@ public class StreamNode<T extends IJsonNode> extends AbstractJsonNode implements
 	private final static Iterator EMPTY_ITERATOR = Collections.EMPTY_SET.iterator();
 
 	@SuppressWarnings("unchecked")
-	public StreamNode(Iterator<? extends T> nodeIterator) {
+	public StreamNode(final Iterator<? extends T> nodeIterator) {
 		this.nodeIterator = (Iterator<T>) nodeIterator;
 	}
 
@@ -64,7 +64,7 @@ public class StreamNode<T extends IJsonNode> extends AbstractJsonNode implements
 	}
 
 	@SuppressWarnings("unchecked")
-	public void setNodeIterator(Iterator<? extends T> nodeIterator) {
+	public void setNodeIterator(final Iterator<? extends T> nodeIterator) {
 		if (nodeIterator == null)
 			throw new NullPointerException("nodeIterator must not be null");
 
@@ -105,13 +105,13 @@ public class StreamNode<T extends IJsonNode> extends AbstractJsonNode implements
 	 */
 	@SuppressWarnings("unchecked")
 	@Override
-	public void appendAsString(Appendable appendable) throws IOException {
+	public void appendAsString(final Appendable appendable) throws IOException {
 		// printing should only be done during debugging
 		appendable.append('[');
 		final Iterator<T> iterator = this.nodeIterator;
 
 		if (iterator.hasNext()) {
-			List<T> elements = new ArrayList<T>();
+			final List<T> elements = new ArrayList<T>();
 			while (iterator.hasNext())
 				elements.add((T) iterator.next().clone());
 
@@ -134,7 +134,7 @@ public class StreamNode<T extends IJsonNode> extends AbstractJsonNode implements
 	 * @see eu.stratosphere.sopremo.type.IJsonNode#copyValueFrom(eu.stratosphere.sopremo.type.IJsonNode)
 	 */
 	@Override
-	public void copyValueFrom(IJsonNode otherNode) {
+	public void copyValueFrom(final IJsonNode otherNode) {
 		throw new UnsupportedOperationException();
 	}
 
@@ -143,7 +143,7 @@ public class StreamNode<T extends IJsonNode> extends AbstractJsonNode implements
 	 * @see eu.stratosphere.sopremo.type.AbstractJsonNode#compareToSameType(eu.stratosphere.sopremo.type.IJsonNode)
 	 */
 	@Override
-	public int compareToSameType(IJsonNode other) {
+	public int compareToSameType(final IJsonNode other) {
 		return System.identityHashCode(this) - System.identityHashCode(other);
 	}
 
@@ -163,16 +163,17 @@ public class StreamNode<T extends IJsonNode> extends AbstractJsonNode implements
 		 * com.esotericsoftware.kryo.io.Output, java.lang.Object)
 		 */
 		@Override
-		public void write(Kryo kryo, Output output, StreamNode<?> object) {
+		public void write(final Kryo kryo, final Output output, final StreamNode<?> object) {
 			throw new UnsupportedOperationException(
 				"Use CoreFunctions#ALL to transform this stream array into a materialized array");
 		}
-		
-		/* (non-Javadoc)
+
+		/*
+		 * (non-Javadoc)
 		 * @see com.esotericsoftware.kryo.Serializer#copy(com.esotericsoftware.kryo.Kryo, java.lang.Object)
 		 */
 		@Override
-		public StreamNode<?> copy(Kryo kryo, StreamNode<?> original) {
+		public StreamNode<?> copy(final Kryo kryo, final StreamNode<?> original) {
 			return original;
 		}
 
@@ -182,7 +183,7 @@ public class StreamNode<T extends IJsonNode> extends AbstractJsonNode implements
 		 * com.esotericsoftware.kryo.io.Input, java.lang.Class)
 		 */
 		@Override
-		public StreamNode<?> read(Kryo kryo, Input input, Class<StreamNode<?>> type) {
+		public StreamNode<?> read(final Kryo kryo, final Input input, final Class<StreamNode<?>> type) {
 			throw new UnsupportedOperationException();
 		}
 	}

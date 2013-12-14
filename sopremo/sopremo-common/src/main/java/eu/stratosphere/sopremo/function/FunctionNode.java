@@ -22,7 +22,7 @@ import eu.stratosphere.sopremo.type.IJsonNode;
 /**
  * @author Arvid Heise
  */
-//@DefaultSerializer(FunctionNode.FunctionNodeSerializer.class)
+// @DefaultSerializer(FunctionNode.FunctionNodeSerializer.class)
 public class FunctionNode extends AbstractJsonNode {
 	private SopremoFunction function;
 
@@ -32,7 +32,7 @@ public class FunctionNode extends AbstractJsonNode {
 	public FunctionNode() {
 	}
 
-	public FunctionNode(SopremoFunction function) {
+	public FunctionNode(final SopremoFunction function) {
 		this.function = function;
 	}
 
@@ -41,7 +41,7 @@ public class FunctionNode extends AbstractJsonNode {
 	 * @see eu.stratosphere.sopremo.ISopremoType#appendAsString(java.lang.Appendable)
 	 */
 	@Override
-	public void appendAsString(Appendable appendable) throws IOException {
+	public void appendAsString(final Appendable appendable) throws IOException {
 		appendable.append('&');
 		this.function.appendAsString(appendable);
 	}
@@ -59,7 +59,7 @@ public class FunctionNode extends AbstractJsonNode {
 	 * @see eu.stratosphere.sopremo.type.AbstractJsonNode#compareToSameType(eu.stratosphere.sopremo.type.IJsonNode)
 	 */
 	@Override
-	public int compareToSameType(IJsonNode other) {
+	public int compareToSameType(final IJsonNode other) {
 		return 0;
 	}
 
@@ -68,7 +68,7 @@ public class FunctionNode extends AbstractJsonNode {
 	 * @see eu.stratosphere.sopremo.type.IJsonNode#copyValueFrom(eu.stratosphere.sopremo.type.IJsonNode)
 	 */
 	@Override
-	public void copyValueFrom(IJsonNode otherNode) {
+	public void copyValueFrom(final IJsonNode otherNode) {
 		this.function = ((FunctionNode) otherNode).function.clone();
 	}
 
@@ -99,14 +99,14 @@ public class FunctionNode extends AbstractJsonNode {
 	}
 
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(final Object obj) {
 		if (this == obj)
 			return true;
 		if (!super.equals(obj))
 			return false;
 		if (this.getClass() != obj.getClass())
 			return false;
-		FunctionNode other = (FunctionNode) obj;
+		final FunctionNode other = (FunctionNode) obj;
 		return this.function.equals(other.function);
 	}
 
@@ -116,7 +116,7 @@ public class FunctionNode extends AbstractJsonNode {
 	 * @param function
 	 *        the function to set
 	 */
-	public void setFunction(SopremoFunction function) {
+	public void setFunction(final SopremoFunction function) {
 		if (function == null)
 			throw new NullPointerException("function must not be null");
 

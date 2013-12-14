@@ -35,7 +35,7 @@ public class ObjectNodeTest extends JsonNodeTest<ObjectNode> {
 	 * @see eu.stratosphere.sopremo.EqualVerifyTest#createDefaultInstance(int)
 	 */
 	@Override
-	protected ObjectNode createDefaultInstance(int index) {
+	protected ObjectNode createDefaultInstance(final int index) {
 		return new ObjectNode().put("age", new IntNode(index));
 	}
 
@@ -96,7 +96,7 @@ public class ObjectNodeTest extends JsonNodeTest<ObjectNode> {
 	public void shouldBeEqualWithAnotherObjectNode() {
 		Assert.assertEquals(this.createObjectNode(), this.createObjectNode());
 	}
-	
+
 	/*
 	 * (non-Javadoc)
 	 * @see eu.stratosphere.sopremo.type.ObjectNodeBaseTest#initObjectNode()

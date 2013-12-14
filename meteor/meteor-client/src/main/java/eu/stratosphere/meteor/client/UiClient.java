@@ -41,17 +41,25 @@ import eu.stratosphere.sopremo.query.QueryParserException;
 
 public class UiClient extends JPanel implements ActionListener, HyperlinkListener {
 	private static final long serialVersionUID = -7604717315288253894L;
+
 	static public final String newline = "";
+
 	JButton openButton, runButton;
+
 	JTextPane logArea;
+
 	HTMLEditorKit kit;
-    HTMLDocument doc;
+
+	HTMLDocument doc;
+
 	JFileChooser fc;
 
 	private DefaultClient sopremoClient;
+
 	private File file;
 
-	public static void main(String[] args) throws ClassNotFoundException, InstantiationException, IllegalAccessException, UnsupportedLookAndFeelException {
+	public static void main(final String[] args) throws ClassNotFoundException, InstantiationException,
+			IllegalAccessException, UnsupportedLookAndFeelException {
 		UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
 		SwingUtilities.invokeLater(new Runnable() {
 			@Override
@@ -66,15 +74,15 @@ public class UiClient extends JPanel implements ActionListener, HyperlinkListene
 		super(new BorderLayout());
 
 		this.logArea = new JTextPane();
-	    this.kit = new HTMLEditorKit();
-	    this.doc = new HTMLDocument();
-	    this.logArea.setEditorKit(this.kit);
-	    this.logArea.setDocument(this.doc);
-	    this.logArea.setEditable(false);
+		this.kit = new HTMLEditorKit();
+		this.doc = new HTMLDocument();
+		this.logArea.setEditorKit(this.kit);
+		this.logArea.setDocument(this.doc);
+		this.logArea.setEditable(false);
 		this.logArea.addHyperlinkListener(this);
 
-		JScrollPane logScrollPane = new JScrollPane(this.logArea);
-		logScrollPane.setPreferredSize( new Dimension( 400, 200 ) );
+		final JScrollPane logScrollPane = new JScrollPane(this.logArea);
+		logScrollPane.setPreferredSize(new Dimension(400, 200));
 
 		this.fc = new JFileChooser();
 
@@ -84,12 +92,12 @@ public class UiClient extends JPanel implements ActionListener, HyperlinkListene
 		this.runButton = new JButton("RunScript...");
 		this.runButton.addActionListener(this);
 
-		JPanel buttonPanel = new JPanel();
+		final JPanel buttonPanel = new JPanel();
 		buttonPanel.add(this.openButton);
 		buttonPanel.add(this.runButton);
 
-		add(buttonPanel, BorderLayout.PAGE_START);
-		add(logScrollPane, BorderLayout.CENTER);
+		this.add(buttonPanel, BorderLayout.PAGE_START);
+		this.add(logScrollPane, BorderLayout.CENTER);
 	}
 
 	/**
@@ -97,7 +105,7 @@ public class UiClient extends JPanel implements ActionListener, HyperlinkListene
 	 * invoked from the event dispatch thread.
 	 */
 	private static void createAndShowGUI() {
-		JFrame frame = new JFrame("Meteor UI - Client");
+		final JFrame frame = new JFrame("Meteor UI - Client");
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
 		frame.add(new UiClient());
@@ -105,56 +113,56 @@ public class UiClient extends JPanel implements ActionListener, HyperlinkListene
 		frame.pack();
 		frame.setVisible(true);
 	}
-	
+
 	@Override
-	public void actionPerformed(ActionEvent e) {
+	public void actionPerformed(final ActionEvent e) {
 
 		if (e.getSource() == this.openButton) {
-			int returnVal = this.fc.showOpenDialog(UiClient.this);
+			final int returnVal = this.fc.showOpenDialog(UiClient.this);
 
 			if (returnVal == JFileChooser.APPROVE_OPTION) {
 				this.file = this.fc.getSelectedFile();
-				clearLog();
-				log("Selected script: " + this.file.getAbsolutePath() + "." + newline);
-			} else {
-				log("No script selected." + newline);
-			}
+				this.clearLog();
+				this.log("Selected script: " + this.file.getAbsolutePath() + "." + newline);
+			} else
+				this.log("No script selected." + newline);
 
 			// Handle run button action.
 		} else if (e.getSource() == this.runButton) {
-			configureClient();
-			if (this.file == null || !this.file.exists()) {
-				log("No file given or does not exist." + newline);
-			} else {
-				MeteorScriptRun task = new MeteorScriptRun();
+			this.configureClient();
+			if (this.file == null || !this.file.exists())
+				this.log("No file given or does not exist." + newline);
+			else {
+				final MeteorScriptRun task = new MeteorScriptRun();
 				task.execute();
 				this.runButton.setEnabled(false);
-				clearLog();
+				this.clearLog();
 			}
 		}
 	}
 
-	public void log(String logEntry) {
-		Pattern pathPattern = Pattern.compile("/([a-zA-Z_\\d]*/)*[a-zA-Z_\\d]+.[a-zA-Z\\d]+");
-		Matcher m = pathPattern.matcher(logEntry);
+	public void log(final String logEntry) {
+		final Pattern pathPattern = Pattern.compile("/([a-zA-Z_\\d]*/)*[a-zA-Z_\\d]+.[a-zA-Z\\d]+");
+		final Matcher m = pathPattern.matcher(logEntry);
 		String logEntryWithLinks = logEntry;
 		while (m.find()) {
-		    String s = m.group(0);
-		    //TODO handle duplicate links within the same logEntry
-		    logEntryWithLinks = logEntryWithLinks.replace(s, "<font color='red'><a href='"+s+"'>"+s+"</a></font>");
+			final String s = m.group(0);
+			// TODO handle duplicate links within the same logEntry
+			logEntryWithLinks =
+				logEntryWithLinks.replace(s, "<font color='red'><a href='" + s + "'>" + s + "</a></font>");
 		}
-	    try {
-	    	this.kit.insertHTML(this.doc, this.doc.getLength(), logEntryWithLinks, 0, 0, null);
-		} catch (BadLocationException e) {
+		try {
+			this.kit.insertHTML(this.doc, this.doc.getLength(), logEntryWithLinks, 0, 0, null);
+		} catch (final BadLocationException e) {
 			e.printStackTrace();
-		} catch (IOException e) {
+		} catch (final IOException e) {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public void clearLog() {
 		this.doc = new HTMLDocument();
-	    this.logArea.setDocument(this.doc);
+		this.logArea.setDocument(this.doc);
 	}
 
 	public void reenableRunButton() {
@@ -165,52 +173,51 @@ public class UiClient extends JPanel implements ActionListener, HyperlinkListene
 		GlobalConfiguration.loadConfiguration(null);
 		this.sopremoClient = new DefaultClient(GlobalConfiguration.getConfiguration());
 
-		int updateTime = 1000;
+		final int updateTime = 1000;
 		this.sopremoClient.setUpdateTime(updateTime);
 
-		this.sopremoClient.setServerAddress(new InetSocketAddress("localhost", SopremoConstants.DEFAULT_SOPREMO_SERVER_IPC_PORT));
+		this.sopremoClient.setServerAddress(new InetSocketAddress("localhost",
+			SopremoConstants.DEFAULT_SOPREMO_SERVER_IPC_PORT));
 
 		this.sopremoClient.setExecutionMode(ExecutionMode.RUN_WITH_STATISTICS);
 	}
 
 	@Override
-	public void hyperlinkUpdate(HyperlinkEvent event) {
-		if (event.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
+	public void hyperlinkUpdate(final HyperlinkEvent event) {
+		if (event.getEventType() == HyperlinkEvent.EventType.ACTIVATED)
 			if (Desktop.isDesktopSupported()) {
-				Desktop desktop = Desktop.getDesktop();
-				if (desktop.isSupported(Desktop.Action.OPEN)) {
+				final Desktop desktop = Desktop.getDesktop();
+				if (desktop.isSupported(Desktop.Action.OPEN))
 					try {
-						File file = new File(event.getDescription());
+						final File file = new File(event.getDescription());
 						desktop.open(file);
-					} catch (IOException e) {
+					} catch (final IOException e) {
 					}
-				}
 			}
-		}
 
 	}
 
 	class MeteorScriptRun extends SwingWorker<Object, String> {
-		private SopremoPlan parseScript(File file) {
+		private SopremoPlan parseScript(final File file) {
 
 			try {
-				return new QueryParser().withInputDirectory(file.getAbsoluteFile().getParentFile()).tryParse(new FileInputStream(file));
-			} catch (IOException e) {
-				publish("Error while parsing script" + UiClient.newline);
-				publish(e.getMessage()+UiClient.newline);
+				return new QueryParser().withInputDirectory(file.getAbsoluteFile().getParentFile()).tryParse(
+					new FileInputStream(file));
+			} catch (final IOException e) {
+				this.publish("Error while parsing script" + UiClient.newline);
+				this.publish(e.getMessage() + UiClient.newline);
 				return null;
-			} catch (QueryParserException e){
-				publish("Error while parsing script" + UiClient.newline);
-				publish(e.getMessage()+UiClient.newline);
+			} catch (final QueryParserException e) {
+				this.publish("Error while parsing script" + UiClient.newline);
+				this.publish(e.getMessage() + UiClient.newline);
 				return null;
 			}
 		}
 
 		@Override
-		protected void process(List<String> chunks) {
-			for (String entry : chunks) {
-				log(entry);
-			}
+		protected void process(final List<String> chunks) {
+			for (final String entry : chunks)
+				UiClient.this.log(entry);
 		}
 
 		@Override
@@ -218,19 +225,21 @@ public class UiClient extends JPanel implements ActionListener, HyperlinkListene
 			final SopremoPlan plan = this.parseScript(UiClient.this.file);
 			UiClient.this.sopremoClient.submit(plan, new StateListener() {
 				@Override
-				public void stateChanged(ExecutionState executionState, String detail) {
+				public void stateChanged(final ExecutionState executionState, final String detail) {
 					switch (executionState) {
 					case ENQUEUED:
-						publish("Submitted script " + UiClient.this.file.getAbsolutePath() + UiClient.newline);
+						MeteorScriptRun.this.publish("Submitted script " + UiClient.this.file.getAbsolutePath() +
+							UiClient.newline);
 						break;
 					case RUNNING:
-						publish(UiClient.newline + "Executing script " + UiClient.this.file.getAbsolutePath() + UiClient.newline);
+						MeteorScriptRun.this.publish(UiClient.newline + "Executing script " +
+							UiClient.this.file.getAbsolutePath() + UiClient.newline);
 						break;
 					case FINISHED:
-						publish(UiClient.newline + detail + UiClient.newline);
+						MeteorScriptRun.this.publish(UiClient.newline + detail + UiClient.newline);
 						break;
 					case ERROR:
-						publish(detail + UiClient.newline);
+						MeteorScriptRun.this.publish(detail + UiClient.newline);
 						break;
 					default:
 						break;
@@ -238,8 +247,8 @@ public class UiClient extends JPanel implements ActionListener, HyperlinkListene
 				}
 
 				@Override
-				protected void stateNotChanged(ExecutionState state, String detail) {
-					publish(".");
+				protected void stateNotChanged(final ExecutionState state, final String detail) {
+					MeteorScriptRun.this.publish(".");
 				}
 			}, true);
 
@@ -249,7 +258,7 @@ public class UiClient extends JPanel implements ActionListener, HyperlinkListene
 
 		@Override
 		protected void done() {
-			reenableRunButton();
+			UiClient.this.reenableRunButton();
 		}
 	}
 }

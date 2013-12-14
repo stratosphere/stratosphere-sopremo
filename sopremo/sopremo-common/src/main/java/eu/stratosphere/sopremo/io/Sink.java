@@ -52,8 +52,8 @@ public class Sink extends ElementaryOperator<Sink> {
 
 		if (format.getOutputFormat() == null)
 			throw new IllegalArgumentException("given format does not support writing");
-		checkPath();
-		addPropertiesFrom(format);
+		this.checkPath();
+		this.addPropertiesFrom(format);
 	}
 
 	/**
@@ -100,15 +100,15 @@ public class Sink extends ElementaryOperator<Sink> {
 	 *        the format to set
 	 */
 	@Property(preferred = true)
-	public void setFormat(SopremoFormat format) {
+	public void setFormat(final SopremoFormat format) {
 		if (format == null)
 			throw new NullPointerException("format must not be null");
 		if (format.getOutputFormat() == null)
 			throw new IllegalArgumentException("writing for the given format is not supported");
 
-		removePropertiesFrom(this.format);
+		this.removePropertiesFrom(this.format);
 		this.format = format;
-		addPropertiesFrom(format);
+		this.addPropertiesFrom(format);
 	}
 
 	/**
@@ -117,7 +117,7 @@ public class Sink extends ElementaryOperator<Sink> {
 	 * @param globalSortingKey
 	 *        the globalSortingKey to set
 	 */
-	public void setGlobalSortingKey(List<OrderingExpression> globalSortingKey) {
+	public void setGlobalSortingKey(final List<OrderingExpression> globalSortingKey) {
 		if (globalSortingKey == null)
 			throw new NullPointerException("globalSortingKey must not be null");
 
@@ -130,7 +130,7 @@ public class Sink extends ElementaryOperator<Sink> {
 	 * @param localSortingKey
 	 *        the localSortingKey to set
 	 */
-	public void setLocalSortingKey(List<OrderingExpression> localSortingKey) {
+	public void setLocalSortingKey(final List<OrderingExpression> localSortingKey) {
 		if (localSortingKey == null)
 			throw new NullPointerException("localSortingKey must not be null");
 
@@ -155,13 +155,13 @@ public class Sink extends ElementaryOperator<Sink> {
 		return this.globalSortingKey;
 	}
 
-	public Sink withLocalSortingKey(List<OrderingExpression> localSortingKey) {
-		setLocalSortingKey(localSortingKey);
+	public Sink withLocalSortingKey(final List<OrderingExpression> localSortingKey) {
+		this.setLocalSortingKey(localSortingKey);
 		return this;
 	}
 
-	public Sink withGlobalSortingKey(List<OrderingExpression> sortingKey) {
-		setGlobalSortingKey(sortingKey);
+	public Sink withGlobalSortingKey(final List<OrderingExpression> sortingKey) {
+		this.setGlobalSortingKey(sortingKey);
 		return this;
 	}
 
@@ -172,9 +172,9 @@ public class Sink extends ElementaryOperator<Sink> {
 	@Override
 	public Set<EvaluationExpression> getAllKeyExpressions() {
 		final Set<EvaluationExpression> allKeyExpressions = super.getAllKeyExpressions();
-		for (OrderingExpression ordering : this.globalSortingKey)
+		for (final OrderingExpression ordering : this.globalSortingKey)
 			allKeyExpressions.add(ordering.getPath());
-		for (OrderingExpression ordering : this.localSortingKey)
+		for (final OrderingExpression ordering : this.localSortingKey)
 			allKeyExpressions.add(ordering.getPath());
 		return allKeyExpressions;
 	}
@@ -185,21 +185,20 @@ public class Sink extends ElementaryOperator<Sink> {
 	}
 
 	@Override
-	public PactModule asPactModule(final EvaluationContext context, SopremoRecordLayout layout) {
+	public PactModule asPactModule(final EvaluationContext context, final SopremoRecordLayout layout) {
 		final PactModule pactModule = new PactModule(1, 0);
 
 		final Class<? extends OutputFormat<SopremoRecord>> outputFormat = this.format.getOutputFormat();
 		final GenericDataSink contract = new GenericDataSink(outputFormat, this.getName());
 		this.format.configureForOutput(contract.getParameters(), this.outputPath);
 		SopremoUtil.setEvaluationContext(contract.getParameters(), context);
-		SopremoUtil.setLayout(contract.getParameters(), layout);
-		contract.setDegreeOfParallelism(getDegreeOfParallelism());
+		contract.setDegreeOfParallelism(this.getDegreeOfParallelism());
 
 		contract.setInput(pactModule.getInput(0));
-		if(!this.globalSortingKey.isEmpty())
-			contract.setGlobalOrder(createOrdering(layout, this.globalSortingKey));
-		if(!this.localSortingKey.isEmpty())
-			contract.setLocalOrder(createOrdering(layout, this.localSortingKey));
+		if (!this.globalSortingKey.isEmpty())
+			contract.setGlobalOrder(this.createOrdering(layout, this.globalSortingKey));
+		if (!this.localSortingKey.isEmpty())
+			contract.setLocalOrder(this.createOrdering(layout, this.localSortingKey));
 		pactModule.addInternalOutput(contract);
 		return pactModule;
 	}
@@ -228,12 +227,12 @@ public class Sink extends ElementaryOperator<Sink> {
 	 * @param outputPath
 	 *        the outputPath to set
 	 */
-	public void setOutputPath(String outputPath) {
+	public void setOutputPath(final String outputPath) {
 		if (outputPath == null)
 			throw new NullPointerException("outputPath must not be null");
 
 		this.outputPath = outputPath;
-		checkPath();
+		this.checkPath();
 	}
 
 	/**
@@ -245,7 +244,7 @@ public class Sink extends ElementaryOperator<Sink> {
 			if (uri.getScheme() == null)
 				throw new IllegalStateException(
 					"File name of source does not have a valid schema (such as hdfs or file): " + this.outputPath);
-		} catch (URISyntaxException e) {
+		} catch (final URISyntaxException e) {
 			throw new IllegalArgumentException("Invalid path", e);
 		}
 	}
@@ -257,7 +256,7 @@ public class Sink extends ElementaryOperator<Sink> {
 	 *        the outputPath to set
 	 * @return
 	 */
-	public Sink withOutputPath(String outputPath) {
+	public Sink withOutputPath(final String outputPath) {
 		this.setOutputPath(outputPath);
 		return this;
 	}
@@ -289,8 +288,8 @@ public class Sink extends ElementaryOperator<Sink> {
 	 * @see eu.stratosphere.sopremo.operator.ElementaryOperator#appendAsString(java.lang.Appendable)
 	 */
 	@Override
-	public void appendAsString(Appendable appendable) throws IOException {
-		appendable.append(getName());
+	public void appendAsString(final Appendable appendable) throws IOException {
+		appendable.append(this.getName());
 		appendable.append(" [");
 		if (this.outputPath != null)
 			appendable.append(this.outputPath).append(", ");

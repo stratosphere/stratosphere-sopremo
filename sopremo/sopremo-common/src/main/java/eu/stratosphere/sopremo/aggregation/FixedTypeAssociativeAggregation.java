@@ -21,7 +21,7 @@ import eu.stratosphere.sopremo.type.IJsonNode;
  */
 public abstract class FixedTypeAssociativeAggregation<ElementType extends IJsonNode> extends
 		AssociativeAggregation<ElementType> {
-	public FixedTypeAssociativeAggregation(ElementType initialAggregate) {
+	public FixedTypeAssociativeAggregation(final ElementType initialAggregate) {
 		super(initialAggregate);
 	}
 
@@ -30,7 +30,7 @@ public abstract class FixedTypeAssociativeAggregation<ElementType extends IJsonN
 	 * @see eu.stratosphere.sopremo.aggregation.Aggregation#aggregate(eu.stratosphere.sopremo.type.IJsonNode)
 	 */
 	@Override
-	public void aggregate(IJsonNode element) {
+	public void aggregate(final IJsonNode element) {
 		this.aggregateInto(this.aggregator, element);
 	}
 
@@ -47,7 +47,7 @@ public abstract class FixedTypeAssociativeAggregation<ElementType extends IJsonN
 	 * eu.stratosphere.sopremo.type.IJsonNode)
 	 */
 	@Override
-	protected ElementType aggregate(ElementType aggregator, IJsonNode element) {
+	protected ElementType aggregate(final ElementType aggregator, final IJsonNode element) {
 		return null;
 	}
 }

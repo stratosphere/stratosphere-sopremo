@@ -60,20 +60,20 @@ public class JsonFormat extends SopremoFormat {
 		 * , eu.stratosphere.nephele.fs.FileInputSplit)
 		 */
 		@Override
-		protected void open(FSDataInputStream stream, FileInputSplit split) {
+		protected void open(final FSDataInputStream stream, final FileInputSplit split) {
 			// we currently have no method to handle multiple splits
-			if(split.getStart() != 0) {
+			if (split.getStart() != 0) {
 				this.endReached();
 				return;
-			}				
-			
+			}
+
 			try {
 				this.parser = new JsonParser(new InputStreamReader(stream, this.getEncoding()));
 				this.parser.setWrappingArraySkipping(true);
 
 				if (this.parser.checkEnd())
 					this.endReached();
-			} catch (UnsupportedEncodingException e) {
+			} catch (final UnsupportedEncodingException e) {
 				// cannot happen as encoding is validated in SopremoFormat
 			}
 		}
@@ -95,7 +95,7 @@ public class JsonFormat extends SopremoFormat {
 		 * @see eu.stratosphere.pact.common.io.FileInputFormat#createInputSplits(int)
 		 */
 		@Override
-		public FileInputSplit[] createInputSplits(int minNumSplits) throws IOException {
+		public FileInputSplit[] createInputSplits(final int minNumSplits) throws IOException {
 			final Path path = this.filePath;
 			final FileSystem fs = path.getFileSystem();
 			final FileStatus pathFile = fs.getFileStatus(path);
@@ -161,7 +161,7 @@ public class JsonFormat extends SopremoFormat {
 		 * FSDataOutputStream, int)
 		 */
 		@Override
-		protected void open(FSDataOutputStream stream, int taskNumber) throws IOException {
+		protected void open(final FSDataOutputStream stream, final int taskNumber) throws IOException {
 			this.generator = new JsonGenerator(new OutputStreamWriter(stream, this.getEncoding()));
 			this.generator.writeStartArray();
 		}
@@ -173,7 +173,7 @@ public class JsonFormat extends SopremoFormat {
 		 * IJsonNode)
 		 */
 		@Override
-		public void writeValue(IJsonNode value) throws IOException {
+		public void writeValue(final IJsonNode value) throws IOException {
 			this.generator.writeTree(value);
 		}
 	}

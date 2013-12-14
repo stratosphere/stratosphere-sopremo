@@ -22,16 +22,16 @@ import eu.stratosphere.util.Equaler;
  * @author arv
  */
 public class PactRecordEqualer implements Equaler<PactRecord> {
-	private Class<? extends Value>[] schema;
+	private final Class<? extends Value>[] schema;
 
 	/**
 	 * Initializes PactRecordEqualer.
 	 */
-	public PactRecordEqualer(Class<? extends Value>[] schema) {
+	public PactRecordEqualer(final Class<? extends Value>[] schema) {
 		this.schema = schema;
 	}
 
-	public PactRecordEqualer(Class<? extends Value> firstFieldType, Class<?>... otherFieldTypes) {
+	public PactRecordEqualer(final Class<? extends Value> firstFieldType, final Class<?>... otherFieldTypes) {
 		this.schema = SchemaUtils.combineSchema(firstFieldType, otherFieldTypes);
 	}
 
@@ -40,11 +40,12 @@ public class PactRecordEqualer implements Equaler<PactRecord> {
 	 * @see eu.stratosphere.pact.testing.Equaler#equal(java.lang.Object, java.lang.Object)
 	 */
 	@Override
-	public boolean equal(PactRecord object1, PactRecord object2) {
+	public boolean equal(final PactRecord object1, final PactRecord object2) {
 		return recordsEqual(object1, object2, this.schema);
 	}
 
-	public static boolean recordsEqual(PactRecord object1, PactRecord object2, Class<? extends Value>[] schema) {
+	public static boolean recordsEqual(final PactRecord object1, final PactRecord object2,
+			final Class<? extends Value>[] schema) {
 		if (object1.getNumFields() != schema.length)
 			return false;
 

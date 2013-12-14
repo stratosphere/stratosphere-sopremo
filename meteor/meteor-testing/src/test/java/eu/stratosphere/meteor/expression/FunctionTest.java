@@ -14,7 +14,6 @@
  **********************************************************************************************************************/
 package eu.stratosphere.meteor.expression;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 import eu.stratosphere.meteor.MeteorParseTest;
@@ -37,7 +36,7 @@ public class FunctionTest extends MeteorParseTest {
 
 	@Test
 	public void testFunctionDefinition() {
-		final SopremoPlan actualPlan = parseScript("square = fn(x) { x * x };\n" +
+		final SopremoPlan actualPlan = this.parseScript("square = fn(x) { x * x };\n" +
 			"$input = read from 'file://input.json';\n" +
 			"$result = transform $input into { squared: square($input) };\n" +
 			"write $result to 'file://output.json'; ");
@@ -59,7 +58,7 @@ public class FunctionTest extends MeteorParseTest {
 	@Test
 	public void testFunctionImport() throws SecurityException, NoSuchMethodException {
 		final SopremoPlan actualPlan =
-			parseScript("testudf = javaudf('" + this.getClass().getName() + ".udfTest');\n" +
+			this.parseScript("testudf = javaudf('" + this.getClass().getName() + ".udfTest');\n" +
 				"$input = read from 'file://input.json';\n" +
 				"$result = transform $input into { squared: testudf($input) };\n" +
 				"write $result to 'file://output.json'; ");

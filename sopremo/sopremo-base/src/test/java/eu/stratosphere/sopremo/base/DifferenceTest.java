@@ -10,7 +10,7 @@ public class DifferenceTest extends SopremoOperatorTestBase<Difference> {
 	 * @see eu.stratosphere.sopremo.EqualVerifyTest#createDefaultInstance(int)
 	 */
 	@Override
-	protected Difference createDefaultInstance(int index) {
+	protected Difference createDefaultInstance(final int index) {
 		return new Difference();
 	}
 

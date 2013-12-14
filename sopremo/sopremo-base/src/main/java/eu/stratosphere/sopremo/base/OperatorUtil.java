@@ -27,7 +27,7 @@ import eu.stratosphere.sopremo.operator.JsonStream;
  * @author Arvid Heise
  */
 public class OperatorUtil {
-	public static JsonStream positionEncode(JsonStream input, int index, int maxIndex) {
+	public static JsonStream positionEncode(final JsonStream input, final int index, final int maxIndex) {
 		final EvaluationExpression[] elements = new EvaluationExpression[maxIndex];
 		Arrays.fill(elements, ConstantExpression.MISSING);
 		elements[index] = EvaluationExpression.VALUE;

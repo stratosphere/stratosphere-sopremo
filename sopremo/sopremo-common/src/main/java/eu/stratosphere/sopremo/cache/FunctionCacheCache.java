@@ -32,7 +32,7 @@ public class FunctionCacheCache implements ISopremoCache {
 			};
 		};
 
-	public FunctionCache get(SopremoFunction function) {
+	public FunctionCache get(final SopremoFunction function) {
 		final FunctionCache cache = this.caches.get().get(function);
 		if (cache != null)
 			return cache;

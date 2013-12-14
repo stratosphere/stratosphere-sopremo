@@ -57,12 +57,12 @@ public class TraceExpression extends EvaluationExpression {
 		return new NamedChildIterator("traceExpression") {
 
 			@Override
-			protected void set(int index, EvaluationExpression e) {
+			protected void set(final int index, final EvaluationExpression e) {
 				TraceExpression.this.traceExpression = e;
 			}
 
 			@Override
-			protected EvaluationExpression get(int index) {
+			protected EvaluationExpression get(final int index) {
 				return TraceExpression.this.traceExpression;
 			}
 		};

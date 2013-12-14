@@ -18,23 +18,38 @@ import java.util.Collection;
 
 import eu.stratosphere.pact.common.contract.GenericDataSink;
 import eu.stratosphere.pact.common.plan.Plan;
+import eu.stratosphere.sopremo.serialization.SopremoRecordLayout;
 import eu.stratosphere.sopremo.serialization.SopremoRecordPostPass;
 
 /**
  * @author arv
- *
  */
 public final class PlanWithSopremoPostPass extends Plan {
+	private final SopremoRecordLayout layout;
+
 	/**
 	 * Initializes PlanWithSopremoPostPass.
-	 *
+	 * 
 	 * @param sinks
 	 */
-	public PlanWithSopremoPostPass(Collection<GenericDataSink> sinks) {
+	public PlanWithSopremoPostPass(final SopremoRecordLayout layout, final Collection<GenericDataSink> sinks) {
 		super(sinks);
+		if(layout == null)
+			throw new NullPointerException();
+		this.layout = layout;
 	}
 
-	/* (non-Javadoc)
+	/**
+	 * Returns the layout.
+	 * 
+	 * @return the layout
+	 */
+	public SopremoRecordLayout getLayout() {
+		return this.layout;
+	}
+
+	/*
+	 * (non-Javadoc)
 	 * @see eu.stratosphere.pact.common.plan.Plan#getPostPassClassName()
 	 */
 	@Override

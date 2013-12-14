@@ -21,8 +21,8 @@ public class Replace extends ReplaceBase<Replace> {
 	 * @see eu.stratosphere.sopremo.operator.CompositeOperator#asModule(eu.stratosphere.sopremo.EvaluationContext)
 	 */
 	@Override
-	public void addImplementation(SopremoModule module, EvaluationContext context) {
-		EvaluationExpression defaultExpression =
+	public void addImplementation(final SopremoModule module, final EvaluationContext context) {
+		final EvaluationExpression defaultExpression =
 			this.getDefaultExpression() == EvaluationExpression.VALUE ? this.getReplaceExpression()
 				: this.getDefaultExpression();
 		AtomarReplaceBase<?> replaceAtom;

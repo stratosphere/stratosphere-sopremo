@@ -106,7 +106,7 @@ public class TernaryExpression extends PathSegmentExpression {
 	 * eu.stratosphere.sopremo.expressions.PathSegmentExpression#evaluateSegment(eu.stratosphere.sopremo.type.IJsonNode)
 	 */
 	@Override
-	protected IJsonNode evaluateSegment(IJsonNode node) {
+	protected IJsonNode evaluateSegment(final IJsonNode node) {
 		// no need to reuse the target of the coercion - a boolean node is never created anew
 		if (TypeCoercer.INSTANCE.coerce(this.ifClause.evaluate(node), this.nodeCache, BooleanNode.class) == BooleanNode.TRUE)
 			return this.ifExpression.evaluate(node);
@@ -122,7 +122,7 @@ public class TernaryExpression extends PathSegmentExpression {
 		return new ConcatenatingNamedChildIterator(super.namedChildIterator(),
 			new NamedChildIterator("ifClause", "ifExpression", "thenExpression") {
 				@Override
-				protected void set(int index, EvaluationExpression childExpression) {
+				protected void set(final int index, final EvaluationExpression childExpression) {
 					switch (index) {
 					case 0:
 						TernaryExpression.this.ifClause = childExpression;
@@ -136,7 +136,7 @@ public class TernaryExpression extends PathSegmentExpression {
 				}
 
 				@Override
-				protected EvaluationExpression get(int index) {
+				protected EvaluationExpression get(final int index) {
 					switch (index) {
 					case 0:
 						return TernaryExpression.this.ifClause;
@@ -179,7 +179,7 @@ public class TernaryExpression extends PathSegmentExpression {
 	 * .PathSegmentExpression)
 	 */
 	@Override
-	protected boolean equalsSameClass(PathSegmentExpression obj) {
+	protected boolean equalsSameClass(final PathSegmentExpression obj) {
 		final TernaryExpression other = (TernaryExpression) obj;
 		return this.ifClause.equals(other.ifClause)
 			&& this.ifExpression.equals(other.ifExpression)

@@ -1,18 +1,15 @@
 package eu.stratosphere.sopremo.base;
 
 import static eu.stratosphere.sopremo.expressions.ExpressionUtil.makePath;
+import static eu.stratosphere.sopremo.function.FunctionUtil.createFunctionCall;
 import static eu.stratosphere.sopremo.type.JsonUtil.createPath;
-import static eu.stratosphere.sopremo.function.FunctionUtil.*;
 
 import org.junit.Test;
 
 import eu.stratosphere.sopremo.CoreFunctions;
-import eu.stratosphere.sopremo.EvaluationContext;
-import eu.stratosphere.sopremo.aggregation.AggregationFunction;
 import eu.stratosphere.sopremo.expressions.ArrayAccess;
 import eu.stratosphere.sopremo.expressions.ArrayProjection;
 import eu.stratosphere.sopremo.expressions.ConstantExpression;
-import eu.stratosphere.sopremo.expressions.FunctionCall;
 import eu.stratosphere.sopremo.expressions.InputSelection;
 import eu.stratosphere.sopremo.expressions.ObjectAccess;
 import eu.stratosphere.sopremo.expressions.ObjectCreation;

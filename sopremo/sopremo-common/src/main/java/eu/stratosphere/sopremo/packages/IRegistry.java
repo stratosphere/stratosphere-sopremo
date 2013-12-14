@@ -62,6 +62,6 @@ public interface IRegistry<T> extends ISopremoType /* , Map<String, T> */{
 	 * @return the set of all names
 	 */
 	public Set<String> keySet();
-	
+
 	public NameChooser getNameChooser();
 }

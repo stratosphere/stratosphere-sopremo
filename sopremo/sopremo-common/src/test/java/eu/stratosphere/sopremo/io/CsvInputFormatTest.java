@@ -26,7 +26,7 @@ public class CsvInputFormatTest extends InputFormatTest {
 
 		final CsvFormat format = new CsvFormat();
 		format.setFieldDelimiter(",");
-		final Collection<IJsonNode> actual = readFromFile(source, format, NULL_LAYOUT);
+		final Collection<IJsonNode> actual = readFromFile(source, format);
 
 		final List<ObjectNode> expected = Arrays.asList(
 			JsonUtil.createObjectNode("id", "1", "name", "arnie morton's of chicago",
@@ -52,7 +52,7 @@ public class CsvInputFormatTest extends InputFormatTest {
 
 		final CsvFormat format = new CsvFormat();
 		format.setFieldDelimiter(",");
-		final Collection<IJsonNode> actual = readFromFile(source, format, NULL_LAYOUT);
+		final Collection<IJsonNode> actual = readFromFile(source, format);
 
 		final List<ObjectNode> expected = Arrays.asList(
 			JsonUtil.createObjectNode("a", "1", "b", "2"),
@@ -72,7 +72,7 @@ public class CsvInputFormatTest extends InputFormatTest {
 
 		final CsvFormat format = new CsvFormat();
 		format.setFieldDelimiter(",");
-		final Collection<IJsonNode> actual = readFromFile(source, format, NULL_LAYOUT);
+		final Collection<IJsonNode> actual = readFromFile(source, format);
 
 		final List<ObjectNode> expected =
 			Arrays.asList(

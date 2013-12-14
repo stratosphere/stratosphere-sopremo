@@ -41,7 +41,7 @@ import eu.stratosphere.sopremo.operator.SopremoPlan;
  * @author Arvid Heise
  */
 public class CLClient {
-	private Options options = new Options();
+	private final Options options = new Options();
 
 	private DefaultClient sopremoClient;
 
@@ -71,17 +71,17 @@ public class CLClient {
 			withDescription("Waits until the script terminates on the server").withLongOpt("wait").create());
 	}
 
-	public static void main(String[] args) {
+	public static void main(final String[] args) {
 		new CLClient().process(args);
 	}
 
-	private void process(String[] args) {
-		CommandLine cmd = this.parseOptions(args);
+	private void process(final String[] args) {
+		final CommandLine cmd = this.parseOptions(args);
 		@SuppressWarnings("unchecked")
 		final List<String> scripts = cmd.getArgList();
 		if (scripts.size() == 0)
-			dealWithError(null, "No scripts to execute");
-		
+			this.dealWithError(null, "No scripts to execute");
+
 		this.configureClient(cmd);
 		for (final String script : scripts) {
 			final SopremoPlan plan = this.parseScript(script);
@@ -89,7 +89,7 @@ public class CLClient {
 			System.out.println("Submitting plan");
 			this.sopremoClient.submit(plan, new StateListener() {
 				@Override
-				public void stateChanged(ExecutionState executionState, String detail) {
+				public void stateChanged(final ExecutionState executionState, final String detail) {
 					System.out.println();
 					switch (executionState) {
 					case ENQUEUED:
@@ -99,7 +99,7 @@ public class CLClient {
 						System.out.print("Setting script up " + script);
 						break;
 					case RUNNING:
-						System.out.print("Executing script "  + script);
+						System.out.print("Executing script " + script);
 						break;
 					case FINISHED:
 						System.out.print(detail);
@@ -118,7 +118,7 @@ public class CLClient {
 				 * ExecutionResponse.ExecutionState, java.lang.String)
 				 */
 				@Override
-				protected void stateNotChanged(ExecutionState state, String detail) {
+				protected void stateNotChanged(final ExecutionState state, final String detail) {
 					System.out.print(".");
 				}
 			}, cmd.hasOption("wait"));
@@ -128,8 +128,8 @@ public class CLClient {
 		this.sopremoClient.close();
 	}
 
-	private void configureClient(CommandLine cmd) {
-		String configDir = cmd.getOptionValue("configDir");
+	private void configureClient(final CommandLine cmd) {
+		final String configDir = cmd.getOptionValue("configDir");
 		GlobalConfiguration.loadConfiguration(configDir);
 		this.sopremoClient = new DefaultClient(GlobalConfiguration.getConfiguration());
 
@@ -138,24 +138,23 @@ public class CLClient {
 			updateTime = Integer.parseInt(cmd.getOptionValue("updateTime"));
 		this.sopremoClient.setUpdateTime(updateTime);
 
-		String address = cmd.getOptionValue("server"), port = cmd.getOptionValue("port");
-		if (address != null || port != null) {
+		final String address = cmd.getOptionValue("server"), port = cmd.getOptionValue("port");
+		if (address != null || port != null)
 			this.sopremoClient.setServerAddress(new InetSocketAddress(
 				address == null ? "localhost" : address,
 				port == null ? SopremoConstants.DEFAULT_SOPREMO_SERVER_IPC_PORT : Integer.parseInt(port)));
-		}
 
 		this.sopremoClient.setExecutionMode(ExecutionMode.RUN_WITH_STATISTICS);
 	}
 
-	protected void sleepSafely(int updateTime) {
+	protected void sleepSafely(final int updateTime) {
 		try {
 			Thread.sleep(updateTime);
-		} catch (InterruptedException e) {
+		} catch (final InterruptedException e) {
 		}
 	}
 
-	protected void dealWithError(Exception e, final String message, Object... args) {
+	protected void dealWithError(final Exception e, final String message, final Object... args) {
 		System.err.print(String.format(message, args));
 		if (e != null) {
 			System.err.print(": ");
@@ -165,26 +164,27 @@ public class CLClient {
 		System.exit(1);
 	}
 
-	private SopremoPlan parseScript(String script) {
-		File file = new File(script);
+	private SopremoPlan parseScript(final String script) {
+		final File file = new File(script);
 		if (!file.exists())
 			this.dealWithError(null, "Given file %s not found", file);
 
 		try {
-			return new QueryParser().withInputDirectory(new File(script).getAbsoluteFile().getParentFile()).tryParse(new FileInputStream(file));
-		} catch (IOException e) {
+			return new QueryParser().withInputDirectory(new File(script).getAbsoluteFile().getParentFile()).tryParse(
+				new FileInputStream(file));
+		} catch (final IOException e) {
 			this.dealWithError(e, "Error while parsing script");
 			return null;
 		}
 	}
 
-	protected CommandLine parseOptions(String[] args) {
-		CommandLineParser parser = new PosixParser();
+	protected CommandLine parseOptions(final String[] args) {
+		final CommandLineParser parser = new PosixParser();
 		try {
 			return parser.parse(this.options, args);
-		} catch (ParseException e) {
+		} catch (final ParseException e) {
 			System.err.println("Cannot process the given arguments: " + e);
-			HelpFormatter formatter = new HelpFormatter();
+			final HelpFormatter formatter = new HelpFormatter();
 			formatter.printHelp("meteor-client.sh <scripts>", this.options);
 			System.exit(1);
 			return null;

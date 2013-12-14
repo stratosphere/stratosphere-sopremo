@@ -24,13 +24,13 @@ public class JsonToJavaMapperTest {
 
 	@Test
 	public void shouldMapArray() {
-		ArrayNode<IJsonNode> input = new ArrayNode<IJsonNode>().add(new TextNode("field1")).add(new IntNode(1));
+		final ArrayNode<IJsonNode> input = new ArrayNode<IJsonNode>().add(new TextNode("field1")).add(new IntNode(1));
 		Assert.assertArrayEquals(new Object[] { "field1", 1 }, this.mapper.<Object[]> map(input, null, Object[].class));
 	}
 
 	@Test
 	public void shouldMapNestedArray() {
-		ArrayNode<IJsonNode> input =
+		final ArrayNode<IJsonNode> input =
 			new ArrayNode<IJsonNode>().add(new ArrayNode<IJsonNode>().add(new TextNode("field1")).add(new IntNode(1)))
 				.add(new ArrayNode<IJsonNode>().add(new TextNode("field2")).add(new IntNode(2)));
 		final Object[] expected = { new Object[] { "field1", 1 }, new Object[] { "field2", 2 } };
@@ -40,14 +40,14 @@ public class JsonToJavaMapperTest {
 	@SuppressWarnings("unchecked")
 	@Test
 	public void shouldMapNestedList() {
-		ArrayNode<IJsonNode> input =
+		final ArrayNode<IJsonNode> input =
 			new ArrayNode<IJsonNode>().add(new ArrayNode<IJsonNode>().add(new TextNode("field1")).add(new IntNode(1)))
 				.add(new ArrayNode<IJsonNode>().add(new TextNode("field2")).add(new IntNode(2)));
 		final List<Object[]> expected = Arrays.asList(new Object[] { "field1", 1 }, new Object[] { "field2", 2 });
 		final Object actual = this.mapper.map(input, null, new TypeToken<List<Object[]>>() {
 		}.getType());
 		Assert.assertTrue(actual instanceof List);
-		Assert.assertEquals(2, ((List<Object>)actual).size());
+		Assert.assertEquals(2, ((List<Object>) actual).size());
 		Assert.assertArrayEquals(expected.get(0), ((List<Object[]>) actual).get(0));
 		Assert.assertArrayEquals(expected.get(1), ((List<Object[]>) actual).get(1));
 
@@ -61,7 +61,7 @@ public class JsonToJavaMapperTest {
 
 	@Test
 	public void shouldMapIntArray() {
-		ArrayNode<IJsonNode> input =
+		final ArrayNode<IJsonNode> input =
 			new ArrayNode<IJsonNode>().add(new IntNode(1)).add(new IntNode(2)).add(new IntNode(3));
 
 		Assert.assertArrayEquals(new int[] { 1, 2, 3 }, this.mapper.map(input, null, int[].class));
@@ -88,10 +88,11 @@ public class JsonToJavaMapperTest {
 
 	@Test
 	public void shouldMapStringBuilder() {
-		assertEquals(new StringBuilder("test"), this.mapper.map(TextNode.valueOf("test"), null, StringBuilder.class));
+		this.assertEquals(new StringBuilder("test"),
+			this.mapper.map(TextNode.valueOf("test"), null, StringBuilder.class));
 	}
 
-	private void assertEquals(StringBuilder expected, Object actual) {
+	private void assertEquals(final StringBuilder expected, final Object actual) {
 		if (!(actual instanceof StringBuilder))
 			Assert.assertEquals(expected, actual);
 		else
@@ -141,11 +142,11 @@ public class JsonToJavaMapperTest {
 
 	@Test
 	public void shouldMapObject() {
-		ObjectNode object = new ObjectNode();
+		final ObjectNode object = new ObjectNode();
 		object.put("a", IntNode.valueOf(1));
 		object.put("b", TextNode.valueOf("test"));
 
-		Map<String, Object> expected = new HashMap<String, Object>();
+		final Map<String, Object> expected = new HashMap<String, Object>();
 		expected.put("a", 1);
 		expected.put("b", "test");
 
@@ -157,18 +158,18 @@ public class JsonToJavaMapperTest {
 
 	@Test
 	public void shouldNestedMapObject() {
-		ObjectNode input = new ObjectNode();
+		final ObjectNode input = new ObjectNode();
 		input.put("a", IntNode.valueOf(1));
 		input.put("b", TextNode.valueOf("test"));
-		ObjectNode nestedObjectNode = new ObjectNode();
+		final ObjectNode nestedObjectNode = new ObjectNode();
 		nestedObjectNode.put("1", TextNode.valueOf("x"));
 		nestedObjectNode.put("2", BooleanNode.valueOf(true));
 		input.put("nestedObject", nestedObjectNode);
 
-		Map<String, Object> expected = new HashMap<String, Object>();
+		final Map<String, Object> expected = new HashMap<String, Object>();
 		expected.put("a", 1);
 		expected.put("b", "test");
-		Map<String, Object> nested = new HashMap<String, Object>();
+		final Map<String, Object> nested = new HashMap<String, Object>();
 		nested.put("1", "x");
 		nested.put("2", true);
 		expected.put("nestedObject", nested);
@@ -179,11 +180,11 @@ public class JsonToJavaMapperTest {
 
 	@Test
 	public void shouldMapList() {
-		ArrayNode<IJsonNode> input = new ArrayNode<IJsonNode>();
+		final ArrayNode<IJsonNode> input = new ArrayNode<IJsonNode>();
 		input.add(IntNode.valueOf(1));
 		input.add(TextNode.valueOf("test"));
 
-		List<Object> expected = new ArrayList<Object>();
+		final List<Object> expected = new ArrayList<Object>();
 		expected.add(1);
 		expected.add("test");
 
@@ -200,11 +201,11 @@ public class JsonToJavaMapperTest {
 
 	@Test
 	public void shouldMapTypedList() {
-		ArrayNode<IJsonNode> input = new ArrayNode<IJsonNode>();
+		final ArrayNode<IJsonNode> input = new ArrayNode<IJsonNode>();
 		input.add(IntNode.valueOf(1));
 		input.add(TextNode.valueOf("test"));
 
-		List<String> expected = new ArrayList<String>();
+		final List<String> expected = new ArrayList<String>();
 		expected.add("1");
 		expected.add("test");
 

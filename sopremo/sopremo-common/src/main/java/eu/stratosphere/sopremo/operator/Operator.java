@@ -37,7 +37,7 @@ import eu.stratosphere.util.reflect.ReflectUtil;
  * 
  * @author Arvid Heise
  */
-//@DefaultSerializer(Operator.OperatorSerializer.class)
+// @DefaultSerializer(Operator.OperatorSerializer.class)
 public abstract class Operator<Self extends Operator<Self>> extends ConfigurableSopremoType implements
 		ISopremoType, JsonStream, Cloneable {
 
@@ -46,7 +46,7 @@ public abstract class Operator<Self extends Operator<Self>> extends Configurable
 
 	public final static int STANDARD_DEGREE_OF_PARALLELISM = -1;
 
-	private List<JsonStream> inputs = new ArrayList<JsonStream>();
+	private final List<JsonStream> inputs = new ArrayList<JsonStream>();
 
 	private String name;
 
@@ -532,7 +532,7 @@ public abstract class Operator<Self extends Operator<Self>> extends Configurable
 		CollectionUtil.ensureSize(list, index + 1);
 	}
 
-	private void readObject(ObjectInputStream ois) throws IOException, ClassNotFoundException {
+	private void readObject(final ObjectInputStream ois) throws IOException, ClassNotFoundException {
 		ois.defaultReadObject();
 		this.outputs = new ArrayList<JsonStream>();
 		CollectionUtil.ensureSize(this.outputs, this.minOutputs);
@@ -540,7 +540,7 @@ public abstract class Operator<Self extends Operator<Self>> extends Configurable
 
 	@Property
 	@Name(adjective = "parallel")
-	public void setDegreeOfParallelism(int degree) {
+	public void setDegreeOfParallelism(final int degree) {
 		if (this.degreeOfParallelism == degree)
 			return;
 		if (degree < 1)
@@ -571,7 +571,7 @@ public abstract class Operator<Self extends Operator<Self>> extends Configurable
 
 		private final Operator<?> operator;
 
-		private Output(Operator<?> operator, final int index) {
+		private Output(final Operator<?> operator, final int index) {
 			this.operator = operator;
 			this.index = index;
 		}
@@ -656,7 +656,7 @@ public abstract class Operator<Self extends Operator<Self>> extends Configurable
 			private int stackDepth;
 		}
 
-		public OperatorSerializer(Kryo kryo, Class<Operator<?>> type) {
+		public OperatorSerializer(final Kryo kryo, final Class<Operator<?>> type) {
 			this.fieldSerializer = new FieldSerializer<Operator<?>>(kryo, type);
 		}
 
@@ -666,15 +666,15 @@ public abstract class Operator<Self extends Operator<Self>> extends Configurable
 		 * com.esotericsoftware.kryo.io.Input, java.lang.Class)
 		 */
 		@Override
-		public Operator<?> read(Kryo kryo, Input input, Class<Operator<?>> type) {
+		public Operator<?> read(final Kryo kryo, final Input input, final Class<Operator<?>> type) {
 			final OperatorSerializationPool stack = OperatorSerializationStack.get();
-			List<Operator<?>> operatorDeserializedAt = stack.operatorDeserializedId;
+			final List<Operator<?>> operatorDeserializedAt = stack.operatorDeserializedId;
 			if (input.readBoolean())
 				return operatorDeserializedAt.get(input.readByteUnsigned());
 			stack.stackDepth++;
-			Operator<?> object = kryo.newInstance(type);
+			final Operator<?> object = kryo.newInstance(type);
 			operatorDeserializedAt.add(object);
-			FieldSerializer<?>.CachedField<?>[] fields = this.fieldSerializer.getFields();
+			final FieldSerializer<?>.CachedField<?>[] fields = this.fieldSerializer.getFields();
 			for (int i = 0, n = fields.length; i < n; i++)
 				fields[i].read(input, object);
 			if (--stack.stackDepth == 0)
@@ -687,7 +687,7 @@ public abstract class Operator<Self extends Operator<Self>> extends Configurable
 		 * @see com.esotericsoftware.kryo.Serializer#copy(com.esotericsoftware.kryo.Kryo, java.lang.Object)
 		 */
 		@Override
-		public Operator<?> copy(Kryo kryo, Operator<?> original) {
+		public Operator<?> copy(final Kryo kryo, final Operator<?> original) {
 			return this.fieldSerializer.copy(kryo, original);
 		}
 
@@ -697,14 +697,14 @@ public abstract class Operator<Self extends Operator<Self>> extends Configurable
 		 * com.esotericsoftware.kryo.io.Output, java.lang.Object)
 		 */
 		@Override
-		public void write(Kryo kryo, com.esotericsoftware.kryo.io.Output output, Operator<?> object) {
+		public void write(final Kryo kryo, final com.esotericsoftware.kryo.io.Output output, final Operator<?> object) {
 			final OperatorSerializationPool stack = OperatorSerializationStack.get();
-			Map<Operator<?>, Integer> operatorSerializationId = stack.operatorSerializedId;
-			Integer serializationId = operatorSerializationId.get(object);
+			final Map<Operator<?>, Integer> operatorSerializationId = stack.operatorSerializedId;
+			final Integer serializationId = operatorSerializationId.get(object);
 			output.writeBoolean(serializationId != null);
-			if (serializationId != null) {
+			if (serializationId != null)
 				output.writeByte(serializationId);
-			} else {
+			else {
 				operatorSerializationId.put(object, operatorSerializationId.size());
 				stack.stackDepth++;
 				this.fieldSerializer.write(kryo, output, object);
@@ -727,7 +727,7 @@ public abstract class Operator<Self extends Operator<Self>> extends Configurable
 		 * com.esotericsoftware.kryo.io.Output, java.lang.Object)
 		 */
 		@Override
-		public void write(Kryo kryo, com.esotericsoftware.kryo.io.Output output, Output object) {
+		public void write(final Kryo kryo, final com.esotericsoftware.kryo.io.Output output, final Output object) {
 			kryo.writeClassAndObject(output, object.getOperator());
 			output.writeInt(object.getIndex(), true);
 		}
@@ -737,7 +737,7 @@ public abstract class Operator<Self extends Operator<Self>> extends Configurable
 		 * @see com.esotericsoftware.kryo.Serializer#copy(com.esotericsoftware.kryo.Kryo, java.lang.Object)
 		 */
 		@Override
-		public Output copy(Kryo kryo, Output original) {
+		public Output copy(final Kryo kryo, final Output original) {
 			return (Output) kryo.copy(original.getOperator()).getOutput(original.getIndex());
 		}
 
@@ -747,7 +747,7 @@ public abstract class Operator<Self extends Operator<Self>> extends Configurable
 		 * com.esotericsoftware.kryo.io.Input, java.lang.Class)
 		 */
 		@Override
-		public Output read(Kryo kryo, Input input, Class<Output> type) {
+		public Output read(final Kryo kryo, final Input input, final Class<Output> type) {
 			return (Output) ((Operator<?>) kryo.readClassAndObject(input)).getOutput(input.readInt(true));
 		}
 

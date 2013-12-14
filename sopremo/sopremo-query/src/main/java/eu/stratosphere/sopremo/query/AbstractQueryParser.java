@@ -27,8 +27,8 @@ import org.antlr.runtime.UnwantedTokenException;
 import com.google.common.base.CharMatcher;
 
 import eu.stratosphere.nephele.fs.Path;
-import eu.stratosphere.sopremo.EvaluationContext;
 import eu.stratosphere.sopremo.CoreFunctions;
+import eu.stratosphere.sopremo.EvaluationContext;
 import eu.stratosphere.sopremo.MathFunctions;
 import eu.stratosphere.sopremo.SecondOrderFunctions;
 import eu.stratosphere.sopremo.SopremoEnvironment;
@@ -61,20 +61,20 @@ public abstract class AbstractQueryParser extends Parser implements ParsingScope
 	 */
 	public static final String DEFAULT_ERROR_MESSAGE = "Cannot parse script";
 
-	private PackageManager packageManager = new PackageManager(getNameChooserProvider());
+	private final PackageManager packageManager = new PackageManager(this.getNameChooserProvider());
 
 	protected InputSuggestion inputSuggestion = new InputSuggestion().withMaxSuggestions(3).withMinSimilarity(0.5);
 
 	protected List<Sink> sinks = new ArrayList<Sink>();
 
-	private SopremoPlan currentPlan = new SopremoPlan();
+	private final SopremoPlan currentPlan = new SopremoPlan();
 
-	public AbstractQueryParser(TokenStream input, RecognizerSharedState state) {
+	public AbstractQueryParser(final TokenStream input, final RecognizerSharedState state) {
 		super(input, state);
 		this.init();
 	}
 
-	public AbstractQueryParser(TokenStream input) {
+	public AbstractQueryParser(final TokenStream input) {
 		super(input);
 		this.init();
 	}
@@ -174,16 +174,18 @@ public abstract class AbstractQueryParser extends Parser implements ParsingScope
 	// this.getContext().getBindings().set(name.getText(), binding, scopeLevel);
 	// }
 
-	public EvaluationExpression createCheckedMethodCall(String packageName, Token name, EvaluationExpression[] params)
+	public EvaluationExpression createCheckedMethodCall(final String packageName, final Token name,
+			final EvaluationExpression[] params)
 			throws RecognitionException {
 		return this.createCheckedMethodCall(packageName, name, null, params);
 	}
 
-	public EvaluationExpression createCheckedMethodCall(String packageName, Token name, EvaluationExpression object,
+	public EvaluationExpression createCheckedMethodCall(final String packageName, final Token name,
+			final EvaluationExpression object,
 			EvaluationExpression[] params)
 			throws RecognitionException {
 		final IFunctionRegistry functionRegistry = this.getScope(packageName).getFunctionRegistry();
-		Callable<?, ?> callable = functionRegistry.get(name.getText());
+		final Callable<?, ?> callable = functionRegistry.get(name.getText());
 		if (callable == null)
 			throw new RecognitionExceptionWithUsageHint(name, String.format(
 				"Unknown function %s; possible alternatives %s", name,
@@ -194,7 +196,7 @@ public abstract class AbstractQueryParser extends Parser implements ParsingScope
 			throw new QueryParserException(String.format("Unknown callable %s", callable));
 
 		if (object != null) {
-			EvaluationExpression[] shiftedParams = new EvaluationExpression[params.length + 1];
+			final EvaluationExpression[] shiftedParams = new EvaluationExpression[params.length + 1];
 			System.arraycopy(params, 0, shiftedParams, 1, params.length);
 			params = shiftedParams;
 			params[0] = object;
@@ -205,50 +207,51 @@ public abstract class AbstractQueryParser extends Parser implements ParsingScope
 		return new FunctionCall((SopremoFunction) callable, params);
 	}
 
-	protected SopremoFunction getSopremoFunction(String packageName, Token name) {
-		Callable<?, ?> callable = this.getScope(packageName).getFunctionRegistry().get(name.getText());
+	protected SopremoFunction getSopremoFunction(final String packageName, final Token name) {
+		final Callable<?, ?> callable = this.getScope(packageName).getFunctionRegistry().get(name.getText());
 		if (!(callable instanceof SopremoFunction))
 			throw new QueryParserException(String.format("Unknown function %s", name));
 		return (SopremoFunction) callable;
 	}
 
-	private Map<String, Class<? extends IJsonNode>> typeNameToType = new HashMap<String, Class<? extends IJsonNode>>();
+	private final Map<String, Class<? extends IJsonNode>> typeNameToType =
+		new HashMap<String, Class<? extends IJsonNode>>();
 
-	public void addTypeAlias(String alias, Class<? extends IJsonNode> type) {
+	public void addTypeAlias(final String alias, final Class<? extends IJsonNode> type) {
 		this.typeNameToType.put(alias, type);
 	}
 
-	public EvaluationExpression coerce(String type, EvaluationExpression valueExpression) {
-		Class<? extends IJsonNode> targetType = this.typeNameToType.get(type);
+	public EvaluationExpression coerce(final String type, final EvaluationExpression valueExpression) {
+		final Class<? extends IJsonNode> targetType = this.typeNameToType.get(type);
 		if (targetType == null)
 			throw new IllegalArgumentException("unknown type " + type);
 		return new CoerceExpression(targetType).withInputExpression(valueExpression);
 	}
 
 	@Override
-	public Object recoverFromMismatchedSet(IntStream input, RecognitionException e, BitSet follow)
+	public Object recoverFromMismatchedSet(final IntStream input, final RecognitionException e, final BitSet follow)
 			throws RecognitionException {
 		throw e;
 	}
 
-	protected ConfObjectInfo<? extends Operator<?>> getOperatorInfo(Operator<?> operator) {
-		final IConfObjectRegistry<Operator<?>> operatorRegistry = getOperatorRegistry();
+	protected ConfObjectInfo<? extends Operator<?>> getOperatorInfo(final Operator<?> operator) {
+		final IConfObjectRegistry<Operator<?>> operatorRegistry = this.getOperatorRegistry();
 		final Name nameAnnotation = operator.getClass().getAnnotation(Name.class);
 		if (nameAnnotation != null)
 			return operatorRegistry.get(nameAnnotation);
 		final Set<String> operatorNames = operatorRegistry.keySet();
-		for (String opName : operatorNames)
+		for (final String opName : operatorNames)
 			if (operatorRegistry.get(opName).getOperatorClass().isInstance(operator))
 				return operatorRegistry.get(opName);
 		return null;
 	}
 
-	protected ConfObjectInfo<? extends Operator<?>> findOperatorGreedily(String packageName, Token firstWord)
+	protected ConfObjectInfo<? extends Operator<?>> findOperatorGreedily(final String packageName, final Token firstWord)
 			throws RecognitionException {
 		final IConfObjectRegistry<Operator<?>> registry = this.getScope(packageName).getOperatorRegistry();
-		StringBuilder name = new StringBuilder(firstWord.getText());
-		IntList wordBoundaries = greedilyAddToName(firstWord, name);
-		ConfObjectInfo<Operator<?>> info = findGreedilyInRegistry(registry, name, wordBoundaries);
+		final StringBuilder name = new StringBuilder(firstWord.getText());
+		final IntList wordBoundaries = this.greedilyAddToName(firstWord, name);
+		final ConfObjectInfo<Operator<?>> info = this.findGreedilyInRegistry(registry, name, wordBoundaries);
 
 		if (info == null)
 			throw new RecognitionExceptionWithUsageHint(firstWord, String.format(
@@ -258,7 +261,8 @@ public abstract class AbstractQueryParser extends Parser implements ParsingScope
 		return info;
 	}
 
-	private <T> T findGreedilyInRegistry(final IRegistry<T> registry, StringBuilder name, IntList wordBoundaries) {
+	private <T> T findGreedilyInRegistry(final IRegistry<T> registry, final StringBuilder name,
+			final IntList wordBoundaries) {
 		int tokenCount = wordBoundaries.size();
 		T info = null;
 		for (; info == null && tokenCount > 0;)
@@ -270,34 +274,33 @@ public abstract class AbstractQueryParser extends Parser implements ParsingScope
 		return info;
 	}
 
-	private IntList greedilyAddToName(Token firstWord, StringBuilder name) {
-		IntList wordBoundaries = new IntArrayList();
+	private IntList greedilyAddToName(final Token firstWord, final StringBuilder name) {
+		final IntList wordBoundaries = new IntArrayList();
 		wordBoundaries.add(name.length());
 
 		// greedily concatenate as many tokens as possible
 		for (int lookAhead = 1; this.input.LA(lookAhead) == firstWord.getType() ||
 			CharMatcher.JAVA_LETTER.matchesAllOf(this.input.LT(lookAhead).getText()); lookAhead++) {
-			Token matchedToken = this.input.LT(lookAhead);
+			final Token matchedToken = this.input.LT(lookAhead);
 			name.append(' ').append(matchedToken.getText());
 			wordBoundaries.add(name.length());
 		}
 		return wordBoundaries;
 	}
 
-	protected String makeFilePath(Token protocol, String filePath) {
+	protected String makeFilePath(final Token protocol, final String filePath) {
 
 		// no explicit protocol
-		if (protocol == null) {
+		if (protocol == null)
 			// try if file is self-contained
 			try {
-				URI uri = new URI(filePath);
+				final URI uri = new URI(filePath);
 				if (uri.getScheme() == null)
 					return new Path(SopremoEnvironment.getInstance().getEvaluationContext().getWorkingPath(), filePath).toString();
 				return new Path(uri).toString();
-			} catch (URISyntaxException e) {
+			} catch (final URISyntaxException e) {
 				throw new IllegalArgumentException("Invalid path " + filePath, e);
 			}
-		}
 
 		if (protocol.getText().equals("hdfs")) {
 			if (filePath.startsWith("hdfs://"))
@@ -308,7 +311,7 @@ public abstract class AbstractQueryParser extends Parser implements ParsingScope
 			if (workingPath.toUri().getScheme().equals("hdfs"))
 				try {
 					return new Path(workingPath, filePath).toString();
-				} catch (Exception e) {
+				} catch (final Exception e) {
 					throw new IllegalArgumentException("Cannot use current workingPath to form a valid file path for " +
 						filePath, e);
 				}
@@ -316,7 +319,7 @@ public abstract class AbstractQueryParser extends Parser implements ParsingScope
 			try {
 				// if only hdfs is missing, add it
 				return new Path(new URI("hdfs://" + filePath)).toString();
-			} catch (Exception e) {
+			} catch (final Exception e) {
 				throw new IllegalArgumentException("The path is not a valid URI " + filePath, e);
 			}
 		}
@@ -341,20 +344,21 @@ public abstract class AbstractQueryParser extends Parser implements ParsingScope
 		throw new IllegalArgumentException("Unknown protocol");
 	}
 
-	protected ConfObjectInfo<? extends SopremoFormat> findFormat(String packageName, Token name, String pathName)
+	protected ConfObjectInfo<? extends SopremoFormat> findFormat(final String packageName, final Token name,
+			final String pathName)
 			throws RecognitionExceptionWithUsageHint {
 		if (name == null) {
 			URI path;
 			try {
 				path = new URI(pathName);
-			} catch (URISyntaxException e) {
+			} catch (final URISyntaxException e) {
 				final RecognitionExceptionWithUsageHint hint =
 					new RecognitionExceptionWithUsageHint(name, "invalid path URI");
 				hint.initCause(e);
 				throw hint;
 			}
 			final IConfObjectRegistry<SopremoFormat> fileFormatRegistry = this.getFileFormatRegistry();
-			for (String fileFormat : fileFormatRegistry.keySet()) {
+			for (final String fileFormat : fileFormatRegistry.keySet()) {
 				final ConfObjectInfo<SopremoFormat> info = fileFormatRegistry.get(fileFormat);
 				if (info.newInstance().canHandleFormat(path))
 					return info;
@@ -364,7 +368,7 @@ public abstract class AbstractQueryParser extends Parser implements ParsingScope
 				this.getDefaultFileFormat());
 			return fileFormatRegistry.get(this.getDefaultFileFormat().getAnnotation(Name.class));
 		}
-		ParsingScope scope = this.getScope(packageName);
+		final ParsingScope scope = this.getScope(packageName);
 		final ConfObjectInfo<SopremoFormat> format = scope.getFileFormatRegistry().get(name.getText());
 		if (format == null)
 			throw new RecognitionExceptionWithUsageHint(name, String.format(
@@ -378,22 +382,22 @@ public abstract class AbstractQueryParser extends Parser implements ParsingScope
 	 */
 	protected abstract Class<? extends SopremoFormat> getDefaultFileFormat();
 
-	protected ParsingScope getScope(String packageName) {
+	protected ParsingScope getScope(final String packageName) {
 		if (packageName == null)
 			return this;
-		ParsingScope scope = this.packageManager.getPackageInfo(packageName);
+		final ParsingScope scope = this.packageManager.getPackageInfo(packageName);
 		if (scope == null)
 			throw new QueryParserException("Unknown package " + packageName);
 		return scope;
 	}
 
-	protected ConfObjectInfo.ConfObjectPropertyInfo findPropertyGreedily(ConfigurableSopremoType object,
-			ConfObjectInfo<?> info, Token firstWord) throws RecognitionException {
+	protected ConfObjectInfo.ConfObjectPropertyInfo findPropertyGreedily(final ConfigurableSopremoType object,
+			final ConfObjectInfo<?> info, final Token firstWord) throws RecognitionException {
 
 		final IRegistry<ConfObjectPropertyInfo> registry = info.getOperatorPropertyRegistry(object);
-		StringBuilder name = new StringBuilder(firstWord.getText());
-		IntList wordBoundaries = greedilyAddToName(firstWord, name);
-		ConfObjectPropertyInfo property = findGreedilyInRegistry(registry, name, wordBoundaries);
+		final StringBuilder name = new StringBuilder(firstWord.getText());
+		final IntList wordBoundaries = this.greedilyAddToName(firstWord, name);
+		final ConfObjectPropertyInfo property = this.findGreedilyInRegistry(registry, name, wordBoundaries);
 
 		if (property == null)
 			throw new RecognitionExceptionWithUsageHint(firstWord, String.format(
@@ -403,8 +407,8 @@ public abstract class AbstractQueryParser extends Parser implements ParsingScope
 		return property;
 	}
 
-	protected ConfObjectInfo.ConfObjectPropertyInfo findPropertyRelunctantly(ConfigurableSopremoType object,
-			ConfObjectInfo<?> info, Token firstWord)
+	protected ConfObjectInfo.ConfObjectPropertyInfo findPropertyRelunctantly(final ConfigurableSopremoType object,
+			final ConfObjectInfo<?> info, final Token firstWord)
 			throws RecognitionException {
 		String name = firstWord.getText();
 		ConfObjectInfo.ConfObjectPropertyInfo property;
@@ -413,7 +417,7 @@ public abstract class AbstractQueryParser extends Parser implements ParsingScope
 		// Reluctantly concatenate tokens
 		final IRegistry<ConfObjectPropertyInfo> propertyRegistry = info.getOperatorPropertyRegistry(object);
 		for (; (property = propertyRegistry.get(name)) == null && this.input.LA(lookAhead) == firstWord.getType(); lookAhead++) {
-			Token matchedToken = this.input.LT(lookAhead);
+			final Token matchedToken = this.input.LT(lookAhead);
 			name = String.format("%s %s", name, matchedToken.getText());
 		}
 
@@ -430,7 +434,8 @@ public abstract class AbstractQueryParser extends Parser implements ParsingScope
 	}
 
 	protected ConfObjectInfo.ConfObjectIndexedPropertyInfo findInputPropertyRelunctantly(
-			ConfigurableSopremoType object, ConfObjectInfo<?> info, Token firstWord, boolean consume) {
+			final ConfigurableSopremoType object, final ConfObjectInfo<?> info, final Token firstWord,
+			final boolean consume) {
 		final IRegistry<ConfObjectIndexedPropertyInfo> inputPropertyRegistry = info.getInputPropertyRegistry(object);
 		String name = firstWord.getText();
 		ConfObjectInfo.ConfObjectIndexedPropertyInfo property;
@@ -438,7 +443,7 @@ public abstract class AbstractQueryParser extends Parser implements ParsingScope
 		int lookAhead = 1;
 		// Reluctantly concatenate tokens
 		for (; (property = inputPropertyRegistry.get(name)) == null && this.input.LA(lookAhead) == firstWord.getType(); lookAhead++) {
-			Token matchedToken = this.input.LT(lookAhead);
+			final Token matchedToken = this.input.LT(lookAhead);
 			name = String.format("%s %s", name, matchedToken.getText());
 		}
 
@@ -460,21 +465,22 @@ public abstract class AbstractQueryParser extends Parser implements ParsingScope
 	}
 
 	@Override
-	protected Object recoverFromMismatchedToken(IntStream input, int ttype, BitSet follow) throws RecognitionException {
+	protected Object recoverFromMismatchedToken(final IntStream input, final int ttype, final BitSet follow)
+			throws RecognitionException {
 		// if next token is what we are looking for then "delete" this token
 		if (this.mismatchIsUnwantedToken(input, ttype))
 			throw new UnwantedTokenException(ttype, input);
 
 		// can't recover with single token deletion, try insertion
 		if (this.mismatchIsMissingToken(input, follow)) {
-			Object inserted = this.getMissingSymbol(input, null, ttype, follow);
+			final Object inserted = this.getMissingSymbol(input, null, ttype, follow);
 			throw new MissingTokenException(ttype, input, inserted);
 		}
 
 		throw new MismatchedTokenException(ttype, input);
 	}
 
-	protected void explainUsage(String usage, RecognitionException e) throws RecognitionException {
+	protected void explainUsage(final String usage, final RecognitionException e) throws RecognitionException {
 		final RecognitionExceptionWithUsageHint sre = new RecognitionExceptionWithUsageHint(this.input, usage);
 		sre.initCause(e);
 		throw sre;
@@ -487,17 +493,16 @@ public abstract class AbstractQueryParser extends Parser implements ParsingScope
 		try {
 			// this.setupParser();
 			this.parseSinks();
-		} catch (RecognitionExceptionWithUsageHint e) {
+		} catch (final RecognitionExceptionWithUsageHint e) {
 			throw new QueryParserException(e.getMessage(), e);
-		} catch (RecognitionException e) {
+		} catch (final RecognitionException e) {
 			throw new QueryParserException(DEFAULT_ERROR_MESSAGE, e);
 		}
 		this.currentPlan.setSinks(this.sinks);
 
-		for (PackageInfo info : this.packageManager.getImportedPackages()) {
-			for (File packages : info.getRequiredJarPaths())
+		for (final PackageInfo info : this.packageManager.getImportedPackages())
+			for (final File packages : info.getRequiredJarPaths())
 				this.currentPlan.addRequiredPackage(packages.getAbsolutePath());
-		}
 		System.out.println(this.currentPlan.getRequiredPackages());
 
 		return this.currentPlan;
@@ -516,26 +521,26 @@ public abstract class AbstractQueryParser extends Parser implements ParsingScope
 	// BindingConstraint.NON_NULL };
 	// }
 	//
-	public void addFunction(String name, ExpressionFunction function) {
+	public void addFunction(final String name, final ExpressionFunction function) {
 		this.getFunctionRegistry().put(name, function);
 	}
 
-	public void addFunction(String name, String udfPath) {
-		int delim = udfPath.lastIndexOf('.');
+	public void addFunction(final String name, final String udfPath) {
+		final int delim = udfPath.lastIndexOf('.');
 		if (delim == -1)
 			throw new IllegalArgumentException("Invalid path");
-		String className = udfPath.substring(0, delim), methodName = udfPath.substring(delim + 1);
+		final String className = udfPath.substring(0, delim), methodName = udfPath.substring(delim + 1);
 
 		try {
-			Class<?> clazz = Class.forName(className);
+			final Class<?> clazz = Class.forName(className);
 			this.getFunctionRegistry().put(name, clazz, methodName);
-		} catch (ClassNotFoundException e) {
+		} catch (final ClassNotFoundException e) {
 			throw new IllegalArgumentException("Unknown class " + className);
 		}
 	}
 
-	protected Number parseInt(String text) {
-		BigInteger result = new BigInteger(text);
+	protected Number parseInt(final String text) {
+		final BigInteger result = new BigInteger(text);
 		if (result.bitLength() <= 31)
 			return result.intValue();
 		if (result.bitLength() <= 63)

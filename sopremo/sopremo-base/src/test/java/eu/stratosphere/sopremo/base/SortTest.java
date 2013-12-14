@@ -70,7 +70,7 @@ public class SortTest extends SopremoOperatorTestBase<Sort> {
 	@Test
 	public void shouldSortOnExpression() {
 		final Sort sort = new Sort();
-		final SopremoTestPlan sopremoPlan = new SopremoTestPlan(ensureUnordered(sort));
+		final SopremoTestPlan sopremoPlan = new SopremoTestPlan(this.ensureUnordered(sort));
 		sort.setOrderingExpression(new OrderingExpression(Order.ASCENDING, new ArrayAccess(1)));
 
 		sopremoPlan.getInput(0).
@@ -94,7 +94,7 @@ public class SortTest extends SopremoOperatorTestBase<Sort> {
 			 * @see java.util.Comparator#compare(java.lang.Object, java.lang.Object)
 			 */
 			@Override
-			public int compare(IArrayNode<?> o1, IArrayNode<?> o2) {
+			public int compare(final IArrayNode<?> o1, final IArrayNode<?> o2) {
 				return o1.get(1).compareTo(o2.get(1));
 			}
 		});
@@ -106,14 +106,14 @@ public class SortTest extends SopremoOperatorTestBase<Sort> {
 	 * @param sort
 	 * @return
 	 */
-	private Operator<?> ensureUnordered(Sort sort) {
-//		final Projection arrayWrap =
-//			new Projection().withInputs(sort).withResultProjection(
-//				new ArrayCreation(ConstantExpression.MISSING, EvaluationExpression.VALUE));
-//		final GlobalEnumeration ge =
-//			new GlobalEnumeration().withEnumerationExpression(new ArrayAccess(0)).withInputs(arrayWrap);
-//		return new Grouping().withGroupingKey(0, new ArrayAccess(0)).withInputs(ge).withResultProjection(
-//			new ArrayAccess(1).withInputExpression(new ArrayAccess(0)));
+	private Operator<?> ensureUnordered(final Sort sort) {
+		// final Projection arrayWrap =
+		// new Projection().withInputs(sort).withResultProjection(
+		// new ArrayCreation(ConstantExpression.MISSING, EvaluationExpression.VALUE));
+		// final GlobalEnumeration ge =
+		// new GlobalEnumeration().withEnumerationExpression(new ArrayAccess(0)).withInputs(arrayWrap);
+		// return new Grouping().withGroupingKey(0, new ArrayAccess(0)).withInputs(ge).withResultProjection(
+		// new ArrayAccess(1).withInputExpression(new ArrayAccess(0)));
 		return sort;
 	}
 }

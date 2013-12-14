@@ -14,8 +14,8 @@
  **********************************************************************************************************************/
 package eu.stratosphere.meteor.expression;
 
-import org.junit.Assert;
-import static eu.stratosphere.sopremo.function.FunctionUtil.*;
+import static eu.stratosphere.sopremo.function.FunctionUtil.createFunctionCall;
+
 import org.junit.Test;
 
 import eu.stratosphere.meteor.MeteorParseTest;
@@ -25,7 +25,6 @@ import eu.stratosphere.sopremo.expressions.ArrayAccess;
 import eu.stratosphere.sopremo.expressions.ArrayProjection;
 import eu.stratosphere.sopremo.expressions.ConstantExpression;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
-import eu.stratosphere.sopremo.expressions.FunctionCall;
 import eu.stratosphere.sopremo.expressions.InputSelection;
 import eu.stratosphere.sopremo.expressions.ObjectAccess;
 import eu.stratosphere.sopremo.expressions.ObjectCreation;
@@ -40,10 +39,10 @@ public class ArrayAccessTest extends MeteorParseTest {
 	@Test
 	public void testArrayProjection() {
 		final SopremoPlan actualPlan =
-			parseScript(
-			"$input = read from 'file://input.json';\n" +
-				"$result = transform $input into { result: $input.addresses[*].street };\n" +
-				"write $result to 'file://output.json'; ");
+			this.parseScript(
+				"$input = read from 'file://input.json';\n" +
+					"$result = transform $input into { result: $input.addresses[*].street };\n" +
+					"write $result to 'file://output.json'; ");
 
 		final SopremoPlan expectedPlan = new SopremoPlan();
 		final Source input = new Source("file://input.json");
@@ -63,10 +62,10 @@ public class ArrayAccessTest extends MeteorParseTest {
 	@Test
 	public void testArrayProjectionWithMethodCall() {
 		final SopremoPlan actualPlan =
-			parseScript(
-			"$input = read from 'file://input.json';\n" +
-				"$result = transform $input into { result: $input.addresses[*].count() };\n" +
-				"write $result to 'file://output.json'; ");
+			this.parseScript(
+				"$input = read from 'file://input.json';\n" +
+					"$result = transform $input into { result: $input.addresses[*].count() };\n" +
+					"write $result to 'file://output.json'; ");
 
 		final SopremoPlan expectedPlan = new SopremoPlan();
 		final Source input = new Source("file://input.json");
@@ -86,10 +85,10 @@ public class ArrayAccessTest extends MeteorParseTest {
 	@Test
 	public void testArrayProjectionOnMethodCall() {
 		final SopremoPlan actualPlan =
-			parseScript(
-			"$input = read from 'file://input.json';\n" +
-				"$result = transform $input into { result: $input.all()[*].street };\n" +
-				"write $result to 'file://output.json'; ");
+			this.parseScript(
+				"$input = read from 'file://input.json';\n" +
+					"$result = transform $input into { result: $input.all()[*].street };\n" +
+					"write $result to 'file://output.json'; ");
 
 		final SopremoPlan expectedPlan = new SopremoPlan();
 		final Source input = new Source("file://input.json");
@@ -108,12 +107,12 @@ public class ArrayAccessTest extends MeteorParseTest {
 	@Test
 	public void testMethodCallWithComplexExpression2() {
 		final SopremoPlan actualPlan =
-			parseScript(
-			"$input = read from 'file://input.json';\n"
-				+
-				"$result = transform $input into { result: $input.replace('a', 'b')[*].street[1] };\n"
-				+
-				"write $result to 'file://output.json'; ");
+			this.parseScript(
+				"$input = read from 'file://input.json';\n"
+					+
+					"$result = transform $input into { result: $input.replace('a', 'b')[*].street[1] };\n"
+					+
+					"write $result to 'file://output.json'; ");
 
 		final SopremoPlan expectedPlan = new SopremoPlan();
 		final Source input = new Source("file://input.json");

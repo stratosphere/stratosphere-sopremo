@@ -27,25 +27,26 @@ import eu.stratosphere.pact.common.util.ReflectionUtil;
 public class TemporaryVariableFactory {
 	public final static TemporaryVariableFactory INSTANCE = new TemporaryVariableFactory();
 
-	private ThreadLocal<Map<Class<?>, Queue<Object>>> cachedObjects = new ThreadLocal<Map<Class<?>, Queue<Object>>>() {
-		/*
-		 * (non-Javadoc)
-		 * @see java.lang.ThreadLocal#initialValue()
-		 */
-		@Override
-		protected Map<Class<?>, Queue<Object>> initialValue() {
-			return new IdentityHashMap<Class<?>, Queue<Object>>();
-		}
-	};
+	private final ThreadLocal<Map<Class<?>, Queue<Object>>> cachedObjects =
+		new ThreadLocal<Map<Class<?>, Queue<Object>>>() {
+			/*
+			 * (non-Javadoc)
+			 * @see java.lang.ThreadLocal#initialValue()
+			 */
+			@Override
+			protected Map<Class<?>, Queue<Object>> initialValue() {
+				return new IdentityHashMap<Class<?>, Queue<Object>>();
+			}
+		};
 
 	@SuppressWarnings("unchecked")
-	public <T> T alllocateVariable(Class<T> type) {
-		Queue<Object> objectList = this.getValueList(type);
+	public <T> T alllocateVariable(final Class<T> type) {
+		final Queue<Object> objectList = this.getValueList(type);
 		final T oldObject = (T) objectList.poll();
 		return oldObject == null ? ReflectionUtil.newInstance(type) : oldObject;
 	}
 
-	private final Queue<Object> getValueList(Class<?> type) {
+	private final Queue<Object> getValueList(final Class<?> type) {
 		final Map<Class<?>, Queue<Object>> classToInstances = this.cachedObjects.get();
 		Queue<Object> objectList = classToInstances.get(type);
 		if (objectList == null)
@@ -53,7 +54,7 @@ public class TemporaryVariableFactory {
 		return objectList;
 	}
 
-	public void free(Object object) {
+	public void free(final Object object) {
 		this.getValueList(object.getClass()).offer(object);
 	}
 }

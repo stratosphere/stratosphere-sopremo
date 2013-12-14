@@ -25,7 +25,6 @@ import eu.stratosphere.sopremo.expressions.OrExpression;
 import eu.stratosphere.sopremo.expressions.UnaryExpression;
 import eu.stratosphere.sopremo.io.Sink;
 import eu.stratosphere.sopremo.io.Source;
-import eu.stratosphere.sopremo.operator.Operator;
 import eu.stratosphere.sopremo.operator.SopremoPlan;
 import eu.stratosphere.sopremo.type.JsonUtil;
 
@@ -36,7 +35,7 @@ public class FilterTest extends MeteorParseTest {
 
 	@Test
 	public void testFilter() {
-		final SopremoPlan actualPlan = parseScript("$input = read from 'file://input.json';\n" +
+		final SopremoPlan actualPlan = this.parseScript("$input = read from 'file://input.json';\n" +
 			"$result = filter $emp in $input where $emp.mgr or $emp.income > 30000;\n" +
 			"write $result to 'file://output.json';");
 

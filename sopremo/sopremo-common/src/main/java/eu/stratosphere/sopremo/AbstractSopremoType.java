@@ -46,19 +46,20 @@ public abstract class AbstractSopremoType implements ISopremoType {
 		// return serializer.copy(CloneHelper, this);
 	}
 
-	protected void checkCopyType(AbstractSopremoType copy) {
+	protected void checkCopyType(final AbstractSopremoType copy) {
 		if (copy.getClass() != this.getClass())
 			throw new AssertionError(String.format("Create copy returned wrong type. Expected %s but was %s",
 				this.getClass(), copy.getClass()));
 	}
 
-	protected void append(final Appendable appendable, final Iterable<? extends ISopremoType> children, final String separator)
+	protected void append(final Appendable appendable, final Iterable<? extends ISopremoType> children,
+			final String separator)
 			throws IOException {
-		Iterator<? extends ISopremoType> iterator = children.iterator();
+		final Iterator<? extends ISopremoType> iterator = children.iterator();
 		for (int index = 0; iterator.hasNext(); index++) {
 			if (index > 0)
 				appendable.append(separator);
-			ISopremoType child = iterator.next();
+			final ISopremoType child = iterator.next();
 			if (child == null)
 				appendable.append("!null!");
 			else
@@ -90,7 +91,7 @@ public abstract class AbstractSopremoType implements ISopremoType {
 		final StringBuilder builder = new StringBuilder();
 		try {
 			type.appendAsString(builder);
-		} catch (IOException e) {
+		} catch (final IOException e) {
 			// cannot happen
 		}
 		return builder.toString();

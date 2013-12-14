@@ -30,25 +30,27 @@ public abstract class SingletonSerializer extends ReusingSerializer {
 	/**
 	 * Initializes SingletonSerializer.
 	 */
-	public SingletonSerializer(Object singleton) {
+	public SingletonSerializer(final Object singleton) {
 		this.singleton = singleton;
 		this.setImmutable(true);
 	}
 
 	@Override
-	public void write(Kryo kryo, Output output, Object object) {
+	public void write(final Kryo kryo, final Output output, final Object object) {
 	}
 
 	@Override
-	public Object read(Kryo kryo, Input input, Class type) {
+	public Object read(final Kryo kryo, final Input input, final Class type) {
 		return this.singleton;
 	}
-	
-	/* (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.type.ReusingSerializer#read(com.esotericsoftware.kryo.Kryo, com.esotericsoftware.kryo.io.Input, java.lang.Object, java.lang.Class)
+
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.type.ReusingSerializer#read(com.esotericsoftware.kryo.Kryo,
+	 * com.esotericsoftware.kryo.io.Input, java.lang.Object, java.lang.Class)
 	 */
 	@Override
-	public Object read(Kryo kryo, Input input, Object oldInstance, Class type) {
+	public Object read(final Kryo kryo, final Input input, final Object oldInstance, final Class type) {
 		return this.singleton;
 	}
 }

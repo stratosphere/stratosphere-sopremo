@@ -143,7 +143,7 @@ final class MultiPacketInputStream extends InputStream {
 	}
 
 	@Override
-	public long skip(long n) {
+	public long skip(final long n) {
 
 		if (!this.moreDataAvailable())
 			return 0L;

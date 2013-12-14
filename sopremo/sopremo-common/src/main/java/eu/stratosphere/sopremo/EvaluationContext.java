@@ -56,7 +56,7 @@ public class EvaluationContext extends AbstractSopremoType {
 
 	private final ITypeRegistry typeRegistry;
 
-	private NameChooserProvider nameChooserProvider;
+	private final NameChooserProvider nameChooserProvider;
 
 	// public LinkedList<Operator<?>> getOperatorStack() {
 	// return this.operatorStack;
@@ -78,7 +78,7 @@ public class EvaluationContext extends AbstractSopremoType {
 	/**
 	 * Initializes EvaluationContext.
 	 */
-	public EvaluationContext(ITypeRegistry typeRegistry, NameChooserProvider nameChooserProvider) {
+	public EvaluationContext(final ITypeRegistry typeRegistry, final NameChooserProvider nameChooserProvider) {
 		this.typeRegistry = typeRegistry;
 		this.nameChooserProvider = nameChooserProvider;
 
@@ -86,17 +86,16 @@ public class EvaluationContext extends AbstractSopremoType {
 
 		this.dataKryo = new Kryo();
 		this.dataKryo.setReferences(false);
-		for (Class<? extends IJsonNode> type : TypeCoercer.NUMERIC_TYPES)
+		for (final Class<? extends IJsonNode> type : TypeCoercer.NUMERIC_TYPES)
 			this.dataKryo.register(type);
-		@SuppressWarnings("unchecked")
-		List<Class<? extends Object>> defaultTypes =
+		final List<Class<? extends Object>> defaultTypes =
 			Arrays.asList(BooleanNode.class, TextNode.class, IObjectNode.class, IArrayNode.class, NullNode.class,
 				MissingNode.class, TreeMap.class, ArrayList.class, BigInteger.class, BigDecimal.class);
-		for (Class<?> type : defaultTypes)
+		for (final Class<?> type : defaultTypes)
 			this.dataKryo.register(type);
 
 		final List<Class<? extends IJsonNode>> types = typeRegistry.getTypes();
-		for (Class<? extends IJsonNode> type : types)
+		for (final Class<? extends IJsonNode> type : types)
 			this.dataKryo.register(type);
 
 		this.kryo = new SopremoKryo();
@@ -114,7 +113,7 @@ public class EvaluationContext extends AbstractSopremoType {
 	/**
 	 * Initializes EvaluationContext.
 	 */
-	protected EvaluationContext(EvaluationContext context) {
+	protected EvaluationContext(final EvaluationContext context) {
 		this(context.typeRegistry, context.nameChooserProvider);
 		this.contextParameters.putAll(context.contextParameters);
 		this.copyPropertiesFrom(context);
@@ -182,7 +181,7 @@ public class EvaluationContext extends AbstractSopremoType {
 	 * @see eu.stratosphere.sopremo.AbstractSopremoType#copyPropertiesFrom(eu.
 	 * stratosphere.sopremo.AbstractSopremoType)
 	 */
-	public void copyPropertiesFrom(ISopremoType original) {
+	public void copyPropertiesFrom(final ISopremoType original) {
 		final EvaluationContext context = (EvaluationContext) original;
 		this.resultProjection = context.resultProjection.clone();
 		this.operatorDescription = context.operatorDescription;
@@ -211,7 +210,7 @@ public class EvaluationContext extends AbstractSopremoType {
 	 * @param operatorDescription
 	 *        the operatorDescription to set
 	 */
-	public void setOperatorDescription(String operatorDescription) {
+	public void setOperatorDescription(final String operatorDescription) {
 		if (operatorDescription == null)
 			throw new NullPointerException("operatorDescription must not be null");
 
@@ -253,20 +252,20 @@ public class EvaluationContext extends AbstractSopremoType {
 	 * @param hdfsPath
 	 *        the hdfsPath to set
 	 */
-	public void setWorkingPath(Path hdfsPath) {
+	public void setWorkingPath(final Path hdfsPath) {
 		if (hdfsPath == null)
 			throw new NullPointerException("hdfsPath must not be null");
 
 		this.workingPath = hdfsPath.toString();
 	}
 
-	public void putParameter(String key, Object value) {
+	public void putParameter(final String key, final Object value) {
 		this.contextParameters.put(key, value);
 	}
 
 	@SuppressWarnings("unchecked")
-	public <Type> Type getParameter(String key, Class<Type> type) {
-		Object value = this.contextParameters.get(key);
+	public <Type> Type getParameter(final String key, final Class<Type> type) {
+		final Object value = this.contextParameters.get(key);
 		return (Type) value;
 	}
 
@@ -274,24 +273,24 @@ public class EvaluationContext extends AbstractSopremoType {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((this.contextParameters == null) ? 0 : this.contextParameters.hashCode());
-		result = prime * result + ((this.operatorDescription == null) ? 0 : this.operatorDescription.hashCode());
-		result = prime * result + ((this.resultProjection == null) ? 0 : this.resultProjection.hashCode());
+		result = prime * result + (this.contextParameters == null ? 0 : this.contextParameters.hashCode());
+		result = prime * result + (this.operatorDescription == null ? 0 : this.operatorDescription.hashCode());
+		result = prime * result + (this.resultProjection == null ? 0 : this.resultProjection.hashCode());
 		result = prime * result + this.taskId;
-		result = prime * result + ((this.typeRegistry == null) ? 0 : this.typeRegistry.hashCode());
-		result = prime * result + ((this.workingPath == null) ? 0 : this.workingPath.hashCode());
+		result = prime * result + (this.typeRegistry == null ? 0 : this.typeRegistry.hashCode());
+		result = prime * result + (this.workingPath == null ? 0 : this.workingPath.hashCode());
 		return result;
 	}
 
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(final Object obj) {
 		if (this == obj)
 			return true;
 		if (obj == null)
 			return false;
-		if (getClass() != obj.getClass())
+		if (this.getClass() != obj.getClass())
 			return false;
-		EvaluationContext other = (EvaluationContext) obj;
+		final EvaluationContext other = (EvaluationContext) obj;
 		if (this.contextParameters == null) {
 			if (other.contextParameters != null)
 				return false;

@@ -40,14 +40,14 @@ public class SopremoRecordPairComparatorFactory implements TypePairComparatorFac
 	 */
 	@Override
 	public TypePairComparator<SopremoRecord, SopremoRecord> createComparator12(
-			TypeComparator<SopremoRecord> comparator1, TypeComparator<SopremoRecord> comparator2) {
-		if (!(comparator1 instanceof SopremoRecordComparator && comparator2 instanceof SopremoRecordComparator)) {
+			final TypeComparator<SopremoRecord> comparator1, final TypeComparator<SopremoRecord> comparator2) {
+		if (!(comparator1 instanceof SopremoRecordComparator && comparator2 instanceof SopremoRecordComparator))
 			throw new IllegalArgumentException("Cannot instantiate pair comparator from the given comparators.");
-		}
 		final SopremoRecordComparator prc1 = (SopremoRecordComparator) comparator1;
 		final SopremoRecordComparator prc2 = (SopremoRecordComparator) comparator2;
 
-		return new SopremoRecordPairComparator(prc1.getKeyExpressionIndices(), prc2.getKeyExpressionIndices());
+		return new SopremoRecordPairComparator(prc1.getKeyExpressionIndices(), prc1.getKeyExpressions(),
+			prc2.getKeyExpressionIndices(), prc2.getKeyExpressions());
 	}
 
 	/*
@@ -58,14 +58,14 @@ public class SopremoRecordPairComparatorFactory implements TypePairComparatorFac
 	 */
 	@Override
 	public TypePairComparator<SopremoRecord, SopremoRecord> createComparator21(
-			TypeComparator<SopremoRecord> comparator1, TypeComparator<SopremoRecord> comparator2)
+			final TypeComparator<SopremoRecord> comparator1, final TypeComparator<SopremoRecord> comparator2)
 	{
-		if (!(comparator1 instanceof SopremoRecordComparator && comparator2 instanceof SopremoRecordComparator)) {
+		if (!(comparator1 instanceof SopremoRecordComparator && comparator2 instanceof SopremoRecordComparator))
 			throw new IllegalArgumentException("Cannot instantiate pair comparator from the given comparators.");
-		}
 		final SopremoRecordComparator prc1 = (SopremoRecordComparator) comparator1;
 		final SopremoRecordComparator prc2 = (SopremoRecordComparator) comparator2;
 
-		return new SopremoRecordPairComparator(prc2.getKeyExpressionIndices(), prc1.getKeyExpressionIndices());
+		return new SopremoRecordPairComparator(prc2.getKeyExpressionIndices(), prc2.getKeyExpressions(),
+			prc1.getKeyExpressionIndices(), prc1.getKeyExpressions());
 	}
 }

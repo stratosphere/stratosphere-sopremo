@@ -22,9 +22,9 @@ import eu.stratosphere.pact.common.type.Value;
 public class SchemaUtils {
 
 	@SuppressWarnings("unchecked")
-	public static Class<? extends Value>[] combineSchema(Class<? extends Value> firstFieldType,
-			Class<?>... otherFieldTypes) {
-		Class<? extends Value>[] schema = new Class[1 + otherFieldTypes.length];
+	public static Class<? extends Value>[] combineSchema(final Class<? extends Value> firstFieldType,
+			final Class<?>... otherFieldTypes) {
+		final Class<? extends Value>[] schema = new Class[1 + otherFieldTypes.length];
 		schema[0] = firstFieldType;
 		for (int index = 0; index < otherFieldTypes.length; index++) {
 			if (!Value.class.isAssignableFrom(otherFieldTypes[index]))

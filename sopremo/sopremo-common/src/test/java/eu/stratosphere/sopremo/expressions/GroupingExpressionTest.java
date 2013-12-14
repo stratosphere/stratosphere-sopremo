@@ -70,7 +70,7 @@ public class GroupingExpressionTest extends EvaluableExpressionTest<GroupingExpr
 	 * eu.stratosphere.sopremo.expressions.EvaluableExpressionTest#initVerifier(nl.jqno.equalsverifier.EqualsVerifier)
 	 */
 	@Override
-	protected void initVerifier(EqualsVerifier<GroupingExpression> equalVerifier) {
+	protected void initVerifier(final EqualsVerifier<GroupingExpression> equalVerifier) {
 		super.initVerifier(equalVerifier);
 		final FastMap<Object, Object> red = new FastMap<Object, Object>();
 		final FastMap<Object, Object> black = new FastMap<Object, Object>();

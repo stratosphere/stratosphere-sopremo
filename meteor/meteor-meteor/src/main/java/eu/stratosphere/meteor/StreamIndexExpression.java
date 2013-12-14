@@ -39,7 +39,7 @@ public class StreamIndexExpression extends UnevaluableExpression {
 	}
 
 	@Override
-	public void appendAsString(Appendable appendable) throws IOException {
+	public void appendAsString(final Appendable appendable) throws IOException {
 		this.stream.appendAsString(appendable);
 		appendable.append("[");
 		this.indexExpression.appendAsString(appendable);
@@ -47,14 +47,14 @@ public class StreamIndexExpression extends UnevaluableExpression {
 	}
 
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(final Object obj) {
 		if (this == obj)
 			return true;
 		if (!super.equals(obj))
 			return false;
 		if (this.getClass() != obj.getClass())
 			return false;
-		StreamIndexExpression other = (StreamIndexExpression) obj;
+		final StreamIndexExpression other = (StreamIndexExpression) obj;
 		return this.indexExpression.equals(other.indexExpression); // && stream.equals(other.stream)
 	}
 

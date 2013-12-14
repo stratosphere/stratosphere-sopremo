@@ -58,7 +58,7 @@ public class DefaultClient implements Closeable {
 		 * ExecutionResponse.ExecutionState, java.lang.String)
 		 */
 		@Override
-		public void progressUpdate(ExecutionState state, String detail) {
+		public void progressUpdate(final ExecutionState state, final String detail) {
 			if (state == ExecutionState.ERROR)
 				throw new RuntimeException(detail);
 		}
@@ -86,7 +86,7 @@ public class DefaultClient implements Closeable {
 	/**
 	 * Initializes CLClient.
 	 */
-	public DefaultClient(Configuration configuration) {
+	public DefaultClient(final Configuration configuration) {
 		this.configuration = configuration;
 	}
 
@@ -105,7 +105,7 @@ public class DefaultClient implements Closeable {
 	 * @param executionMode
 	 *        the executionMode to set
 	 */
-	public void setExecutionMode(ExecutionMode executionMode) {
+	public void setExecutionMode(final ExecutionMode executionMode) {
 		if (executionMode == null)
 			throw new NullPointerException("executionMode must not be null");
 
@@ -145,7 +145,7 @@ public class DefaultClient implements Closeable {
 	 * @param configuration
 	 *        the configuration to set
 	 */
-	public void setConfiguration(Configuration configuration) {
+	public void setConfiguration(final Configuration configuration) {
 		if (configuration == null)
 			throw new NullPointerException("configuration must not be null");
 
@@ -158,7 +158,7 @@ public class DefaultClient implements Closeable {
 	 * @param serverAddress
 	 *        the serverAddress to set
 	 */
-	public void setServerAddress(InetSocketAddress serverAddress) {
+	public void setServerAddress(final InetSocketAddress serverAddress) {
 		if (serverAddress == null)
 			throw new NullPointerException("serverAddress must not be null");
 
@@ -171,15 +171,15 @@ public class DefaultClient implements Closeable {
 	 * @param updateTime
 	 *        the updateTime to set
 	 */
-	public void setUpdateTime(int updateTime) {
+	public void setUpdateTime(final int updateTime) {
 		this.updateTime = updateTime;
 	}
 
-	public SopremoID submit(SopremoPlan plan, ProgressListener progressListener) {
-		return submit(plan, progressListener, true);
+	public SopremoID submit(final SopremoPlan plan, final ProgressListener progressListener) {
+		return this.submit(plan, progressListener, true);
 	}
 
-	public SopremoID submit(SopremoPlan plan, ProgressListener progressListener, boolean wait) {
+	public SopremoID submit(final SopremoPlan plan, ProgressListener progressListener, final boolean wait) {
 		if (plan == null)
 			throw new NullPointerException();
 
@@ -187,7 +187,7 @@ public class DefaultClient implements Closeable {
 			progressListener = new ThrowingListener();
 		this.initConnection(progressListener);
 		if (!this.transferLibraries(plan, progressListener)) {
-			dealWithError(progressListener, null, "Could not transfer libraries - aborting");
+			this.dealWithError(progressListener, null, "Could not transfer libraries - aborting");
 			return null;
 		}
 
@@ -196,7 +196,7 @@ public class DefaultClient implements Closeable {
 			return null;
 
 		if (response.getState() == ExecutionState.ERROR) {
-			dealWithError(progressListener, null, "Error while submitting to job execution");
+			this.dealWithError(progressListener, null, "Error while submitting to job execution");
 			return null;
 		}
 
@@ -205,13 +205,13 @@ public class DefaultClient implements Closeable {
 		return response.getJobId();
 	}
 
-	private boolean transferLibraries(SopremoPlan plan, ProgressListener progressListener) {
+	private boolean transferLibraries(final SopremoPlan plan, final ProgressListener progressListener) {
 		final JobID dummyKey = JobID.generate();
-		List<String> requiredLibraries = new ArrayList<String>(plan.getRequiredPackages());
+		final List<String> requiredLibraries = new ArrayList<String>(plan.getRequiredPackages());
 		try {
 			progressListener.progressUpdate(ExecutionState.SETUP, "");
-			List<Path> libraryPaths = new ArrayList<Path>();
-			for (String library : requiredLibraries) {
+			final List<Path> libraryPaths = new ArrayList<Path>();
+			for (final String library : requiredLibraries) {
 				final DataInputStream dis = new DataInputStream(new FileInputStream(library));
 				final Path libraryPath = new Path(library);
 				LibraryCacheManager.addLibrary(dummyKey, libraryPath, (int) new File(library).length(), dis);
@@ -220,7 +220,7 @@ public class DefaultClient implements Closeable {
 			}
 
 			LibraryCacheManager.register(dummyKey, libraryPaths.toArray(new Path[libraryPaths.size()]));
-			LibraryCacheProfileRequest request = new LibraryCacheProfileRequest();
+			final LibraryCacheProfileRequest request = new LibraryCacheProfileRequest();
 			final String[] internalJarNames = LibraryCacheManager.getRequiredJarFiles(dummyKey);
 			request.setRequiredLibraries(internalJarNames);
 
@@ -233,7 +233,7 @@ public class DefaultClient implements Closeable {
 				if (!response.isCached(k)) {
 					final String library = internalJarNames[k];
 					progressListener.progressUpdate(ExecutionState.SETUP, "Transfering " + requiredLibraries.get(k));
-					LibraryCacheUpdate update = new LibraryCacheUpdate(library);
+					final LibraryCacheUpdate update = new LibraryCacheUpdate(library);
 					this.executor.updateLibraryCache(update);
 				}
 
@@ -243,13 +243,13 @@ public class DefaultClient implements Closeable {
 			plan.setRequiredPackages(requiredLibraries);
 
 			return true;
-		} catch (Exception e) {
-			dealWithError(progressListener, e, "Cannot transfer libraries");
+		} catch (final Exception e) {
+			this.dealWithError(progressListener, e, "Cannot transfer libraries");
 			return false;
 		} finally {
 			try {
 				LibraryCacheManager.unregister(dummyKey);
-			} catch (IOException e) {
+			} catch (final IOException e) {
 			}
 		}
 	}
@@ -264,14 +264,14 @@ public class DefaultClient implements Closeable {
 			this.rpcService.shutDown();
 	}
 
-	protected void sleepSafely(int updateTime) {
+	protected void sleepSafely(final int updateTime) {
 		try {
 			Thread.sleep(updateTime);
-		} catch (InterruptedException e) {
+		} catch (final InterruptedException e) {
 		}
 	}
 
-	private void dealWithError(ProgressListener progressListener, Exception e, final String detail) {
+	private void dealWithError(final ProgressListener progressListener, final Exception e, final String detail) {
 		if (e != null)
 			progressListener.progressUpdate(ExecutionState.ERROR, String.format("%s: %s", detail,
 				StringUtils.stringifyException(e)));
@@ -279,11 +279,12 @@ public class DefaultClient implements Closeable {
 			progressListener.progressUpdate(ExecutionState.ERROR, detail);
 	}
 
-	private void initConnection(ProgressListener progressListener) {
+	private void initConnection(final ProgressListener progressListener) {
 		InetSocketAddress serverAddress = this.serverAddress;
 
 		if (serverAddress == null) {
-			String address = this.configuration.getString(SopremoConstants.SOPREMO_SERVER_IPC_ADDRESS_KEY, "localhost");
+			final String address =
+				this.configuration.getString(SopremoConstants.SOPREMO_SERVER_IPC_ADDRESS_KEY, "localhost");
 			final int port = this.configuration.getInteger(SopremoConstants.SOPREMO_SERVER_IPC_PORT_KEY,
 				SopremoConstants.DEFAULT_SOPREMO_SERVER_IPC_PORT);
 			serverAddress = new InetSocketAddress(address, port);
@@ -292,39 +293,40 @@ public class DefaultClient implements Closeable {
 		try {
 			this.rpcService = new RPCService();
 			this.executor = this.rpcService.getProxy(serverAddress, SopremoExecutionProtocol.class);
-		} catch (IOException e) {
+		} catch (final IOException e) {
 			this.dealWithError(progressListener, e, "Error while connecting to the server");
 		}
 	}
 
-	private ExecutionResponse sendPlan(SopremoPlan query, ProgressListener progressListener) {
+	private ExecutionResponse sendPlan(final SopremoPlan query, final ProgressListener progressListener) {
 		try {
-			ExecutionRequest request = new ExecutionRequest(query);
+			final ExecutionRequest request = new ExecutionRequest(query);
 			request.setMode(this.executionMode);
 			return this.executor.execute(request);
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			this.dealWithError(progressListener, e, "Error while sending the query to the server");
 			return null;
 		}
 	}
 
-	private SopremoID waitForCompletion(ExecutionResponse submissionResponse, ProgressListener progressListener) {
+	private SopremoID waitForCompletion(final ExecutionResponse submissionResponse,
+			final ProgressListener progressListener) {
 		ExecutionResponse lastResponse = submissionResponse;
 
-		SopremoID submittedJobId = submissionResponse.getJobId();
+		final SopremoID submittedJobId = submissionResponse.getJobId();
 
 		try {
 			progressListener.progressUpdate(ExecutionState.ENQUEUED, lastResponse.getDetails());
 			while (lastResponse.getState() == ExecutionState.ENQUEUED) {
 				lastResponse = this.executor.getState(submittedJobId);
-				sleepSafely(this.updateTime);
+				this.sleepSafely(this.updateTime);
 				progressListener.progressUpdate(ExecutionState.ENQUEUED, lastResponse.getDetails());
 			}
 
 			progressListener.progressUpdate(ExecutionState.RUNNING, lastResponse.getDetails());
 			while (lastResponse.getState() == ExecutionState.RUNNING) {
 				lastResponse = this.executor.getState(submittedJobId);
-				sleepSafely(this.updateTime);
+				this.sleepSafely(this.updateTime);
 				progressListener.progressUpdate(ExecutionState.RUNNING, lastResponse.getDetails());
 			}
 
@@ -335,14 +337,14 @@ public class DefaultClient implements Closeable {
 
 			progressListener.progressUpdate(ExecutionState.FINISHED, lastResponse.getDetails());
 			return submittedJobId;
-		} catch (Exception e) {
-			dealWithError(progressListener, e, "Error while waiting for job execution");
+		} catch (final Exception e) {
+			this.dealWithError(progressListener, e, "Error while waiting for job execution");
 			return null;
 		}
 	}
 
-	public Object getMetaData(SopremoID id, String key) throws IOException, InterruptedException {
-		Object result = this.executor.getMetaData(id, key);
+	public Object getMetaData(final SopremoID id, final String key) throws IOException, InterruptedException {
+		final Object result = this.executor.getMetaData(id, key);
 		return result;
 	}
 

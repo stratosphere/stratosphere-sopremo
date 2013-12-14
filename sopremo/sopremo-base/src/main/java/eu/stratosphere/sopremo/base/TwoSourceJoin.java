@@ -40,7 +40,7 @@ public class TwoSourceJoin extends TwoSourceJoinBase<TwoSourceJoin> {
 
 	private boolean inverseInputs;
 
-	private IntSet outerJoinSources = new IntOpenHashSet();
+	private final IntSet outerJoinSources = new IntOpenHashSet();
 
 	/**
 	 * Initializes TwoSourceJoin.
@@ -54,7 +54,7 @@ public class TwoSourceJoin extends TwoSourceJoinBase<TwoSourceJoin> {
 	 * @see eu.stratosphere.sopremo.operator.ElementaryOperator#appendAsString(java.lang.Appendable)
 	 */
 	@Override
-	public void appendAsString(Appendable appendable) throws IOException {
+	public void appendAsString(final Appendable appendable) throws IOException {
 		appendable.append("Join on ");
 		this.condition.appendAsString(appendable);
 		if (this.getResultProjection() != EvaluationExpression.VALUE) {
@@ -69,12 +69,12 @@ public class TwoSourceJoin extends TwoSourceJoinBase<TwoSourceJoin> {
 	 * eu.stratosphere.sopremo.serialization.SopremoRecordLayout)
 	 */
 	@Override
-	public PactModule asPactModule(EvaluationContext context, SopremoRecordLayout layout) {
+	public PactModule asPactModule(final EvaluationContext context, final SopremoRecordLayout layout) {
 		if (this.inverseInputs)
 			this.strategy.setResultProjection(this.getResultProjection().clone().replace(
 				Predicates.instanceOf(InputSelection.class), new TransformFunction() {
 					@Override
-					public EvaluationExpression apply(EvaluationExpression argument) {
+					public EvaluationExpression apply(final EvaluationExpression argument) {
 						return new InputSelection(1 - ((InputSelection) argument).getIndex());
 					}
 				}));
@@ -110,14 +110,14 @@ public class TwoSourceJoin extends TwoSourceJoinBase<TwoSourceJoin> {
 	}
 
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(final Object obj) {
 		if (this == obj)
 			return true;
 		if (!super.equals(obj))
 			return false;
 		if (this.getClass() != obj.getClass())
 			return false;
-		TwoSourceJoin other = (TwoSourceJoin) obj;
+		final TwoSourceJoin other = (TwoSourceJoin) obj;
 		return this.condition.equals(other.condition) && this.inverseInputs == other.inverseInputs
 			&& this.outerJoinSources.equals(other.outerJoinSources) && this.strategy.equals(other.strategy);
 	}
@@ -127,12 +127,12 @@ public class TwoSourceJoin extends TwoSourceJoinBase<TwoSourceJoin> {
 	 * @see eu.stratosphere.sopremo.ElementaryOperator#getKeyExpressions(int)
 	 */
 	@Override
-	public List<? extends EvaluationExpression> getKeyExpressions(int inputIndex) {
+	public List<? extends EvaluationExpression> getKeyExpressions(final int inputIndex) {
 		return this.strategy.getKeyExpressions(inputIndex);
 	}
 
 	public EvaluationExpression getOuterJoinSources() {
-		EvaluationExpression[] expressions = new EvaluationExpression[this.outerJoinSources.size()];
+		final EvaluationExpression[] expressions = new EvaluationExpression[this.outerJoinSources.size()];
 		final IntIterator iterator = this.outerJoinSources.iterator();
 		for (int index = 0; iterator.hasNext(); index++) {
 			final int inputIndex = iterator.nextInt();
@@ -143,7 +143,7 @@ public class TwoSourceJoin extends TwoSourceJoinBase<TwoSourceJoin> {
 
 	// TODO name inconsistency with Join.setJoinCondition()
 	@Property
-	public void setCondition(BinaryBooleanExpression condition) {
+	public void setCondition(final BinaryBooleanExpression condition) {
 		if (condition == null)
 			throw new NullPointerException("condition must not be null");
 
@@ -158,8 +158,8 @@ public class TwoSourceJoin extends TwoSourceJoinBase<TwoSourceJoin> {
 			throw new IllegalArgumentException(String.format("Type of condition %s not supported",
 				condition.getClass().getSimpleName()));
 
-		int inputIndex1 = expr1.findFirst(InputSelection.class).getIndex();
-		int inputIndex2 = expr2.findFirst(InputSelection.class).getIndex();
+		final int inputIndex1 = expr1.findFirst(InputSelection.class).getIndex();
+		final int inputIndex2 = expr2.findFirst(InputSelection.class).getIndex();
 		if (inputIndex1 == inputIndex2)
 			throw new IllegalArgumentException(String.format("Condition input selection is invalid %s", condition));
 		else if (inputIndex1 < 0 || inputIndex1 > 1 || inputIndex2 < 0 || inputIndex2 > 1)
@@ -170,7 +170,7 @@ public class TwoSourceJoin extends TwoSourceJoinBase<TwoSourceJoin> {
 
 	@Property
 	@Name(verb = "preserve")
-	public void setOuterJoinSources(EvaluationExpression outerJoinSources) {
+	public void setOuterJoinSources(final EvaluationExpression outerJoinSources) {
 		if (outerJoinSources == null)
 			throw new NullPointerException("outerJoinSources must not be null");
 
@@ -183,16 +183,16 @@ public class TwoSourceJoin extends TwoSourceJoinBase<TwoSourceJoin> {
 			throw new IllegalArgumentException(String.format("Cannot interpret %s", outerJoinSources));
 
 		this.outerJoinSources.clear();
-		for (EvaluationExpression expression : expressions)
+		for (final EvaluationExpression expression : expressions)
 			this.outerJoinSources.add(((InputSelection) expression).getIndex());
 	}
 
-	public void setOuterJoinIndices(int... outerJoinIndices) {
+	public void setOuterJoinIndices(final int... outerJoinIndices) {
 		if (outerJoinIndices == null)
 			throw new NullPointerException("outerJoinIndices must not be null");
 
 		this.outerJoinSources.clear();
-		for (int index : outerJoinIndices)
+		for (final int index : outerJoinIndices)
 			this.outerJoinSources.add(index);
 	}
 
@@ -200,17 +200,17 @@ public class TwoSourceJoin extends TwoSourceJoinBase<TwoSourceJoin> {
 		return this.outerJoinSources.toIntArray();
 	}
 
-	public TwoSourceJoin withCondition(BinaryBooleanExpression condition) {
+	public TwoSourceJoin withCondition(final BinaryBooleanExpression condition) {
 		this.setCondition(condition);
 		return this;
 	}
 
-	public TwoSourceJoin withOuterJoinSources(EvaluationExpression outerJoinSources) {
+	public TwoSourceJoin withOuterJoinSources(final EvaluationExpression outerJoinSources) {
 		this.setOuterJoinSources(outerJoinSources);
 		return this;
 	}
 
-	public TwoSourceJoin withOuterJoinIndices(int... outerJoinIndices) {
+	public TwoSourceJoin withOuterJoinIndices(final int... outerJoinIndices) {
 		this.setOuterJoinIndices(outerJoinIndices);
 		return this;
 	}
@@ -229,7 +229,7 @@ public class TwoSourceJoin extends TwoSourceJoinBase<TwoSourceJoin> {
 		this.strategy = null;
 		// choose the strategy, just probably generalized in a kind of factory
 		if (this.condition instanceof ComparativeExpression) {
-			ComparativeExpression comparison = (ComparativeExpression) this.condition.clone();
+			final ComparativeExpression comparison = (ComparativeExpression) this.condition.clone();
 			switch (comparison.getBinaryOperator()) {
 			case EQUAL:
 				this.inverseInputs = comparison.getExpr1().findFirst(InputSelection.class).getIndex() == 1;
@@ -241,7 +241,7 @@ public class TwoSourceJoin extends TwoSourceJoinBase<TwoSourceJoin> {
 				this.strategy = new ThetaJoin().withCondition(comparison);
 			}
 		} else if (this.condition instanceof ElementInSetExpression) {
-			ElementInSetExpression elementInSetExpression = (ElementInSetExpression) this.condition.clone();
+			final ElementInSetExpression elementInSetExpression = (ElementInSetExpression) this.condition.clone();
 			this.inverseInputs =
 				elementInSetExpression.getElementExpr().findFirst(InputSelection.class).getIndex() == 1;
 			switch (elementInSetExpression.getQuantor()) {

@@ -41,7 +41,7 @@ public abstract class PathSegmentExpression extends EvaluationExpression {
 	 * @param inputExpression
 	 *        the inputExpression to set
 	 */
-	public void setInputExpression(EvaluationExpression inputExpression) {
+	public void setInputExpression(final EvaluationExpression inputExpression) {
 		if (inputExpression == null)
 			throw new NullPointerException("inputExpression must not be null");
 
@@ -54,21 +54,23 @@ public abstract class PathSegmentExpression extends EvaluationExpression {
 	 * @param inputExpression
 	 *        the inputExpression to set
 	 */
-	public PathSegmentExpression withInputExpression(EvaluationExpression inputExpression) {
+	public PathSegmentExpression withInputExpression(final EvaluationExpression inputExpression) {
 		this.setInputExpression(inputExpression);
 		return this;
 	}
 
 	public PathSegmentExpression getLast() {
 		PathSegmentExpression segment = this;
-		while (segment.inputExpression != EvaluationExpression.VALUE && this.inputExpression instanceof PathSegmentExpression)
+		while (segment.inputExpression != EvaluationExpression.VALUE &&
+			this.inputExpression instanceof PathSegmentExpression)
 			segment = (PathSegmentExpression) this.inputExpression;
 		return segment;
 	}
 
-
 	/**
-	 * Sets the value of the node specified by this expression.
+	 * Sets the value of the node specified by this expression.<br/>
+	 * Use this method with caution. Changing values in-place has side-effects inside of reducer, matcher, and
+	 * cogrouper. To be safe, always clone the input node.
 	 * 
 	 * @param node
 	 *        the node to change
@@ -76,14 +78,14 @@ public abstract class PathSegmentExpression extends EvaluationExpression {
 	 *        the value to set
 	 * @return the node or a new node if the expression directly accesses the node
 	 */
-	public IJsonNode set(IJsonNode node, IJsonNode value) {
-		if(getInputExpression() == EvaluationExpression.VALUE)
-			return setSegment(node, value);
-		setSegment(this.getInputExpression().evaluate(node), value);
+	public IJsonNode set(final IJsonNode node, final IJsonNode value) {
+		if (this.getInputExpression() == EvaluationExpression.VALUE)
+			return this.setSegment(node, value);
+		this.setSegment(this.getInputExpression().evaluate(node), value);
 		return node;
 	}
 
-	protected IJsonNode setSegment(IJsonNode node, IJsonNode value) {
+	protected IJsonNode setSegment(final IJsonNode node, final IJsonNode value) {
 		throw new UnsupportedOperationException(String.format(
 			"Cannot change the value with expression %s of node %s to %s", this, node, value));
 	}
@@ -102,15 +104,15 @@ public abstract class PathSegmentExpression extends EvaluationExpression {
 	 * @see eu.stratosphere.sopremo.expressions.EvaluationExpression#clone()
 	 */
 	public PathSegmentExpression cloneSegment() {
-		EvaluationExpression originalInput = this.inputExpression;
+		final EvaluationExpression originalInput = this.inputExpression;
 		this.inputExpression = EvaluationExpression.VALUE;
-		final PathSegmentExpression partialClone = clone();
+		final PathSegmentExpression partialClone = this.clone();
 		this.inputExpression = originalInput;
 		return partialClone;
 	}
 
-	public PathSegmentExpression withTail(EvaluationExpression tail) {
-		getLast().setInputExpression(tail);
+	public PathSegmentExpression withTail(final EvaluationExpression tail) {
+		this.getLast().setInputExpression(tail);
 		return this;
 	}
 
@@ -119,7 +121,7 @@ public abstract class PathSegmentExpression extends EvaluationExpression {
 	 * @see eu.stratosphere.sopremo.expressions.EvaluationExpression#evaluate(eu.stratosphere.sopremo.type.IJsonNode)
 	 */
 	@Override
-	public IJsonNode evaluate(IJsonNode node) {
+	public IJsonNode evaluate(final IJsonNode node) {
 		return this.evaluateSegment(this.getInputExpression().evaluate(node));
 	}
 
@@ -137,18 +139,18 @@ public abstract class PathSegmentExpression extends EvaluationExpression {
 	protected abstract int segmentHashCode();
 
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(final Object obj) {
 		if (this == obj)
 			return true;
 		if (obj == null)
 			return false;
 		if (this.getClass() != obj.getClass())
 			return false;
-		PathSegmentExpression other = (PathSegmentExpression) obj;
+		final PathSegmentExpression other = (PathSegmentExpression) obj;
 		return this.equalsSameClass(other) && this.inputExpression.equals(other.inputExpression);
 	}
 
-	public boolean equalsThisSeqment(PathSegmentExpression obj) {
+	public boolean equalsThisSeqment(final PathSegmentExpression obj) {
 		if (this == obj)
 			return true;
 		if (obj == null)
@@ -160,7 +162,7 @@ public abstract class PathSegmentExpression extends EvaluationExpression {
 
 	protected abstract boolean equalsSameClass(PathSegmentExpression other);
 
-	protected void appendInputAsString(Appendable appendable) throws IOException {
+	protected void appendInputAsString(final Appendable appendable) throws IOException {
 		if (this.inputExpression != EvaluationExpression.VALUE)
 			this.inputExpression.appendAsString(appendable);
 	}
@@ -177,12 +179,12 @@ public abstract class PathSegmentExpression extends EvaluationExpression {
 	protected NamedChildIterator namedChildIterator() {
 		return new NamedChildIterator("inputExpression") {
 			@Override
-			protected void set(int index, EvaluationExpression childExpression) {
+			protected void set(final int index, final EvaluationExpression childExpression) {
 				PathSegmentExpression.this.inputExpression = childExpression;
 			}
 
 			@Override
-			protected EvaluationExpression get(int index) {
+			protected EvaluationExpression get(final int index) {
 				return PathSegmentExpression.this.inputExpression;
 			}
 		};

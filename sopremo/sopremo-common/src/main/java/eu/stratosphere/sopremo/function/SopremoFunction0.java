@@ -30,7 +30,7 @@ public abstract class SopremoFunction0 extends SopremoFunction {
 	 * @see eu.stratosphere.sopremo.function.Callable#call(java.lang.Object)
 	 */
 	@Override
-	public IJsonNode call(IArrayNode<IJsonNode> params) {
+	public IJsonNode call(final IArrayNode<IJsonNode> params) {
 		return this.call();
 	}
 

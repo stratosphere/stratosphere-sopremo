@@ -20,7 +20,7 @@ public class ReplaceAll extends ReplaceBase<ReplaceAll> {
 	 * @see eu.stratosphere.sopremo.operator.CompositeOperator#asModule(eu.stratosphere.sopremo.EvaluationContext)
 	 */
 	@Override
-	public void addImplementation(SopremoModule module, EvaluationContext context) {
+	public void addImplementation(final SopremoModule module, final EvaluationContext context) {
 		final ArraySplit arraySplit =
 			new ArraySplit().
 				withArrayPath(this.getReplaceExpression()).
@@ -36,7 +36,7 @@ public class ReplaceAll extends ReplaceBase<ReplaceAll> {
 		else
 			defaultExpression =
 				this.getDefaultExpression().clone().replace(EvaluationExpression.VALUE, new ArrayAccess(0));
-		Replace replacedElements = new Replace().
+		final Replace replacedElements = new Replace().
 			withName(String.format("%s element", this.getName())).
 			withInputs(arraySplit, module.getInput(1)).
 			withDefaultExpression(defaultExpression).
@@ -53,7 +53,7 @@ public class ReplaceAll extends ReplaceBase<ReplaceAll> {
 			withReplaceExpression(this.getReplaceExpression()).
 			withDefaultExpression(FILTER_RECORDS);
 		// empty arrays will not be replaced
-		Selection emptyArrays = new Selection().
+		final Selection emptyArrays = new Selection().
 			withCondition(new UnaryExpression(this.getReplaceExpression(), true)).
 			withInputs(module.getInput(0));
 		module.getOutput(0).setInput(0, new UnionAll().withInputs(arrayLookup, emptyArrays));

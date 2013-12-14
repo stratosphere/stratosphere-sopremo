@@ -23,7 +23,7 @@ public class MissingNode extends AbstractJsonNode implements IPrimitiveNode {
 	 * Initializes a MissingNode. This constructor is needed for serialization and
 	 * deserialization of MissingNodes, please use MissingNode.getInstance() to get the instance of MissingNode.
 	 */
-	public MissingNode() {
+	MissingNode() {
 	}
 
 	/**

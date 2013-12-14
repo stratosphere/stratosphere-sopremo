@@ -31,7 +31,7 @@ public class SubArrayNode<T extends IJsonNode> extends AbstractArrayNode<T> {
 
 	private int startIndex, length;
 
-	public void init(IArrayNode<T> originalArray, int startIndex, int length) {
+	public void init(final IArrayNode<T> originalArray, final int startIndex, final int length) {
 		if (startIndex < 0)
 			throw new IllegalArgumentException();
 		if (length < 0)
@@ -41,12 +41,12 @@ public class SubArrayNode<T extends IJsonNode> extends AbstractArrayNode<T> {
 		this.length = length;
 	}
 
-	public void init(IArrayNode<T> originalArray, int startIndex) {
+	public void init(final IArrayNode<T> originalArray, final int startIndex) {
 		this.init(originalArray, startIndex, originalArray.size() - startIndex);
 	}
 
 	@Override
-	public void setSize(int length) {
+	public void setSize(final int length) {
 		if (length < 0)
 			throw new IllegalArgumentException();
 		this.length = length;
@@ -66,7 +66,7 @@ public class SubArrayNode<T extends IJsonNode> extends AbstractArrayNode<T> {
 	 * @see eu.stratosphere.sopremo.type.IArrayNode#add(eu.stratosphere.sopremo.type.IJsonNode)
 	 */
 	@Override
-	public IArrayNode<T> add(T node) {
+	public IArrayNode<T> add(final T node) {
 		this.originalArray.add(this.startIndex + this.length, node);
 		this.length++;
 		return this;
@@ -77,7 +77,7 @@ public class SubArrayNode<T extends IJsonNode> extends AbstractArrayNode<T> {
 	 * @see eu.stratosphere.sopremo.type.IArrayNode#add(int, eu.stratosphere.sopremo.type.IJsonNode)
 	 */
 	@Override
-	public IArrayNode<T> add(int index, T element) {
+	public IArrayNode<T> add(final int index, final T element) {
 		this.originalArray.add(this.startIndex + index, element);
 		this.length++;
 		return this;
@@ -88,7 +88,7 @@ public class SubArrayNode<T extends IJsonNode> extends AbstractArrayNode<T> {
 	 * @see eu.stratosphere.sopremo.type.IArrayNode#get(int)
 	 */
 	@Override
-	public T get(int index) {
+	public T get(final int index) {
 		return this.originalArray.get(this.startIndex + index);
 	}
 
@@ -97,7 +97,7 @@ public class SubArrayNode<T extends IJsonNode> extends AbstractArrayNode<T> {
 	 * @see eu.stratosphere.sopremo.type.IArrayNode#set(int, eu.stratosphere.sopremo.type.IJsonNode)
 	 */
 	@Override
-	public void set(int index, T node) {
+	public void set(final int index, final T node) {
 		this.originalArray.set(this.startIndex + index, node);
 	}
 
@@ -106,7 +106,7 @@ public class SubArrayNode<T extends IJsonNode> extends AbstractArrayNode<T> {
 	 * @see eu.stratosphere.sopremo.type.IArrayNode#remove(int)
 	 */
 	@Override
-	public void remove(int index) {
+	public void remove(final int index) {
 		if (index < 0 || index >= this.size())
 			return;
 

@@ -41,9 +41,8 @@ public class StrictAtomarReplace extends AtomarReplaceBase<StrictAtomarReplace> 
 		 * eu.stratosphere.sopremo.type.IJsonNode, eu.stratosphere.sopremo.pact.JsonCollector)
 		 */
 		@Override
-		protected void match(IJsonNode value1, IJsonNode value2, JsonCollector<IJsonNode> out) {
-			out.collect(this.replaceExpression.set(value1,
-				this.dictionaryValueExtraction.evaluate(value2)));
+		protected void match(final IJsonNode value1, final IJsonNode value2, final JsonCollector<IJsonNode> out) {
+			out.collect(this.replaceExpression.set(value1, this.dictionaryValueExtraction.evaluate(value2)));
 		}
 	}
 }

@@ -5,6 +5,8 @@ import java.io.DataInput;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -22,6 +24,7 @@ import com.esotericsoftware.kryo.Registration;
 import com.esotericsoftware.kryo.Serializer;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
+import com.google.common.reflect.TypeToken;
 
 import eu.stratosphere.nephele.configuration.Configuration;
 import eu.stratosphere.nephele.util.StringUtils;
@@ -32,11 +35,13 @@ import eu.stratosphere.sopremo.cache.NodeCache;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
 import eu.stratosphere.sopremo.expressions.UnevaluableExpression;
 import eu.stratosphere.sopremo.function.SopremoFunction;
-import eu.stratosphere.sopremo.serialization.SopremoRecordLayout;
 import eu.stratosphere.sopremo.type.IArrayNode;
 import eu.stratosphere.sopremo.type.IJsonNode;
 import eu.stratosphere.sopremo.type.IObjectNode;
 import eu.stratosphere.sopremo.type.ReusingSerializer;
+import eu.stratosphere.sopremo.type.typed.ITypedObjectNode;
+import eu.stratosphere.sopremo.type.typed.TypedObjectNode;
+import eu.stratosphere.sopremo.type.typed.TypedObjectNodeFactory;
 import eu.stratosphere.util.ICloneable;
 import eu.stratosphere.util.KryoUtil;
 
@@ -56,7 +61,7 @@ public class SopremoUtil {
 
 	public static Log LOG = NORMAL_LOG;
 
-	private static final String CONTEXT = "sopremo.context", LAYOUT = "sopremo.layout";
+	private static final String CONTEXT = "sopremo.context";
 
 	/**
 	 * Configures an object with the given {@link Configuration} that has been initialized with
@@ -102,8 +107,8 @@ public class SopremoUtil {
 	 * @param parameters
 	 *        the configuration that should be used
 	 */
-	public static <S, T> void transferFieldsToConfiguration(S sourceInstance, final Class<? super S> stopClass,
-			Configuration configuration, Class<T> targetClass, Class<? super T> targetStopClass) {
+	public static <S, T> void transferFieldsToConfiguration(final S sourceInstance, final Class<? super S> stopClass,
+			final Configuration configuration, final Class<T> targetClass, final Class<? super T> targetStopClass) {
 
 		for (Class<?> tarClass = targetClass; tarClass != null; tarClass = tarClass.getSuperclass()) {
 			for (final Field stubField : tarClass.getDeclaredFields())
@@ -154,41 +159,40 @@ public class SopremoUtil {
 	 * Deserializes an {@link Serializable} from a {@link DataInput}.<br>
 	 * Please note that this method is not very efficient.
 	 */
-	public static <T> T deserialize(DataInput in, Class<T> clazz) throws IOException {
-		byte[] buffer = new byte[in.readInt()];
+	public static <T> T deserialize(final DataInput in, final Class<T> clazz) throws IOException {
+		final byte[] buffer = new byte[in.readInt()];
 		in.readFully(buffer);
 		return deserialize(buffer, clazz);
 	}
 
-	@SuppressWarnings({ "unchecked" })
-	public static <T> T deserialize(byte[] bytes, Class<T> clazz) {
+	public static <T> T deserialize(final byte[] bytes, final Class<T> clazz) {
 		final Kryo kryo = KryoUtil.getKryo();
-		Input input = new Input(bytes);
+		final Input input = new Input(bytes);
 		kryo.reset();
 		kryo.setClassLoader(SopremoEnvironment.getInstance().getClassLoader());
-		return (T) kryo.readClassAndObject(input);
+		return clazz.cast(kryo.readClassAndObject(input));
 	}
 
 	@SuppressWarnings("unchecked")
-	public static <T extends ICloneable> List<T> deepClone(List<T> originals) {
+	public static <T extends ICloneable> List<T> deepClone(final List<T> originals) {
 		final ArrayList<T> clones = new ArrayList<T>(originals.size());
-		for (T t : originals)
+		for (final T t : originals)
 			clones.add((T) t.clone());
 		return clones;
 	}
 
 	@SuppressWarnings("unchecked")
-	public static <K, V extends ICloneable> Map<K, V> deepClone(Map<K, V> originals) {
+	public static <K, V extends ICloneable> Map<K, V> deepClone(final Map<K, V> originals) {
 		final Map<K, V> clones = new HashMap<K, V>(originals.size());
-		for (Entry<K, V> original : originals.entrySet())
+		for (final Entry<K, V> original : originals.entrySet())
 			clones.put(original.getKey(), (V) original.getValue().clone());
 		return clones;
 	}
 
 	@SuppressWarnings("unchecked")
-	public static <K, V> Map<K, V> deepCloneIfPossible(Map<K, V> originals) {
+	public static <K, V> Map<K, V> deepCloneIfPossible(final Map<K, V> originals) {
 		final Map<K, V> clones = new HashMap<K, V>(originals.size());
-		for (Entry<K, V> original : originals.entrySet()) {
+		for (final Entry<K, V> original : originals.entrySet()) {
 			V value = original.getValue();
 			if (value instanceof ICloneable)
 				value = (V) ((ICloneable) value).clone();
@@ -197,7 +201,7 @@ public class SopremoUtil {
 		return clones;
 	}
 
-	public static void assertArguments(SopremoFunction function, int numberOfArguments) {
+	public static void assertArguments(final SopremoFunction function, final int numberOfArguments) {
 		if (!function.accepts(numberOfArguments))
 			throw new IllegalArgumentException(
 				String.format("Cannot use the given function as it does not accept %d arguments", numberOfArguments));
@@ -205,7 +209,7 @@ public class SopremoUtil {
 
 	private static final Map<Class<?>, Object> DefaultInitializations = new IdentityHashMap<Class<?>, Object>();
 
-	private static synchronized Object getDefault(Class<?> clazz, ICloneable uninitialized) {
+	private static synchronized Object getDefault(final Class<?> clazz, final ICloneable uninitialized) {
 		final Object object = DefaultInitializations.get(clazz);
 		if (object != null)
 			return object;
@@ -214,13 +218,28 @@ public class SopremoUtil {
 		return clone;
 	}
 
+	private final static TypeToken<?> ITypedObjectNodeType = TypeToken.of(ITypedObjectNode.class);
+
+	@SuppressWarnings("unchecked")
+	static TypedObjectNode[] getTypedNodes(final TypeToken<?> boundStub) {
+		final Type[] actualTypeArguments = ((ParameterizedType) boundStub.getType()).getActualTypeArguments();
+		final TypedObjectNode[] nodes = new TypedObjectNode[actualTypeArguments.length - 1];
+		for (int index = 0; index < nodes.length; index++)
+			if (ITypedObjectNodeType.isAssignableFrom(actualTypeArguments[0]))
+				nodes[index] =
+					(TypedObjectNode) TypedObjectNodeFactory.getInstance().
+						getTypedObjectForInterface(
+							(Class<ITypedObjectNode>) TypeToken.of(actualTypeArguments[0]).getRawType());
+		return nodes;
+	}
+
 	/**
 	 * @param evaluationExpression
 	 */
-	public static void initTransientFields(Object object) {
+	public static void initTransientFields(final Object object) {
 		for (Class<?> clazz = object.getClass(); clazz != Object.class; clazz = clazz.getSuperclass()) {
 			final Field[] fields = clazz.getDeclaredFields();
-			for (Field field : fields)
+			for (final Field field : fields)
 				try {
 					if ((field.getModifiers() & Modifier.TRANSIENT) > 0) {
 						final Class<?> type = field.getType();
@@ -237,7 +256,7 @@ public class SopremoUtil {
 							// try to create new object
 							field.set(object, type.newInstance());
 					}
-				} catch (Exception e) {
+				} catch (final Exception e) {
 					LOG.error("Cannot initialize transient field " + field, e);
 				}
 		}
@@ -246,8 +265,8 @@ public class SopremoUtil {
 	/**
 	 * Appends the textual representation of the given objects to the appendable.
 	 */
-	public static void append(Appendable appendable, Object... objects) throws IOException {
-		for (Object object : objects)
+	public static void append(final Appendable appendable, final Object... objects) throws IOException {
+		for (final Object object : objects)
 			if (object instanceof CharSequence)
 				appendable.append((CharSequence) object);
 			else if (object instanceof ISopremoType)
@@ -268,7 +287,7 @@ public class SopremoUtil {
 	 * @return
 	 */
 	@SuppressWarnings("unchecked")
-	public static <T> T getObject(Configuration config, String keyName, T defaultValue) {
+	public static <T> T getObject(final Configuration config, final String keyName, final T defaultValue) {
 		final String stringRepresentation = config.getString(keyName, null);
 		if (stringRepresentation == null)
 			return defaultValue;
@@ -276,24 +295,14 @@ public class SopremoUtil {
 		return (T) deserialize(bytes, Object.class);
 	}
 
-	public static EvaluationContext getEvaluationContext(Configuration config) {
+	public static EvaluationContext getEvaluationContext(final Configuration config) {
 		return getObject(config, CONTEXT, null);
 	}
 
-	public static SopremoRecordLayout getLayout(Configuration config) {
-		return getObject(config, LAYOUT, null);
-	}
-
-	public static void setEvaluationContext(Configuration config, EvaluationContext context) {
+	public static void setEvaluationContext(final Configuration config, final EvaluationContext context) {
 		if (context == null)
 			throw new NullPointerException();
 		setObject(config, CONTEXT, context);
-	}
-
-	public static void setLayout(Configuration config, SopremoRecordLayout layout) {
-		if (layout == null)
-			throw new NullPointerException();
-		setObject(config, LAYOUT, layout);
 	}
 
 	/**
@@ -301,12 +310,13 @@ public class SopremoUtil {
 	 * @param context2
 	 * @param context3
 	 */
-	public static void setObject(Configuration config, String keyName, Object object) {
+	public static void setObject(final Configuration config, final String keyName, final Object object) {
 		config.setString(keyName, new String(serializable(object), BINARY_CHARSET));
 	}
 
 	@SuppressWarnings("unchecked")
-	public static <T extends IJsonNode> void replaceWithCopy(IArrayNode<T> arrayNode, int index, T element) {
+	public static <T extends IJsonNode> void replaceWithCopy(final IArrayNode<T> arrayNode, final int index,
+			final T element) {
 		final T oldValue = arrayNode.get(index);
 		if (oldValue.getType() == element.getType())
 			oldValue.copyValueFrom(element);
@@ -315,7 +325,7 @@ public class SopremoUtil {
 	}
 
 	@SuppressWarnings("unchecked")
-	public static <T extends IJsonNode> T copyInto(T node, IJsonNode possibleTarget) {
+	public static <T extends IJsonNode> T copyInto(final T node, final IJsonNode possibleTarget) {
 		if (possibleTarget == null || possibleTarget.getType() != node.getType())
 			return (T) node.clone();
 		possibleTarget.copyValueFrom(node);
@@ -323,7 +333,7 @@ public class SopremoUtil {
 	}
 
 	@SuppressWarnings("unchecked")
-	public static <T extends IJsonNode> T copyInto(T node, NodeCache nodeCache) {
+	public static <T extends IJsonNode> T copyInto(final T node, final NodeCache nodeCache) {
 		final IJsonNode target = nodeCache.getNode(node.getType());
 		target.copyValueFrom(node);
 		return (T) target;
@@ -334,7 +344,7 @@ public class SopremoUtil {
 	 * @param field
 	 * @param value
 	 */
-	public static void replaceWithCopy(IObjectNode node, String field, IJsonNode element) {
+	public static void replaceWithCopy(final IObjectNode node, final String field, final IJsonNode element) {
 		final IJsonNode oldValue = node.get(field);
 		if (oldValue.getType() == node.getType())
 			oldValue.copyValueFrom(node);
@@ -342,7 +352,7 @@ public class SopremoUtil {
 			node.put(field, element.clone());
 	}
 
-	public static byte[] serializable(Object object) {
+	public static byte[] serializable(final Object object) {
 		final ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		final Output output = new Output(baos);
 		final Kryo kryo = KryoUtil.getKryo();
@@ -353,7 +363,7 @@ public class SopremoUtil {
 	}
 
 	@SuppressWarnings("unchecked")
-	public static <T> T deserializeInto(Kryo kryo, Input input, T oldNode) {
+	public static <T> T deserializeInto(final Kryo kryo, final Input input, final T oldNode) {
 		final Registration registration = kryo.readClass(input);
 
 		final Serializer<T> serializer = registration.getSerializer();

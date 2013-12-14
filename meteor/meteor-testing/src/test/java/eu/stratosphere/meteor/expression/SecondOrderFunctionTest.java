@@ -14,8 +14,9 @@
  **********************************************************************************************************************/
 package eu.stratosphere.meteor.expression;
 
+import static eu.stratosphere.sopremo.function.FunctionUtil.createFunctionCall;
+
 import org.junit.Test;
-import static eu.stratosphere.sopremo.function.FunctionUtil.*;
 
 import eu.stratosphere.meteor.MeteorParseTest;
 import eu.stratosphere.sopremo.SecondOrderFunctions;
@@ -42,7 +43,7 @@ public class SecondOrderFunctionTest extends MeteorParseTest {
 
 	@Test
 	public void testMapWithFunctionDefinition() {
-		final SopremoPlan actualPlan = parseScript("square = fn(elem) { elem.a * elem.b };\n" +
+		final SopremoPlan actualPlan = this.parseScript("square = fn(elem) { elem.a * elem.b };\n" +
 			"$input = read from 'file://input.json';\n" +
 			"$result = group $input by $input.key into { squared: map($input, &square) };\n" +
 			"write $result to 'file://output.json'; ");
@@ -69,7 +70,7 @@ public class SecondOrderFunctionTest extends MeteorParseTest {
 	@Test
 	public void testMapWithFunctionImport() throws SecurityException, NoSuchMethodException {
 		final SopremoPlan actualPlan =
-			parseScript("testudf = javaudf('" + this.getClass().getName() + ".udfTest');\n" +
+			this.parseScript("testudf = javaudf('" + this.getClass().getName() + ".udfTest');\n" +
 				"$input = read from 'file://input.json';\n" +
 				"$result = group $input by $input.key into map($input, &testudf);\n" +
 				"write $result to 'file://output.json'; ");
@@ -92,7 +93,7 @@ public class SecondOrderFunctionTest extends MeteorParseTest {
 
 	@Test
 	public void testMapWithInlineFunction() {
-		final SopremoPlan actualPlan = parseScript(
+		final SopremoPlan actualPlan = this.parseScript(
 			"$input = read from 'file://input.json';\n" +
 				"$result = group $input by $input.key into [map($input, fn(elem) { elem.a * elem.b })];\n" +
 				"write $result to 'file://output.json'; ");

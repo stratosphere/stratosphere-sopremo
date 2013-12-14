@@ -1,21 +1,19 @@
 package eu.stratosphere.sopremo.base;
 
+import static eu.stratosphere.sopremo.function.FunctionUtil.createFunctionCall;
+
 import java.util.Arrays;
-import static eu.stratosphere.sopremo.function.FunctionUtil.*;
 import java.util.List;
 
 import nl.jqno.equalsverifier.EqualsVerifier;
 
 import org.junit.Test;
 
-import eu.stratosphere.sopremo.EvaluationContext;
 import eu.stratosphere.sopremo.CoreFunctions;
-import eu.stratosphere.sopremo.EvaluationContext;
 import eu.stratosphere.sopremo.base.replace.ReplaceBase;
 import eu.stratosphere.sopremo.expressions.ArrayAccess;
 import eu.stratosphere.sopremo.expressions.ConstantExpression;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
-import eu.stratosphere.sopremo.expressions.FunctionCall;
 import eu.stratosphere.sopremo.expressions.ObjectAccess;
 import eu.stratosphere.sopremo.testing.SopremoOperatorTestBase;
 import eu.stratosphere.sopremo.testing.SopremoTestPlan;
@@ -24,7 +22,7 @@ import eu.stratosphere.sopremo.testing.SopremoTestPlan;
 
 public class ReplaceTest extends SopremoOperatorTestBase<Replace> {
 	@Override
-	protected Replace createDefaultInstance(int index) {
+	protected Replace createDefaultInstance(final int index) {
 		return new Replace().withReplaceExpression(new ArrayAccess(index));
 	}
 
@@ -33,7 +31,7 @@ public class ReplaceTest extends SopremoOperatorTestBase<Replace> {
 	 * @see eu.stratosphere.sopremo.EqualCloneTest#initVerifier(nl.jqno.equalsverifier.EqualsVerifier)
 	 */
 	@Override
-	protected void initVerifier(EqualsVerifier<Replace> equalVerifier) {
+	protected void initVerifier(final EqualsVerifier<Replace> equalVerifier) {
 		super.initVerifier(equalVerifier);
 		equalVerifier.withPrefabValues(List.class, Arrays.asList(null, null), Arrays.asList(null, null, null));
 	}

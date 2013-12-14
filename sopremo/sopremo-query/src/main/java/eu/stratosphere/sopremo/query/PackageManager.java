@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
+
 import eu.stratosphere.sopremo.io.CsvFormat;
 import eu.stratosphere.sopremo.io.JsonFormat;
 import eu.stratosphere.sopremo.io.Sink;
@@ -37,9 +38,9 @@ import eu.stratosphere.sopremo.packages.NameChooserProvider;
  * @author Arvid Heise
  */
 public class PackageManager implements ParsingScope {
-	private Map<String, PackageInfo> packages = new HashMap<String, PackageInfo>();
+	private final Map<String, PackageInfo> packages = new HashMap<String, PackageInfo>();
 
-	private List<File> jarPathLocations = new ArrayList<File>(Arrays.asList(new File(".")));
+	private final List<File> jarPathLocations = new ArrayList<File>(Arrays.asList(new File(".")));
 
 	private final StackedConstantRegistry constantRegistries;
 
@@ -53,7 +54,7 @@ public class PackageManager implements ParsingScope {
 
 	private final NameChooserProvider nameChooserProvider;
 
-	public PackageManager(NameChooserProvider nameChooserProvider) {
+	public PackageManager(final NameChooserProvider nameChooserProvider) {
 		this.nameChooserProvider = nameChooserProvider;
 
 		this.constantRegistries = new StackedConstantRegistry(nameChooserProvider.getConstantNameChooser());
@@ -80,7 +81,7 @@ public class PackageManager implements ParsingScope {
 		this.fileFormatRegistries.addLast(defaultFormatRegistry);
 	}
 
-	public void addAll(PackageManager packageManager) {
+	public void addAll(final PackageManager packageManager) {
 		this.constantRegistries.push(packageManager.getConstantRegistry());
 		this.functionRegistries.push(packageManager.getFunctionRegistry());
 		this.operatorRegistries.push(packageManager.getOperatorRegistry());
@@ -96,7 +97,7 @@ public class PackageManager implements ParsingScope {
 	 * @param defaultJarPath
 	 *        the defaultJarPath to set
 	 */
-	public void addJarPathLocation(File jarPathLocation) {
+	public void addJarPathLocation(final File jarPathLocation) {
 		if (jarPathLocation == null)
 			throw new NullPointerException("jarPathLocation must not be null");
 
@@ -157,7 +158,7 @@ public class PackageManager implements ParsingScope {
 	 * 
 	 * @param packageName
 	 */
-	public PackageInfo getPackageInfo(String packageName) {
+	public PackageInfo getPackageInfo(final String packageName) {
 		PackageInfo packageInfo = this.packages.get(packageName);
 		if (packageInfo == null) {
 			List<File> packagePath = this.findPackageInClassPath(packageName);
@@ -165,7 +166,7 @@ public class PackageManager implements ParsingScope {
 				packageInfo =
 					new PackageInfo(packageName, ClassLoader.getSystemClassLoader(), this.nameChooserProvider);
 				File jarFile = null;
-				for (File file : packagePath)
+				for (final File file : packagePath)
 					if (file.isFile() && file.getName().endsWith(".jar")) {
 						jarFile = file;
 						break;
@@ -173,7 +174,7 @@ public class PackageManager implements ParsingScope {
 				if (jarFile != null)
 					packagePath = Arrays.asList(jarFile);
 			} else {
-				File jarLocation = this.findPackageInJarPathLocations(packageName);
+				final File jarLocation = this.findPackageInJarPathLocations(packageName);
 				if (jarLocation == null)
 					throw new IllegalArgumentException(String.format("no package %s found", packageName));
 				packageInfo = new PackageInfo(packageName, this.nameChooserProvider);
@@ -181,9 +182,9 @@ public class PackageManager implements ParsingScope {
 			}
 			QueryUtil.LOG.debug("adding package " + packagePath);
 			try {
-				for (File path : packagePath)
+				for (final File path : packagePath)
 					packageInfo.importFrom(path, packageName);
-			} catch (Exception e) {
+			} catch (final Exception e) {
 				throw new IllegalArgumentException(String.format(
 					"could not load package %s; please make sure that sopremo-%s.jar is in classpath",
 					packagePath, packageName), e);
@@ -203,7 +204,7 @@ public class PackageManager implements ParsingScope {
 		return this.typeRegistries;
 	}
 
-	public void importPackage(PackageInfo packageInfo) {
+	public void importPackage(final PackageInfo packageInfo) {
 		this.constantRegistries.push(packageInfo.getConstantRegistry());
 		this.functionRegistries.push(packageInfo.getFunctionRegistry());
 		this.operatorRegistries.push(packageInfo.getOperatorRegistry());
@@ -211,17 +212,17 @@ public class PackageManager implements ParsingScope {
 		this.typeRegistries.push(packageInfo.getTypeRegistry());
 	}
 
-	public void importPackage(String packageName) {
+	public void importPackage(final String packageName) {
 		this.importPackage(this.getPackageInfo(packageName));
 	}
 
-	public void importPackageFrom(String packageName, File jarFile) {
+	public void importPackageFrom(final String packageName, final File jarFile) {
 		try {
-			PackageInfo packageInfo = new PackageInfo(packageName, this.nameChooserProvider);
+			final PackageInfo packageInfo = new PackageInfo(packageName, this.nameChooserProvider);
 			packageInfo.importFrom(jarFile, packageName);
 			this.packages.put(packageName, packageInfo);
 			this.importPackage(packageInfo);
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			throw new IllegalArgumentException("Cannot load package from directory", e);
 		}
 	}
@@ -235,18 +236,18 @@ public class PackageManager implements ParsingScope {
 		return String.format("Package manager with packages %s", this.packages);
 	}
 
-	protected List<File> findPackageInClassPath(String packageName) {
-		String sopremoPackage = getJarFileNameForPackageName(packageName);
+	protected List<File> findPackageInClassPath(final String packageName) {
+		final String sopremoPackage = getJarFileNameForPackageName(packageName);
 		// check in class paths
-		List<File> paths = new ArrayList<File>();
-		for (String path : getClasspath().split(File.pathSeparator)) {
+		final List<File> paths = new ArrayList<File>();
+		for (final String path : this.getClasspath().split(File.pathSeparator)) {
 			final int pathIndex = path.indexOf(sopremoPackage);
 			if (pathIndex == -1)
 				continue;
 			// preceding character must be a file separator
 			if (pathIndex > 0 && path.charAt(pathIndex - 1) != File.separatorChar)
 				continue;
-			int nextIndex = pathIndex + sopremoPackage.length();
+			final int nextIndex = pathIndex + sopremoPackage.length();
 			// next character must be '.', '-', or file separator
 			if (nextIndex < path.length() && path.charAt(nextIndex) != File.separatorChar &&
 				path.charAt(nextIndex) != '.' && path.charAt(nextIndex) != '-')
@@ -257,21 +258,20 @@ public class PackageManager implements ParsingScope {
 		return paths;
 	}
 
-	protected File findPackageInJarPathLocations(String packageName) {
-		String sopremoPackage = getJarFileNameForPackageName(packageName);
+	protected File findPackageInJarPathLocations(final String packageName) {
+		final String sopremoPackage = getJarFileNameForPackageName(packageName);
 		// look in additional directories
 		final Pattern filePattern = Pattern.compile(sopremoPackage + ".*\\.jar");
-		
-		for (File jarPathLocation : this.jarPathLocations) {
+
+		for (final File jarPathLocation : this.jarPathLocations) {
 			final File[] jars = jarPathLocation.listFiles(new FilenameFilter() {
 				@Override
-				public boolean accept(File dir, String name) {
+				public boolean accept(final File dir, final String name) {
 					return filePattern.matcher(name).matches();
 				}
 			});
-			if (jars.length > 0) {
+			if (jars.length > 0)
 				return jars[0];
-			}
 		}
 		return null;
 	}
@@ -284,7 +284,7 @@ public class PackageManager implements ParsingScope {
 		return classpath;
 	}
 
-	protected static String getJarFileNameForPackageName(String packageName) {
+	protected static String getJarFileNameForPackageName(final String packageName) {
 		return "sopremo-" + packageName;
 	}
 }

@@ -17,7 +17,7 @@ public class ReplaceTest extends MeteorParseTest {
 
 	@Test
 	public void testReplaceAll() {
-		final SopremoPlan actualPlan = parseScript("$persons = read from 'file://persons.json';\n" +
+		final SopremoPlan actualPlan = this.parseScript("$persons = read from 'file://persons.json';\n" +
 			"$languages = read from 'file://languages.json';\n" +
 			"$normalizedPersons = replace all $person in $persons \n" +
 			"	on $person.spokenLanguages\n" +
@@ -38,7 +38,7 @@ public class ReplaceTest extends MeteorParseTest {
 
 	@Test
 	public void testReplaceWithDefaultValue() {
-		final SopremoPlan actualPlan = parseScript("$persons = read from 'file://persons.json';\n" +
+		final SopremoPlan actualPlan = this.parseScript("$persons = read from 'file://persons.json';\n" +
 			"$languages = read from 'file://languages.json';\n" +
 			"$normalizedPersons = replace all $person in $persons \n" +
 			"	on $person.spokenLanguages\n" +
@@ -62,7 +62,7 @@ public class ReplaceTest extends MeteorParseTest {
 
 	@Test
 	public void testSimpleReplace() {
-		final SopremoPlan actualPlan = parseScript("$persons = read from 'file://persons.json';\n" +
+		final SopremoPlan actualPlan = this.parseScript("$persons = read from 'file://persons.json';\n" +
 			"$nickNames = read from 'file://nickNames.json';\n" +
 			"$normalizedPersons = replace $person in $persons\n" +
 			"	on $person.firstName\n" +

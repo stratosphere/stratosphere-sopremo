@@ -14,7 +14,7 @@ import eu.stratosphere.sopremo.EqualCloneTest;
 
 @Ignore
 public abstract class EvaluableExpressionTest<T extends EvaluationExpression> extends EqualCloneTest<T> {
-//	protected EvaluationContext context;
+	// protected EvaluationContext context;
 
 	/*
 	 * (non-Javadoc)
@@ -28,7 +28,7 @@ public abstract class EvaluableExpressionTest<T extends EvaluationExpression> ex
 
 	@Before
 	public void initContext() {
-//		this.context = new EvaluationContext();
+		// this.context = new EvaluationContext();
 	}
 
 	@Override

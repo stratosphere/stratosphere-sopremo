@@ -61,7 +61,7 @@ public class InputSelection extends PathSegmentExpression {
 	 * .PathSegmentExpression)
 	 */
 	@Override
-	public boolean equalsSameClass(PathSegmentExpression other) {
+	public boolean equalsSameClass(final PathSegmentExpression other) {
 		return this.index == ((InputSelection) other).index;
 	}
 

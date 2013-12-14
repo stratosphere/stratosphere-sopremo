@@ -21,14 +21,14 @@ public class ThetaJoin extends TwoSourceJoinBase<ThetaJoin> {
 		return this.condition;
 	}
 
-	public void setCondition(BooleanExpression condition) {
+	public void setCondition(final BooleanExpression condition) {
 		if (condition == null)
 			throw new NullPointerException("condition must not be null");
 
 		this.condition = condition;
 	}
 
-	public ThetaJoin withCondition(BooleanExpression condition) {
+	public ThetaJoin withCondition(final BooleanExpression condition) {
 		this.setCondition(condition);
 		return this;
 	}
@@ -39,7 +39,7 @@ public class ThetaJoin extends TwoSourceJoinBase<ThetaJoin> {
 		private BooleanExpression condition;
 
 		@Override
-		protected void cross(IJsonNode value1, IJsonNode value2, JsonCollector<IJsonNode> out) {
+		protected void cross(final IJsonNode value1, final IJsonNode value2, final JsonCollector<IJsonNode> out) {
 			this.inputs.set(0, value1);
 			this.inputs.set(1, value2);
 			if (this.condition.evaluate(this.inputs) == BooleanNode.TRUE)

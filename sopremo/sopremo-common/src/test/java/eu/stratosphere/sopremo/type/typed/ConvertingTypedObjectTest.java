@@ -20,7 +20,7 @@ public class ConvertingTypedObjectTest {
 
 	@Test
 	public void testUnmodifiableType() {
-		JavaPersonInterface dummy =
+		final JavaPersonInterface dummy =
 			TypedObjectNodeFactory.getInstance().getTypedObjectForInterface(JavaPersonInterface.class);
 		dummy.setName("FooBär");
 		assertEquals("FooBär", dummy.getName());
@@ -28,7 +28,7 @@ public class ConvertingTypedObjectTest {
 
 	@Test
 	public void testSetModifiableType() {
-		JavaPersonModifiableInterface dummy =
+		final JavaPersonModifiableInterface dummy =
 			TypedObjectNodeFactory.getInstance().getTypedObjectForInterface(JavaPersonModifiableInterface.class);
 		final StringBuilder input = new StringBuilder("FooBär");
 		dummy.setName(input);
@@ -38,7 +38,7 @@ public class ConvertingTypedObjectTest {
 
 	@Test
 	public void testCreateCacheObjectForModifiableType() {
-		JavaPersonModifiableInterface dummy =
+		final JavaPersonModifiableInterface dummy =
 			TypedObjectNodeFactory.getInstance().getTypedObjectForInterface(JavaPersonModifiableInterface.class);
 
 		dummy.put("name", new TextNode("BärFoo"));
@@ -47,8 +47,9 @@ public class ConvertingTypedObjectTest {
 
 	@Test
 	public void testMultipleInheritanceHierarchies() {
-		JavaPersonWithAgeAndWeightInterface dummy = TypedObjectNodeFactory.getInstance().getTypedObjectForInterface(
-			JavaPersonWithAgeAndWeightInterface.class);
+		final JavaPersonWithAgeAndWeightInterface dummy =
+			TypedObjectNodeFactory.getInstance().getTypedObjectForInterface(
+				JavaPersonWithAgeAndWeightInterface.class);
 		dummy.setName("FooBär");
 		dummy.setAge(3);
 		dummy.setWeight(14.5);
@@ -59,7 +60,7 @@ public class ConvertingTypedObjectTest {
 
 	@Test
 	public void testSimpleObjectCreationForALessSimpleInterface() {
-		JavaSomeThingInterface dummy = TypedObjectNodeFactory.getInstance().getTypedObjectForInterface(
+		final JavaSomeThingInterface dummy = TypedObjectNodeFactory.getInstance().getTypedObjectForInterface(
 			JavaSomeThingInterface.class);
 		dummy.setName("labelText");
 		assertEquals("labelText", dummy.getName());
@@ -71,7 +72,7 @@ public class ConvertingTypedObjectTest {
 
 	@Test
 	public void testNullReturningForUnsetValues() {
-		JavaSomeThingInterface dummy = TypedObjectNodeFactory.getInstance().getTypedObjectForInterface(
+		final JavaSomeThingInterface dummy = TypedObjectNodeFactory.getInstance().getTypedObjectForInterface(
 			JavaSomeThingInterface.class);
 		assertNull(dummy.getName());
 		assertNull(dummy.getCool());
@@ -79,14 +80,14 @@ public class ConvertingTypedObjectTest {
 
 	@Test
 	public void testErrorForUnsetPrimitiveValues() {
-		JavaSomeThingInterface dummy = TypedObjectNodeFactory.getInstance().getTypedObjectForInterface(
+		final JavaSomeThingInterface dummy = TypedObjectNodeFactory.getInstance().getTypedObjectForInterface(
 			JavaSomeThingInterface.class);
 		assertNull(dummy.getAge());
 	}
 
 	@Test
 	public void testNullReturningForNullSetValues() {
-		JavaSomeThingInterface dummy = TypedObjectNodeFactory.getInstance().getTypedObjectForInterface(
+		final JavaSomeThingInterface dummy = TypedObjectNodeFactory.getInstance().getTypedObjectForInterface(
 			JavaSomeThingInterface.class);
 		dummy.setName(null);
 		assertNull(dummy.getName());
@@ -96,21 +97,23 @@ public class ConvertingTypedObjectTest {
 
 	@Test
 	public void testErrorForSetNullInPrimitiveValues() {
-		JavaSomeThingInterface dummy = TypedObjectNodeFactory.getInstance().getTypedObjectForInterface(
+		final JavaSomeThingInterface dummy = TypedObjectNodeFactory.getInstance().getTypedObjectForInterface(
 			JavaSomeThingInterface.class);
 		assertNull(dummy.getAge());
 	}
 
 	@Test
 	public void testTypedObjectCreationForAnInterfaceExtendingAnotherTypedInterface() {
-		JavaPersonWithAgeAndWeightInterface person = TypedObjectNodeFactory.getInstance().getTypedObjectForInterface(
-			JavaPersonWithAgeAndWeightInterface.class);
+		final JavaPersonWithAgeAndWeightInterface person =
+			TypedObjectNodeFactory.getInstance().getTypedObjectForInterface(
+				JavaPersonWithAgeAndWeightInterface.class);
 		person.setName("FooBär");
 		person.setAge(3);
 		person.setWeight(14.5);
 
-		JavaMyInterfaceWithTypedObjectProperty dummy = TypedObjectNodeFactory.getInstance().getTypedObjectForInterface(
-			JavaMyInterfaceWithTypedObjectProperty.class);
+		final JavaMyInterfaceWithTypedObjectProperty dummy =
+			TypedObjectNodeFactory.getInstance().getTypedObjectForInterface(
+				JavaMyInterfaceWithTypedObjectProperty.class);
 
 		dummy.setPerson(person);
 		assertEquals("FooBär", dummy.getPerson().getName());
@@ -120,15 +123,16 @@ public class ConvertingTypedObjectTest {
 
 	@Test
 	public void testTypedInterfaceWithAListsOfTypedObjectNodes() {
-		JavaPersonOwningThingsInterface personOwning = TypedObjectNodeFactory.getInstance().getTypedObjectForInterface(
-			JavaPersonOwningThingsInterface.class);
+		final JavaPersonOwningThingsInterface personOwning =
+			TypedObjectNodeFactory.getInstance().getTypedObjectForInterface(
+				JavaPersonOwningThingsInterface.class);
 
-		JavaSomeThingInterface thing1 = TypedObjectNodeFactory.getInstance().getTypedObjectForInterface(
+		final JavaSomeThingInterface thing1 = TypedObjectNodeFactory.getInstance().getTypedObjectForInterface(
 			JavaSomeThingInterface.class);
-		JavaSomeThingInterface thing2 = TypedObjectNodeFactory.getInstance().getTypedObjectForInterface(
+		final JavaSomeThingInterface thing2 = TypedObjectNodeFactory.getInstance().getTypedObjectForInterface(
 			JavaSomeThingInterface.class);
 
-		List<JavaSomeThingInterface> listOfThings = new ArrayList<JavaSomeThingInterface>();
+		final List<JavaSomeThingInterface> listOfThings = new ArrayList<JavaSomeThingInterface>();
 		listOfThings.add(thing1);
 		listOfThings.add(thing2);
 
@@ -141,16 +145,16 @@ public class ConvertingTypedObjectTest {
 
 	@Test
 	public void testTypedInterfaceWithAListsOfTypedObjectNodesWithoutPriorClassInstantiation() {
-		JavaInterfaceWithATypedObjectProperty owningPerson = TypedObjectNodeFactory.getInstance()
+		final JavaInterfaceWithATypedObjectProperty owningPerson = TypedObjectNodeFactory.getInstance()
 			.getTypedObjectForInterface(JavaInterfaceWithATypedObjectProperty.class);
 
-		IObjectNode thing1 = new ObjectNode();
+		final IObjectNode thing1 = new ObjectNode();
 		thing1.put("name", new TextNode("foobar"));
 		thing1.put("age", new IntNode(15));
 		thing1.put("cool", BooleanNode.TRUE);
 
 		owningPerson.put("it", thing1);
-		JavaSomeThingInterface thing1_1 = owningPerson.getIt();
+		final JavaSomeThingInterface thing1_1 = owningPerson.getIt();
 		assertEquals("foobar", thing1_1.getName());
 		assertEquals(Integer.valueOf(15), thing1_1.getAge());
 		assertEquals(Boolean.TRUE, thing1_1.getCool());
@@ -158,15 +162,16 @@ public class ConvertingTypedObjectTest {
 
 	@Test(expected = ClassCastException.class)
 	public void testIfWrongDatatypeInBackingObjectCausesErrorForJSONPrimitives() {
-		JavaInterfaceWithATypedObjectProperty dummy = TypedObjectNodeFactory.getInstance().getTypedObjectForInterface(
-			JavaInterfaceWithATypedObjectProperty.class);
+		final JavaInterfaceWithATypedObjectProperty dummy =
+			TypedObjectNodeFactory.getInstance().getTypedObjectForInterface(
+				JavaInterfaceWithATypedObjectProperty.class);
 		dummy.put("number", new TextNode("foo"));
 		dummy.getNumber();
 	}
 
 	@Test
 	public void testTypedInterfaceExtendingTwoTypedInterfaces() {
-		JavaInterfaceImplementingTwoInterfaces personAndThing = TypedObjectNodeFactory.getInstance()
+		final JavaInterfaceImplementingTwoInterfaces personAndThing = TypedObjectNodeFactory.getInstance()
 			.getTypedObjectForInterface(JavaInterfaceImplementingTwoInterfaces.class);
 		personAndThing.setName("Foobär");
 		personAndThing.setAge(5);
@@ -183,10 +188,11 @@ public class ConvertingTypedObjectTest {
 
 	@Test
 	public void testDocumentUseCase() {
-		JavaDocument document = TypedObjectNodeFactory.getInstance().getTypedObjectForInterface(JavaDocument.class);
-		JavaParagraph annotation1 =
+		final JavaDocument document =
+			TypedObjectNodeFactory.getInstance().getTypedObjectForInterface(JavaDocument.class);
+		final JavaParagraph annotation1 =
 			TypedObjectNodeFactory.getInstance().getTypedObjectForInterface(JavaParagraph.class);
-		JavaParagraph annotation2 =
+		final JavaParagraph annotation2 =
 			TypedObjectNodeFactory.getInstance().getTypedObjectForInterface(JavaParagraph.class);
 
 		annotation1.setPosition(1);
@@ -194,7 +200,7 @@ public class ConvertingTypedObjectTest {
 		annotation2.setPosition(11);
 		annotation2.setAnnotationType(JavaAnnotationType.PROTEIN);
 
-		List<JavaParagraph> anAnnotationArray = new ArrayList<JavaParagraph>();
+		final List<JavaParagraph> anAnnotationArray = new ArrayList<JavaParagraph>();
 		anAnnotationArray.add(annotation1);
 		anAnnotationArray.add(annotation2);
 
@@ -298,9 +304,9 @@ interface JavaParagraph extends ITypedObjectNode {
 	public Integer getPosition();
 
 	public void setPosition(Integer pos);
-	
+
 	public JavaAnnotationType getAnnotationType();
-	
+
 	public void setAnnotationType(JavaAnnotationType type);
 }
 

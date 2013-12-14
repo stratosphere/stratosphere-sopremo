@@ -18,9 +18,9 @@ import eu.stratosphere.sopremo.expressions.ArrayAccess;
 import eu.stratosphere.sopremo.operator.ElementaryOperator;
 import eu.stratosphere.sopremo.operator.InputCardinality;
 import eu.stratosphere.sopremo.operator.Internal;
+import eu.stratosphere.sopremo.pact.GenericSopremoReduce;
 import eu.stratosphere.sopremo.pact.JsonCollector;
 import eu.stratosphere.sopremo.pact.SopremoUtil;
-import eu.stratosphere.sopremo.pact.GenericSopremoReduce;
 import eu.stratosphere.sopremo.type.CachingArrayNode;
 import eu.stratosphere.sopremo.type.IArrayNode;
 import eu.stratosphere.sopremo.type.IJsonNode;
@@ -42,7 +42,7 @@ public class AssembleArray extends ElementaryOperator<AssembleArray> {
 	}
 
 	public static class Implementation extends GenericSopremoReduce<IArrayNode<?>, IArrayNode<?>> {
-		private CachingArrayNode<IJsonNode> assembledArray = new CachingArrayNode<IJsonNode>();
+		private final CachingArrayNode<IJsonNode> assembledArray = new CachingArrayNode<IJsonNode>();
 
 		/*
 		 * (non-Javadoc)
@@ -50,14 +50,14 @@ public class AssembleArray extends ElementaryOperator<AssembleArray> {
 		 * eu.stratosphere.sopremo.pact.JsonCollector)
 		 */
 		@Override
-		protected void reduce(IStreamNode<IArrayNode<?>> values, JsonCollector<IArrayNode<?>> out) {
+		protected void reduce(final IStreamNode<IArrayNode<?>> values, final JsonCollector<IArrayNode<?>> out) {
 
 			int replacedCount = 0;
 			IArrayNode<?> lastValue = null;
-			for (IArrayNode<?> value : values) {
+			for (final IArrayNode<?> value : values) {
 				final IArrayNode<?> arrayValue = value;
-				int index = ((INumericNode) arrayValue.get(1)).getIntValue();
-				IJsonNode element = arrayValue.get(0);
+				final int index = ((INumericNode) arrayValue.get(1)).getIntValue();
+				final IJsonNode element = arrayValue.get(0);
 				SopremoUtil.replaceWithCopy(this.assembledArray, index, element);
 				replacedCount++;
 				lastValue = arrayValue;

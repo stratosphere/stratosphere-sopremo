@@ -8,7 +8,7 @@ public class DefaultConfObjectRegistry<T extends ConfigurableSopremoType> extend
 		implements IConfObjectRegistry<T> {
 	private final NameChooser propertyNameChooser;
 
-	public DefaultConfObjectRegistry(NameChooser operatorNameChooser, NameChooser propertyNameChooser) {
+	public DefaultConfObjectRegistry(final NameChooser operatorNameChooser, final NameChooser propertyNameChooser) {
 		super(operatorNameChooser);
 		this.propertyNameChooser = propertyNameChooser;
 	}
@@ -34,20 +34,20 @@ public class DefaultConfObjectRegistry<T extends ConfigurableSopremoType> extend
 	 * @see eu.stratosphere.sopremo.query.IConfObjectRegistry#get(java.lang.Class)
 	 */
 	@Override
-	public ConfObjectInfo<T> get(Class<?> clazz) {
+	public ConfObjectInfo<T> get(final Class<?> clazz) {
 		return this.get(this.getNames(clazz)[0]);
 	}
 
 	@Override
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public void put(final Class<? extends T> clazz, AdditionalInfoResolver additionalInfoResolver) {
-		String[] names = this.getNames(clazz);
+	public void put(final Class<? extends T> clazz, final AdditionalInfoResolver additionalInfoResolver) {
+		final String[] names = this.getNames(clazz);
 
-		for (String name : names) {
+		for (final String name : names) {
 			if (this.get(name) != null)
 				throw new IllegalStateException("Duplicate operator " + name);
 
-			this.put(name, new ConfObjectInfo(additionalInfoResolver, getPropertyNameChooser(), clazz, name));
+			this.put(name, new ConfObjectInfo(additionalInfoResolver, this.getPropertyNameChooser(), clazz, name));
 		}
 	}
 

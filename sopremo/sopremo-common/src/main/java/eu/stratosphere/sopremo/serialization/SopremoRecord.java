@@ -16,8 +16,6 @@ package eu.stratosphere.sopremo.serialization;
 
 import it.unimi.dsi.fastutil.bytes.ByteArrayList;
 
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Arrays;
@@ -27,13 +25,13 @@ import java.util.SortedSet;
 
 import com.esotericsoftware.kryo.DefaultSerializer;
 import com.esotericsoftware.kryo.Kryo;
-import com.esotericsoftware.kryo.KryoCopyable;
 import com.esotericsoftware.kryo.Registration;
 import com.esotericsoftware.kryo.Serializer;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 
-import eu.stratosphere.nephele.types.Record;
+import eu.stratosphere.nephele.services.memorymanager.DataInputView;
+import eu.stratosphere.nephele.services.memorymanager.DataOutputView;
 import eu.stratosphere.sopremo.AbstractSopremoType;
 import eu.stratosphere.sopremo.ISopremoType;
 import eu.stratosphere.sopremo.SopremoEnvironment;
@@ -53,8 +51,7 @@ import eu.stratosphere.sopremo.type.typed.TypedObjectNode;
  * @author Arvid Heise
  */
 @DefaultSerializer(value = SopremoRecord.SopremoRecordKryoSerializer.class)
-public final class SopremoRecord extends AbstractSopremoType implements ISopremoType,
-		KryoCopyable<SopremoRecord>, Record {
+public class SopremoRecord extends AbstractSopremoType implements ISopremoType {
 
 	/**
 	 * 
@@ -67,29 +64,27 @@ public final class SopremoRecord extends AbstractSopremoType implements ISopremo
 
 	private final transient Output output = new Output(new OutputStream() {
 		@Override
-		public void write(byte[] b, int off, int len) throws IOException {
+		public void write(final byte[] b, final int off, final int len) throws IOException {
 			SopremoRecord.this.binaryRepresentation.addElements(SopremoRecord.this.binaryRepresentation.size(), b, off,
 				len);
 		};
 
 		@Override
-		public void write(byte[] b) throws IOException {
+		public void write(final byte[] b) throws IOException {
 			SopremoRecord.this.binaryRepresentation.addElements(SopremoRecord.this.binaryRepresentation.size(), b);
 		};
 
 		@Override
-		public void write(int b) throws IOException {
+		public void write(final int b) throws IOException {
 			SopremoRecord.this.binaryRepresentation.add((byte) b);
 		}
 	});
-
-	private final transient NodeCache nodeCache = new NodeCache(CachingNodeFactory.getInstance());
 
 	private transient IJsonNode node;
 
 	private final transient Kryo kryo;
 
-	private final transient int offsets[];
+	private transient int offsets[];
 
 	private final transient Map<Class<? extends IJsonNode>, NodeSerializer<IJsonNode>> serializers =
 		new IdentityHashMap<Class<? extends IJsonNode>, NodeSerializer<IJsonNode>>();
@@ -100,14 +95,9 @@ public final class SopremoRecord extends AbstractSopremoType implements ISopremo
 	/**
 	 * Initializes SopremoRecord.
 	 */
-	SopremoRecord() {
-		this(SopremoRecordLayout.EMPTY);
-	}
-
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public SopremoRecord(SopremoRecordLayout layout) {
-		this.layout = layout;
-		this.offsets = new int[layout.getNumKeys()];
+	public SopremoRecord() {
+		this.offsets = new int[0];
 		this.kryo = SopremoEnvironment.getInstance().getEvaluationContext().getKryoForDataSerialization();
 
 		this.serializers.put(IObjectNode.class, (NodeSerializer) new ObjectSerializer());
@@ -123,12 +113,8 @@ public final class SopremoRecord extends AbstractSopremoType implements ISopremo
 	 * @see eu.stratosphere.sopremo.ISopremoType#appendAsString(java.lang.Appendable)
 	 */
 	@Override
-	public void appendAsString(Appendable appendable) throws IOException {
-		getNode().appendAsString(appendable);
-	}
-
-	IJsonNode getNodeDirectly() {
-		return this.node;
+	public void appendAsString(final Appendable appendable) throws IOException {
+		this.getOrParseNode().appendAsString(appendable);
 	}
 
 	/**
@@ -137,17 +123,18 @@ public final class SopremoRecord extends AbstractSopremoType implements ISopremo
 	 * @return the node
 	 */
 	public IJsonNode getNode() {
-		if (this.node == null) {
-			this.input.setBuffer(this.binaryRepresentation.elements(), 0, this.binaryRepresentation.size());
-			final IJsonNode readNode = readRecursively(this.node);
-			final TypedObjectNode typedNode = this.layout.getTypedNode();
-			if (typedNode != null) {
-				this.node = typedNode;
-				typedNode.setBackingNode((IObjectNode) readNode);
-			} else
-				this.node = readNode;
-		}
 		return this.node;
+	}
+
+	public IJsonNode getOrParseNode() {
+		if (this.node == null)
+			return this.node = this.parseNode();
+		return this.node;
+	}
+
+	public IJsonNode parseNode() {
+		this.input.setBuffer(this.binaryRepresentation.elements(), 0, this.binaryRepresentation.size());
+		return this.readRecursively(this.node);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -179,32 +166,30 @@ public final class SopremoRecord extends AbstractSopremoType implements ISopremo
 	 * @param node
 	 *        the node to set
 	 */
-	public void setNode(IJsonNode node) {
+	public void setNode(final IJsonNode node) {
 		if (node == null)
 			throw new NullPointerException("node must not be null");
 
 		this.node = node;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.nephele.types.Record#write(java.io.DataOutput)
-	 */
-	@Override
-	public void write(DataOutput out) throws IOException {
+	void write(final DataOutputView out, final SopremoRecordLayout layout) throws IOException {
 		if (this.node != null) {
-			Arrays.fill(this.offsets, MISSING);
 			this.binaryRepresentation.clear();
-			writeRecursivelyToBuffer(this.node, this.layout.getExpressionIndex());
-			this.output.flush();
-			final EvaluationExpression[] calculatedKeyExpressions = this.layout.getCalculatedKeyExpressions();
+			final int numKeys = layout.getNumKeys();
+			if (numKeys != this.offsets.length)
+				this.offsets = new int[numKeys];
+			Arrays.fill(this.offsets, MISSING);
+			this.writeRecursivelyToBuffer(this.node, layout.getExpressionIndex());
+
+			final EvaluationExpression[] calculatedKeyExpressions = layout.getCalculatedKeyExpressions();
 			for (int index = 0; index < calculatedKeyExpressions.length; index++) {
-				this.offsets[index + this.layout.getNumDirectDataKeys()] = this.binaryRepresentation.size();
+				this.offsets[index + layout.getNumDirectDataKeys()] = this.position();
 				final IJsonNode calculatedValue = calculatedKeyExpressions[index].evaluate(this.node);
 				this.kryo.writeClass(this.output, calculatedValue.getType());
 				this.kryo.writeObject(this.output, calculatedValue);
-				this.output.flush();
 			}
+			this.output.flush();
 		} else if (SopremoUtil.DEBUG && this.binaryRepresentation.size() == 0)
 			throw new IllegalStateException("Attempt to write zero length binary representation");
 
@@ -218,36 +203,8 @@ public final class SopremoRecord extends AbstractSopremoType implements ISopremo
 		out.write(this.binaryRepresentation.elements(), 0, size);
 	}
 
-	void write(Output out) {
-		if (this.node != null) {
-			Arrays.fill(this.offsets, MISSING);
-			writeRecursivelyToBuffer(this.node, this.layout.getExpressionIndex());
-			this.output.flush();
-			
-			final EvaluationExpression[] calculatedKeyExpressions = this.layout.getCalculatedKeyExpressions();
-			for (int index = 0; index < calculatedKeyExpressions.length; index++) {
-				this.offsets[index + this.layout.getNumDirectDataKeys()] = this.binaryRepresentation.size();
-				final IJsonNode calculatedValue = calculatedKeyExpressions[index].evaluate(this.node);
-				this.kryo.writeClass(this.output, calculatedValue.getType());
-				this.kryo.writeObject(this.output, calculatedValue);
-				this.output.flush();
-			}
-		} else if (SopremoUtil.DEBUG && this.binaryRepresentation.size() == 0)
-			throw new IllegalStateException("Attempt to write zero length binary representation");
-
-
-		for (int index = 0; index < this.offsets.length; index++) {
-			if (SopremoUtil.DEBUG && this.offsets[index] == 0)
-				throw new IllegalStateException();
-			out.writeInt(this.offsets[index], true);
-		}
-		final int size = this.binaryRepresentation.size();
-		out.writeInt(size, true);
-		out.write(this.binaryRepresentation.elements(), 0, size);
-	}
-
-	private void writeRecursivelyToBuffer(final IJsonNode node, ExpressionIndex expressionIndex) {
-		NodeSerializer<IJsonNode> serializer = getSerializer(node.getType());
+	private void writeRecursivelyToBuffer(final IJsonNode node, final ExpressionIndex expressionIndex) {
+		final NodeSerializer<IJsonNode> serializer = this.getSerializer(node.getType());
 		SopremoRecord.this.kryo.writeClass(SopremoRecord.this.output, node.getType());
 		if (node instanceof TypedObjectNode)
 			serializer.write(((TypedObjectNode) node).getBackingNode(), expressionIndex);
@@ -300,19 +257,19 @@ public final class SopremoRecord extends AbstractSopremoType implements ISopremo
 		 * java.util.List)
 		 */
 		@Override
-		public void write(IObjectNode node, ExpressionIndex expressionIndex) {
+		public void write(final IObjectNode node, final ExpressionIndex expressionIndex) {
 			final SortedSet<String> fieldNames = node.getFieldNames();
 			SopremoRecord.this.output.writeInt(fieldNames.size());
-			for (String fieldName : fieldNames) {
+			for (final String fieldName : fieldNames) {
 				SopremoRecord.this.output.writeString(fieldName);
 				final ExpressionIndex subIndex;
 				if (expressionIndex != null) {
 					subIndex = expressionIndex.subIndex(fieldName);
 					if (subIndex != null && subIndex.getExpression() != null)
-						SopremoRecord.this.offsets[subIndex.getKeyIndex()] = position();
+						SopremoRecord.this.offsets[subIndex.getKeyIndex()] = SopremoRecord.this.position();
 				} else
 					subIndex = null;
-				writeRecursivelyToBuffer(node.get(fieldName), subIndex);
+				SopremoRecord.this.writeRecursivelyToBuffer(node.get(fieldName), subIndex);
 			}
 		}
 
@@ -323,17 +280,17 @@ public final class SopremoRecord extends AbstractSopremoType implements ISopremo
 		 * , com.esotericsoftware.kryo.Registration)
 		 */
 		@Override
-		public IObjectNode read(IObjectNode target, Registration registration) {
+		public IObjectNode read(IObjectNode target, final Registration registration) {
 			if (target != null)
 				target.clear();
 			else
 				target = new ObjectNode();
 
-			int size = SopremoRecord.this.input.readInt();
+			final int size = SopremoRecord.this.input.readInt();
 			for (int index = 0; index < size; index++) {
 				final String key = SopremoRecord.this.input.readString();
 				// add caching
-				target.put(key, readRecursively((IJsonNode) null));
+				target.put(key, SopremoRecord.this.readRecursively((IJsonNode) null));
 			}
 			return target;
 		}
@@ -347,16 +304,16 @@ public final class SopremoRecord extends AbstractSopremoType implements ISopremo
 		 * , com.esotericsoftware.kryo.Registration)
 		 */
 		@Override
-		public CachingArrayNode<IJsonNode> read(CachingArrayNode<IJsonNode> target, Registration registration) {
+		public CachingArrayNode<IJsonNode> read(CachingArrayNode<IJsonNode> target, final Registration registration) {
 			if (target != null)
 				target.clear();
 			else
 				target = new CachingArrayNode<IJsonNode>();
 
-			int size = SopremoRecord.this.input.readInt();
+			final int size = SopremoRecord.this.input.readInt();
 			target.clear();
 			for (int index = 0; index < size; index++)
-				target.add(readRecursively(target.getUnusedNode()));
+				target.add(SopremoRecord.this.readRecursively(target.getUnusedNode()));
 			return target;
 		}
 	}
@@ -370,22 +327,22 @@ public final class SopremoRecord extends AbstractSopremoType implements ISopremo
 		 * java.util.List)
 		 */
 		@Override
-		public void write(IArrayNode<IJsonNode> node, ExpressionIndex expressionIndex) {
+		public void write(final IArrayNode<IJsonNode> node, final ExpressionIndex expressionIndex) {
 			final int size = node.size();
 			SopremoRecord.this.output.writeInt(size);
 			for (int index = 0; index < size; index++) {
 				final ExpressionIndex subIndex;
 				if (expressionIndex != null) {
-					subIndex = getSubIndex(expressionIndex, size, index);
+					subIndex = this.getSubIndex(expressionIndex, size, index);
 					if (subIndex != null && subIndex.getExpression() != null)
-						SopremoRecord.this.offsets[subIndex.getKeyIndex()] = position();
+						SopremoRecord.this.offsets[subIndex.getKeyIndex()] = SopremoRecord.this.position();
 				} else
 					subIndex = null;
-				writeRecursivelyToBuffer(node.get(index), subIndex);
+				SopremoRecord.this.writeRecursivelyToBuffer(node.get(index), subIndex);
 			}
 		}
 
-		private ExpressionIndex getSubIndex(ExpressionIndex expressionIndex, final int size, int index) {
+		private ExpressionIndex getSubIndex(final ExpressionIndex expressionIndex, final int size, final int index) {
 			final ExpressionIndex subIndex = expressionIndex.get(index);
 			if (subIndex != null)
 				return subIndex;
@@ -401,7 +358,7 @@ public final class SopremoRecord extends AbstractSopremoType implements ISopremo
 		 * , eu.stratosphere.sopremo.serialization.ExpressionIndex)
 		 */
 		@Override
-		public void write(IJsonNode node, ExpressionIndex expressionIndex) {
+		public void write(final IJsonNode node, final ExpressionIndex expressionIndex) {
 			SopremoRecord.this.kryo.writeObject(SopremoRecord.this.output, node);
 		}
 
@@ -413,7 +370,7 @@ public final class SopremoRecord extends AbstractSopremoType implements ISopremo
 		 */
 		@SuppressWarnings("unchecked")
 		@Override
-		public IJsonNode read(IJsonNode target, Registration registration) {
+		public IJsonNode read(final IJsonNode target, final Registration registration) {
 			final Serializer<IJsonNode> serializer = registration.getSerializer();
 			if (target != null && serializer instanceof ReusingSerializer<?> &&
 				registration.getType() == target.getClass())
@@ -423,14 +380,12 @@ public final class SopremoRecord extends AbstractSopremoType implements ISopremo
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.nephele.types.Record#read(java.io.DataInput)
-	 */
-	@Override
-	public void read(DataInput in) throws IOException {
+	void read(final DataInputView in, final SopremoRecordLayout layout) throws IOException {
 		this.node = null;
-		for (int index = 0; index < this.offsets.length; index++) {
+		final int numKeys = layout.getNumKeys();
+		if (numKeys != this.offsets.length)
+			this.offsets = new int[numKeys];
+		for (int index = 0; index < numKeys; index++) {
 			this.offsets[index] = in.readInt();
 			if (SopremoUtil.DEBUG && this.offsets[index] == 0)
 				throw new IllegalStateException("Attempt to read zero offset");
@@ -443,129 +398,92 @@ public final class SopremoRecord extends AbstractSopremoType implements ISopremo
 		in.readFully(this.binaryRepresentation.elements(), 0, size);
 	}
 
-	void read(Input in) {
-		this.node = null;
-		for (int index = 0; index < this.offsets.length; index++) {
-			this.offsets[index] = in.readInt(true);
-			if (SopremoUtil.DEBUG && this.offsets[index] == 0)
-				throw new IllegalStateException("Attempt to read zero offset");
-		}
+	//
+	// private IJsonNode getKey(EvaluationExpression expression, IJsonNode target) {
+	// if (this.node == null) {
+	// int offset = getKeyOffset(this.layout.getKeyIndex(expression));
+	// if (offset < 0)
+	// return MissingNode.getInstance();
+	// return getValueAtOffset(offset, target);
+	// }
+	// return expression.evaluate(this.node);
+	// }
 
-		final int size = in.readInt(true);
-		if (SopremoUtil.DEBUG && size <= 0)
-			throw new IllegalStateException("Attempt to read zero length binary representation");
-		this.binaryRepresentation.size(size);
-		in.read(this.binaryRepresentation.elements(), 0, size);
+	//
+	// public IJsonNode getKey(EvaluationExpression expression, NodeCache nodeCache) {
+	// if (this.node == null) {
+	// int offset = getKeyOffset(this.layout.getKeyIndex(expression));
+	// if (offset == MISSING)
+	// return MissingNode.getInstance();
+	// return getValueAtOffset(offset, nodeCache);
+	// }
+	// return expression.evaluate(this.node);
+	// }
+	//
+	// public IJsonNode getKey(int expressionIndex, IJsonNode target) {
+	// if (this.node == null) {
+	// int offset = getKeyOffset(expressionIndex);
+	// if (offset == MISSING)
+	// return MissingNode.getInstance();
+	// return getValueAtOffset(offset, target);
+	// }
+	// return this.layout.getExpression(expressionIndex).evaluate(this.node);
+	// }
+
+	public IJsonNode getKey(final int expressionIndex, final NodeCache nodeCache) {
+		final int offset = this.getKeyOffset(expressionIndex);
+		if (offset == MISSING)
+			return MissingNode.getInstance();
+		return this.getValueAtOffset(offset, nodeCache);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see com.esotericsoftware.kryo.KryoCopyable#copy(com.esotericsoftware.kryo.Kryo)
-	 */
-	@Override
-	public SopremoRecord copy(Kryo kryo) {
-		final SopremoRecord sopremoRecord = new SopremoRecord();
-		if (this.node == null)
-			sopremoRecord.node = null;
-		else
-			sopremoRecord.node = SopremoUtil.copyInto(this.node, this.nodeCache);
-		sopremoRecord.binaryRepresentation.clear();
-		sopremoRecord.binaryRepresentation.addAll(this.binaryRepresentation);
-		return sopremoRecord;
-	}
-
-	public IJsonNode getKey(EvaluationExpression expression, IJsonNode target) {
-		if (this.node == null) {
-			int offset = getKeyOffset(this.layout.getKeyIndex(expression));
-			if (offset < 0)
-				return MissingNode.getInstance();
-			return getValueAtOffset(offset, target);
-		}
-		return expression.evaluate(this.node);
-	}
-
-	public IJsonNode getKey(EvaluationExpression expression, NodeCache nodeCache) {
-		if (this.node == null) {
-			int offset = getKeyOffset(this.layout.getKeyIndex(expression));
-			if (offset == MISSING)
-				return MissingNode.getInstance();
-			return getValueAtOffset(offset, nodeCache);
-		}
-		return expression.evaluate(this.node);
-	}
-
-	public IJsonNode getKey(int expressionIndex, IJsonNode target) {
-		if (this.node == null) {
-			int offset = getKeyOffset(expressionIndex);
-			if (offset == MISSING)
-				return MissingNode.getInstance();
-			return getValueAtOffset(offset, target);
-		}
-		return this.layout.getExpression(expressionIndex).evaluate(this.node);
-	}
-
-	public IJsonNode getKey(int expressionIndex, NodeCache nodeCache) {
-		if (this.node == null) {
-			int offset = getKeyOffset(expressionIndex);
-			if (offset == MISSING)
-				return MissingNode.getInstance();
-			return getValueAtOffset(offset, nodeCache);
-		}
-		return this.layout.getExpression(expressionIndex).evaluate(this.node);
-	}
-
-	public int getKeyOffset(int expressionIndex) {
+	private int getKeyOffset(final int expressionIndex) {
 		if (expressionIndex == SopremoRecordLayout.VALUE_INDEX)
 			return 0;
 		return this.offsets[expressionIndex];
 	}
 
-	public IJsonNode getValueAtOffset(int offset, IJsonNode target) {
+	public IJsonNode getValueAtOffset(final int offset, final NodeCache nodeCache) {
 		if (offset == 0)
-			return getNode();
+			return this.getOrParseNode();
 		this.input.setBuffer(this.binaryRepresentation.elements(), offset, this.binaryRepresentation.size());
-		return readRecursively(target);
-	}
-
-	public IJsonNode getValueAtOffset(int offset, NodeCache nodeCache) {
-		if (offset == 0)
-			return getNode();
-		this.input.setBuffer(this.binaryRepresentation.elements(), offset, this.binaryRepresentation.size());
-		return readRecursively(nodeCache);
+		return this.readRecursively(nodeCache);
 	}
 
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + this.layout.hashCode();
-		result = prime * result + getNode().hashCode();
+		result = prime * result + this.getOrParseNode().hashCode();
 		return result;
 	}
 
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(final Object obj) {
 		if (this == obj)
 			return true;
 		if (obj == null)
 			return false;
-		if (getClass() != obj.getClass())
+		if (this.getClass() != obj.getClass())
 			return false;
-		SopremoRecord other = (SopremoRecord) obj;
-		return this.layout.equals(other.layout) && getNode().equals(other.getNode());
+		final SopremoRecord other = (SopremoRecord) obj;
+		return this.getOrParseNode().equals(other.getOrParseNode());
 	}
 
-	public static class SopremoRecordKryoSerializer<Node extends IJsonNode> extends
-			ReusingSerializer<SopremoRecord> {
+	public static class SopremoRecordKryoSerializer<Node extends IJsonNode> extends ReusingSerializer<SopremoRecord> {
 		/*
 		 * (non-Javadoc)
 		 * @see com.esotericsoftware.kryo.Serializer#write(com.esotericsoftware.kryo.Kryo,
 		 * com.esotericsoftware.kryo.io.Output, java.lang.Object)
 		 */
 		@Override
-		public void write(Kryo kryo, Output output, SopremoRecord object) {
-			kryo.writeObject(output, object.layout);
-			object.write(output);
+		public void write(final Kryo kryo, final Output output, final SopremoRecord object) {
+			if (object.binaryRepresentation.isEmpty()) {
+				object.writeRecursivelyToBuffer(object.node, SopremoRecordLayout.EMPTY.getExpressionIndex());
+				object.output.flush();
+			}
+			output.writeInt(object.binaryRepresentation.size(), true);
+			output.writeBytes(object.binaryRepresentation.elements(), 0, object.binaryRepresentation.size());
 		}
 
 		/*
@@ -574,16 +492,26 @@ public final class SopremoRecord extends AbstractSopremoType implements ISopremo
 		 * com.esotericsoftware.kryo.io.Input, java.lang.Object, java.lang.Class)
 		 */
 		@Override
-		public SopremoRecord read(Kryo kryo, Input input, SopremoRecord oldInstance,
-				Class<SopremoRecord> type) {
-			final SopremoRecordLayout layout = kryo.readObject(input, SopremoRecordLayout.class);
-			final SopremoRecord record;
-			if (oldInstance.layout.equals(layout))
-				record = oldInstance;
-			else
-				record = new SopremoRecord(layout);
-			record.read(input);
-			return record;
+		public SopremoRecord read(final Kryo kryo, final Input input, final SopremoRecord oldInstance,
+				final Class<SopremoRecord> type) {
+			oldInstance.binaryRepresentation.clear();
+			final int size = input.readInt(true);
+			oldInstance.binaryRepresentation.size(size);
+			input.read(oldInstance.binaryRepresentation.elements(), 0, size);
+			return oldInstance;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see com.esotericsoftware.kryo.Serializer#copy(com.esotericsoftware.kryo.Kryo, java.lang.Object)
+		 */
+		@Override
+		public SopremoRecord copy(final Kryo kryo, final SopremoRecord original) {
+			final SopremoRecord copy = new SopremoRecord();
+			copy.node = original.node;
+			copy.binaryRepresentation.addElements(0, original.binaryRepresentation.elements(), 0,
+				original.binaryRepresentation.size());
+			return copy;
 		}
 
 		/*
@@ -592,57 +520,27 @@ public final class SopremoRecord extends AbstractSopremoType implements ISopremo
 		 * com.esotericsoftware.kryo.io.Input, java.lang.Class)
 		 */
 		@Override
-		public SopremoRecord read(Kryo kryo, Input input, Class<SopremoRecord> type) {
-			final SopremoRecordLayout layout = kryo.readObject(input, SopremoRecordLayout.class);
-			final SopremoRecord record = new SopremoRecord(layout);
-			record.read(input);
-			return record;
+		public SopremoRecord read(final Kryo kryo, final Input input, final Class<SopremoRecord> type) {
+			return this.read(kryo, input, new SopremoRecord(), type);
 		}
-
-	}
-
-	private transient SopremoRecordLayout layout;
-
-	/**
-	 * Returns the layout.
-	 * 
-	 * @return the layout
-	 */
-	public SopremoRecordLayout getLayout() {
-		return this.layout;
-	}
-
-	/**
-	 * Sets the layout to the specified value.
-	 * 
-	 * @param layout
-	 *        the layout to set
-	 */
-	public void setLayout(SopremoRecordLayout layout) {
-		if (layout == null)
-			throw new NullPointerException("layout must not be null");
-
-		this.layout = layout;
 	}
 
 	/**
 	 * @param to
 	 */
-	public void copyTo(SopremoRecord to) {
+	public void copyTo(final SopremoRecord to) {
 		if (this.binaryRepresentation.size() > 0) {
 			to.binaryRepresentation.clear();
 			to.binaryRepresentation.addElements(0, this.binaryRepresentation.elements(), 0,
 				this.binaryRepresentation.size());
-			System.arraycopy(this.offsets, 0, to.offsets, 0, this.offsets.length);
-			to.node = null;
-		} else {
+			to.offsets = this.offsets.clone();
+		} else
 			to.binaryRepresentation.clear();
-			to.node = this.node.clone();
-		}
+		to.node = this.node.clone();
 	}
-
-	public IJsonNode getKey(EvaluationExpression expression) {
-		return getKey(expression, (IJsonNode) null);
-	}
+	//
+	// IJsonNode getKey(EvaluationExpression expression) {
+	// return getKey(expression, (IJsonNode) null);
+	// }
 
 }

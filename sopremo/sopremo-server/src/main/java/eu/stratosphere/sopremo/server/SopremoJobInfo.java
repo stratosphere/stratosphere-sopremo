@@ -27,21 +27,22 @@ import eu.stratosphere.sopremo.execution.SopremoID;
  * @author Arvid Heise
  */
 public class SopremoJobInfo {
-	private ExecutionRequest initialRequest;
+	private final ExecutionRequest initialRequest;
 
-	private Configuration configuration;
+	private final Configuration configuration;
 
 	private JobClient jobClient;
 
 	private final SopremoID jobId;
 
-	private Map<String, Object> metadata;
+	private final Map<String, Object> metadata;
 
 	public static final String PREOPTMIZEDPACTPLANJSON = "pre.optmized.pact.plan.json";
 
 	public static final String OPTMIZEDPACTPLANJSON = "optmized.pact.plan.json";
 
-	public SopremoJobInfo(SopremoID jobId, ExecutionRequest initialRequest, Configuration configuration) {
+	public SopremoJobInfo(final SopremoID jobId, final ExecutionRequest initialRequest,
+			final Configuration configuration) {
 		this.initialRequest = initialRequest;
 		this.configuration = configuration;
 		this.jobId = jobId;
@@ -80,7 +81,7 @@ public class SopremoJobInfo {
 	 * @param jobClient
 	 *        the jobClient to set
 	 */
-	public void setJobClient(JobClient jobClient) {
+	public void setJobClient(final JobClient jobClient) {
 		if (jobClient == null)
 			throw new NullPointerException("jobClient must not be null");
 
@@ -118,7 +119,7 @@ public class SopremoJobInfo {
 	 * @param running
 	 * @param string
 	 */
-	public void setStatusAndDetail(ExecutionState status, String detail) {
+	public void setStatusAndDetail(final ExecutionState status, final String detail) {
 		if (status == null)
 			throw new NullPointerException("status must not be null");
 		if (detail == null)
@@ -127,11 +128,11 @@ public class SopremoJobInfo {
 		this.detail = detail;
 	}
 
-	public void setMetaData(String key, String value) {
+	public void setMetaData(final String key, final String value) {
 		this.metadata.put(key, value);
 	}
 
-	public Object getMetaData(String key) {
+	public Object getMetaData(final String key) {
 		return this.metadata.get(key);
 	}
 }

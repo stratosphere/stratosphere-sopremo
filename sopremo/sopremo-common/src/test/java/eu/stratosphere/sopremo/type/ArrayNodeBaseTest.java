@@ -67,7 +67,7 @@ public abstract class ArrayNodeBaseTest<T extends IArrayNode<IJsonNode>> extends
 		final IJsonNode value1 = TextNode.valueOf("firstname");
 		final IJsonNode value2 = TextNode.valueOf("lastname");
 
-		List<IJsonNode> expectedNodes = Lists.newArrayList(this.node);
+		final List<IJsonNode> expectedNodes = Lists.newArrayList(this.node);
 		this.node.add(0, value1);
 		this.node.add(1, value2);
 

@@ -24,7 +24,7 @@ import eu.stratosphere.sopremo.serialization.SopremoRecord;
 public class SopremoKeyExtractor implements KeyExtractor<SopremoRecord> {
 	private final EvaluationExpression[] expressions;
 
-	public SopremoKeyExtractor(EvaluationExpression[] expressions) {
+	public SopremoKeyExtractor(final EvaluationExpression[] expressions) {
 		this.expressions = expressions;
 	}
 
@@ -43,7 +43,7 @@ public class SopremoKeyExtractor implements KeyExtractor<SopremoRecord> {
 	 * eu.stratosphere.nephele.types.Record)
 	 */
 	@Override
-	public void fill(Comparable<?>[] keys, SopremoRecord record) {
+	public void fill(final Comparable<?>[] keys, final SopremoRecord record) {
 		for (int index = 0; index < keys.length; index++)
 			keys[index] = this.expressions[index].evaluate(record.getNode());
 	}

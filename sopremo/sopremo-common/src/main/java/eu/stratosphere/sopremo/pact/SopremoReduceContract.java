@@ -24,7 +24,8 @@ public final class SopremoReduceContract extends GenericReduceContract {
 
 	private Ordering innerGroupOrder;
 
-	public SopremoReduceContract(ElementaryOperator<?> operator, Class udf, int[] keyPositions, String name) {
+	public SopremoReduceContract(final ElementaryOperator<?> operator, final Class udf, final int[] keyPositions,
+			final String name) {
 		super(udf, keyPositions, name);
 		this.operator = operator;
 	}
@@ -35,7 +36,7 @@ public final class SopremoReduceContract extends GenericReduceContract {
 	 * @param innerGroupOrder
 	 *        the innerGroupOrder to set
 	 */
-	public void setInnerGroupOrder(Ordering secondarySort) {
+	public void setInnerGroupOrder(final Ordering secondarySort) {
 		if (secondarySort == null)
 			throw new NullPointerException("innerGroupOrder must not be null");
 

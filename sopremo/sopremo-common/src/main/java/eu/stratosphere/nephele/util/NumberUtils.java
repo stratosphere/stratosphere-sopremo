@@ -32,7 +32,7 @@ public final class NumberUtils {
 
 	public static short byteArrayToShort(final byte[] arr, final int offset) {
 
-		return (short) (((arr[offset] << 8)) | ((arr[offset + 1] & 0xFF)));
+		return (short) (arr[offset] << 8 | arr[offset + 1] & 0xFF);
 	}
 
 	public static void shortToByteArray(final short val, final byte[] arr, final int offset) {
@@ -55,7 +55,7 @@ public final class NumberUtils {
 
 		for (int i = 0; i < 4; ++i) {
 			final int shift = i << 3; // i * 8
-			byteArray[(offset + 3) - i] = (byte) ((integerToSerialize & (0xff << shift)) >>> shift);
+			byteArray[offset + 3 - i] = (byte) ((integerToSerialize & 0xff << shift) >>> shift);
 		}
 	}
 
@@ -72,9 +72,8 @@ public final class NumberUtils {
 
 		int integer = 0;
 
-		for (int i = 0; i < 4; ++i) {
-			integer |= (byteArray[(offset + 3) - i] & 0xff) << (i << 3);
-		}
+		for (int i = 0; i < 4; ++i)
+			integer |= (byteArray[offset + 3 - i] & 0xff) << (i << 3);
 
 		return integer;
 	}

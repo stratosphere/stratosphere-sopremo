@@ -22,6 +22,7 @@ import org.apache.commons.logging.LogFactory;
 
 import eu.stratosphere.nephele.client.JobClient;
 import eu.stratosphere.nephele.client.JobExecutionResult;
+import eu.stratosphere.nephele.configuration.ConfigConstants;
 import eu.stratosphere.nephele.execution.librarycache.LibraryCacheManager;
 import eu.stratosphere.nephele.fs.FileSystem;
 import eu.stratosphere.nephele.fs.Path;
@@ -42,7 +43,7 @@ import eu.stratosphere.sopremo.operator.SopremoPlan;
  * @author Arvid Heise
  */
 public class SopremoExecutionThread implements Runnable {
-	private SopremoJobInfo jobInfo;
+	private final SopremoJobInfo jobInfo;
 
 	private final InetSocketAddress jobManagerAddress;
 
@@ -51,7 +52,7 @@ public class SopremoExecutionThread implements Runnable {
 	 */
 	private static final Log LOG = LogFactory.getLog(SopremoExecutionThread.class);
 
-	public SopremoExecutionThread(SopremoJobInfo environment, InetSocketAddress jobManagerAddress) {
+	public SopremoExecutionThread(final SopremoJobInfo environment, final InetSocketAddress jobManagerAddress) {
 		this.jobInfo = environment;
 		this.jobManagerAddress = jobManagerAddress;
 	}
@@ -62,26 +63,26 @@ public class SopremoExecutionThread implements Runnable {
 	 */
 	@Override
 	public void run() {
-		processPlan();
+		this.processPlan();
 	}
 
 	private void processPlan() {
 		try {
 			LOG.info("Starting job " + this.jobInfo.getJobId());
-			SopremoPlan plan = this.jobInfo.getInitialRequest().getQuery();
-			final JobExecutionResult runtime = executePlan(plan);
+			final SopremoPlan plan = this.jobInfo.getInitialRequest().getQuery();
+			final JobExecutionResult runtime = this.executePlan(plan);
 			if (runtime != null) {
 				switch (this.jobInfo.getInitialRequest().getMode()) {
 				case RUN:
 					this.jobInfo.setStatusAndDetail(ExecutionState.FINISHED, "");
 					break;
 				case RUN_WITH_STATISTICS:
-					gatherStatistics(plan, runtime);
+					this.gatherStatistics(plan, runtime);
 					break;
 				}
 				LOG.info(String.format("Finished job %s in %s ms", this.jobInfo.getJobId(), runtime));
 			}
-		} catch (Throwable ex) {
+		} catch (final Throwable ex) {
 			LOG.error("Cannot process plan " + this.jobInfo.getJobId(), ex);
 			this.jobInfo.setStatusAndDetail(ExecutionState.ERROR,
 				"Cannot process plan: " + StringUtils.stringifyException(ex));
@@ -91,29 +92,28 @@ public class SopremoExecutionThread implements Runnable {
 	/**
 	 * @param plan
 	 */
-	private void gatherStatistics(SopremoPlan plan, JobExecutionResult result) {
-		StringBuilder statistics = new StringBuilder();
+	private void gatherStatistics(final SopremoPlan plan, final JobExecutionResult result) {
+		final StringBuilder statistics = new StringBuilder();
 		statistics.append("Executed in ").append(result.getNetRuntime()).append(" ms");
-		for (Operator<?> op : plan.getContainedOperators())
-			if (op instanceof Sink) {
+		for (final Operator<?> op : plan.getContainedOperators())
+			if (op instanceof Sink)
 				try {
 					final String path = ((Sink) op).getOutputPath();
 					final long length = FileSystem.get(new URI(path)).getFileStatus(new Path(path)).getLen();
 					statistics.append("\n").append("Sink ").append(path).append(": ").append(length).append(" B");
-				} catch (Exception e) {
+				} catch (final Exception e) {
 					LOG.warn("While gathering statistics", e);
 				}
-			}
 		this.jobInfo.setStatusAndDetail(ExecutionState.FINISHED, statistics.toString());
 	}
 
-	private JobExecutionResult executePlan(SopremoPlan plan) {
+	private JobExecutionResult executePlan(final SopremoPlan plan) {
 		final Plan pactPlan = plan.asPactPlan();
 
 		JobGraph jobGraph;
 		try {
-			jobGraph = getJobGraph(pactPlan);
-		} catch (Exception e) {
+			jobGraph = this.getJobGraph(pactPlan);
+		} catch (final Exception e) {
 			LOG.error("Could not generate job graph " + this.jobInfo.getJobId(), e);
 			this.jobInfo.setStatusAndDetail(ExecutionState.ERROR, "Could not generate job graph: "
 				+ StringUtils.stringifyException(e));
@@ -121,26 +121,35 @@ public class SopremoExecutionThread implements Runnable {
 		}
 
 		try {
-			for (String requiredPackage : this.jobInfo.getInitialRequest().getQuery().getRequiredPackages()) {
+			for (final String requiredPackage : this.jobInfo.getInitialRequest().getQuery().getRequiredPackages()) {
 				final Path libPath = LibraryCacheManager.contains(requiredPackage);
-				if(libPath == null ) {
-					LOG.error("Could not find associated packages " + requiredPackage + " of job " + this.jobInfo.getJobId());
-					this.jobInfo.setStatusAndDetail(ExecutionState.ERROR, "Could not find associated packages: " + requiredPackage);
+				if (libPath == null) {
+					LOG.error("Could not find associated packages " + requiredPackage + " of job " +
+						this.jobInfo.getJobId());
+					this.jobInfo.setStatusAndDetail(ExecutionState.ERROR, "Could not find associated packages: " +
+						requiredPackage);
 					return null;
 				}
 				jobGraph.addJar(libPath);
 			}
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			LOG.error("Could not find retrieve package information from library manager " + this.jobInfo.getJobId(), e);
-			this.jobInfo.setStatusAndDetail(ExecutionState.ERROR, "Could not find retrieve package information from library manager: "
-				+ StringUtils.stringifyException(e));
+			this.jobInfo.setStatusAndDetail(ExecutionState.ERROR,
+				"Could not find retrieve package information from library manager: "
+					+ StringUtils.stringifyException(e));
 			return null;
 		}
 
 		JobClient client;
 		try {
-			client = new JobClient(jobGraph, this.jobInfo.getConfiguration(), this.jobManagerAddress);
-		} catch (Exception e) {
+			// client = new JobClient(jobGraph, this.jobInfo.getConfiguration(), this.jobManagerAddress);
+			// TODO: workaround for core#349
+			this.jobInfo.getConfiguration().setString(ConfigConstants.JOB_MANAGER_IPC_ADDRESS_KEY,
+				this.jobManagerAddress.getHostString());
+			this.jobInfo.getConfiguration().setInteger(ConfigConstants.JOB_MANAGER_IPC_PORT_KEY,
+				this.jobManagerAddress.getPort());
+			client = new JobClient(jobGraph, this.jobInfo.getConfiguration());
+		} catch (final Exception e) {
 			LOG.error("Could not open job manager " + this.jobInfo.getJobId(), e);
 			this.jobInfo.setStatusAndDetail(ExecutionState.ERROR, "Could not open job manager: "
 				+ StringUtils.stringifyException(e));
@@ -151,7 +160,7 @@ public class SopremoExecutionThread implements Runnable {
 			this.jobInfo.setJobClient(client);
 			this.jobInfo.setStatusAndDetail(ExecutionState.RUNNING, "");
 			return client.submitJobAndWait();
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			LOG.error("The job was not successfully executed " + this.jobInfo.getJobId(), e);
 			this.jobInfo.setStatusAndDetail(ExecutionState.ERROR,
 				"The job was not successfully executed: "

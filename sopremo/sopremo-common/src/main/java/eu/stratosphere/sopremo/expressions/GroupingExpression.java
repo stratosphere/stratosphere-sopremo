@@ -95,7 +95,7 @@ public class GroupingExpression extends EvaluationExpression {
 		return new NamedChildIterator("groupingExpression", "second") {
 
 			@Override
-			protected void set(int index, EvaluationExpression childExpression) {
+			protected void set(final int index, final EvaluationExpression childExpression) {
 				if (index == 0)
 					GroupingExpression.this.groupingExpression = childExpression;
 				else
@@ -104,7 +104,7 @@ public class GroupingExpression extends EvaluationExpression {
 			}
 
 			@Override
-			protected EvaluationExpression get(int index) {
+			protected EvaluationExpression get(final int index) {
 				if (index == 0)
 					return GroupingExpression.this.groupingExpression;
 				return GroupingExpression.this.resultExpressions.getTemplate();
