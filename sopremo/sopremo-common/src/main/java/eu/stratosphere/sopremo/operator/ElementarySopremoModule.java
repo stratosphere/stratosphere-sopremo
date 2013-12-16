@@ -42,11 +42,8 @@ import eu.stratosphere.util.dag.OneTimeTraverser;
 
 /**
  * A {@link SopremoModule} that only contains {@link ElementaryOperator}s.
- * 
  */
 public class ElementarySopremoModule extends SopremoModule {
-
-	private Schema schema;
 
 	/**
 	 * Initializes ElementarySopremoModule.
@@ -59,12 +56,18 @@ public class ElementarySopremoModule extends SopremoModule {
 		super(numberOfInputs, numberOfOutputs);
 	}
 
+	/**
+	 * Initializes ElementarySopremoModule.
+	 */
+	ElementarySopremoModule() {
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * @see eu.stratosphere.sopremo.SopremoModule#asElementary()
 	 */
 	@Override
-	public ElementarySopremoModule asElementary(final EvaluationContext context) {
+	public ElementarySopremoModule asElementary() {
 		return this;
 	}
 
@@ -133,7 +136,6 @@ public class ElementarySopremoModule extends SopremoModule {
 
 	/**
 	 * Helper class needed to assemble a Pact program from the {@link PactModule}s of several {@link Operator<?>}s.
-	 * 
 	 */
 	private class PactAssembler {
 		private final Map<Operator<?>, PactModule> modules = new IdentityHashMap<Operator<?>, PactModule>();
@@ -250,29 +252,21 @@ public class ElementarySopremoModule extends SopremoModule {
 	 *        the evaluation context of the Pact contracts
 	 * @return a list of Pact sinks
 	 */
-	public Collection<eu.stratosphere.api.common.operators.Operator> assemblePact(final EvaluationContext context, SopremoRecordLayout layout) {
-//		if(layout == null)
-//			layout = SopremoRecordLayout.create(this.schema.getKeyExpressions());
+	public Collection<eu.stratosphere.api.common.operators.Operator> assemblePact(final EvaluationContext context,
+			SopremoRecordLayout layout) {
+		// if(layout == null)
+		// layout = SopremoRecordLayout.create(this.schema.getKeyExpressions());
 		return new PactAssembler(context).assemble(layout);
 	}
 
 	/**
 	 * @param schemaFactory
 	 */
-	public void inferSchema() {
+	public Schema getSchema() {
 		final Set<EvaluationExpression> keyExpressions = new HashSet<EvaluationExpression>();
 		for (final ElementaryOperator<?> operator : this.getReachableNodes())
 			keyExpressions.addAll(operator.getAllKeyExpressions());
 
-		this.schema = new Schema(new ArrayList<EvaluationExpression>(keyExpressions));
-	}
-
-	/**
-	 * Returns the previously inferred schema.
-	 * 
-	 * @return the schema
-	 */
-	public Schema getSchema() {
-		return this.schema;
+		return new Schema(new ArrayList<EvaluationExpression>(keyExpressions));
 	}
 }

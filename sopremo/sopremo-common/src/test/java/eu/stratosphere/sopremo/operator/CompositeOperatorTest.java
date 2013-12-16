@@ -40,7 +40,7 @@ public class CompositeOperatorTest extends EqualCloneTest<CompositeOperatorTest.
 		fixture.setInputs(input1, input2, input3);
 		final EvaluationContext context = new EvaluationContext();
 
-		final ElementarySopremoModule module = fixture.asElementaryOperators(context);
+		final ElementarySopremoModule module = fixture.asElementaryOperators();
 
 		assertNotNull(module);
 		final List<Level<Operator<?>>> reachableNodes = GraphLevelPartitioner.getLevels(
@@ -80,7 +80,7 @@ public class CompositeOperatorTest extends EqualCloneTest<CompositeOperatorTest.
 		 * stratosphere.sopremo.EvaluationContext)
 		 */
 		@Override
-		public void addImplementation(final SopremoModule module, final EvaluationContext context) {
+		public void addImplementation(final SopremoModule module) {
 			module.embed(new ElementaryOperatorImpl().withInputs(null,
 				new ElementaryOperatorImpl().withInputs(null, null)));
 		}

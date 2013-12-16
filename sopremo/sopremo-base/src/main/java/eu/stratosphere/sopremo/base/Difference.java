@@ -2,7 +2,6 @@ package eu.stratosphere.sopremo.base;
 
 import java.util.List;
 
-import eu.stratosphere.sopremo.EvaluationContext;
 import eu.stratosphere.sopremo.io.Source;
 import eu.stratosphere.sopremo.operator.CompositeOperator;
 import eu.stratosphere.sopremo.operator.ElementaryOperator;
@@ -34,7 +33,7 @@ public class Difference extends CompositeOperator<Difference> {
 	 * , eu.stratosphere.sopremo.EvaluationContext)
 	 */
 	@Override
-	public void addImplementation(final SopremoModule module, final EvaluationContext context) {
+	public void addImplementation(final SopremoModule module) {
 		final Source leftInput = module.getInput(0);
 		final List<Source> otherInputs = module.getInputs().subList(1, module.getInputs().size());
 		if (otherInputs.isEmpty())

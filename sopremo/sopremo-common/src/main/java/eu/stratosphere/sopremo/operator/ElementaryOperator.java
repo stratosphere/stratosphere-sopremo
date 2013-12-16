@@ -363,7 +363,7 @@ public abstract class ElementaryOperator<Self extends ElementaryOperator<Self>>
 	}
 
 	@Override
-	public ElementarySopremoModule asElementaryOperators(final EvaluationContext context) {
+	public ElementarySopremoModule asElementaryOperators() {
 		final ElementarySopremoModule module =
 			new ElementarySopremoModule(this.getInputs().size(), this.getOutputs().size());
 		module.setName(this.toString());

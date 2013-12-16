@@ -2,7 +2,6 @@ package eu.stratosphere.sopremo.base;
 
 import java.util.Iterator;
 
-import eu.stratosphere.sopremo.EvaluationContext;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
 import eu.stratosphere.sopremo.operator.CompositeOperator;
 import eu.stratosphere.sopremo.operator.ElementaryOperator;
@@ -32,7 +31,7 @@ public class Intersection extends CompositeOperator<Intersection> {
 	 * , eu.stratosphere.sopremo.EvaluationContext)
 	 */
 	@Override
-	public void addImplementation(final SopremoModule module, final EvaluationContext context) {
+	public void addImplementation(final SopremoModule module) {
 		final UnionAll merged = new UnionAll().withInputs(module.getInputs());
 		module.embed(new FilterLess().withThreshold(module.getNumInputs()).withInputs(merged));
 	}

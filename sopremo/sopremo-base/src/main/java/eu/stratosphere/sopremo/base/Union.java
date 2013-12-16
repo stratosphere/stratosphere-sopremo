@@ -1,6 +1,5 @@
 package eu.stratosphere.sopremo.base;
 
-import eu.stratosphere.sopremo.EvaluationContext;
 import eu.stratosphere.sopremo.operator.CompositeOperator;
 import eu.stratosphere.sopremo.operator.InputCardinality;
 import eu.stratosphere.sopremo.operator.Name;
@@ -24,7 +23,7 @@ public class Union extends CompositeOperator<Union> {
 	 * , eu.stratosphere.sopremo.EvaluationContext)
 	 */
 	@Override
-	public void addImplementation(final SopremoModule module, final EvaluationContext context) {
+	public void addImplementation(final SopremoModule module) {
 		module.embed(new Unique().withInputs(new UnionAll().withInputs(module.getInputs())));
 	}
 

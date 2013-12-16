@@ -1,6 +1,5 @@
 package eu.stratosphere.sopremo.base;
 
-import eu.stratosphere.sopremo.EvaluationContext;
 import eu.stratosphere.sopremo.base.replace.AtomarReplaceBase;
 import eu.stratosphere.sopremo.base.replace.AtomarReplaceWithDefaultValue;
 import eu.stratosphere.sopremo.base.replace.ReplaceBase;
@@ -21,7 +20,7 @@ public class Replace extends ReplaceBase<Replace> {
 	 * @see eu.stratosphere.sopremo.operator.CompositeOperator#asModule(eu.stratosphere.sopremo.EvaluationContext)
 	 */
 	@Override
-	public void addImplementation(final SopremoModule module, final EvaluationContext context) {
+	public void addImplementation(final SopremoModule module) {
 		final EvaluationExpression defaultExpression =
 			this.getDefaultExpression() == EvaluationExpression.VALUE ? this.getReplaceExpression()
 				: this.getDefaultExpression();

@@ -4,7 +4,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import eu.stratosphere.pact.common.plan.PactModule;
-import eu.stratosphere.sopremo.EvaluationContext;
 import eu.stratosphere.sopremo.serialization.SopremoRecordLayout;
 
 /**
@@ -52,10 +51,10 @@ public abstract class CompositeOperator<Self extends CompositeOperator<Self>> ex
 	 * @return a module of ElementaryOperators
 	 */
 	@Override
-	public ElementarySopremoModule asElementaryOperators(final EvaluationContext context) {
+	public ElementarySopremoModule asElementaryOperators() {
 		final SopremoModule module = new SopremoModule(this.getNumInputs(), this.getNumOutputs());
 		module.setName(this.getName());
-		this.addImplementation(module, context);
+		this.addImplementation(module);
 
 		// inherit the CompositeOperator's DoP, if it was not changed by the
 		// Operator developer explicitly.
@@ -65,9 +64,9 @@ public abstract class CompositeOperator<Self extends CompositeOperator<Self>> ex
 					moduleOperator.setDegreeOfParallelism(this.getDegreeOfParallelism());
 
 		module.validate();
-		return module.asElementary(context);
+		return module.asElementary();
 	}
 
-	public abstract void addImplementation(SopremoModule module, EvaluationContext context);
+	public abstract void addImplementation(SopremoModule module);
 
 }

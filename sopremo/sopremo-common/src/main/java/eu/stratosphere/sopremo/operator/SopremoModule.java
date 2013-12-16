@@ -293,26 +293,20 @@ public class SopremoModule extends GraphModule<Operator<?>, Source, Sink> implem
 		}
 
 		@Override
-		public void addImplementation(final SopremoModule module, final EvaluationContext context) {
+		public void addImplementation(final SopremoModule module) {
 			module.inputNodes.addAll(SopremoModule.this.inputNodes);
 			module.outputNodes.addAll(SopremoModule.this.outputNodes);
 			module.internalOutputNodes.addAll(SopremoModule.this.internalOutputNodes);
 		}
 	}
 
-	public ElementarySopremoModule asElementary(final EvaluationContext context) {
-		return new ElementaryAssembler(context).assemble(this);
+	public ElementarySopremoModule asElementary() {
+		return new ElementaryAssembler().assemble(this);
 	}
 
 	private static class ElementaryAssembler {
 		private final Map<Operator<?>, ElementarySopremoModule> modules =
 			new IdentityHashMap<Operator<?>, ElementarySopremoModule>();
-
-		private final EvaluationContext context;
-
-		public ElementaryAssembler(final EvaluationContext context) {
-			this.context = context;
-		}
 
 		public ElementarySopremoModule assemble(final SopremoModule sopremoModule) {
 			this.convertDAGToModules(sopremoModule);
@@ -351,7 +345,7 @@ public class SopremoModule extends GraphModule<Operator<?>, Source, Sink> implem
 						if (sopremoModule.getName() != null)
 							node.setName(sopremoModule.getName() + " - " + node.getName());
 						final ElementarySopremoModule elementaryModule =
-							node.asElementaryOperators(ElementaryAssembler.this.context);
+							node.asElementaryOperators();
 						ElementaryAssembler.this.modules.put(node, elementaryModule);
 					}
 				});

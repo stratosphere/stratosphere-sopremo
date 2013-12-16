@@ -19,18 +19,18 @@ import java.util.List;
 
 import com.google.common.collect.Lists;
 
-import eu.stratosphere.sopremo.EvaluationContext;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
-import eu.stratosphere.sopremo.io.Sink;
 
 /**
  */
 @OutputCardinality(1)
 public abstract class IterativeOperator<Self extends IterativeOperator<Self>> extends CompositeOperator<Self> {
-	public abstract void addImplementation(IterativeSopremoModule iterativeSopremoModule, EvaluationContext context);
+	public abstract void addImplementation(IterativeSopremoModule iterativeSopremoModule);
 
 	private List<? extends EvaluationExpression> solutionSetKeyExpressions =
 		new ArrayList<EvaluationExpression>();
+	
+	private int maximumNumberOfIterations = 1;
 
 	/**
 	 * Sets the solutionSetKeyExpressions to the specified value.
@@ -62,6 +62,27 @@ public abstract class IterativeOperator<Self extends IterativeOperator<Self>> ex
 		return this.solutionSetKeyExpressions;
 	}
 	
+	/**
+	 * Returns the maximumNumberOfIterations.
+	 * 
+	 * @return the maximumNumberOfIterations
+	 */
+	public int getMaximumNumberOfIterations() {
+		return this.maximumNumberOfIterations;
+	}
+	
+	/**
+	 * Sets the maximumNumberOfIterations to the specified value.
+	 *
+	 * @param maximumNumberOfIterations the maximumNumberOfIterations to set
+	 */
+	public void setMaximumNumberOfIterations(int maximumNumberOfIterations) {
+		if (maximumNumberOfIterations < 1)
+			throw new NullPointerException("maximumNumberOfIterations must be > 0");
+
+		this.maximumNumberOfIterations = maximumNumberOfIterations;
+	}
+	
 	/*
 	 * (non-Javadoc)
 	 * @see
@@ -69,11 +90,12 @@ public abstract class IterativeOperator<Self extends IterativeOperator<Self>> ex
 	 * , eu.stratosphere.sopremo.EvaluationContext)
 	 */
 	@Override
-	public void addImplementation(SopremoModule module, EvaluationContext context) {
+	public void addImplementation(SopremoModule module) {
 		final IterativeSopremoModule iterativeModule =
 			new IterativeSopremoModule(module.getNumInputs(), module.getNumOutputs());
-		addImplementation(iterativeModule, context);
-		iterativeModule.setSolutionSetKeyExpressions(solutionSetKeyExpressions);
+		addImplementation(iterativeModule);
+		iterativeModule.setSolutionSetKeyExpressions(this.solutionSetKeyExpressions);
+		iterativeModule.setMaxNumberOfIterations(this.maximumNumberOfIterations);
 		iterativeModule.embedInto(module);
 	}
 }

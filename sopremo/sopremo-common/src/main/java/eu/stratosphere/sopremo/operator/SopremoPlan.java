@@ -120,8 +120,7 @@ public class SopremoPlan extends AbstractSopremoType implements Serializable {
 	 * @return a list of Pact sinks
 	 */
 	public Collection<eu.stratosphere.api.common.operators.Operator> assemblePact() {
-		final ElementarySopremoModule elementaryModule = this.module.asElementary(this.context);
-		elementaryModule.inferSchema();
+		final ElementarySopremoModule elementaryModule = this.module.asElementary();
 		this.layout = SopremoRecordLayout.create(elementaryModule.getSchema().getKeyExpressions());
 		return elementaryModule.assemblePact(this.context, this.layout);
 	}

@@ -13,7 +13,6 @@ import org.junit.Test;
 
 import eu.stratosphere.pact.common.plan.PactModule;
 import eu.stratosphere.sopremo.EqualCloneTest;
-import eu.stratosphere.sopremo.EvaluationContext;
 import eu.stratosphere.sopremo.serialization.SopremoRecordLayout;
 
 /**
@@ -323,7 +322,7 @@ public class OperatorTest extends EqualCloneTest<OperatorTest.OpImpl> {
 		 * @see eu.stratosphere.sopremo.Operator#asElementaryOperators()
 		 */
 		@Override
-		public ElementarySopremoModule asElementaryOperators(final EvaluationContext context) {
+		public ElementarySopremoModule asElementaryOperators() {
 			return null;
 		}
 

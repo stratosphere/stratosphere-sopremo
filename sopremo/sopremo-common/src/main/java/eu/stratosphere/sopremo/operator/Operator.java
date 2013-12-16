@@ -20,7 +20,6 @@ import com.esotericsoftware.kryo.serializers.FieldSerializer;
 
 import eu.stratosphere.pact.common.plan.PactModule;
 import eu.stratosphere.sopremo.AbstractSopremoType;
-import eu.stratosphere.sopremo.EvaluationContext;
 import eu.stratosphere.sopremo.ISopremoType;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
 import eu.stratosphere.sopremo.serialization.SopremoRecordLayout;
@@ -107,7 +106,7 @@ public abstract class Operator<Self extends Operator<Self>> extends Configurable
 		}
 	}
 
-	public abstract ElementarySopremoModule asElementaryOperators(EvaluationContext context);
+	public abstract ElementarySopremoModule asElementaryOperators();
 
 	@SuppressWarnings("unchecked")
 	@Override

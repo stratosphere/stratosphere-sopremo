@@ -8,7 +8,6 @@ import com.google.common.base.Function;
 import com.google.common.base.Predicates;
 
 import eu.stratosphere.sopremo.CoreFunctions;
-import eu.stratosphere.sopremo.EvaluationContext;
 import eu.stratosphere.sopremo.aggregation.AssociativeAggregation;
 import eu.stratosphere.sopremo.expressions.AggregationExpression;
 import eu.stratosphere.sopremo.expressions.ArrayAccess;
@@ -49,7 +48,7 @@ public class Grouping extends CompositeOperator<Grouping> {
 	private EvaluationExpression defaultGroupingKey = GROUP_ALL;
 
 	@Override
-	public void addImplementation(final SopremoModule module, final EvaluationContext context) {
+	public void addImplementation(final SopremoModule module) {
 		JsonStream output;
 		switch (this.getNumInputs()) {
 		case 0:

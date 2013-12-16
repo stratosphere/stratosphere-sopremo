@@ -76,6 +76,9 @@ public class ExpressionUtil {
 			@Override
 			public EvaluationExpression apply(final EvaluationExpression argument) {
 				final ArrayAccess arrayAccess = (ArrayAccess) argument;
+				// only process array access directly on the input stream
+				if (!(arrayAccess.getInputExpression() instanceof InputSelection))
+					return arrayAccess;
 				if (arrayAccess.getStartIndex() < 0 || arrayAccess.getEndIndex() < 0)
 					throw new IllegalArgumentException("Negative indexes cannot replaced currently");
 				if (arrayAccess.getStartIndex() > arrayAccess.getEndIndex())

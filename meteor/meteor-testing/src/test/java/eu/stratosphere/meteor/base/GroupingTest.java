@@ -167,4 +167,29 @@ public class GroupingTest extends MeteorParseTest {
 		assertPlanEquals(expectedPlan, actualPlan);
 	}
 
+	@Test
+	public void testGrouping4() {
+		final SopremoPlan actualPlan = this.parseScript("$employees = read from 'file://employees.json';\n" +
+			"$result = group $employee in $employees by $employee.dept into {\n" +
+			"	$employee[0].dept, \n" +
+			"	employees: all($employee[*].name) \n" +
+			"};\n" +
+			"write $result to 'file://output.json'; ");
+
+		final SopremoPlan expectedPlan = new SopremoPlan();
+
+		final Source input = new Source("file://employees.json");
+		final Grouping selection = new Grouping().
+			withInputs(input).
+			withGroupingKey(JsonUtil.createPath("0", "dept")).
+			withResultProjection(new ObjectCreation(
+				new ObjectCreation.FieldAssignment("dept", JsonUtil.createPath("0", "[0]", "dept")),
+				new ObjectCreation.FieldAssignment("employees",
+					createFunctionCall(CoreFunctions.ALL, JsonUtil.createPath("0", "[*]", "name")))));
+		final Sink output = new Sink("file://output.json").withInputs(selection);
+		expectedPlan.setSinks(output);
+
+		assertPlanEquals(expectedPlan, actualPlan);
+	}
+
 }

@@ -204,7 +204,7 @@ public class Sink extends ElementaryOperator<Sink> {
 	}
 
 	@Override
-	public ElementarySopremoModule asElementaryOperators(final EvaluationContext context) {
+	public ElementarySopremoModule asElementaryOperators() {
 		final ElementarySopremoModule module = new ElementarySopremoModule(1, 0);
 		final Sink clone = (Sink) this.clone();
 		module.addInternalOutput(clone);

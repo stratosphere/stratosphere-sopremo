@@ -1,6 +1,5 @@
 package eu.stratosphere.sopremo.base;
 
-import eu.stratosphere.sopremo.EvaluationContext;
 import eu.stratosphere.sopremo.base.replace.AssembleArray;
 import eu.stratosphere.sopremo.base.replace.ReplaceBase;
 import eu.stratosphere.sopremo.expressions.ArrayAccess;
@@ -20,7 +19,7 @@ public class ReplaceAll extends ReplaceBase<ReplaceAll> {
 	 * @see eu.stratosphere.sopremo.operator.CompositeOperator#asModule(eu.stratosphere.sopremo.EvaluationContext)
 	 */
 	@Override
-	public void addImplementation(final SopremoModule module, final EvaluationContext context) {
+	public void addImplementation(final SopremoModule module) {
 		final ArraySplit arraySplit =
 			new ArraySplit().
 				withArrayPath(this.getReplaceExpression()).

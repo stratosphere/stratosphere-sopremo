@@ -18,7 +18,6 @@ import java.util.List;
 
 import com.google.common.base.Predicates;
 
-import eu.stratosphere.sopremo.EvaluationContext;
 import eu.stratosphere.sopremo.base.join.ThetaJoin;
 import eu.stratosphere.sopremo.expressions.AggregationExpression;
 import eu.stratosphere.sopremo.expressions.AndExpression;
@@ -72,7 +71,7 @@ public class Join extends CompositeOperator<Join> {
 	 * @see eu.stratosphere.sopremo.operator.CompositeOperator#asModule(eu.stratosphere.sopremo.EvaluationContext)
 	 */
 	@Override
-	public void addImplementation(final SopremoModule module, final EvaluationContext context) {
+	public void addImplementation(final SopremoModule module) {
 		switch (this.binaryConditions.size()) {
 		case 0:
 			final ThetaJoin cross = new ThetaJoin().withCondition(new UnaryExpression(new ConstantExpression(true))).

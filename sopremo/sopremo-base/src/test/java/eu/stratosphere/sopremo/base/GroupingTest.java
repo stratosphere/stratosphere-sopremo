@@ -194,6 +194,36 @@ public class GroupingTest extends SopremoOperatorTestBase<Grouping> {
 	}
 
 	@Test
+	public void shouldGroupWithSingleSource2() {
+		final SopremoTestPlan sopremoPlan = new SopremoTestPlan(1, 1);
+
+		final ObjectCreation transformation = new ObjectCreation();
+		transformation.addMapping("d", makePath(new InputSelection(0), new ArrayAccess(0), new ObjectAccess("dept")));
+		transformation.addMapping("total", createFunctionCall(CoreFunctions.ALL,
+			makePath(new InputSelection(0), new ArrayProjection(new ObjectAccess("income")))));
+
+		final Grouping aggregation = new Grouping().withResultProjection(transformation);
+		aggregation.setInputs(sopremoPlan.getInputOperator(0));
+		aggregation.setGroupingKey(0, createPath("dept"));
+
+		sopremoPlan.getOutputOperator(0).setInputs(aggregation);
+		sopremoPlan.getInput(0).
+			addObject("id", 1, "dept", 1, "income", 12000).
+			addObject("id", 2, "dept", 1, "income", 13000).
+			addObject("id", 3, "dept", 2, "income", 15000).
+			addObject("id", 4, "dept", 1, "income", 10000).
+			addObject("id", 5, "dept", 3, "income", 8000).
+			addObject("id", 6, "dept", 2, "income", 5000).
+			addObject("id", 7, "dept", 1, "income", 24000);
+		sopremoPlan.getExpectedOutput(0).
+			addObject("d", 1, "total", new int[] { 12000, 13000, 10000, 24000 }).
+			addObject("d", 2, "total", new int[] { 15000, 5000 }).
+			addObject("d", 3, "total", new int[] { 8000 });
+
+		sopremoPlan.run();
+	}
+
+	@Test
 	public void shouldGroupWithSingleSourceWithInputSelection() {
 		final SopremoTestPlan sopremoPlan = new SopremoTestPlan(1, 1);
 
