@@ -2,6 +2,7 @@ package eu.stratosphere.sopremo.base;
 
 import static eu.stratosphere.sopremo.type.JsonUtil.createPath;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import eu.stratosphere.sopremo.expressions.ArrayCreation;
@@ -15,6 +16,7 @@ import eu.stratosphere.sopremo.expressions.InputSelection;
 import eu.stratosphere.sopremo.expressions.ObjectCreation;
 import eu.stratosphere.sopremo.testing.SopremoOperatorTestBase;
 import eu.stratosphere.sopremo.testing.SopremoTestPlan;
+import eu.stratosphere.sopremo.type.JsonUtil;
 
 public class TwoSourceJoinTest extends SopremoOperatorTestBase<TwoSourceJoin> {
 	@Override
@@ -163,6 +165,70 @@ public class TwoSourceJoinTest extends SopremoOperatorTestBase<TwoSourceJoin> {
 			addObject("name", "Max Mustermann", "password", "q1w2e3r4", "id", 3).
 			addObject("userid", 4, "url", "www.nbc.com");
 
+		sopremoPlan.run();
+	}
+
+	@Test
+	public void shouldPerformAntiJoin2() {
+		final SopremoTestPlan sopremoPlan = new SopremoTestPlan(2, 1);
+
+		// here we set outer join flag
+		final EvaluationExpression leftTwoSourceJoinKey = new ArrayCreation(JsonUtil.createPath("0", "v3", "worksFor"));
+		final EvaluationExpression rightTwoSourceJoinKey =
+			new ArrayCreation(JsonUtil.createPath("1", "v3", "worksFor"));
+		final BinaryBooleanExpression condition = new ElementInSetExpression(leftTwoSourceJoinKey,
+			Quantor.EXISTS_NOT_IN, rightTwoSourceJoinKey);
+		final TwoSourceJoin join = new TwoSourceJoin().withCondition(condition);
+		join.setInputs(sopremoPlan.getInputOperators(0, 2));
+		sopremoPlan.getOutputOperator(0).setInputs(join);
+		sopremoPlan.getInput(0).
+			addObject("v3", JsonUtil.createObjectNode("id", null, "worksFor", "CompanyABC")).
+			addObject("v3", JsonUtil.createObjectNode("id", null, "worksFor", "CompanyUVW")).
+			addObject("v3", JsonUtil.createObjectNode("id", null, "worksFor", "CompanyXYZ"));
+		sopremoPlan.getInput(1).
+			addObject("v3", JsonUtil.createObjectNode("id", null, "worksFor", "CompanyUVW")).
+			addObject("v3", JsonUtil.createObjectNode("id", null, "worksFor", "CompanyXYZ"));
+		sopremoPlan.getExpectedOutput(0).
+			addObject("v3", JsonUtil.createObjectNode("id", null, "worksFor", "CompanyABC"));
+
+		sopremoPlan.trace();
+		sopremoPlan.run();
+	}
+
+	@Test
+	@Ignore
+	public void shouldPerformFullOuterTwoSourceJoin2() {
+		final SopremoTestPlan sopremoPlan = new SopremoTestPlan(2, 1);
+
+		// here we set outer join flag
+		final EvaluationExpression leftTwoSourceJoinKey = createPath("0", "biographyId");
+		final EvaluationExpression rightTwoSourceJoinKey = createPath("1", "biography");
+		final BinaryBooleanExpression condition = new ComparativeExpression(leftTwoSourceJoinKey,
+			BinaryOperator.EQUAL, rightTwoSourceJoinKey);
+		final TwoSourceJoin join = new TwoSourceJoin().withCondition(condition).
+			withOuterJoinSources(new ArrayCreation(new InputSelection(0), new InputSelection(1))).
+			withResultProjection(new ObjectCreation(
+				new ObjectCreation.CopyFields(new InputSelection(1)),
+				new ObjectCreation.FieldAssignment("worksFor", JsonUtil.createPath("0", "worksFor"))));
+		join.setInputs(sopremoPlan.getInputOperators(0, 2));
+		sopremoPlan.getOutputOperator(0).setInputs(join);
+		sopremoPlan.getInput(0).
+			addObject("biographyId", "A000029", "worksFor", "CompanyXYZ").
+			addObject("biographyId", "A000059", "worksFor", "CompanyUVW").
+			addObject("biographyId", "A000049", "worksFor", "CompanyABC");
+		sopremoPlan.getInput(1).
+			addObject("biography", "A000029", "id", "usCongress1", "income", 1, "name", "Andrew Adams").
+			addObject("biography", "A000039", "id", "usCongress2", "income", 1, "name", "John Adams").
+			addObject("biography", "A000059", "id", "usCongress3", "income", 1, "name", "John Doe");
+		sopremoPlan.getExpectedOutput(0).
+			addObject("biography", "A000029", "id", "usCongress1", "income", 1, "name", "Andrew Adams", "worksFor",
+				"CompanyXYZ").
+			addObject("biography", "A000039", "id", "usCongress2", "income", 1, "name", "John Adams", "worksFor",
+				"CompanyUVW").
+			addObject("biography", "A000049", "worksFor", "CompanyABC").
+			addObject("biography", "A000059", "id", "usCongress3", "income", 1, "name", "Andrew Adams");
+
+		sopremoPlan.trace();
 		sopremoPlan.run();
 	}
 

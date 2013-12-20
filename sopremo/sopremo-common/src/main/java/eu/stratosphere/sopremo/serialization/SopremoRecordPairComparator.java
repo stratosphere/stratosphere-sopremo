@@ -15,6 +15,8 @@
 
 package eu.stratosphere.sopremo.serialization;
 
+import java.util.Arrays;
+
 import eu.stratosphere.pact.generic.types.TypePairComparator;
 import eu.stratosphere.sopremo.cache.NodeCache;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
@@ -82,12 +84,14 @@ public class SopremoRecordPairComparator extends TypePairComparator<SopremoRecor
 		if (node == null)
 			for (int index = 0; index < this.numKeys; index++) {
 				final IJsonNode k = candidate.getKey(this.keyFields2[index], this.nodeCache2[index]);
+				System.err.println("SopremoRecordPairComparator#equal " + Arrays.toString(this.keyHolders1) + " " + k);
 				if (!k.equals(this.keyHolders1[index]))
 					return false;
 			}
 		else
 			for (int index = 0; index < this.numKeys; index++) {
 				final IJsonNode k = this.keyExpressions2[index].evaluate(node);
+				System.err.println("SopremoRecordPairComparator#equal " + Arrays.toString(this.keyHolders1) + " " + k);
 				if (!k.equals(this.keyHolders1[index]))
 					return false;
 			}
@@ -101,6 +105,7 @@ public class SopremoRecordPairComparator extends TypePairComparator<SopremoRecor
 	@Override
 	public int compareToReference(final SopremoRecord candidate) {
 		final IJsonNode node = candidate.getNode();
+		System.err.println("SopremoRecordPairComparator " + Arrays.toString(this.keyHolders1));
 		if (node == null)
 			for (int index = 0; index < this.numKeys; index++) {
 				final IJsonNode k = candidate.getKey(this.keyFields2[index], this.nodeCache2[index]);
