@@ -14,7 +14,7 @@
  **********************************************************************************************************************/
 package eu.stratosphere.sopremo.serialization;
 
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import it.unimi.dsi.fastutil.ints.IntAVLTreeSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 
 import java.util.AbstractMap;
@@ -30,7 +30,7 @@ import eu.stratosphere.sopremo.type.IJsonNode;
  * @author arvid
  */
 public class SopremoRecordSchema extends AbstractSchema<Class<? extends IJsonNode>> {
-	private final IntSet usedKeys = new IntOpenHashSet();
+	private final IntSet usedKeys = new IntAVLTreeSet();
 
 	/*
 	 * (non-Javadoc)
@@ -86,6 +86,15 @@ public class SopremoRecordSchema extends AbstractSchema<Class<? extends IJsonNod
 
 	public void add(final int pos) {
 		this.usedKeys.add(pos);
+	}
+	
+	/**
+	 * Returns the usedKeys.
+	 * 
+	 * @return the usedKeys
+	 */
+	public IntSet getUsedKeys() {
+		return this.usedKeys;
 	}
 
 	/*

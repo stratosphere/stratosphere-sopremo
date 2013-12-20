@@ -14,6 +14,8 @@
  **********************************************************************************************************************/
 package eu.stratosphere.sopremo.serialization;
 
+import java.util.Arrays;
+
 import eu.stratosphere.pact.common.contract.GenericDataSink;
 import eu.stratosphere.pact.common.contract.Ordering;
 import eu.stratosphere.pact.common.util.FieldList;
@@ -132,7 +134,7 @@ public class SopremoRecordPostPass extends GenericRecordPostPass<Class<? extends
 	@Override
 	protected TypeSerializerFactory<?> createSerializer(final SopremoRecordSchema schema)
 			throws MissingFieldTypeInfoException {
-		return new SopremoRecordSerializerFactory(this.layout);
+		return new SopremoRecordSerializerFactory(this.layout.project(schema.getUsedKeys().toIntArray()));
 	}
 
 	{
@@ -161,7 +163,12 @@ public class SopremoRecordPostPass extends GenericRecordPostPass<Class<? extends
 	@Override
 	protected TypeComparatorFactory<?> createComparator(final FieldList fields, final boolean[] directions,
 			final SopremoRecordSchema schema) {
-		return new SopremoRecordComparatorFactory(this.layout, fields.toArray(), directions);
+		final int[] usedKeys = schema.getUsedKeys().toIntArray();
+		final int[] sortFields = fields.toArray();
+
+		for (int index = 0; index < sortFields.length; index++)
+			sortFields[index] = Arrays.binarySearch(usedKeys, sortFields[index]);
+		return new SopremoRecordComparatorFactory(this.layout.project(usedKeys), sortFields, directions);
 	}
 
 	/*
