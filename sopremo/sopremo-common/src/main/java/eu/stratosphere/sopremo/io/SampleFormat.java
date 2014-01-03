@@ -17,10 +17,10 @@ package eu.stratosphere.sopremo.io;
 import java.io.IOException;
 import java.net.URI;
 
-import eu.stratosphere.nephele.configuration.Configuration;
-import eu.stratosphere.nephele.template.InputSplit;
-import eu.stratosphere.pact.common.io.statistics.BaseStatistics;
-import eu.stratosphere.pact.generic.io.InputFormat;
+import eu.stratosphere.api.common.io.InputFormat;
+import eu.stratosphere.api.common.io.statistics.BaseStatistics;
+import eu.stratosphere.configuration.Configuration;
+import eu.stratosphere.core.io.InputSplit;
 import eu.stratosphere.sopremo.operator.Property;
 import eu.stratosphere.sopremo.pact.SopremoUtil;
 import eu.stratosphere.sopremo.type.IJsonNode;
@@ -38,8 +38,8 @@ public class SampleFormat extends SopremoFormat {
 
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.io.SopremoFormat#canHandleFormat(eu.stratosphere.nephele.fs.FileSystem,
-	 * eu.stratosphere.nephele.fs.Path)
+	 * @see eu.stratosphere.sopremo.io.SopremoFormat#canHandleFormat(eu.stratosphere.core.fs.FileSystem,
+	 * eu.stratosphere.core.fs.Path)
 	 */
 	@Override
 	public boolean canHandleFormat(final URI path) {
@@ -112,7 +112,7 @@ public class SampleFormat extends SopremoFormat {
 		/*
 		 * (non-Javadoc)
 		 * @see
-		 * eu.stratosphere.pact.common.io.FileInputFormat#configure(eu.stratosphere.nephele.configuration.Configuration)
+		 * eu.stratosphere.api.io .FileInputFormat#configure(eu.stratosphere.configuration.Configuration)
 		 */
 		@SuppressWarnings("unchecked")
 		@Override
@@ -130,7 +130,7 @@ public class SampleFormat extends SopremoFormat {
 
 		/*
 		 * (non-Javadoc)
-		 * @see eu.stratosphere.pact.generic.io.InputFormat#open(eu.stratosphere.nephele.template.InputSplit)
+		 * @see eu.stratosphere.api.io.InputFormat#open(eu.stratosphere.nephele.template.InputSplit)
 		 */
 		@Override
 		public void open(final InputSplit split) throws IOException {
@@ -140,7 +140,7 @@ public class SampleFormat extends SopremoFormat {
 		/*
 		 * (non-Javadoc)
 		 * @see
-		 * eu.stratosphere.pact.common.generic.io.InputFormat#getStatistics(eu.stratosphere.pact.common.io.statistics.
+		 * eu.stratosphere.pact.common.generic.io.InputFormat#getStatistics(eu.stratosphere.api.io .statistics.
 		 * BaseStatistics)
 		 */
 		@Override
@@ -150,7 +150,7 @@ public class SampleFormat extends SopremoFormat {
 			return new BaseStatistics() {
 				/*
 				 * (non-Javadoc)
-				 * @see eu.stratosphere.pact.common.io.statistics.BaseStatistics#getAverageRecordWidth()
+				 * @see eu.stratosphere.api.io .statistics.BaseStatistics#getAverageRecordWidth()
 				 */
 				@Override
 				public float getAverageRecordWidth() {
@@ -159,7 +159,7 @@ public class SampleFormat extends SopremoFormat {
 
 				/*
 				 * (non-Javadoc)
-				 * @see eu.stratosphere.pact.common.io.statistics.BaseStatistics#getNumberOfRecords()
+				 * @see eu.stratosphere.api.io .statistics.BaseStatistics#getNumberOfRecords()
 				 */
 				@Override
 				public long getNumberOfRecords() {
@@ -168,7 +168,7 @@ public class SampleFormat extends SopremoFormat {
 
 				/*
 				 * (non-Javadoc)
-				 * @see eu.stratosphere.pact.common.io.statistics.BaseStatistics#getTotalInputSize()
+				 * @see eu.stratosphere.api.io .statistics.BaseStatistics#getTotalInputSize()
 				 */
 				@Override
 				public long getTotalInputSize() {
@@ -194,7 +194,7 @@ public class SampleFormat extends SopremoFormat {
 
 		/*
 		 * (non-Javadoc)
-		 * @see eu.stratosphere.pact.generic.io.InputFormat#createInputSplits(int)
+		 * @see eu.stratosphere.api.io.InputFormat#createInputSplits(int)
 		 */
 		@Override
 		public InputSplit[] createInputSplits(final int minNumSplits) throws IOException {
@@ -203,7 +203,7 @@ public class SampleFormat extends SopremoFormat {
 
 		/*
 		 * (non-Javadoc)
-		 * @see eu.stratosphere.pact.generic.io.InputFormat#getInputSplitType()
+		 * @see eu.stratosphere.api.io.InputFormat#getInputSplitType()
 		 */
 		@Override
 		public Class<? extends InputSplit> getInputSplitType() {
@@ -212,7 +212,7 @@ public class SampleFormat extends SopremoFormat {
 
 		/*
 		 * (non-Javadoc)
-		 * @see eu.stratosphere.pact.generic.io.InputFormat#close()
+		 * @see eu.stratosphere.api.io.InputFormat#close()
 		 */
 		@Override
 		public void close() throws IOException {

@@ -2,24 +2,24 @@ package eu.stratosphere.sopremo.pact;
 
 import com.google.common.reflect.TypeToken;
 
-import eu.stratosphere.nephele.configuration.Configuration;
-import eu.stratosphere.pact.common.stubs.Collector;
-import eu.stratosphere.pact.generic.stub.AbstractStub;
-import eu.stratosphere.pact.generic.stub.GenericMapper;
+import eu.stratosphere.api.common.functions.AbstractFunction;
+import eu.stratosphere.api.common.functions.GenericMapper;
+import eu.stratosphere.configuration.Configuration;
 import eu.stratosphere.sopremo.EvaluationContext;
 import eu.stratosphere.sopremo.SopremoEnvironment;
 import eu.stratosphere.sopremo.serialization.SopremoRecord;
 import eu.stratosphere.sopremo.type.IJsonNode;
 import eu.stratosphere.sopremo.type.IObjectNode;
 import eu.stratosphere.sopremo.type.typed.TypedObjectNode;
+import eu.stratosphere.util.Collector;
 
 /**
  * An abstract implementation of the {@link GenericMapper}. GenericSopremoMap provides the functionality to convert the
  * standard input of the GenericMapper to a more manageable representation (the input is converted to a subclass of
  * {@link IJsonNode}).
  */
-public abstract class GenericSopremoMap<In extends IJsonNode, Out extends IJsonNode> extends AbstractStub implements
-		GenericMapper<SopremoRecord, SopremoRecord>, SopremoStub {
+public abstract class GenericSopremoMap<In extends IJsonNode, Out extends IJsonNode> extends AbstractFunction implements
+		GenericMapper<SopremoRecord, SopremoRecord>, SopremoFunction {
 	private EvaluationContext context;
 
 	private JsonCollector<Out> collector;
@@ -54,8 +54,8 @@ public abstract class GenericSopremoMap<In extends IJsonNode, Out extends IJsonN
 	/*
 	 * (non-Javadoc)
 	 * @see
-	 * eu.stratosphere.pact.common.stubs.MapStub#map(eu.stratosphere.pact.common
-	 * .type.PactRecord, eu.stratosphere.pact.common.stubs.Collector)
+	 * eu.stratosphere.api.record.functions.MapFunction#map(eu.stratosphere.pact.common
+	 * .type.PactRecord, eu.stratosphere.api.record.functions.Collector)
 	 */
 	@SuppressWarnings("unchecked")
 	@Override

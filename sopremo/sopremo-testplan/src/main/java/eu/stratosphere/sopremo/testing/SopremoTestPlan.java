@@ -11,17 +11,16 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-import eu.stratosphere.nephele.configuration.Configuration;
-import eu.stratosphere.nephele.fs.FSDataInputStream;
-import eu.stratosphere.nephele.fs.FileSystem;
-import eu.stratosphere.nephele.fs.Path;
-import eu.stratosphere.pact.common.contract.FileDataSink;
-import eu.stratosphere.pact.common.contract.FileDataSource;
-import eu.stratosphere.pact.common.contract.GenericDataSink;
-import eu.stratosphere.pact.common.contract.GenericDataSource;
+import eu.stratosphere.api.common.Plan;
+import eu.stratosphere.api.common.operators.FileDataSink;
+import eu.stratosphere.api.common.operators.FileDataSource;
+import eu.stratosphere.api.common.operators.GenericDataSink;
+import eu.stratosphere.api.common.operators.GenericDataSource;
+import eu.stratosphere.configuration.Configuration;
+import eu.stratosphere.core.fs.FSDataInputStream;
+import eu.stratosphere.core.fs.FileSystem;
+import eu.stratosphere.core.fs.Path;
 import eu.stratosphere.pact.common.plan.PactModule;
-import eu.stratosphere.pact.common.plan.Plan;
-import eu.stratosphere.pact.generic.contract.Contract;
 import eu.stratosphere.pact.testing.AssertUtil;
 import eu.stratosphere.pact.testing.GenericTestPlan;
 import eu.stratosphere.pact.testing.GenericTestRecords;
@@ -92,7 +91,8 @@ public class SopremoTestPlan {
 	public class SopremoRecordTestPlan extends GenericTestPlan<SopremoRecord, SopremoTestRecords> {
 		private final SopremoRecordLayout layout;
 
-		protected SopremoRecordTestPlan(final SopremoRecordLayout layout, final Collection<? extends Contract> contracts) {
+		protected SopremoRecordTestPlan(final SopremoRecordLayout layout,
+				final Collection<? extends eu.stratosphere.api.common.operators.Operator> contracts) {
 			super(SopremoTestRecords.getTypeConfig(SopremoRecordLayout.create()), contracts);
 			this.layout = layout;
 		}
@@ -416,7 +416,7 @@ public class SopremoTestPlan {
 	 */
 	public void run() {
 		final SopremoPlan sopremoPlan = this.getSopremoPlan();
-		final Collection<Contract> sinks = sopremoPlan.assemblePact();
+		final Collection<eu.stratosphere.api.common.operators.Operator> sinks = sopremoPlan.assemblePact();
 		final SopremoRecordLayout layout = sopremoPlan.getLayout();
 		this.testPlan = new SopremoRecordTestPlan(layout, sinks);
 		for (final Input input : this.inputs)

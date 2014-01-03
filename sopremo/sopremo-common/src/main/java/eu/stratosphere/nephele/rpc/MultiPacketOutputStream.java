@@ -20,7 +20,6 @@ import java.io.OutputStream;
 import java.net.DatagramPacket;
 import java.net.InetSocketAddress;
 
-import eu.stratosphere.nephele.util.NumberUtils;
 
 final class MultiPacketOutputStream extends OutputStream {
 

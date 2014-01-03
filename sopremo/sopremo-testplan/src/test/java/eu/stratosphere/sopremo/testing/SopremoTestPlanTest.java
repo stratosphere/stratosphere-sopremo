@@ -31,7 +31,7 @@ import nl.jqno.equalsverifier.EqualsVerifier;
 import org.junit.Test;
 import org.junit.internal.ArrayComparisonFailure;
 
-import eu.stratosphere.pact.common.contract.ReduceContract.Combinable;
+import eu.stratosphere.api.common.operators.base.ReduceOperatorBase.Combinable;
 import eu.stratosphere.sopremo.EqualVerifyTest;
 import eu.stratosphere.sopremo.expressions.ObjectAccess;
 import eu.stratosphere.sopremo.io.Sink;
@@ -51,8 +51,6 @@ import eu.stratosphere.sopremo.type.IntNode;
 import eu.stratosphere.sopremo.type.JsonUtil;
 import eu.stratosphere.sopremo.type.MissingNode;
 import eu.stratosphere.sopremo.type.TextNode;
-
-//import eu.stratosphere.pact.testing.TestRecords;
 
 /**
  * Tests {@link SopremoTestPlan}.
@@ -172,11 +170,11 @@ public class SopremoTestPlanTest extends EqualVerifyTest<SopremoTestPlan> {
 	}
 
 	/**
-	 * Tests a {@link SopremoTestPlan} with a {@link CrossContract}.
+	 * Tests a {@link SopremoTestPlan} with a {@link CrossOperator}.
 	 */
 
 	@Test
-	public void settingValuesShouldWorkWithSourceContracts() {
+	public void settingValuesShouldWorkWithSourceOperators() {
 		final CartesianProduct cartesianProduct = new CartesianProduct();
 		final SopremoTestPlan testPlan = new SopremoTestPlan(cartesianProduct);
 		testPlan.getInputForStream(cartesianProduct.getInput(0)).
@@ -222,12 +220,12 @@ public class SopremoTestPlanTest extends EqualVerifyTest<SopremoTestPlan> {
 	// * the input from which the values are read
 	// * @param outputFormatClass
 	// * the output format
-	// * @return the {@link DataSinkContract} for the temporary file
+	// * @return the {@link DataSinkOperator} for the temporary file
 	// */
-	// private <K extends Key, V extends Value> DataSinkContract<K, V> createOutput(final Contract input,
+	// private <K extends Key, V extends Value> DataSinkOperator<K, V> createOutput(final Operator input,
 	// final Class<? extends OutputFormat<K, V>> outputFormatClass) {
 	// try {
-	// final DataSinkContract<K, V> out = new DataSinkContract<K, V>(outputFormatClass, File.createTempFile(
+	// final DataSinkOperator<K, V> out = new DataSinkOperator<K, V>(outputFormatClass, File.createTempFile(
 	// "output", null).toURI().toString(), "Output");
 	// out.setInput(input);
 	// return out;
@@ -238,17 +236,17 @@ public class SopremoTestPlanTest extends EqualVerifyTest<SopremoTestPlan> {
 	// }
 	//
 	// /**
-	// * Creates an {@link DataSourceContract} contract for the specified resource file in the temporary folder for
+	// * Creates an {@link DataSourceOperator} contract for the specified resource file in the temporary folder for
 	// * arbitrary key/value pairs coming from the given input
 	// * contract.
 	// *
 	// * @param input
 	// * the input from which the values are read
-	// * @return the {@link DataSinkContract} for the temporary file
+	// * @return the {@link DataSinkOperator} for the temporary file
 	// */
-	// private <K extends Key, V extends Value> DataSourceContract<K, V> createInput(
+	// private <K extends Key, V extends Value> DataSourceOperator<K, V> createInput(
 	// Class<? extends InputFormat<K, V>> inputFormat, String resource) {
-	// final DataSourceContract<K, V> read = new DataSourceContract<K, V>(inputFormat, getResourcePath(resource),
+	// final DataSourceOperator<K, V> read = new DataSourceOperator<K, V>(inputFormat, getResourcePath(resource),
 	// "Input");
 	// return read;
 	// }
@@ -284,7 +282,7 @@ public class SopremoTestPlanTest extends EqualVerifyTest<SopremoTestPlan> {
 	/**
 	 * Counts the number of values for a given key. Hence, the number of
 	 * occurences of a given token (word) is computed and emitted. The key is
-	 * not modified, hence a SameKey OutputContract is attached to this class.<br>
+	 * not modified, hence a SameKey OutputOperator is attached to this class.<br>
 	 * Expected input: [{ word: "word1"}, { word: "word1"}] <br>
 	 * Output: [{ word: "word1", count: 2}]
 	 */

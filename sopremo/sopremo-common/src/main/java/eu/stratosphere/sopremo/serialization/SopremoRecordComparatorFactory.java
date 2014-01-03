@@ -17,9 +17,9 @@ package eu.stratosphere.sopremo.serialization;
 
 import java.util.Arrays;
 
-import eu.stratosphere.nephele.configuration.Configuration;
-import eu.stratosphere.pact.generic.types.TypeComparator;
-import eu.stratosphere.pact.generic.types.TypeComparatorFactory;
+import eu.stratosphere.api.common.typeutils.TypeComparator;
+import eu.stratosphere.api.common.typeutils.TypeComparatorFactory;
+import eu.stratosphere.configuration.Configuration;
 import eu.stratosphere.sopremo.pact.SopremoUtil;
 
 public class SopremoRecordComparatorFactory implements TypeComparatorFactory<SopremoRecord> {
@@ -70,7 +70,7 @@ public class SopremoRecordComparatorFactory implements TypeComparatorFactory<Sop
 
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.pact.generic.types.TypeComparatorFactory#writeParametersToConfig(eu.stratosphere.nephele.
+	 * @see eu.stratosphere.api.typeutils.TypeComparatorFactory#writeParametersToConfig(eu.stratosphere.nephele.
 	 * configuration.Configuration)
 	 */
 	@Override
@@ -82,7 +82,7 @@ public class SopremoRecordComparatorFactory implements TypeComparatorFactory<Sop
 
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.pact.generic.types.TypeComparatorFactory#readParametersFromConfig(eu.stratosphere.nephele.
+	 * @see eu.stratosphere.api.typeutils.TypeComparatorFactory#readParametersFromConfig(eu.stratosphere.nephele.
 	 * configuration.Configuration, java.lang.ClassLoader)
 	 */
 	@Override
@@ -95,7 +95,7 @@ public class SopremoRecordComparatorFactory implements TypeComparatorFactory<Sop
 
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.pact.generic.types.TypeComparatorFactory#createComparator()
+	 * @see eu.stratosphere.api.typeutils.TypeComparatorFactory#createComparator()
 	 */
 	@Override
 	public TypeComparator<SopremoRecord> createComparator() {

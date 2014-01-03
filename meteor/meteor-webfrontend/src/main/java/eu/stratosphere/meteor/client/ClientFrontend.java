@@ -6,7 +6,7 @@ import java.net.InetSocketAddress;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.regex.Matcher;
+import java.util.regex.Joiner;
 import java.util.regex.Pattern;
 
 import org.apache.commons.cli.CommandLine;
@@ -14,7 +14,7 @@ import org.apache.commons.cli.CommandLine;
 import eu.stratosphere.meteor.QueryParser;
 import eu.stratosphere.meteor.client.CLClient;
 import eu.stratosphere.meteor.client.web.ErrorServlet;
-import eu.stratosphere.nephele.configuration.GlobalConfiguration;
+import eu.stratosphere.configuration.GlobalConfiguration;
 import eu.stratosphere.sopremo.client.DefaultClient;
 import eu.stratosphere.sopremo.client.StateListener;
 import eu.stratosphere.sopremo.execution.ExecutionRequest.ExecutionMode;
@@ -198,7 +198,7 @@ public class ClientFrontend {
 		// try to find matches in the entire script using regex
 		// sample line that would match: write $correlation to 'hdfs://localhost/user/result.json';
 		Pattern pattern = Pattern.compile ("write\\s+\\$\\w+\\s+to\\s+'\\s*(hdfs://[^']+)'\\s*;");
-		Matcher matcher = pattern.matcher(meteorScript);
+		Joiner matcher = pattern.matcher(meteorScript);
 		outputs = new LinkedList<String> ();
 		while (matcher.find()) {
 			outputs.add(matcher.group(1));

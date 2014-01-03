@@ -17,8 +17,8 @@ import eu.stratosphere.meteor.client.web.OutputServlet;
 import eu.stratosphere.meteor.client.web.PactVisServlet;
 import eu.stratosphere.meteor.client.web.RuntimeStateServlet;
 import eu.stratosphere.meteor.client.web.VisualizationServlet;
-import eu.stratosphere.nephele.configuration.Configuration;
-import eu.stratosphere.pact.common.util.PactConfigConstants;
+import eu.stratosphere.configuration.Configuration;
+import eu.stratosphere.util.PactConfigConstants;
 import eu.stratosphere.sopremo.query.QueryParserException;
 
 /**

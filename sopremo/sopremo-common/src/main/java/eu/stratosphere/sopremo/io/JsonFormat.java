@@ -19,14 +19,14 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 
-import eu.stratosphere.nephele.fs.BlockLocation;
-import eu.stratosphere.nephele.fs.FSDataInputStream;
-import eu.stratosphere.nephele.fs.FSDataOutputStream;
-import eu.stratosphere.nephele.fs.FileInputSplit;
-import eu.stratosphere.nephele.fs.FileStatus;
-import eu.stratosphere.nephele.fs.FileSystem;
-import eu.stratosphere.nephele.fs.Path;
-import eu.stratosphere.pact.common.io.statistics.BaseStatistics;
+import eu.stratosphere.api.common.io.statistics.BaseStatistics;
+import eu.stratosphere.core.fs.BlockLocation;
+import eu.stratosphere.core.fs.FSDataInputStream;
+import eu.stratosphere.core.fs.FSDataOutputStream;
+import eu.stratosphere.core.fs.FileInputSplit;
+import eu.stratosphere.core.fs.FileStatus;
+import eu.stratosphere.core.fs.FileSystem;
+import eu.stratosphere.core.fs.Path;
 import eu.stratosphere.sopremo.operator.Name;
 import eu.stratosphere.sopremo.type.IJsonNode;
 
@@ -56,8 +56,8 @@ public class JsonFormat extends SopremoFormat {
 		/*
 		 * (non-Javadoc)
 		 * @see
-		 * eu.stratosphere.sopremo.io.SopremoFormat.SopremoFileInputFormat#open(eu.stratosphere.nephele.fs.FSDataInputStream
-		 * , eu.stratosphere.nephele.fs.FileInputSplit)
+		 * eu.stratosphere.sopremo.io.SopremoFormat.SopremoFileInputFormat#open(eu.stratosphere.core.fs.FSDataInputStream
+		 * , eu.stratosphere.core.fs.FileInputSplit)
 		 */
 		@Override
 		protected void open(final FSDataInputStream stream, final FileInputSplit split) {
@@ -92,7 +92,7 @@ public class JsonFormat extends SopremoFormat {
 
 		/*
 		 * (non-Javadoc)
-		 * @see eu.stratosphere.pact.common.io.FileInputFormat#createInputSplits(int)
+		 * @see eu.stratosphere.api.io .FileInputFormat#createInputSplits(int)
 		 */
 		@Override
 		public FileInputSplit[] createInputSplits(final int minNumSplits) throws IOException {
@@ -126,7 +126,7 @@ public class JsonFormat extends SopremoFormat {
 
 		/*
 		 * (non-Javadoc)
-		 * @see eu.stratosphere.pact.common.io.InputFormat#getStatistics()
+		 * @see eu.stratosphere.api.io .InputFormat#getStatistics()
 		 */
 		@Override
 		public FileBaseStatistics getStatistics(final BaseStatistics cachedStatistics) {
@@ -157,7 +157,7 @@ public class JsonFormat extends SopremoFormat {
 
 		/*
 		 * (non-Javadoc)
-		 * @see eu.stratosphere.sopremo.io.SopremoFormat.SopremoFileOutputFormat#open(eu.stratosphere.nephele.fs.
+		 * @see eu.stratosphere.sopremo.io.SopremoFormat.SopremoFileOutputFormat#open(eu.stratosphere.core.fs.
 		 * FSDataOutputStream, int)
 		 */
 		@Override

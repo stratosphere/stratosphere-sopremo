@@ -8,8 +8,8 @@ import java.io.OutputStreamWriter;
 import org.junit.Assert;
 import org.junit.Test;
 
-import eu.stratosphere.nephele.configuration.Configuration;
-import eu.stratosphere.pact.generic.io.FormatUtil;
+import eu.stratosphere.api.common.io.FormatUtil;
+import eu.stratosphere.configuration.Configuration;
 import eu.stratosphere.sopremo.EvaluationContext;
 import eu.stratosphere.sopremo.io.JsonFormat.JsonInputFormat;
 import eu.stratosphere.sopremo.io.SopremoFormat.SopremoFileInputFormat;

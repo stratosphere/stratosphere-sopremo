@@ -2,14 +2,14 @@ package eu.stratosphere.sopremo.base.join;
 
 import eu.stratosphere.sopremo.operator.Internal;
 import eu.stratosphere.sopremo.pact.JsonCollector;
-import eu.stratosphere.sopremo.pact.SopremoMatch;
+import eu.stratosphere.sopremo.pact.SopremoJoin;
 import eu.stratosphere.sopremo.type.ArrayNode;
 import eu.stratosphere.sopremo.type.IArrayNode;
 import eu.stratosphere.sopremo.type.IJsonNode;
 
 @Internal
 public class InnerJoin extends TwoSourceJoinBase<InnerJoin> {
-	public static class Implementation extends SopremoMatch {
+	public static class Implementation extends SopremoJoin {
 		private final IArrayNode<IJsonNode> result = new ArrayNode<IJsonNode>();
 
 		@Override

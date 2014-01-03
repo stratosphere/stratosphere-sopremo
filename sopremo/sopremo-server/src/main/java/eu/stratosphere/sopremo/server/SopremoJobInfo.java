@@ -18,7 +18,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import eu.stratosphere.nephele.client.JobClient;
-import eu.stratosphere.nephele.configuration.Configuration;
+import eu.stratosphere.configuration.Configuration;
 import eu.stratosphere.sopremo.execution.ExecutionRequest;
 import eu.stratosphere.sopremo.execution.ExecutionResponse.ExecutionState;
 import eu.stratosphere.sopremo.execution.SopremoID;

@@ -4,10 +4,9 @@ import java.util.Iterator;
 
 import com.google.common.reflect.TypeToken;
 
-import eu.stratosphere.nephele.configuration.Configuration;
-import eu.stratosphere.pact.common.stubs.Collector;
-import eu.stratosphere.pact.generic.stub.AbstractStub;
-import eu.stratosphere.pact.generic.stub.GenericReducer;
+import eu.stratosphere.api.common.functions.AbstractFunction;
+import eu.stratosphere.api.common.functions.GenericReducer;
+import eu.stratosphere.configuration.Configuration;
 import eu.stratosphere.sopremo.EvaluationContext;
 import eu.stratosphere.sopremo.SopremoEnvironment;
 import eu.stratosphere.sopremo.serialization.SopremoRecord;
@@ -16,14 +15,15 @@ import eu.stratosphere.sopremo.type.IJsonNode;
 import eu.stratosphere.sopremo.type.IStreamNode;
 import eu.stratosphere.sopremo.type.StreamNode;
 import eu.stratosphere.sopremo.type.typed.TypedObjectNode;
+import eu.stratosphere.util.Collector;
 
 /**
  * An abstract implementation of the {@link GenericReducer}. SopremoReduce provides the functionality to convert the
- * standard input of the ReduceStub to a more manageable representation (the input is converted to an
+ * standard input of the ReduceFunction to a more manageable representation (the input is converted to an
  * {@link IStreamNode} ).
  */
-public abstract class GenericSopremoReduce<Elem extends IJsonNode, Out extends IJsonNode> extends AbstractStub
-		implements GenericReducer<SopremoRecord, SopremoRecord>, SopremoStub {
+public abstract class GenericSopremoReduce<Elem extends IJsonNode, Out extends IJsonNode> extends AbstractFunction
+		implements GenericReducer<SopremoRecord, SopremoRecord>, SopremoFunction {
 	private EvaluationContext context;
 
 	private JsonCollector<Out> collector;
@@ -34,7 +34,7 @@ public abstract class GenericSopremoReduce<Elem extends IJsonNode, Out extends I
 
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.pact.common.stubs.Stub#open(eu.stratosphere.nephele.configuration.Configuration)
+	 * @see eu.stratosphere.api.record.functions.Function#open(eu.stratosphere.configuration.Configuration)
 	 */
 	@Override
 	public void open(final Configuration parameters) {
@@ -67,8 +67,8 @@ public abstract class GenericSopremoReduce<Elem extends IJsonNode, Out extends I
 
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.pact.generic.stub.GenericReducer#combine(java.util.Iterator,
-	 * eu.stratosphere.pact.common.stubs.Collector)
+	 * @see eu.stratosphere.api.functions.GenericReducer#combine(java.util.Iterator,
+	 * eu.stratosphere.api.record.functions.Collector)
 	 */
 	@Override
 	public void combine(final Iterator<SopremoRecord> records, final Collector<SopremoRecord> collector)
@@ -93,14 +93,14 @@ public abstract class GenericSopremoReduce<Elem extends IJsonNode, Out extends I
 
 	/**
 	 * This method can be overridden by reduce stubs that want to make use of the combining feature.
-	 * In addition, the ReduceStub extending class must be annotated as Combinable.
+	 * In addition, the ReduceFunction extending class must be annotated as Combinable.
 	 * <p>
 	 * The use of the combiner is typically a pre-reduction of the data. It works similar as the reducer, only that is
 	 * is not guaranteed to see all values with the same key in one call to the combine function. Since it is called
 	 * prior to the <code>reduce()</code> method, input and output types of the combine method are the input types of
 	 * the <code>reduce()</code> method.
 	 * 
-	 * @see eu.stratosphere.pact.common.contract.ReduceContract.Combinable
+	 * @see eu.stratosphere.api.record.operators .ReduceOperator.Combinable
 	 * @param records
 	 *        The records to be combined. Unlike in the reduce method, these are not necessarily all records
 	 *        belonging to the given key.
@@ -117,8 +117,8 @@ public abstract class GenericSopremoReduce<Elem extends IJsonNode, Out extends I
 
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.pact.common.stubs.ReduceStub#reduce(java.util.Iterator,
-	 * eu.stratosphere.pact.common.stubs.Collector)
+	 * @see eu.stratosphere.api.record.functions.ReduceFunction#reduce(java.util.Iterator,
+	 * eu.stratosphere.api.record.functions.Collector)
 	 */
 	@Override
 	public void reduce(final Iterator<SopremoRecord> records, final Collector<SopremoRecord> out) {

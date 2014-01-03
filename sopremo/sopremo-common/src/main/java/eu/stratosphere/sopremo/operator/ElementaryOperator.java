@@ -12,27 +12,27 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import eu.stratosphere.nephele.configuration.Configuration;
+import eu.stratosphere.api.common.functions.AbstractFunction;
+import eu.stratosphere.api.common.functions.Function;
+import eu.stratosphere.api.common.functions.GenericMapper;
+import eu.stratosphere.api.common.operators.Ordering;
+import eu.stratosphere.api.common.operators.base.CoGroupOperatorBase;
+import eu.stratosphere.api.common.operators.base.CrossOperatorBase;
+import eu.stratosphere.api.common.operators.base.JoinOperatorBase;
+import eu.stratosphere.api.common.operators.base.MapOperatorBase;
+import eu.stratosphere.api.common.operators.base.ReduceOperatorBase;
+import eu.stratosphere.api.common.operators.util.ContractUtil;
+import eu.stratosphere.configuration.Configuration;
 import eu.stratosphere.pact.common.IdentityMap;
-import eu.stratosphere.pact.common.contract.MapContract;
-import eu.stratosphere.pact.common.contract.Ordering;
 import eu.stratosphere.pact.common.plan.PactModule;
-import eu.stratosphere.pact.common.stubs.Stub;
-import eu.stratosphere.pact.generic.contract.Contract;
-import eu.stratosphere.pact.generic.contract.ContractUtil;
-import eu.stratosphere.pact.generic.contract.GenericCoGroupContract;
-import eu.stratosphere.pact.generic.contract.GenericCrossContract;
-import eu.stratosphere.pact.generic.contract.GenericMapContract;
-import eu.stratosphere.pact.generic.contract.GenericMatchContract;
-import eu.stratosphere.pact.generic.contract.GenericReduceContract;
-import eu.stratosphere.pact.generic.stub.AbstractStub;
 import eu.stratosphere.sopremo.EvaluationContext;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
 import eu.stratosphere.sopremo.expressions.InputSelection;
 import eu.stratosphere.sopremo.expressions.OrderingExpression;
-import eu.stratosphere.sopremo.pact.SopremoCoGroupContract;
-import eu.stratosphere.sopremo.pact.SopremoReduceContract;
+import eu.stratosphere.sopremo.pact.SopremoCoGroupOperator;
+import eu.stratosphere.sopremo.pact.SopremoReduceOperator;
 import eu.stratosphere.sopremo.pact.SopremoUtil;
+import eu.stratosphere.sopremo.serialization.SopremoRecord;
 import eu.stratosphere.sopremo.serialization.SopremoRecordLayout;
 import eu.stratosphere.util.CollectionUtil;
 import eu.stratosphere.util.IdentityList;
@@ -41,7 +41,7 @@ import eu.stratosphere.util.IdentityList;
  * An ElementaryOperator is an {@link Operator} that directly translates to a
  * PACT. Such an operator has at most one output.<br>
  * By convention, the first inner class of implementing operators that inherits
- * from {@link Stub} is assumed to be the implementation of this operator. The
+ * from {@link Function} is assumed to be the implementation of this operator. The
  * following example demonstrates a minimalistic operator implementation.
  * 
  * <pre>
@@ -67,10 +67,11 @@ import eu.stratosphere.util.IdentityList;
  * To exert more control, several hooks are available that are called in fixed
  * order.
  * <ul>
- * <li>{@link #getStubClass()} allows to choose a different Stub than the first inner class inheriting from {@link Stub}.
- * <li>{@link #getContract()} instantiates a contract matching the stub class resulting from the previous callback. This
+ * <li>{@link #getFunctionClass()} allows to choose a different Function than the first inner class inheriting from
+ * {@link Function}.
+ * <li>{@link #getOperator()} instantiates a contract matching the stub class resulting from the previous callback. This
  * callback is especially useful if a PACT stub is chosen that is not supported in Sopremo yet.
- * <li>{@link #configureContract(Contract, Configuration, EvaluationContext)} is a callback used to set parameters of
+ * <li>{@link #configureOperator(Operator, Configuration, EvaluationContext)} is a callback used to set parameters of
  * the {@link Configuration} of the stub.
  * <li>{@link #asPactModule(EvaluationContext)} gives complete control over the creation of the {@link PactModule}.
  * </ul>
@@ -300,23 +301,24 @@ public abstract class ElementaryOperator<Self extends ElementaryOperator<Self>>
 
 	@Override
 	public PactModule asPactModule(final EvaluationContext context, final SopremoRecordLayout layout) {
-		final Contract contract = this.getContract(layout);
+		final eu.stratosphere.api.common.operators.Operator contract = this.getOperator(layout);
 		context.setResultProjection(this.resultProjection);
-		this.configureContract(contract, contract.getParameters(), context, layout);
+		this.configureOperator(contract, contract.getParameters(), context, layout);
 
-		final List<List<Contract>> inputLists = ContractUtil
+		final List<List<eu.stratosphere.api.common.operators.Operator>> inputLists = ContractUtil
 			.getInputs(contract);
-		final List<Contract> distinctInputs = new IdentityList<Contract>();
-		for (final List<Contract> inputs : inputLists) {
+		final List<eu.stratosphere.api.common.operators.Operator> distinctInputs =
+			new IdentityList<eu.stratosphere.api.common.operators.Operator>();
+		for (final List<eu.stratosphere.api.common.operators.Operator> inputs : inputLists) {
 			// assume at least one input for each contract input slot
 			if (inputs.isEmpty())
-				inputs.add(MapContract.builder(IdentityMap.class).build());
-			for (final Contract input : inputs)
+				inputs.add(new MapOperatorBase<GenericMapper<SopremoRecord, SopremoRecord>>(IdentityMap.class, "nop"));
+			for (final eu.stratosphere.api.common.operators.Operator input : inputs)
 				if (!distinctInputs.contains(input))
 					distinctInputs.add(input);
 		}
 		final PactModule module = new PactModule(distinctInputs.size(), 1);
-		for (final List<Contract> inputs : inputLists)
+		for (final List<eu.stratosphere.api.common.operators.Operator> inputs : inputLists)
 			for (int index = 0; index < inputs.size(); index++)
 				inputs.set(index, module.getInput(distinctInputs.indexOf(inputs.get(index))));
 		ContractUtil.setInputs(contract, inputLists);
@@ -350,11 +352,13 @@ public abstract class ElementaryOperator<Self extends ElementaryOperator<Self>>
 	 *        evaluated
 	 */
 	@SuppressWarnings("unchecked")
-	protected void configureContract(final Contract contract, final Configuration stubConfiguration,
+	protected void configureOperator(final eu.stratosphere.api.common.operators.Operator contract,
+			final Configuration stubConfiguration,
 			final EvaluationContext context, final SopremoRecordLayout layout) {
 
 		SopremoUtil.transferFieldsToConfiguration(this, ElementaryOperator.class, stubConfiguration,
-			(Class<? extends AbstractStub>) contract.getUserCodeWrapper().getUserCodeClass(), AbstractStub.class);
+			(Class<? extends AbstractFunction>) contract.getUserCodeWrapper().getUserCodeClass(),
+			AbstractFunction.class);
 
 		contract.setDegreeOfParallelism(this.getDegreeOfParallelism());
 		SopremoUtil.setEvaluationContext(stubConfiguration, context);
@@ -375,48 +379,47 @@ public abstract class ElementaryOperator<Self extends ElementaryOperator<Self>>
 	}
 
 	/**
-	 * Creates the {@link Contract} that represents this operator.
+	 * Creates the {@link Operator} that represents this operator.
 	 * 
 	 * @return the contract representing this operator
 	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	protected Contract getContract(final SopremoRecordLayout layout) {
-		final Class<? extends Stub> stubClass = this.getStubClass();
+	protected eu.stratosphere.api.common.operators.Operator getOperator(final SopremoRecordLayout layout) {
+		final Class<? extends Function> stubClass = this.getFunctionClass();
 		if (stubClass == null)
 			throw new IllegalStateException("no implementing stub found");
-		final Class<? extends Contract> contractClass = ContractUtil.getContractClass(stubClass);
+		final Class<? extends eu.stratosphere.api.common.operators.Operator> contractClass =
+			ContractUtil.getContractClass(stubClass);
 		if (contractClass == null)
 			throw new IllegalStateException("no associated contract found");
 
 		final String name = this.toString();
 		try {
-			if (contractClass == GenericReduceContract.class) {
+			if (contractClass == ReduceOperatorBase.class) {
 				final int[] keyIndices = this.getKeyIndices(layout, this.getKeyExpressions(0));
-				final SopremoReduceContract contract = new SopremoReduceContract(this, stubClass, keyIndices, name);
+				final SopremoReduceOperator contract = new SopremoReduceOperator(this, stubClass, keyIndices, name);
 				if (!this.getInnerGroupOrder(0).isEmpty())
 					contract.setInnerGroupOrder(this.createOrdering(layout, this.getInnerGroupOrder(0)));
 				return contract;
-			}
-			else if (contractClass == GenericCoGroupContract.class) {
+			} else if (contractClass == CoGroupOperatorBase.class) {
 				final int[] keyIndices1 = this.getKeyIndices(layout, this.getKeyExpressions(0));
 				final int[] keyIndices2 = this.getKeyIndices(layout, this.getKeyExpressions(1));
-				final SopremoCoGroupContract contract =
-					new SopremoCoGroupContract(this, stubClass, keyIndices1, keyIndices2, name);
+				final SopremoCoGroupOperator contract =
+					new SopremoCoGroupOperator(this, stubClass, keyIndices1, keyIndices2, name);
 				if (!this.getInnerGroupOrder(0).isEmpty())
 					contract.setFirstInnerGroupOrdering(this.createOrdering(layout, this.getInnerGroupOrder(0)));
 				if (!this.getInnerGroupOrder(1).isEmpty())
 					contract.setFirstInnerGroupOrdering(this.createOrdering(layout, this.getInnerGroupOrder(1)));
 				return contract;
-			}
-			else if (contractClass == GenericMatchContract.class) {
+			} else if (contractClass == JoinOperatorBase.class) {
 				final int[] keyIndices1 = this.getKeyIndices(layout, this.getKeyExpressions(0));
 				final int[] keyIndices2 = this.getKeyIndices(layout, this.getKeyExpressions(1));
 
-				return new GenericMatchContract(stubClass, keyIndices1, keyIndices2, name);
-			} else if (contractClass == GenericMapContract.class)
-				return new GenericMapContract(stubClass, name);
-			else if (contractClass == GenericCrossContract.class)
-				return new GenericCrossContract(stubClass, name);
+				return new JoinOperatorBase(stubClass, keyIndices1, keyIndices2, name);
+			} else if (contractClass == MapOperatorBase.class)
+				return new MapOperatorBase(stubClass, name);
+			else if (contractClass == CrossOperatorBase.class)
+				return new CrossOperatorBase(stubClass, name);
 			else
 				throw new UnsupportedOperationException("Unknown contract type");
 
@@ -442,7 +445,7 @@ public abstract class ElementaryOperator<Self extends ElementaryOperator<Self>>
 	/**
 	 * Returns true, if the implementing stub is combinable. This method will only be invoked for Reduce stubs.
 	 * 
-	 * @see eu.stratosphere.pact.generic.contract.GenericReduceContract.Combinable
+	 * @see eu.stratosphere.pact.generic.contract.GenericReduceOperator.Combinable
 	 */
 	public boolean isCombinable() {
 		return this.combinable;
@@ -453,7 +456,7 @@ public abstract class ElementaryOperator<Self extends ElementaryOperator<Self>>
 	 * 
 	 * @param combinable
 	 *        the combinable to set
-	 * @see eu.stratosphere.pact.generic.contract.GenericReduceContract.Combinable
+	 * @see eu.stratosphere.pact.generic.contract.GenericReduceOperator.Combinable
 	 */
 	public void setCombinable(final boolean combinable) {
 		this.combinable = combinable;
@@ -464,7 +467,7 @@ public abstract class ElementaryOperator<Self extends ElementaryOperator<Self>>
 	 * 
 	 * @param combinable
 	 *        the combinable to set
-	 * @see eu.stratosphere.pact.generic.contract.GenericReduceContract.Combinable
+	 * @see eu.stratosphere.pact.generic.contract.GenericReduceOperator.Combinable
 	 */
 	public Self withCombinable(final boolean combinable) {
 		this.setCombinable(combinable);
@@ -475,7 +478,7 @@ public abstract class ElementaryOperator<Self extends ElementaryOperator<Self>>
 	 * Returns true, if the implementing stub is combinable for left input. This method will only be invoked for CoGroup
 	 * stubs.
 	 * 
-	 * @see eu.stratosphere.pact.generic.contract.GenericCoGroupContract.CombinableFirst
+	 * @see eu.stratosphere.pact.generic.contract.GenericCoGroupOperator.CombinableFirst
 	 */
 	public boolean isCombinableFirst() {
 		return this.combinableFirst;
@@ -486,7 +489,7 @@ public abstract class ElementaryOperator<Self extends ElementaryOperator<Self>>
 	 * 
 	 * @param combinableFirst
 	 *        the combinableFirst to set
-	 * @see eu.stratosphere.pact.generic.contract.GenericCoGroupContract.CombinableFirst
+	 * @see eu.stratosphere.pact.generic.contract.GenericCoGroupOperator.CombinableFirst
 	 */
 	public void setCombinableFirst(final boolean combinableFirst) {
 		this.combinableFirst = combinableFirst;
@@ -497,7 +500,7 @@ public abstract class ElementaryOperator<Self extends ElementaryOperator<Self>>
 	 * 
 	 * @param combinableFirst
 	 *        the combinableFirst to set
-	 * @see eu.stratosphere.pact.generic.contract.GenericCoGroupContract.CombinableFirst
+	 * @see eu.stratosphere.pact.generic.contract.GenericCoGroupOperator.CombinableFirst
 	 */
 	public Self withCombinableFirst(final boolean combinableFirst) {
 		this.combinableFirst = combinableFirst;
@@ -508,7 +511,7 @@ public abstract class ElementaryOperator<Self extends ElementaryOperator<Self>>
 	 * Returns true, if the implementing stub is combinable for right input. This method will only be invoked for
 	 * CoGroup stubs.
 	 * 
-	 * @see eu.stratosphere.pact.generic.contract.GenericCoGroupContract.CombinableSecond
+	 * @see eu.stratosphere.pact.generic.contract.GenericCoGroupOperator.CombinableSecond
 	 */
 	public boolean isCombinableSecond() {
 		return this.combinableSecond;
@@ -519,7 +522,7 @@ public abstract class ElementaryOperator<Self extends ElementaryOperator<Self>>
 	 * 
 	 * @param combinableSecond
 	 *        the combinableSecond to set
-	 * @see eu.stratosphere.pact.generic.contract.GenericCoGroupContract.CombinableSecond
+	 * @see eu.stratosphere.pact.generic.contract.GenericCoGroupOperator.CombinableSecond
 	 */
 	public void setCombinableSecond(final boolean combinableSecond) {
 		this.combinableSecond = combinableSecond;
@@ -530,7 +533,7 @@ public abstract class ElementaryOperator<Self extends ElementaryOperator<Self>>
 	 * 
 	 * @param combinableSecond
 	 *        the combinableSecond to set
-	 * @see eu.stratosphere.pact.generic.contract.GenericCoGroupContract.CombinableSecond
+	 * @see eu.stratosphere.pact.generic.contract.GenericCoGroupOperator.CombinableSecond
 	 */
 	public void withCombinableSecond(final boolean combinableSecond) {
 		this.combinableSecond = combinableSecond;
@@ -606,17 +609,17 @@ public abstract class ElementaryOperator<Self extends ElementaryOperator<Self>>
 	 * Returns the stub class that represents the functionality of this
 	 * operator.<br>
 	 * This method returns the first static inner class found with {@link Class#getDeclaredClasses()} that is extended
-	 * from {@link Stub} by
+	 * from {@link Function} by
 	 * default.
 	 * 
 	 * @return the stub class
 	 */
 	@SuppressWarnings("unchecked")
-	protected Class<? extends Stub> getStubClass() {
+	protected Class<? extends Function> getFunctionClass() {
 		for (final Class<?> stubClass : this.getClass().getDeclaredClasses())
 			if ((stubClass.getModifiers() & Modifier.STATIC) != 0
-				&& Stub.class.isAssignableFrom(stubClass))
-				return (Class<? extends Stub>) stubClass;
+				&& Function.class.isAssignableFrom(stubClass))
+				return (Class<? extends Function>) stubClass;
 		return null;
 	}
 }

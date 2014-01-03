@@ -13,7 +13,7 @@
  *
  **********************************************************************************************************************/
 
-package eu.stratosphere.nephele.util;
+package eu.stratosphere.nephele.rpc;
 
 /**
  * This class provides a number of convenience methods to deal with numbers and the conversion of them.

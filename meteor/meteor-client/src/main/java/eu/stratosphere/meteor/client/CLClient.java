@@ -29,7 +29,7 @@ import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
 
 import eu.stratosphere.meteor.QueryParser;
-import eu.stratosphere.nephele.configuration.GlobalConfiguration;
+import eu.stratosphere.configuration.GlobalConfiguration;
 import eu.stratosphere.sopremo.client.DefaultClient;
 import eu.stratosphere.sopremo.client.StateListener;
 import eu.stratosphere.sopremo.execution.ExecutionRequest.ExecutionMode;

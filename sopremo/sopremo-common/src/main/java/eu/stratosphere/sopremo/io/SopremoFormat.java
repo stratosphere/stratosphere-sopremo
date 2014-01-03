@@ -23,20 +23,20 @@ import java.util.ArrayList;
 
 import com.google.common.reflect.TypeToken;
 
-import eu.stratosphere.nephele.configuration.Configuration;
-import eu.stratosphere.nephele.fs.FSDataInputStream;
-import eu.stratosphere.nephele.fs.FSDataOutputStream;
-import eu.stratosphere.nephele.fs.FileInputSplit;
-import eu.stratosphere.nephele.fs.FileStatus;
-import eu.stratosphere.nephele.fs.FileSystem;
-import eu.stratosphere.nephele.fs.Path;
-import eu.stratosphere.nephele.template.InputSplit;
-import eu.stratosphere.pact.common.contract.GenericDataSource;
-import eu.stratosphere.pact.common.io.statistics.BaseStatistics;
-import eu.stratosphere.pact.generic.io.FileInputFormat;
-import eu.stratosphere.pact.generic.io.FileOutputFormat;
-import eu.stratosphere.pact.generic.io.InputFormat;
-import eu.stratosphere.pact.generic.io.OutputFormat;
+import eu.stratosphere.api.common.io.FileInputFormat;
+import eu.stratosphere.api.common.io.FileOutputFormat;
+import eu.stratosphere.api.common.io.InputFormat;
+import eu.stratosphere.api.common.io.OutputFormat;
+import eu.stratosphere.api.common.io.statistics.BaseStatistics;
+import eu.stratosphere.api.common.operators.GenericDataSource;
+import eu.stratosphere.configuration.Configuration;
+import eu.stratosphere.core.fs.FSDataInputStream;
+import eu.stratosphere.core.fs.FSDataOutputStream;
+import eu.stratosphere.core.fs.FileInputSplit;
+import eu.stratosphere.core.fs.FileStatus;
+import eu.stratosphere.core.fs.FileSystem;
+import eu.stratosphere.core.fs.Path;
+import eu.stratosphere.core.io.InputSplit;
 import eu.stratosphere.sopremo.EvaluationContext;
 import eu.stratosphere.sopremo.SopremoEnvironment;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
@@ -255,7 +255,7 @@ public abstract class SopremoFormat extends ConfigurableSopremoType {
 		/*
 		 * (non-Javadoc)
 		 * @see
-		 * eu.stratosphere.pact.common.io.FileOutputFormat#configure(eu.stratosphere.nephele.configuration.Configuration)
+		 * eu.stratosphere.api.io .FileOutputFormat#configure(eu.stratosphere.configuration.Configuration)
 		 */
 		@Override
 		public void configure(final Configuration parameters) {
@@ -268,7 +268,7 @@ public abstract class SopremoFormat extends ConfigurableSopremoType {
 
 		/*
 		 * (non-Javadoc)
-		 * @see eu.stratosphere.pact.common.io.FileOutputFormat#open(int)
+		 * @see eu.stratosphere.api.io .FileOutputFormat#open(int)
 		 */
 		@Override
 		public void open(final int taskNumber) throws IOException {
@@ -303,7 +303,7 @@ public abstract class SopremoFormat extends ConfigurableSopremoType {
 
 		/*
 		 * (non-Javadoc)
-		 * @see eu.stratosphere.pact.common.io.OutputFormat#writeRecord(eu.stratosphere.pact.common.type.PactRecord)
+		 * @see eu.stratosphere.api.io .OutputFormat#writeRecord(eu.stratosphere.types.PactRecord)
 		 */
 		@Override
 		public void writeRecord(final SopremoRecord record) throws IOException {
@@ -349,7 +349,7 @@ public abstract class SopremoFormat extends ConfigurableSopremoType {
 
 		/*
 		 * (non-Javadoc)
-		 * @see eu.stratosphere.pact.common.io.FileInputFormat#open(eu.stratosphere.nephele.fs.FileInputSplit)
+		 * @see eu.stratosphere.api.io .FileInputFormat#open(eu.stratosphere.core.fs.FileInputSplit)
 		 */
 		@Override
 		public void open(final T split) throws IOException {
@@ -418,7 +418,7 @@ public abstract class SopremoFormat extends ConfigurableSopremoType {
 
 		/*
 		 * (non-Javadoc)
-		 * @see eu.stratosphere.pact.common.io.FileInputFormat#open(eu.stratosphere.nephele.fs.FileInputSplit)
+		 * @see eu.stratosphere.api.io .FileInputFormat#open(eu.stratosphere.core.fs.FileInputSplit)
 		 */
 		@Override
 		public void open(final FileInputSplit split) throws IOException {

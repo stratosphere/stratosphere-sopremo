@@ -220,7 +220,7 @@ public class TypeCoercer {
 		}
 		TypeMapper<From, To> fromCoercer = (TypeMapper<From, To>) toCoercer.get(node.getClass());
 		if (fromCoercer == null) {
-			fromCoercer = this.findMatchingCoercer(node, toCoercer);
+			fromCoercer = this.findJoiningCoercer(node, toCoercer);
 			if (fromCoercer == null)
 				fromCoercer = (TypeMapper<From, To>) NULL_COERCER;
 			toCoercer.put(node.getClass(), fromCoercer);
@@ -255,7 +255,7 @@ public class TypeCoercer {
 	}
 
 	@SuppressWarnings("unchecked")
-	protected <To, From> TypeMapper<From, To> findMatchingCoercer(final From node,
+	protected <To, From> TypeMapper<From, To> findJoiningCoercer(final From node,
 			final Map<Class<? extends IJsonNode>, TypeMapper<?, ?>> toCoercer) {
 		final Reference<TypeMapper<From, To>> fromCoercer = new Reference<TypeMapper<From, To>>();
 

@@ -17,7 +17,7 @@ package eu.stratosphere.meteor;
 import java.io.File;
 import java.util.List;
 import java.util.TreeSet;
-import java.util.regex.Matcher;
+import java.util.regex.Joiner;
 import java.util.regex.Pattern;
 
 import org.junit.Assert;
@@ -36,7 +36,7 @@ import eu.stratosphere.sopremo.query.QueryParserException;
 public class MeteorTest {
 	protected String findVars(final String script) {
 		TreeSet<String> vars = new TreeSet<String>();
-		Matcher matcher = Pattern.compile("\\$\\w+").matcher(script);
+		Joiner matcher = Pattern.compile("\\$\\w+").matcher(script);
 		while (matcher.find())
 			vars.add(matcher.group());
 		String varString = vars.toString();

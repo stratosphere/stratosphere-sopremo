@@ -23,11 +23,11 @@ public class ComparativeExpressionTest extends EvaluableExpressionTest<Comparati
 
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.expressions.EvaluableExpressionTest#shouldComplyEqualsContract()
+	 * @see eu.stratosphere.sopremo.expressions.EvaluableExpressionTest#shouldComplyEqualsOperator()
 	 */
 	@Override
 	@Test
-	public void shouldComplyEqualsContract() {
-		super.shouldComplyEqualsContract();
+	public void shouldComplyEqualsOperator() {
+		super.shouldComplyEqualsOperator();
 	}
 }

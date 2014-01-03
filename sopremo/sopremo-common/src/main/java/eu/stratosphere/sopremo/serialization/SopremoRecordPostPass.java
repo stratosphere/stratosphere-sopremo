@@ -14,40 +14,40 @@
  **********************************************************************************************************************/
 package eu.stratosphere.sopremo.serialization;
 
-import eu.stratosphere.pact.common.contract.GenericDataSink;
-import eu.stratosphere.pact.common.contract.Ordering;
-import eu.stratosphere.pact.common.util.FieldList;
-import eu.stratosphere.pact.compiler.CompilerException;
-import eu.stratosphere.pact.compiler.CompilerPostPassException;
-import eu.stratosphere.pact.compiler.plan.candidate.Channel;
-import eu.stratosphere.pact.compiler.plan.candidate.DualInputPlanNode;
-import eu.stratosphere.pact.compiler.plan.candidate.OptimizedPlan;
-import eu.stratosphere.pact.compiler.plan.candidate.PlanNode;
-import eu.stratosphere.pact.compiler.plan.candidate.SingleInputPlanNode;
-import eu.stratosphere.pact.compiler.plan.candidate.SinkPlanNode;
-import eu.stratosphere.pact.compiler.postpass.ConflictingFieldTypeInfoException;
-import eu.stratosphere.pact.compiler.postpass.GenericRecordPostPass;
-import eu.stratosphere.pact.compiler.postpass.MissingFieldTypeInfoException;
-import eu.stratosphere.pact.generic.contract.DualInputContract;
-import eu.stratosphere.pact.generic.contract.SingleInputContract;
-import eu.stratosphere.pact.generic.types.TypeComparatorFactory;
-import eu.stratosphere.pact.generic.types.TypePairComparatorFactory;
-import eu.stratosphere.pact.generic.types.TypeSerializerFactory;
+import eu.stratosphere.api.common.operators.DualInputOperator;
+import eu.stratosphere.api.common.operators.GenericDataSink;
+import eu.stratosphere.api.common.operators.Ordering;
+import eu.stratosphere.api.common.operators.SingleInputOperator;
+import eu.stratosphere.api.common.operators.util.FieldList;
+import eu.stratosphere.api.common.typeutils.TypeComparatorFactory;
+import eu.stratosphere.api.common.typeutils.TypePairComparatorFactory;
+import eu.stratosphere.api.common.typeutils.TypeSerializerFactory;
+import eu.stratosphere.compiler.CompilerException;
+import eu.stratosphere.compiler.CompilerPostPassException;
+import eu.stratosphere.compiler.plan.Channel;
+import eu.stratosphere.compiler.plan.DualInputPlanNode;
+import eu.stratosphere.compiler.plan.OptimizedPlan;
+import eu.stratosphere.compiler.plan.PlanNode;
+import eu.stratosphere.compiler.plan.SingleInputPlanNode;
+import eu.stratosphere.compiler.plan.SinkPlanNode;
+import eu.stratosphere.compiler.postpass.ConflictingFieldTypeInfoException;
+import eu.stratosphere.compiler.postpass.GenericFlatTypePostPass;
+import eu.stratosphere.compiler.postpass.MissingFieldTypeInfoException;
 import eu.stratosphere.sopremo.operator.PlanWithSopremoPostPass;
-import eu.stratosphere.sopremo.pact.SopremoCoGroupContract;
-import eu.stratosphere.sopremo.pact.SopremoReduceContract;
+import eu.stratosphere.sopremo.pact.SopremoCoGroupOperator;
+import eu.stratosphere.sopremo.pact.SopremoReduceOperator;
 import eu.stratosphere.sopremo.type.IJsonNode;
 
 /**
  * @author arvid
  */
-public class SopremoRecordPostPass extends GenericRecordPostPass<Class<? extends IJsonNode>, SopremoRecordSchema> {
+public class SopremoRecordPostPass extends GenericFlatTypePostPass<Class<? extends IJsonNode>, SopremoRecordSchema> {
 
 	private SopremoRecordLayout layout;
 
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.pact.compiler.postpass.GenericRecordPostPass#createEmptySchema()
+	 * @see eu.stratosphere.compiler.postpass.GenericRecordPostPass#createEmptySchema()
 	 */
 	@Override
 	protected SopremoRecordSchema createEmptySchema() {
@@ -77,7 +77,7 @@ public class SopremoRecordPostPass extends GenericRecordPostPass<Class<? extends
 			throws CompilerPostPassException, ConflictingFieldTypeInfoException
 	{
 		// check that we got the right types
-		final SingleInputContract<?> contract = node.getSingleInputNode().getPactContract();
+		final SingleInputOperator<?> contract = node.getSingleInputNode().getPactContract();
 
 		// add the information to the schema
 		final int[] localPositions = contract.getKeyColumns(0);
@@ -85,8 +85,8 @@ public class SopremoRecordPostPass extends GenericRecordPostPass<Class<? extends
 			schema.add(localPositions[i]);
 
 		// this is a temporary fix, we should solve this more generic
-		if (contract instanceof SopremoReduceContract) {
-			final Ordering groupOrder = ((SopremoReduceContract) contract).getInnerGroupOrder();
+		if (contract instanceof SopremoReduceOperator) {
+			final Ordering groupOrder = ((SopremoReduceOperator) contract).getInnerGroupOrder();
 			if (groupOrder != null)
 				this.addOrderingToSchema(groupOrder, schema);
 		}
@@ -97,7 +97,7 @@ public class SopremoRecordPostPass extends GenericRecordPostPass<Class<? extends
 			final SopremoRecordSchema input2Schema)
 	{
 		// add the nodes local information. this automatically consistency checks
-		final DualInputContract<?> contract = node.getTwoInputNode().getPactContract();
+		final DualInputOperator<?> contract = node.getTwoInputNode().getPactContract();
 
 		final int[] localPositions1 = contract.getKeyColumns(0);
 		final int[] localPositions2 = contract.getKeyColumns(1);
@@ -112,9 +112,9 @@ public class SopremoRecordPostPass extends GenericRecordPostPass<Class<? extends
 			input2Schema.add(localPositions2[i]);
 
 		// this is a temporary fix, we should solve this more generic
-		if (contract instanceof SopremoCoGroupContract) {
-			final Ordering groupOrder1 = ((SopremoCoGroupContract) contract).getFirstInnerGroupOrdering();
-			final Ordering groupOrder2 = ((SopremoCoGroupContract) contract).getSecondInnerGroupOrdering();
+		if (contract instanceof SopremoCoGroupOperator) {
+			final Ordering groupOrder1 = ((SopremoCoGroupOperator) contract).getFirstInnerGroupOrdering();
+			final Ordering groupOrder2 = ((SopremoCoGroupOperator) contract).getSecondInnerGroupOrdering();
 
 			if (groupOrder1 != null)
 				this.addOrderingToSchema(groupOrder1, input1Schema);
@@ -126,7 +126,7 @@ public class SopremoRecordPostPass extends GenericRecordPostPass<Class<? extends
 	/*
 	 * (non-Javadoc)
 	 * @see
-	 * eu.stratosphere.pact.compiler.postpass.GenericRecordPostPass#createSerializer(eu.stratosphere.pact.compiler.postpass
+	 * eu.stratosphere.compiler.postpass.GenericRecordPostPass#createSerializer(eu.stratosphere.compiler.postpass
 	 * .AbstractSchema)
 	 */
 	@Override
@@ -143,7 +143,7 @@ public class SopremoRecordPostPass extends GenericRecordPostPass<Class<? extends
 	/*
 	 * (non-Javadoc)
 	 * @see
-	 * eu.stratosphere.pact.compiler.postpass.GenericRecordPostPass#postPass(eu.stratosphere.pact.compiler.plan.candidate
+	 * eu.stratosphere.compiler.postpass.GenericRecordPostPass#postPass(eu.stratosphere.compiler.dag.candidate
 	 * .OptimizedPlan)
 	 */
 	@Override
@@ -156,8 +156,8 @@ public class SopremoRecordPostPass extends GenericRecordPostPass<Class<? extends
 	/*
 	 * (non-Javadoc)
 	 * @see
-	 * eu.stratosphere.pact.compiler.postpass.GenericRecordPostPass#createComparator(eu.stratosphere.pact.common.util
-	 * .FieldList, boolean[], eu.stratosphere.pact.compiler.postpass.AbstractSchema)
+	 * eu.stratosphere.compiler.postpass.GenericRecordPostPass#createComparator(eu.stratosphere.util
+	 * .FieldList, boolean[], eu.stratosphere.compiler.postpass.AbstractSchema)
 	 */
 	@Override
 	protected TypeComparatorFactory<?> createComparator(final FieldList fields, final boolean[] directions,
@@ -174,8 +174,8 @@ public class SopremoRecordPostPass extends GenericRecordPostPass<Class<? extends
 	/*
 	 * (non-Javadoc)
 	 * @see
-	 * eu.stratosphere.pact.compiler.postpass.GenericRecordPostPass#traverse(eu.stratosphere.pact.compiler.plan.candidate
-	 * .PlanNode, eu.stratosphere.pact.compiler.postpass.AbstractSchema, boolean)
+	 * eu.stratosphere.compiler.postpass.GenericRecordPostPass#traverse(eu.stratosphere.compiler.dag.candidate
+	 * .PlanNode, eu.stratosphere.compiler.postpass.AbstractSchema, boolean)
 	 */
 	@Override
 	protected void traverse(final PlanNode node, final SopremoRecordSchema parentSchema, final boolean createUtilities) {
@@ -183,14 +183,14 @@ public class SopremoRecordPostPass extends GenericRecordPostPass<Class<? extends
 		if (node instanceof SinkPlanNode)
 			this.setOrdering(((SingleInputPlanNode) node).getInput(),
 				((GenericDataSink) node.getPactContract()).getLocalOrder());
-		else if (node.getPactContract() instanceof SopremoReduceContract)
+		else if (node.getPactContract() instanceof SopremoReduceOperator)
 			this.setOrdering(((SingleInputPlanNode) node).getInput(),
-				((SopremoReduceContract) node.getPactContract()).getInnerGroupOrder());
-		else if (node.getPactContract() instanceof SopremoCoGroupContract) {
+				((SopremoReduceOperator) node.getPactContract()).getInnerGroupOrder());
+		else if (node.getPactContract() instanceof SopremoCoGroupOperator) {
 			this.setOrdering(((DualInputPlanNode) node).getInput1(),
-				((SopremoCoGroupContract) node.getPactContract()).getFirstInnerGroupOrdering());
+				((SopremoCoGroupOperator) node.getPactContract()).getFirstInnerGroupOrdering());
 			this.setOrdering(((DualInputPlanNode) node).getInput2(),
-				((SopremoCoGroupContract) node.getPactContract()).getSecondInnerGroupOrdering());
+				((SopremoCoGroupOperator) node.getPactContract()).getSecondInnerGroupOrdering());
 		}
 		super.traverse(node, parentSchema, createUtilities);
 	}
@@ -214,9 +214,9 @@ public class SopremoRecordPostPass extends GenericRecordPostPass<Class<? extends
 	/*
 	 * (non-Javadoc)
 	 * @see
-	 * eu.stratosphere.pact.compiler.postpass.GenericRecordPostPass#createPairComparator(eu.stratosphere.pact.common
-	 * .util.FieldList, eu.stratosphere.pact.common.util.FieldList, boolean[],
-	 * eu.stratosphere.pact.compiler.postpass.AbstractSchema, eu.stratosphere.pact.compiler.postpass.AbstractSchema)
+	 * eu.stratosphere.compiler.postpass.GenericRecordPostPass#createPairComparator(eu.stratosphere.pact.common
+	 * .util.FieldList, eu.stratosphere.util.FieldList, boolean[],
+	 * eu.stratosphere.compiler.postpass.AbstractSchema, eu.stratosphere.compiler.postpass.AbstractSchema)
 	 */
 	@Override
 	protected TypePairComparatorFactory<?, ?> createPairComparator(final FieldList fields1, final FieldList fields2,

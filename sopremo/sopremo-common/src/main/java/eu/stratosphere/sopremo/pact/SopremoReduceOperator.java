@@ -14,17 +14,17 @@
  **********************************************************************************************************************/
 package eu.stratosphere.sopremo.pact;
 
-import eu.stratosphere.pact.common.contract.Ordering;
-import eu.stratosphere.pact.generic.contract.GenericReduceContract;
+import eu.stratosphere.api.common.operators.Ordering;
+import eu.stratosphere.api.common.operators.base.ReduceOperatorBase;
 import eu.stratosphere.sopremo.operator.ElementaryOperator;
 
 @SuppressWarnings({ "unchecked", "rawtypes" })
-public final class SopremoReduceContract extends GenericReduceContract {
+public final class SopremoReduceOperator extends ReduceOperatorBase {
 	private final ElementaryOperator<?> operator;
 
 	private Ordering innerGroupOrder;
 
-	public SopremoReduceContract(final ElementaryOperator<?> operator, final Class udf, final int[] keyPositions,
+	public SopremoReduceOperator(final ElementaryOperator<?> operator, final Class udf, final int[] keyPositions,
 			final String name) {
 		super(udf, keyPositions, name);
 		this.operator = operator;

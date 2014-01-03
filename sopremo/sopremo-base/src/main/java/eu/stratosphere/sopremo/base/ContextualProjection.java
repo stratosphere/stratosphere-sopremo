@@ -1,6 +1,6 @@
 package eu.stratosphere.sopremo.base;
 
-import eu.stratosphere.pact.generic.contract.GenericCrossContract.CrossWithSmall;
+import eu.stratosphere.api.common.operators.base.CrossOperatorBase.CrossWithSmall;
 import eu.stratosphere.sopremo.expressions.ObjectAccess;
 import eu.stratosphere.sopremo.expressions.PathSegmentExpression;
 import eu.stratosphere.sopremo.operator.ElementaryOperator;

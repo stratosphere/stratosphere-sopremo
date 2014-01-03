@@ -109,7 +109,7 @@ public class TypeHierarchyBrowser {
 		},
 		ALL;
 
-		boolean shouldInvokeCallback(@SuppressWarnings("unused") final Class<?> superType) {
+		boolean shouldInvokeCallback(final Class<?> superType) {
 			return true;
 		}
 

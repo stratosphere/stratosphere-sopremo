@@ -21,8 +21,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 
-import eu.stratosphere.pact.compiler.postpass.AbstractSchema;
-import eu.stratosphere.pact.compiler.postpass.ConflictingFieldTypeInfoException;
+import eu.stratosphere.compiler.postpass.AbstractSchema;
+import eu.stratosphere.compiler.postpass.ConflictingFieldTypeInfoException;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
 import eu.stratosphere.util.CollectionUtil;
 
@@ -62,7 +62,7 @@ public class SparseNodeSchema extends AbstractSchema<EvaluationExpression> {
 
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.pact.compiler.postpass.AbstractSchema#addType(int, java.lang.Object)
+	 * @see eu.stratosphere.compiler.postpass.AbstractSchema#addType(int, java.lang.Object)
 	 */
 	@Override
 	public void addType(final int pos, final EvaluationExpression expression) throws ConflictingFieldTypeInfoException {
@@ -72,7 +72,7 @@ public class SparseNodeSchema extends AbstractSchema<EvaluationExpression> {
 
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.pact.compiler.postpass.AbstractSchema#getType(int)
+	 * @see eu.stratosphere.compiler.postpass.AbstractSchema#getType(int)
 	 */
 	@Override
 	public EvaluationExpression getType(final int field) {

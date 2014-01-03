@@ -21,7 +21,7 @@ public abstract class AbstractJsonNode extends AbstractSopremoType implements IJ
 
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.type.IJsonNode#compareTo(eu.stratosphere.pact.common.type.Key)
+	 * @see eu.stratosphere.sopremo.type.IJsonNode#compareTo(eu.stratosphere.types.Key)
 	 */
 
 	@Override

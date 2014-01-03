@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import eu.stratosphere.nephele.fs.Path;
+import eu.stratosphere.core.fs.Path;
 import eu.stratosphere.sopremo.aggregation.Aggregation;
 import eu.stratosphere.sopremo.aggregation.AssociativeAggregation;
 import eu.stratosphere.sopremo.aggregation.FixedTypeAssociativeAggregation;
@@ -251,8 +251,7 @@ public class CoreFunctions implements BuiltinProvider {
 				final IJsonNode defaultValue) {
 			final Pattern compiledPattern = this.patternCache
 				.getPatternOf(pattern);
-			final Matcher matcher = compiledPattern.matcher(input
-				);
+			final Matcher matcher = compiledPattern.matcher(input);
 
 			if (!matcher.find())
 				return defaultValue;
@@ -377,8 +376,7 @@ public class CoreFunctions implements BuiltinProvider {
 				final TextNode replace) {
 			final Pattern compiledPattern = this.patternCache
 				.getPatternOf(search);
-			final Matcher matcher = compiledPattern.matcher(input
-				);
+			final Matcher matcher = compiledPattern.matcher(input);
 			this.result.setValue(matcher.replaceAll(replace.toString()));
 			return this.result;
 		}

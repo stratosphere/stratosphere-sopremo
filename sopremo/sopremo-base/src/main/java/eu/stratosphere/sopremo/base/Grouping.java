@@ -68,7 +68,7 @@ public class Grouping extends CompositeOperator<Grouping> {
 			// List<JsonStream> inputs = new ArrayList<JsonStream>();
 			// List<EvaluationExpression> keyExpressions = new ArrayList<EvaluationExpression>();
 			// for (int index = 0; index < numInputs; index++) {
-			// inputs.add(OperatorUtil.positionEncode(module.getInput(index), index, numInputs));
+			// inputs.add(ContractUtil.positionEncode(module.getInput(index), index, numInputs));
 			// keyExpressions.add(new PathExpression(new InputSelection(index), getGroupingKey(index)));
 			// }
 			// final UnionAll union = new UnionAll().
@@ -252,12 +252,12 @@ public class Grouping extends CompositeOperator<Grouping> {
 	public static class GroupProjection extends ElementaryOperator<GroupProjection> {
 		// /* (non-Javadoc)
 		// * @see
-		// eu.stratosphere.sopremo.operator.ElementaryOperator#getContract(eu.stratosphere.sopremo.serialization.SopremoRecordLayout)
+		// eu.stratosphere.sopremo.operator.ElementaryOperator#getOperator(eu.stratosphere.sopremo.serialization.SopremoRecordLayout)
 		// */
 		// @Override
-		// protected Contract getContract(SopremoRecordLayout layout) {
-		// ReduceContract.Builder builder =
-		// ReduceContract.builder(this.isCombinable() ? CombinableImplementation.class : Implementation.class);
+		// protected Operator getOperator(SopremoRecordLayout layout) {
+		// ReduceOperator.Builder builder =
+		// ReduceOperator.builder(this.isCombinable() ? CombinableImplementation.class : Implementation.class);
 		// if (!this.getKeyExpressions(0).contains(GROUP_ALL)) {
 		// int[] keyIndices = this.getKeyIndices(globalSchema, this.getKeyExpressions(0));
 		// PactBuilderUtil.addKeys(builder, this.getKeyClasses(globalSchema, keyIndices), keyIndices);
@@ -267,7 +267,7 @@ public class Grouping extends CompositeOperator<Grouping> {
 		// }
 		/*
 		 * (non-Javadoc)
-		 * @see eu.stratosphere.sopremo.operator.ElementaryOperator#getStubClass()
+		 * @see eu.stratosphere.sopremo.operator.ElementaryOperator#getFunctionClass()
 		 */
 		public static class Implementation extends SopremoReduce {
 			@Override

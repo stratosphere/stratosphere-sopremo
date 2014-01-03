@@ -21,12 +21,12 @@ public class ContextualProjectionTest extends SopremoOperatorTestBase<Contextual
 
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.EqualCloneTest#shouldComplyEqualsContract()
+	 * @see eu.stratosphere.sopremo.EqualCloneTest#shouldComplyEqualsOperator()
 	 */
 	@Override
 	@Test
-	public void shouldComplyEqualsContract() {
-		super.shouldComplyEqualsContract();
+	public void shouldComplyEqualsOperator() {
+		super.shouldComplyEqualsOperator();
 	}
 
 	@Test

@@ -27,7 +27,7 @@ import java.util.TreeMap;
 
 import com.esotericsoftware.kryo.Kryo;
 
-import eu.stratosphere.nephele.fs.Path;
+import eu.stratosphere.core.fs.Path;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
 import eu.stratosphere.sopremo.packages.DefaultNameChooserProvider;
 import eu.stratosphere.sopremo.packages.DefaultTypeRegistry;

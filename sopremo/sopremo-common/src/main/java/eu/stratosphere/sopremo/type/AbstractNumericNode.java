@@ -42,7 +42,7 @@ public abstract class AbstractNumericNode extends AbstractJsonNode implements IN
 
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.type.AbstractJsonNode#compareToOtherType(eu.stratosphere.pact.common.type.Key)
+	 * @see eu.stratosphere.sopremo.type.AbstractJsonNode#compareToOtherType(eu.stratosphere.types.Key)
 	 */
 	@Override
 	protected int compareToOtherType(final IJsonNode other) {

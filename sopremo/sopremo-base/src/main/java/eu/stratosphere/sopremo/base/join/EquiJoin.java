@@ -1,6 +1,6 @@
 package eu.stratosphere.sopremo.base.join;
 
-import eu.stratosphere.pact.common.stubs.Stub;
+import eu.stratosphere.api.common.functions.Function;
 import eu.stratosphere.sopremo.operator.Internal;
 
 @Internal
@@ -56,7 +56,7 @@ public class EquiJoin extends TwoSourceJoinBase<EquiJoin> {
 	}
 
 	@Override
-	protected Class<? extends Stub> getStubClass() {
+	protected Class<? extends Function> getFunctionClass() {
 		switch (this.mode) {
 		case BOTH:
 			return FullOuterJoin.Implementation.class;

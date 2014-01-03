@@ -254,7 +254,7 @@ public class GraphConverter<InputType, OutputType> implements NodeConverter<Inpu
 	 * @return this
 	 */
 	public GraphConverter<InputType, OutputType> registerAll(
-			final NodeConverter<? extends InputType, ? extends OutputType>... converters) {
+			@SuppressWarnings("unchecked") final NodeConverter<? extends InputType, ? extends OutputType>... converters) {
 		for (final NodeConverter<? extends InputType, ? extends OutputType> converter : converters)
 			this.register(converter);
 		return this;

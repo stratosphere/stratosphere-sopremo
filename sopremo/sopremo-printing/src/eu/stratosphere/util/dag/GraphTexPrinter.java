@@ -15,7 +15,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.regex.Matcher;
+import java.util.regex.Joiner;
 
 import eu.stratosphere.sopremo.operator.CompositeOperator;
 import eu.stratosphere.sopremo.operator.ElementaryOperator;
@@ -261,10 +261,10 @@ public class GraphTexPrinter<Node> {
 
 		private String escapeMathSymbols(String label) {
 			if (label.contains("<"))
-				label = label.replaceAll("<", Matcher.quoteReplacement("$<$"));
+				label = label.replaceAll("<", Joiner.quoteReplacement("$<$"));
 
 			if (label.contains(">"))
-				label = label.replaceAll(">", Matcher.quoteReplacement("$>$"));
+				label = label.replaceAll(">", Joiner.quoteReplacement("$>$"));
 
 			return label;
 		}

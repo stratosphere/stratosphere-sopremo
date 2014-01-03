@@ -2,8 +2,8 @@ package eu.stratosphere.sopremo.base;
 
 import java.io.IOException;
 
-import eu.stratosphere.nephele.configuration.Configuration;
-import eu.stratosphere.pact.generic.contract.Contract;
+import eu.stratosphere.api.common.operators.Operator;
+import eu.stratosphere.configuration.Configuration;
 import eu.stratosphere.sopremo.AbstractSopremoType;
 import eu.stratosphere.sopremo.EvaluationContext;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
@@ -66,17 +66,16 @@ public class GlobalEnumeration extends ElementaryOperator<GlobalEnumeration> {
 	/*
 	 * (non-Javadoc)
 	 * @see
-	 * eu.stratosphere.sopremo.operator.ElementaryOperator#configureContract(eu.stratosphere.pact.generic.contract.Contract
-	 * , eu.stratosphere.nephele.configuration.Configuration, eu.stratosphere.sopremo.EvaluationContext,
+	 * eu.stratosphere.sopremo.operator.ElementaryOperator#configureOperator(eu.stratosphere.pact.generic.contract.Operator
+	 * , eu.stratosphere.configuration.Configuration, eu.stratosphere.sopremo.EvaluationContext,
 	 * eu.stratosphere.sopremo.serialization.SopremoRecordLayout)
 	 */
 	@Override
-	protected void configureContract(final Contract contract, final Configuration stubConfiguration,
-			final EvaluationContext context,
-			final SopremoRecordLayout layout) {
+	protected void configureOperator(final Operator contract, final Configuration stubConfiguration,
+			final EvaluationContext context, final SopremoRecordLayout layout) {
 		if (this.enumerationExpression == AUTO_ENUMERATION)
 			this.enumerationExpression = new AutoProjection(this.idFieldName, this.valueFieldName);
-		super.configureContract(contract, stubConfiguration, context, layout);
+		super.configureOperator(contract, stubConfiguration, context, layout);
 		if (this.enumerationExpression instanceof AutoProjection)
 			this.enumerationExpression = AUTO_ENUMERATION;
 	}

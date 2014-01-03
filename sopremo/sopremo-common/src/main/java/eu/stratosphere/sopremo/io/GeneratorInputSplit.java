@@ -14,10 +14,10 @@
  **********************************************************************************************************************/
 package eu.stratosphere.sopremo.io;
 
-import eu.stratosphere.nephele.configuration.Configuration;
-import eu.stratosphere.nephele.configuration.GlobalConfiguration;
+import eu.stratosphere.configuration.Configuration;
+import eu.stratosphere.configuration.GlobalConfiguration;
+import eu.stratosphere.core.io.GenericInputSplit;
 import eu.stratosphere.nephele.jobmanager.splitassigner.DefaultInputSplitAssigner;
-import eu.stratosphere.nephele.template.GenericInputSplit;
 
 public class GeneratorInputSplit extends GenericInputSplit {
 

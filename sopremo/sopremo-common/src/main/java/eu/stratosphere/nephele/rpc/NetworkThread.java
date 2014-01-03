@@ -26,7 +26,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.minlog.Log;
 
-import eu.stratosphere.nephele.util.NumberUtils;
 
 /**
  * The network thread is responsible for (reliably) transmitting a sequence of datagram packets to a receiver.

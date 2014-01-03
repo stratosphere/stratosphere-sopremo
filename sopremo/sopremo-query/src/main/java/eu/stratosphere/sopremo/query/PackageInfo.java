@@ -25,7 +25,7 @@ import java.util.Queue;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
-import eu.stratosphere.nephele.util.StringUtils;
+import eu.stratosphere.util.StringUtils;
 import eu.stratosphere.sopremo.AbstractSopremoType;
 import eu.stratosphere.sopremo.ISopremoType;
 import eu.stratosphere.sopremo.io.SopremoFormat;

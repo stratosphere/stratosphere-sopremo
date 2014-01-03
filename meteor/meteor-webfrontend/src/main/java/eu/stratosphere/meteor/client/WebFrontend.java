@@ -5,9 +5,9 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.jetty.server.Server;
 
 import eu.stratosphere.meteor.client.common.MeteorContextHandler;
-import eu.stratosphere.nephele.configuration.Configuration;
-import eu.stratosphere.nephele.configuration.GlobalConfiguration;
-import eu.stratosphere.pact.common.util.PactConfigConstants;
+import eu.stratosphere.configuration.Configuration;
+import eu.stratosphere.configuration.GlobalConfiguration;
+import eu.stratosphere.util.PactConfigConstants;
 
 /**
  * 

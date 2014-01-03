@@ -36,8 +36,8 @@ import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import com.esotericsoftware.minlog.Log;
 
-import eu.stratosphere.nephele.util.StringUtils;
 import eu.stratosphere.util.KryoUtil;
+import eu.stratosphere.util.StringUtils;
 
 /**
  * This class implements a lightweight, UDP-based RPC service.

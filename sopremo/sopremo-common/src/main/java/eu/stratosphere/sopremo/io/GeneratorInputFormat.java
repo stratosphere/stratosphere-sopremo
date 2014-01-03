@@ -19,9 +19,9 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.Iterator;
 
-import eu.stratosphere.nephele.configuration.Configuration;
-import eu.stratosphere.nephele.template.GenericInputSplit;
-import eu.stratosphere.pact.generic.io.GenericInputFormat;
+import eu.stratosphere.api.common.io.GenericInputFormat;
+import eu.stratosphere.configuration.Configuration;
+import eu.stratosphere.core.io.GenericInputSplit;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
 import eu.stratosphere.sopremo.pact.SopremoUtil;
 import eu.stratosphere.sopremo.serialization.SopremoRecord;
@@ -74,7 +74,7 @@ public class GeneratorInputFormat extends GenericInputFormat<SopremoRecord> {
 	/*
 	 * (non-Javadoc)
 	 * @see
-	 * eu.stratosphere.pact.common.io.GenericInputFormat#createInputSplits(int)
+	 * eu.stratosphere.api.io .GenericInputFormat#createInputSplits(int)
 	 */
 	@Override
 	public GeneratorInputSplit[] createInputSplits(final int minNumSplits)
@@ -96,7 +96,7 @@ public class GeneratorInputFormat extends GenericInputFormat<SopremoRecord> {
 	/*
 	 * (non-Javadoc)
 	 * @see
-	 * eu.stratosphere.pact.common.io.GenericInputFormat#getInputSplitType()
+	 * eu.stratosphere.api.io .GenericInputFormat#getInputSplitType()
 	 */
 	@Override
 	public Class<GeneratorInputSplit> getInputSplitType() {
@@ -106,7 +106,7 @@ public class GeneratorInputFormat extends GenericInputFormat<SopremoRecord> {
 	/*
 	 * (non-Javadoc)
 	 * @see
-	 * eu.stratosphere.pact.common.io.GenericInputFormat#open(eu.stratosphere
+	 * eu.stratosphere.api.io .GenericInputFormat#open(eu.stratosphere
 	 * .nephele.template.GenericInputSplit)
 	 */
 	@Override
@@ -134,7 +134,7 @@ public class GeneratorInputFormat extends GenericInputFormat<SopremoRecord> {
 
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.pact.common.io.InputFormat#close()
+	 * @see eu.stratosphere.api.io .InputFormat#close()
 	 */
 	@Override
 	public void close() throws IOException {

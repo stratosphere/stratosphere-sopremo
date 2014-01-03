@@ -1,10 +1,10 @@
 package eu.stratosphere.sopremo.pact;
 
-import eu.stratosphere.pact.common.stubs.Collector;
 import eu.stratosphere.sopremo.EvaluationContext;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
 import eu.stratosphere.sopremo.serialization.SopremoRecord;
 import eu.stratosphere.sopremo.type.IJsonNode;
+import eu.stratosphere.util.Collector;
 
 /**
  * The JsonCollector converts {@link IJsonNode}s to {@link PactRecord}s and collects this records with a given
@@ -55,7 +55,7 @@ public class JsonCollector<T extends IJsonNode> implements Collector<T> {
 
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.pact.common.stubs.Collector#close()
+	 * @see eu.stratosphere.api.record.functions.Collector#close()
 	 */
 	@Override
 	public void close() {

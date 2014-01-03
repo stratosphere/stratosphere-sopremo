@@ -46,7 +46,7 @@ public class Graph<Node> implements Iterable<Graph<Node>.NodePath> {
 		this.navigator = this.modifier = modifier;
 	}
 
-	public Graph(final ConnectionModifier<Node> modifier, final Node... startNodes) {
+	public Graph(final ConnectionModifier<Node> modifier, @SuppressWarnings("unchecked") final Node... startNodes) {
 		this(modifier, Arrays.asList(startNodes));
 	}
 

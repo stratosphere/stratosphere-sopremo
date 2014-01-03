@@ -13,7 +13,7 @@
  *
  **********************************************************************************************************************/
 
-package eu.stratosphere.pact.common.plan;
+package eu.stratosphere.api.plan;
 
 /**
  * Implementing this interface allows a PlanAssembler to have a description

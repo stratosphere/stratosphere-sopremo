@@ -17,10 +17,10 @@ package eu.stratosphere.sopremo.execution;
 
 import java.io.IOException;
 
+import eu.stratosphere.core.protocols.VersionedProtocol;
 import eu.stratosphere.nephele.execution.librarycache.LibraryCacheProfileRequest;
 import eu.stratosphere.nephele.execution.librarycache.LibraryCacheProfileResponse;
 import eu.stratosphere.nephele.execution.librarycache.LibraryCacheUpdate;
-import eu.stratosphere.nephele.protocols.VersionedProtocol;
 
 /**
  * The library transfer protocol allows to query servers for cached libraries and submit these if necessary.

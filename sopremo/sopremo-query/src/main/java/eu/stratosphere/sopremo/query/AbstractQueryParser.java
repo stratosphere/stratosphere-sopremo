@@ -26,7 +26,7 @@ import org.antlr.runtime.UnwantedTokenException;
 
 import com.google.common.base.CharMatcher;
 
-import eu.stratosphere.nephele.fs.Path;
+import eu.stratosphere.core.fs.Path;
 import eu.stratosphere.sopremo.CoreFunctions;
 import eu.stratosphere.sopremo.EvaluationContext;
 import eu.stratosphere.sopremo.MathFunctions;

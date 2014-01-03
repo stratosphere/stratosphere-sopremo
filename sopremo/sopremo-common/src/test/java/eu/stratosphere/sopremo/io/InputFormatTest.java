@@ -22,9 +22,9 @@ import java.util.List;
 
 import org.junit.Ignore;
 
-import eu.stratosphere.nephele.configuration.Configuration;
-import eu.stratosphere.pact.generic.io.FormatUtil;
-import eu.stratosphere.pact.generic.io.InputFormat;
+import eu.stratosphere.api.common.io.FormatUtil;
+import eu.stratosphere.api.common.io.InputFormat;
+import eu.stratosphere.configuration.Configuration;
 import eu.stratosphere.sopremo.EvaluationContext;
 import eu.stratosphere.sopremo.io.SopremoFormat.SopremoFileInputFormat;
 import eu.stratosphere.sopremo.pact.SopremoUtil;

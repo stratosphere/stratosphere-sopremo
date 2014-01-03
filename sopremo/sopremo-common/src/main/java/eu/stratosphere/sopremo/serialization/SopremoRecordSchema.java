@@ -22,8 +22,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import eu.stratosphere.pact.compiler.postpass.AbstractSchema;
-import eu.stratosphere.pact.compiler.postpass.ConflictingFieldTypeInfoException;
+import eu.stratosphere.compiler.postpass.AbstractSchema;
+import eu.stratosphere.compiler.postpass.ConflictingFieldTypeInfoException;
 import eu.stratosphere.sopremo.type.IJsonNode;
 
 /**
@@ -77,7 +77,7 @@ public class SopremoRecordSchema extends AbstractSchema<Class<? extends IJsonNod
 
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.pact.compiler.postpass.AbstractSchema#addType(int, java.lang.Object)
+	 * @see eu.stratosphere.compiler.postpass.AbstractSchema#addType(int, java.lang.Object)
 	 */
 	@Override
 	public void addType(final int pos, final Class<? extends IJsonNode> type) throws ConflictingFieldTypeInfoException {
@@ -99,7 +99,7 @@ public class SopremoRecordSchema extends AbstractSchema<Class<? extends IJsonNod
 
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.pact.compiler.postpass.AbstractSchema#getType(int)
+	 * @see eu.stratosphere.compiler.postpass.AbstractSchema#getType(int)
 	 */
 	@Override
 	public Class<? extends IJsonNode> getType(final int field) {

@@ -28,7 +28,7 @@ public class Projection extends ElementaryOperator<Projection> {
 		return super.asPactModule(context, layout);
 	}
 
-	public static class ProjectionStub extends SopremoMap {
+	public static class ProjectionFunction extends SopremoMap {
 
 		@Override
 		protected void map(final IJsonNode value, final JsonCollector<IJsonNode> out) {

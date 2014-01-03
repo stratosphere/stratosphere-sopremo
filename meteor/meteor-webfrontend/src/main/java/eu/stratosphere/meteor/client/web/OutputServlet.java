@@ -11,7 +11,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import eu.stratosphere.meteor.client.common.HDFSUtil;
 import eu.stratosphere.meteor.client.common.MeteorContextHandler;
-import eu.stratosphere.nephele.util.StringUtils;
+import eu.stratosphere.util.StringUtils;
 import eu.stratosphere.util.StringUtil;
 
 /**

@@ -69,7 +69,6 @@ public abstract class EqualVerifyTest<T> {
 		this.more = more;
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
 	public void testKryoSerialization() {
 		for (final Object original : Iterables.concat(Arrays.asList(this.first, this.second), this.more))
@@ -130,21 +129,21 @@ public abstract class EqualVerifyTest<T> {
 	}
 
 	@SuppressWarnings("unchecked")
-	public void shouldComplyEqualsContract() {
+	public void shouldComplyEqualsOperator() {
 		if (this.first == null)
 			Assert.fail("Cannot create default instance; "
-				+ "please override createDefaultInstance or shouldComplyEqualsContract");
+				+ "please override createDefaultInstance or shouldComplyEqualsOperator");
 		try {
 			// check if there is a equal method
 			this.first.getClass().getDeclaredMethod("equals", Object.class);
-			this.shouldComplyEqualsContract(this.first, this.second,
+			this.shouldComplyEqualsOperator(this.first, this.second,
 				this.more.toArray((T[]) Array.newInstance(this.type, this.more.size())));
 		} catch (final NoSuchMethodException e) {
 			// then we do not have to test it
 		}
 	}
 
-	public void shouldComplyEqualsContract(final T first, final T second,
+	public void shouldComplyEqualsOperator(final T first, final T second,
 			@SuppressWarnings("unchecked") final T... more) {
 		final EqualsVerifier<T> equalVerifier = EqualsVerifier.forExamples(first, second, more);
 		this.initVerifier(equalVerifier);

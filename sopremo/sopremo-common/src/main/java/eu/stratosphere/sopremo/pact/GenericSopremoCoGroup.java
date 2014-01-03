@@ -4,10 +4,9 @@ import java.util.Iterator;
 
 import com.google.common.reflect.TypeToken;
 
-import eu.stratosphere.nephele.configuration.Configuration;
-import eu.stratosphere.pact.common.stubs.Collector;
-import eu.stratosphere.pact.generic.stub.AbstractStub;
-import eu.stratosphere.pact.generic.stub.GenericCoGrouper;
+import eu.stratosphere.api.common.functions.AbstractFunction;
+import eu.stratosphere.api.common.functions.GenericCoGrouper;
+import eu.stratosphere.configuration.Configuration;
 import eu.stratosphere.sopremo.EvaluationContext;
 import eu.stratosphere.sopremo.SopremoEnvironment;
 import eu.stratosphere.sopremo.serialization.SopremoRecord;
@@ -16,6 +15,7 @@ import eu.stratosphere.sopremo.type.IJsonNode;
 import eu.stratosphere.sopremo.type.IStreamNode;
 import eu.stratosphere.sopremo.type.StreamNode;
 import eu.stratosphere.sopremo.type.typed.TypedObjectNode;
+import eu.stratosphere.util.Collector;
 
 /**
  * An abstract implementation of the {@link GenericCoGrouper}. SopremoCoGroup provides the functionality to convert the
@@ -23,8 +23,8 @@ import eu.stratosphere.sopremo.type.typed.TypedObjectNode;
  * {@link IStreamNode}).
  */
 public abstract class GenericSopremoCoGroup<LeftElem extends IJsonNode, RightElem extends IJsonNode, Out extends IJsonNode>
-		extends AbstractStub
-		implements GenericCoGrouper<SopremoRecord, SopremoRecord, SopremoRecord>, SopremoStub {
+		extends AbstractFunction
+		implements GenericCoGrouper<SopremoRecord, SopremoRecord, SopremoRecord>, SopremoFunction {
 	private EvaluationContext context;
 
 	private JsonCollector<Out> collector;
@@ -79,8 +79,8 @@ public abstract class GenericSopremoCoGroup<LeftElem extends IJsonNode, RightEle
 
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.pact.common.stubs.CoGroupStub#coGroup(java.util.Iterator, java.util.Iterator,
-	 * eu.stratosphere.pact.common.stubs.Collector)
+	 * @see eu.stratosphere.api.record.functions.CoGroupFunction#coGroup(java.util.Iterator, java.util.Iterator,
+	 * eu.stratosphere.api.record.functions.Collector)
 	 */
 	@Override
 	public void coGroup(final Iterator<SopremoRecord> records1, final Iterator<SopremoRecord> records2,
@@ -108,7 +108,7 @@ public abstract class GenericSopremoCoGroup<LeftElem extends IJsonNode, RightEle
 
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.pact.common.stubs.Stub#open(eu.stratosphere.nephele.configuration.Configuration)
+	 * @see eu.stratosphere.api.record.functions.Function#open(eu.stratosphere.configuration.Configuration)
 	 */
 	@Override
 	public void open(final Configuration parameters) throws Exception {

@@ -14,7 +14,6 @@
  **********************************************************************************************************************/
 package eu.stratosphere.sopremo.server;
 
-import static org.mockito.Matchers.any;
 import static org.powermock.api.mockito.PowerMockito.mock;
 import static org.powermock.api.mockito.PowerMockito.when;
 import static org.powermock.api.mockito.PowerMockito.whenNew;
@@ -30,12 +29,12 @@ import org.junit.runner.RunWith;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
+import eu.stratosphere.api.common.Plan;
+import eu.stratosphere.configuration.Configuration;
 import eu.stratosphere.nephele.client.JobClient;
 import eu.stratosphere.nephele.client.JobExecutionException;
 import eu.stratosphere.nephele.client.JobExecutionResult;
-import eu.stratosphere.nephele.configuration.Configuration;
 import eu.stratosphere.nephele.jobgraph.JobGraph;
-import eu.stratosphere.pact.common.plan.Plan;
 import eu.stratosphere.sopremo.base.Selection;
 import eu.stratosphere.sopremo.execution.ExecutionRequest;
 import eu.stratosphere.sopremo.execution.ExecutionRequest.ExecutionMode;
@@ -51,6 +50,7 @@ import eu.stratosphere.sopremo.io.Source;
 import eu.stratosphere.sopremo.operator.SopremoPlan;
 import eu.stratosphere.sopremo.testing.SopremoTestUtil;
 import eu.stratosphere.sopremo.type.JsonUtil;
+import static org.mockito.Matchers.*;
 
 /**
  * @author Arvid Heise
@@ -88,7 +88,7 @@ public class SopremoExecuctionThreadTest {
 			/*
 			 * (non-Javadoc)
 			 * @see
-			 * eu.stratosphere.sopremo.server.SopremoExecutionThread#getJobGraph(eu.stratosphere.pact.common.plan.Plan)
+			 * eu.stratosphere.sopremo.server.SopremoExecutionThread#getJobGraph(eu.stratosphere.api.plan.Plan)
 			 */
 			@Override
 			JobGraph getJobGraph(final Plan pactPlan) {

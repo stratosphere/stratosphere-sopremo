@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Writer;
 import java.net.URI;
-import java.util.regex.Matcher;
+import java.util.regex.Joiner;
 import java.util.regex.Pattern;
 
 import org.apache.hadoop.conf.Configuration;
@@ -38,7 +38,7 @@ public class HDFSUtil {
 		// first group is host, second is path
 		Pattern pattern = Pattern
 				.compile("(hdfs://[a-zA-Z0-9\\.:\\-]+)(/[a-zA-Z\\./_]+)");
-		Matcher matcher = pattern.matcher(hdfsPath);
+		Joiner matcher = pattern.matcher(hdfsPath);
 		String host = null;
 		String path = null;
 		if (matcher.find()) {

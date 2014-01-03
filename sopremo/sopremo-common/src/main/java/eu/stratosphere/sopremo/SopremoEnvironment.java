@@ -14,8 +14,8 @@
  **********************************************************************************************************************/
 package eu.stratosphere.sopremo;
 
-import eu.stratosphere.nephele.configuration.Configuration;
-import eu.stratosphere.pact.common.stubs.RuntimeContext;
+import eu.stratosphere.api.common.functions.RuntimeContext;
+import eu.stratosphere.configuration.Configuration;
 import eu.stratosphere.sopremo.pact.SopremoUtil;
 
 /**

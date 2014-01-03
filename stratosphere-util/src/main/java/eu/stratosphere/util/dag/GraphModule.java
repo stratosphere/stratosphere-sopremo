@@ -253,7 +253,6 @@ public abstract class GraphModule<Node, InputNode extends Node, OutputNode exten
 		return this.getUnmatchingNode(this.getAllOutputs(), other.getAllOutputs(), seen);
 	}
 
-	@SuppressWarnings("unchecked")
 	private List<Node> getUnmatchingNode(final Iterable<? extends Node> nodes1, final Iterable<? extends Node> nodes2,
 			final IdentitySet<Node> seen) {
 		final Iterator<? extends Node> iterator1 = nodes1.iterator();
