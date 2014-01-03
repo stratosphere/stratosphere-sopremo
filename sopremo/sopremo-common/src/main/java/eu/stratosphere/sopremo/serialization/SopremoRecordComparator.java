@@ -16,7 +16,6 @@
 package eu.stratosphere.sopremo.serialization;
 
 import java.io.IOException;
-import java.util.Arrays;
 
 import eu.stratosphere.nephele.services.memorymanager.DataInputView;
 import eu.stratosphere.nephele.services.memorymanager.DataOutputView;
@@ -24,6 +23,7 @@ import eu.stratosphere.nephele.services.memorymanager.MemorySegment;
 import eu.stratosphere.pact.generic.types.TypeComparator;
 import eu.stratosphere.sopremo.cache.NodeCache;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
+import eu.stratosphere.sopremo.pact.SopremoUtil;
 import eu.stratosphere.sopremo.type.IJsonNode;
 
 public final class SopremoRecordComparator extends TypeComparator<SopremoRecord> {
@@ -111,7 +111,6 @@ public final class SopremoRecordComparator extends TypeComparator<SopremoRecord>
 		else
 			for (int index = 0; index < this.keyExpressionIndices.length; index++)
 				hash = prime * hash + this.keyExpressions[index].evaluate(node).hashCode();
-		System.err.println("hash " + hash + " " + record.getOrParseNode());
 		return hash;
 	}
 
@@ -128,7 +127,7 @@ public final class SopremoRecordComparator extends TypeComparator<SopremoRecord>
 				this.keys[index] = this.reference.getKey(this.keyExpressionIndices[index], this.nodeCache1[index]);
 		else
 			for (int index = 0; index < this.keyExpressionIndices.length; index++)
-				this.keys[index] = this.keyExpressions[index].evaluate(node);
+				this.keys[index] = SopremoUtil.copyInto(this.keyExpressions[index].evaluate(node), this.nodeCache1[index]);
 	}
 
 	/*
@@ -161,7 +160,6 @@ public final class SopremoRecordComparator extends TypeComparator<SopremoRecord>
 		final SopremoRecordComparator other = (SopremoRecordComparator) referencedComparator;
 		for (int index = 0; index < this.nodeCache1.length; index++) {
 			final int comparison = this.keys[index].compareTo(other.keys[index]);
-			System.err.println("compare " + this.keys[index] + " <=> " + other.keys[index] + " -> " + comparison);
 			if (comparison != 0)
 				return comparison;
 		}
@@ -183,7 +181,6 @@ public final class SopremoRecordComparator extends TypeComparator<SopremoRecord>
 			final IJsonNode k2 = this.temp2.getKey(this.keyExpressionIndices[index], this.nodeCache2[index]);
 
 			final int comparison = k1.compareTo(k2);
-			System.err.println("compare " + k1 + " <=> " + k2 + " -> " + comparison);
 			if (comparison != 0)
 				return this.ascending[index] ? comparison : -comparison;
 		}

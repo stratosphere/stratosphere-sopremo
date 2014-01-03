@@ -14,8 +14,6 @@
  **********************************************************************************************************************/
 package eu.stratosphere.sopremo.serialization;
 
-import java.util.Arrays;
-
 import eu.stratosphere.pact.common.contract.GenericDataSink;
 import eu.stratosphere.pact.common.contract.Ordering;
 import eu.stratosphere.pact.common.util.FieldList;
