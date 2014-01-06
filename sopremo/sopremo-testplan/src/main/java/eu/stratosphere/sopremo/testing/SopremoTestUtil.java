@@ -31,7 +31,6 @@ import eu.stratosphere.sopremo.operator.Operator;
 import eu.stratosphere.sopremo.operator.SopremoPlan;
 
 /**
- * @author Arvid Heise
  */
 public class SopremoTestUtil {
 

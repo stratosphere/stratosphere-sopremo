@@ -45,7 +45,6 @@ import com.google.common.reflect.TypeToken;
 import eu.stratosphere.util.KryoUtil;
 
 /**
- * @author arv
  * @param <T>
  */
 @Ignore

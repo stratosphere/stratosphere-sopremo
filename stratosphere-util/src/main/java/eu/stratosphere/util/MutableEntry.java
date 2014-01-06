@@ -18,7 +18,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 /**
- * @author Arvid Heise
  */
 public class MutableEntry<K, V> implements Map.Entry<K, V> {
 	private K key;

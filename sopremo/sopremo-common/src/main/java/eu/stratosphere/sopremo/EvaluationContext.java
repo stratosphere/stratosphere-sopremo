@@ -44,7 +44,6 @@ import eu.stratosphere.sopremo.type.TypeCoercer;
 import eu.stratosphere.util.SopremoKryo;
 
 /**
- * @author arvid
  */
 public class EvaluationContext extends AbstractSopremoType {
 

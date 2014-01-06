@@ -35,7 +35,6 @@ import eu.stratosphere.sopremo.packages.IFunctionRegistry;
 import eu.stratosphere.sopremo.packages.NameChooserProvider;
 
 /**
- * @author Arvid Heise
  */
 public class PackageManager implements ParsingScope {
 	private final Map<String, PackageInfo> packages = new HashMap<String, PackageInfo>();

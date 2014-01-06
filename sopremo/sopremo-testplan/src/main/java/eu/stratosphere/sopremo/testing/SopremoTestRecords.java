@@ -30,7 +30,6 @@ import eu.stratosphere.sopremo.serialization.SopremoRecordPairComparatorFactory;
 import eu.stratosphere.sopremo.serialization.SopremoRecordSerializerFactory;
 
 /**
- * @author arv
  */
 public class SopremoTestRecords extends GenericTestRecords<SopremoRecord> {
 

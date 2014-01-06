@@ -42,7 +42,6 @@ import eu.stratosphere.nephele.jobgraph.JobVertexID;
 /**
  * This utility class provides a list of types frequently used by the RPC protocols included in this package.
  * 
- * @author warneke
  */
 public class CommonTypeUtils {
 

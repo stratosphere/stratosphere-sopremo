@@ -20,7 +20,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 /**
- * @author Arvid Heise
  */
 public class ExtensionMethod<ReturnType> extends DynamicMethod<ReturnType> {
 

@@ -10,8 +10,6 @@ import eu.stratosphere.util.Immutable;
 /**
  * This node represents a missing value.
  * 
- * @author Michael Hopstock
- * @author Tommy Neubert
  */
 @Immutable
 @DefaultSerializer(MissingNode.MissingSerializer.class)

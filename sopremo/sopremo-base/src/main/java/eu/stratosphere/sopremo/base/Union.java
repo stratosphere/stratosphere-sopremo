@@ -12,7 +12,6 @@ import eu.stratosphere.sopremo.operator.SopremoModule;
  * If a value is contained in more than one input streams and/or more than once within one input stream, it is
  * emitted once only.
  * 
- * @author Arvid Heise
  */
 @Name(verb = "union")
 @InputCardinality(min = 1)

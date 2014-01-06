@@ -17,7 +17,6 @@ package eu.stratosphere.sopremo.client;
 import eu.stratosphere.sopremo.execution.ExecutionResponse.ExecutionState;
 
 /**
- * @author Arvid Heise
  */
 public abstract class StateListener implements ProgressListener {
 	private ExecutionState lastState;

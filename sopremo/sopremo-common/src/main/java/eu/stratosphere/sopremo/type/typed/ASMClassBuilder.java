@@ -26,7 +26,6 @@ import eu.stratosphere.sopremo.type.TypeMapper;
  * from the underlying backingObject of a {@link TypedObject}. These methods are
  * generated at JVM byte code level.
  * 
- * @author ftschirschnitz
  */
 
 public class ASMClassBuilder implements Opcodes {

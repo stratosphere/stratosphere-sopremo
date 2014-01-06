@@ -389,7 +389,6 @@ public class TypeCoercer {
 	}
 
 	/**
-	 * @author Arvid Heise
 	 */
 	private static final class SelfCoercer extends TypeMapper<IJsonNode, IJsonNode> {
 		/**
@@ -407,7 +406,6 @@ public class TypeCoercer {
 	}
 
 	/**
-	 * @author Arvid Heise
 	 */
 	private static final class CopyCoercer extends TypeMapper<IJsonNode, IJsonNode> {
 		/**

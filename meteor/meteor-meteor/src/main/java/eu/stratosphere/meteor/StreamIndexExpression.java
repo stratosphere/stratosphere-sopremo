@@ -21,7 +21,6 @@ import eu.stratosphere.sopremo.expressions.UnevaluableExpression;
 import eu.stratosphere.sopremo.operator.JsonStream;
 
 /**
- * @author Arvid Heise
  */
 public class StreamIndexExpression extends UnevaluableExpression {
 

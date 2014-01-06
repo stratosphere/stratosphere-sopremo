@@ -17,7 +17,6 @@ package eu.stratosphere.util.dag;
 import java.util.List;
 
 /**
- * @author Arvid Heise
  */
 public interface ConnectionModifier<Node> extends ConnectionNavigator<Node> {
 	public void setConnectedNodes(Node parent, List<Node> children);

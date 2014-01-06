@@ -39,7 +39,6 @@ import eu.stratosphere.sopremo.type.IntNode;
 import eu.stratosphere.sopremo.type.TextNode;
 
 /**
- * @author Arvid Heise
  */
 public abstract class MeteorParserBase extends QueryWithVariablesParser<JsonStreamExpression> {
 	static DefaultNameChooserProvider NameChooserProvider =

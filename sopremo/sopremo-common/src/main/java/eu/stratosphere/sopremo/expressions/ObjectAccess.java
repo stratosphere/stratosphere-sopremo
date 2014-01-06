@@ -26,7 +26,6 @@ import eu.stratosphere.sopremo.type.NullNode;
 /**
  * Returns the value of an attribute of one or more Json nodes.
  * 
- * @author Arvid Heise
  */
 @OptimizerHints(scope = Scope.OBJECT)
 public class ObjectAccess extends PathSegmentExpression {

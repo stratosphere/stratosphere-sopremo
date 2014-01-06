@@ -33,7 +33,6 @@ import eu.stratosphere.sopremo.type.IArrayNode;
 import eu.stratosphere.sopremo.type.IJsonNode;
 
 /**
- * @author Arvid Heise
  */
 public abstract class MeteorIT extends MeteorParseTest {
 

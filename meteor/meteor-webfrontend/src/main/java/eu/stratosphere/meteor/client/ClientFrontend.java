@@ -220,7 +220,6 @@ public class ClientFrontend {
 	/**
 	 * Private class for state listener.
 	 * 
-	 * @author André Greiner-Petter
 	 */
 	private class SopremoStateListener extends StateListener {
 		/*

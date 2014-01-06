@@ -19,7 +19,6 @@ import eu.stratosphere.sopremo.serialization.SopremoRecordLayout;
 /**
  * The class <code>OperatorTest</code> contains tests for the class <code>{@link Operator<?>}</code>.
  * 
- * @author Arvid Heise
  */
 public class OperatorTest extends EqualCloneTest<OperatorTest.OpImpl> {
 	@Override

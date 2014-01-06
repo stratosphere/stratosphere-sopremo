@@ -5,7 +5,6 @@ import java.io.PrintWriter;
 /**
  * Creates a servlet for error messages.
  * 
- * @author André Greiner-Petter
  */
 public class ErrorServlet extends AbstractServletGUI {
 	private static final long serialVersionUID = 2966049298462105087L;

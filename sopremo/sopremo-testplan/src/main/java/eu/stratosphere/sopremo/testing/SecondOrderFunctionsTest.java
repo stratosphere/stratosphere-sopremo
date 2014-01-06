@@ -35,7 +35,6 @@ import eu.stratosphere.sopremo.function.FunctionNode;
 import eu.stratosphere.sopremo.type.JsonUtil;
 
 /**
- * @author Arvid Heise
  */
 public class SecondOrderFunctionsTest {
 	@Test

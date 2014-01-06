@@ -20,7 +20,6 @@ import eu.stratosphere.sopremo.type.MissingNode;
 import eu.stratosphere.sopremo.type.NullNode;
 
 /**
- * @author arv
  */
 public class NotNullOrMissingBooleanExpression extends PathSegmentExpression {
 	/*

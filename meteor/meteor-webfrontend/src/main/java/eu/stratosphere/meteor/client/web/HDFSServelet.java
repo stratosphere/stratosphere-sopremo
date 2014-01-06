@@ -13,7 +13,6 @@ import eu.stratosphere.meteor.client.common.HDFSUtil;
 /**
  * Creates a servlet for error messages.
  * 
- * @author mleich
  */
 public class HDFSServelet extends HttpServlet {
 

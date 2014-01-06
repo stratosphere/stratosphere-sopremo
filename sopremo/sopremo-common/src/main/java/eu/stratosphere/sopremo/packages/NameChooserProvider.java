@@ -15,7 +15,6 @@
 package eu.stratosphere.sopremo.packages;
 
 /**
- * @author arv
  */
 public interface NameChooserProvider {
 	NameChooser getOperatorNameChooser();

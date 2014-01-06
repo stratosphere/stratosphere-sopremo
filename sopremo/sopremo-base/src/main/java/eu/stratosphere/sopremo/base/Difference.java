@@ -22,7 +22,6 @@ import eu.stratosphere.sopremo.type.IStreamNode;
  * equal value to <i>v</i>.<br>
  * If the first input contains multiple identical entries, only one representation is emitted.
  * 
- * @author Arvid Heise
  */
 @Name(verb = "subtract")
 @InputCardinality(min = 1)

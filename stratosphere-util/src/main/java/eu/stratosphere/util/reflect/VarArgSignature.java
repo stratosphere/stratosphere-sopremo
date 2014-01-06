@@ -5,7 +5,6 @@ import java.lang.reflect.Array;
 /**
  * Signature with a number of fixed arguments followed by a variable number of arguments of a specific type.
  * 
- * @author Arvid Heise
  */
 public class VarArgSignature extends Signature {
 	/**

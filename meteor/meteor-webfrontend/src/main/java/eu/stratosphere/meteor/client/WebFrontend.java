@@ -12,7 +12,6 @@ import eu.stratosphere.meteor.client.common.MeteorContextHandler;
 /**
  * Webfrontend of meteor client
  * 
- * @author André Greiner-Petter
  */
 public class WebFrontend {
 

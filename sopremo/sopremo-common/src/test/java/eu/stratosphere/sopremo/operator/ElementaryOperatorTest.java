@@ -25,7 +25,6 @@ import eu.stratosphere.sopremo.type.IStreamNode;
 /**
  * The class <code>ElementaryOperatorTest</code> contains tests for the class <code>{@link ElementaryOperator}</code>.
  * 
- * @author Arvid Heise
  */
 public class ElementaryOperatorTest {
 	/**

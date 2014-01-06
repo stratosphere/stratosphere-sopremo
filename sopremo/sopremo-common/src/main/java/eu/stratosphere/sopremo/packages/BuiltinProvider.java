@@ -29,7 +29,6 @@ package eu.stratosphere.sopremo.packages;
  * To exert greater control of the registration process, pleases refer to {@link FunctionRegistryCallback},
  * {@link ConstantRegistryCallback}.
  * 
- * @author Arvid Heise
  * @see FunctionRegistryCallback
  * @see ConstantRegistryCallback
  */

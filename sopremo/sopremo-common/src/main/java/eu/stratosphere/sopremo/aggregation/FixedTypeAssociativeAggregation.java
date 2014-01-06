@@ -17,7 +17,6 @@ package eu.stratosphere.sopremo.aggregation;
 import eu.stratosphere.sopremo.type.IJsonNode;
 
 /**
- * @author Arvid Heise
  */
 public abstract class FixedTypeAssociativeAggregation<ElementType extends IJsonNode> extends
 		AssociativeAggregation<ElementType> {

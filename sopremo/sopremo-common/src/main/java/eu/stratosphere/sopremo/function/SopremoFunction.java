@@ -10,7 +10,6 @@ import eu.stratosphere.sopremo.type.IJsonNode;
 /**
  * A base for built-in and user-defined functions.
  * 
- * @author Arvid Heise
  */
 public abstract class SopremoFunction extends Callable<IJsonNode, IArrayNode<IJsonNode>> {
 

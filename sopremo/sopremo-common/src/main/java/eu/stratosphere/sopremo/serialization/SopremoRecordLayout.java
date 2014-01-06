@@ -39,7 +39,6 @@ import eu.stratosphere.sopremo.expressions.EvaluationExpression;
 import eu.stratosphere.util.AppendUtil;
 
 /**
- * @author arv
  */
 @DefaultSerializer(SopremoRecordLayout.KryoSerializer.class)
 public class SopremoRecordLayout extends AbstractSopremoType {

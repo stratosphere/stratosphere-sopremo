@@ -30,7 +30,6 @@ import eu.stratosphere.sopremo.operator.SopremoPlan;
 import eu.stratosphere.sopremo.type.IJsonNode;
 
 /**
- * @author Arvid Heise
  */
 public class FunctionTest extends MeteorParseTest {
 

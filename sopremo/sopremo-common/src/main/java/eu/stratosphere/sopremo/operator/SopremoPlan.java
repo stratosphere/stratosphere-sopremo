@@ -18,7 +18,6 @@ import eu.stratosphere.sopremo.serialization.SopremoRecordLayout;
 /**
  * Encapsulate a complete query in Sopremo and translates it to a Pact {@link Plan}.
  * 
- * @author Arvid Heise
  */
 public class SopremoPlan extends AbstractSopremoType implements Serializable {
 

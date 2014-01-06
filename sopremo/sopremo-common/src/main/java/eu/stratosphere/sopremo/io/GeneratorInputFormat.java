@@ -33,8 +33,6 @@ import eu.stratosphere.sopremo.type.NullNode;
 /**
  * Input format that reads values from the config and outputs them.
  * 
- * @author skruse
- * @author Arvid Heise
  */
 public class GeneratorInputFormat extends GenericInputFormat<SopremoRecord> {
 	/**

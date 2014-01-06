@@ -9,7 +9,6 @@ import java.util.Set;
 /**
  * Provides a {@link Set} that uses reference-equality and thus intentionally violates the general Set contract.
  * 
- * @author Arvid Heise
  * @param <E>
  *        the type of the elements
  * @see Set

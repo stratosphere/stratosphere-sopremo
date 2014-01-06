@@ -48,7 +48,6 @@ import eu.stratosphere.api.record.functions.ReduceFunction;
 /**
  * Convenience methods when dealing with {@link Operator}s.
  * 
- * @author Arvid Heise
  */
 public class ContractUtil {
 	private final static Map<Class<?>, Class<? extends Operator>> STUB_CONTRACTS =

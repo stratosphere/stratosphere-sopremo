@@ -16,7 +16,6 @@ import org.apache.hadoop.fs.Path;
 /**
  * Utility class for accessing HDFS Files
  * 
- * @author mleich
  */
 public class HDFSUtil {
 

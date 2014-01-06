@@ -24,7 +24,6 @@ import eu.stratosphere.sopremo.operator.JsonStream;
 /**
  * Some convenience method to implement complex operators.
  * 
- * @author Arvid Heise
  */
 public class OperatorUtil {
 	public static JsonStream positionEncode(final JsonStream input, final int index, final int maxIndex) {

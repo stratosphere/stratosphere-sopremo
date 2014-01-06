@@ -22,7 +22,6 @@ import org.junit.Assert;
 import org.junit.Test;
 
 /**
- * @author Arvid Heise
  */
 public class GraphTest {
 	@Test

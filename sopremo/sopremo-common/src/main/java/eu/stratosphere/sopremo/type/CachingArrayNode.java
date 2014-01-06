@@ -22,7 +22,6 @@ import com.esotericsoftware.kryo.Kryo;
 import eu.stratosphere.util.CachingList;
 
 /**
- * @author Arvid Heise
  */
 @DefaultSerializer(AbstractArrayNode.ArraySerializer.class)
 public class CachingArrayNode<T extends IJsonNode> extends ArrayNode<T> {

@@ -20,7 +20,6 @@ import eu.stratosphere.sopremo.type.ObjectNode;
  * public IObjectNode {@link TypedObjectNode#put(String fieldName, IJsonNode value)} - public
  * IJsonNode {@link TypedObjectNode#get(String fieldName)}
  * 
- * @author ftschirschnitz
  */
 
 public abstract class TypedObjectNode implements ITypedObjectNode {

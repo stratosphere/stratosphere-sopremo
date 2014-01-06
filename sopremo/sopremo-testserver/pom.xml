@@ -39,7 +39,7 @@
 		<dependency>
 			<groupId>eu.stratosphere</groupId>
 			<artifactId>stratosphere-clients</artifactId>
-			<version>${ozone.version}</version>
+			<version>${core.version}</version>
 		</dependency>
 	</dependencies>
 	<reporting>

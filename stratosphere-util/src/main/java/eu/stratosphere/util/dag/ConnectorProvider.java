@@ -4,7 +4,6 @@ package eu.stratosphere.util.dag;
  * Returns printable characters for all different kinds of edge intersections.
  * 
  * @see GraphPrinter
- * @author Arvid Heise
  */
 public interface ConnectorProvider {
 	/**
@@ -20,7 +19,6 @@ public interface ConnectorProvider {
 	/**
 	 * The basic four direction used to compose the complex {@link Route}.
 	 * 
-	 * @author Arvid Heise
 	 */
 	static enum BaseDirection {
 		TOP, DOWN, RIGHT, LEFT
@@ -29,7 +27,6 @@ public interface ConnectorProvider {
 	/**
 	 * Represents a line from a starting point to an ending point at a given square.
 	 * 
-	 * @author Arvid Heise
 	 */
 	static enum Route {
 		TOP_DOWN(BaseDirection.TOP, BaseDirection.DOWN),

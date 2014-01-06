@@ -42,7 +42,6 @@ import eu.stratosphere.util.dag.OneTimeTraverser;
 /**
  * A {@link SopremoModule} that only contains {@link ElementaryOperator}s.
  * 
- * @author Arvid Heise
  */
 public class ElementarySopremoModule extends SopremoModule {
 
@@ -134,7 +133,6 @@ public class ElementarySopremoModule extends SopremoModule {
 	/**
 	 * Helper class needed to assemble a Pact program from the {@link PactModule}s of several {@link Operator<?>}s.
 	 * 
-	 * @author Arvid Heise
 	 */
 	private class PactAssembler {
 		private final Map<Operator<?>, PactModule> modules = new IdentityHashMap<Operator<?>, PactModule>();

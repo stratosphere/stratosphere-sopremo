@@ -49,7 +49,6 @@ import eu.stratosphere.sopremo.execution.SopremoExecutionProtocol;
 import eu.stratosphere.sopremo.execution.SopremoID;
 
 /**
- * @author Arvid Heise
  */
 public class SopremoServer implements SopremoExecutionProtocol, Closeable {
 

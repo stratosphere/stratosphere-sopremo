@@ -19,7 +19,6 @@ import eu.stratosphere.util.ICloneable;
 /**
  * Tag interface for all Sopremo cache classes.
  * 
- * @author Arvid Heise
  */
 public interface ISopremoCache extends ICloneable {
 

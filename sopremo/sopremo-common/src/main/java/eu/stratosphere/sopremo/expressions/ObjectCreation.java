@@ -190,7 +190,6 @@ public class ObjectCreation extends EvaluationExpression {
 	}
 
 	/**
-	 * @author Arvid Heise
 	 */
 	private static final class Concatenation extends ObjectCreation {
 		private transient final IObjectNode result = new ObjectNode();
@@ -206,7 +205,6 @@ public class ObjectCreation extends EvaluationExpression {
 	}
 
 	/**
-	 * @author Arvid Heise
 	 */
 	private final class MappingIterator implements ChildIterator {
 		private boolean lastReturnedWasKey = false;

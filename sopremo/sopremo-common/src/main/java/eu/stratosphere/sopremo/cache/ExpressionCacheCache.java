@@ -20,7 +20,6 @@ import java.util.Map;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
 
 /**
- * @author Arvid Heise
  */
 public class ExpressionCacheCache<E extends EvaluationExpression> implements ISopremoCache {
 	// Thread-local may be overkill, but this ensures that the complete cache is garbage-collected after a thread ended

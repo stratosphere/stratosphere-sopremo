@@ -20,7 +20,6 @@ import eu.stratosphere.sopremo.expressions.InputSelection;
 import eu.stratosphere.sopremo.expressions.TransformFunction;
 
 /**
- * @author arv
  */
 public final class ReplaceInputSelectionWithArray implements TransformFunction {
 	@Override

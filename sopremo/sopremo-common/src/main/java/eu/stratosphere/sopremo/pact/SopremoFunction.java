@@ -17,7 +17,6 @@ package eu.stratosphere.sopremo.pact;
 import eu.stratosphere.sopremo.EvaluationContext;
 
 /**
- * @author Arvid Heise
  */
 public interface SopremoFunction {
 	public EvaluationContext getContext();

@@ -49,7 +49,6 @@ import eu.stratosphere.sopremo.io.JsonParser;
 import eu.stratosphere.sopremo.type.IJsonNode;
 
 /**
- * @author Arvid Heise
  */
 @Ignore
 public class SopremoTestServer implements Closeable, SopremoExecutionProtocol {

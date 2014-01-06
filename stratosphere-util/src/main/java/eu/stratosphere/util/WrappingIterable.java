@@ -19,7 +19,6 @@ import java.util.Iterator;
 /**
  * Base class to wrap an <code>Iterable</code> and manipulate its elements on-the-fly.
  * 
- * @author Arvid Heise
  */
 public abstract class WrappingIterable<I, O> extends AbstractIterable<O> {
 	private final Iterable<? extends I> originalIterable;

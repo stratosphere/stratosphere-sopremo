@@ -20,7 +20,6 @@ import java.util.List;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
 
 /**
- * @author Arvid Heise
  */
 public class ExpressionCache<E extends EvaluationExpression> implements ISopremoCache {
 	private final E template;

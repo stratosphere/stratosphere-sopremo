@@ -23,7 +23,6 @@ import eu.stratosphere.sopremo.io.Source;
 import eu.stratosphere.sopremo.operator.SopremoPlan;
 
 /**
- * @author Arvid Heise
  */
 public class SourceTest extends MeteorTest {
 

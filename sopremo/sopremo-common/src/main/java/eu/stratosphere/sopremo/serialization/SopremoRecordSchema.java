@@ -27,7 +27,6 @@ import eu.stratosphere.compiler.postpass.ConflictingFieldTypeInfoException;
 import eu.stratosphere.sopremo.type.IJsonNode;
 
 /**
- * @author arvid
  */
 public class SopremoRecordSchema extends AbstractSchema<Class<? extends IJsonNode>> {
 	private final IntSet usedKeys = new IntAVLTreeSet();

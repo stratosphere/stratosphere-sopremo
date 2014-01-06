@@ -19,7 +19,6 @@ import eu.stratosphere.sopremo.expressions.EvaluationExpression;
 import eu.stratosphere.sopremo.serialization.SopremoRecord;
 
 /**
- * @author arv
  */
 public class SopremoKeyExtractor implements KeyExtractor<SopremoRecord> {
 	private final EvaluationExpression[] expressions;

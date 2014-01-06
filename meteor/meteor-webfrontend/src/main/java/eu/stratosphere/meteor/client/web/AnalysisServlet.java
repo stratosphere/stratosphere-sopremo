@@ -13,7 +13,6 @@ import eu.stratosphere.meteor.client.common.MeteorContextHandler;
 /**
  * The analysis servlet with textarea for meteor script.
  * 
- * @author André Greiner-Petter
  */
 public class AnalysisServlet extends AbstractServletGUI {
 

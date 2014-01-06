@@ -27,7 +27,6 @@ import eu.stratosphere.sopremo.io.Source;
 import eu.stratosphere.sopremo.operator.SopremoPlan;
 
 /**
- * @author arv
  */
 public class AssignmentTest extends MeteorParseTest {
 

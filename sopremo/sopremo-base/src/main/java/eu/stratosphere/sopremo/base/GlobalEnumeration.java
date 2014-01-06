@@ -324,7 +324,6 @@ public class GlobalEnumeration extends ElementaryOperator<GlobalEnumeration> {
 	}
 
 	/**
-	 * @author Arvid Heise
 	 */
 	public static final class StringGenerator extends AbstractIdGenerator {
 

@@ -30,7 +30,6 @@ import eu.stratosphere.sopremo.operator.SopremoPlan;
 import eu.stratosphere.sopremo.query.QueryParserException;
 
 /**
- * @author Arvid Heise
  */
 @Ignore
 public class MeteorTest {

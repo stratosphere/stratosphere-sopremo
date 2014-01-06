@@ -13,7 +13,6 @@ import eu.stratosphere.meteor.client.common.MeteorContextHandler;
  * This servlet shows JSON script of jobs currently running. It refresh's itself each 5 seconds
  * and actualize OutputServlet after the running job is finished.
  * 
- * @author André Greiner-Petter
  */
 public class RuntimeStateServlet extends AbstractServletGUI {
 

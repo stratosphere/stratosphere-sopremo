@@ -50,7 +50,6 @@ import eu.stratosphere.sopremo.type.TextNode;
 /**
  * Core functions.
  * 
- * @author Arvid Heise
  */
 public class CoreFunctions implements BuiltinProvider {
 	@Name(verb = "concat", noun = "concatenation")

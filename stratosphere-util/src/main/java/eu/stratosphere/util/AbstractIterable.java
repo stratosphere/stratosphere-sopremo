@@ -17,7 +17,6 @@ package eu.stratosphere.util;
 import java.util.Iterator;
 
 /**
- * @author Arvid Heise
  */
 public abstract class AbstractIterable<T> implements Iterable<T> {
 

@@ -19,8 +19,6 @@ import eu.stratosphere.sopremo.ISopremoType;
 /**
  * Interface for all JsonNodes.
  * 
- * @author Michael Hopstock
- * @author Tommy Neubert
  */
 public interface IJsonNode extends ISopremoType, Comparable<IJsonNode> {
 	public void clear();

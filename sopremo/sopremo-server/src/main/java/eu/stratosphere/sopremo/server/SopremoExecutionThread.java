@@ -40,7 +40,6 @@ import eu.stratosphere.sopremo.operator.SopremoPlan;
 import eu.stratosphere.util.StringUtils;
 
 /**
- * @author Arvid Heise
  */
 public class SopremoExecutionThread implements Runnable {
 	private final SopremoJobInfo jobInfo;

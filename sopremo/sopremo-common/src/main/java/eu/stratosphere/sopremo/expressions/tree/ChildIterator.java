@@ -19,7 +19,6 @@ import java.util.ListIterator;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
 
 /**
- * @author Arvid Heise
  */
 public interface ChildIterator extends ListIterator<EvaluationExpression> {
 	public boolean canChildBeRemoved();

@@ -39,7 +39,6 @@ import eu.stratosphere.sopremo.type.MissingNode;
 import eu.stratosphere.sopremo.type.NullNode;
 
 /**
- * @author Arvid Heise
  */
 public class MethodTest extends MeteorParseTest {
 

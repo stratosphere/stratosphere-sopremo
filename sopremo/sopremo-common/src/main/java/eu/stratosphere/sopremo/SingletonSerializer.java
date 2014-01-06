@@ -21,7 +21,6 @@ import com.esotericsoftware.kryo.io.Output;
 import eu.stratosphere.sopremo.type.ReusingSerializer;
 
 /**
- * @author Arvid Heise
  */
 @SuppressWarnings("rawtypes")
 public abstract class SingletonSerializer extends ReusingSerializer {

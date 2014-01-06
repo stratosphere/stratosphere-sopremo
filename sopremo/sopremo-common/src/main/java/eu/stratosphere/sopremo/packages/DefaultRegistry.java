@@ -26,7 +26,6 @@ import eu.stratosphere.sopremo.ISopremoType;
 /**
  * Default implementation of {@link IRegistry}.
  * 
- * @author Arvid Heise
  */
 public class DefaultRegistry<T extends ISopremoType> extends AbstractRegistry<T> implements IRegistry<T> {
 	private final Map<String, T> elements = new HashMap<String, T>();

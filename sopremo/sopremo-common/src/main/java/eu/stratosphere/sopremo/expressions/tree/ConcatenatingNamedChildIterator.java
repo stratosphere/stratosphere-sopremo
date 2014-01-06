@@ -22,7 +22,6 @@ import java.util.Arrays;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
 
 /**
- * @author Arvid Heise
  */
 public class ConcatenatingNamedChildIterator extends NamedChildIterator {
 	private final NamedChildIterator[] iterators;

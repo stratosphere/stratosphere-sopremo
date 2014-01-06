@@ -17,7 +17,6 @@ package eu.stratosphere.util;
 import java.io.IOException;
 
 /**
- * @author arv
  */
 public class AppendUtil {
 	public static void append(final Appendable appendable, final IAppending... objects) throws IOException {

@@ -15,12 +15,12 @@
 		<dependency>
 			<groupId>eu.stratosphere</groupId>
 			<artifactId>stratosphere-core</artifactId>
-			<version>${ozone.version}</version>
+			<version>${core.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>eu.stratosphere</groupId>
 			<artifactId>stratosphere-compiler</artifactId>
-			<version>${ozone.version}</version>
+			<version>${core.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>eu.stratosphere</groupId>

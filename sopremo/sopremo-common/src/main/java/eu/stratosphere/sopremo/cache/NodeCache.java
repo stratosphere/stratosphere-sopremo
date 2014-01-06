@@ -22,7 +22,6 @@ import eu.stratosphere.sopremo.type.IJsonNode;
 import eu.stratosphere.sopremo.type.NodeFactory;
 
 /**
- * @author Arvid Heise
  */
 public final class NodeCache implements ISopremoCache {
 

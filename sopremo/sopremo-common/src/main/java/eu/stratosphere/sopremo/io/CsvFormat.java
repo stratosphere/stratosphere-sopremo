@@ -673,7 +673,6 @@ public class CsvFormat extends SopremoFormat {
 	}
 
 	/**
-	 * @author Arvid Heise
 	 */
 	public static class CountingReader extends Reader {
 		private long absolutePos = 0, limit = 0;

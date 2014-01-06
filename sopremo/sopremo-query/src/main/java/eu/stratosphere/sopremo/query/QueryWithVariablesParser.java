@@ -22,7 +22,6 @@ import eu.stratosphere.sopremo.packages.DefaultRegistry;
 import eu.stratosphere.sopremo.packages.IRegistry;
 
 /**
- * @author Arvid Heise
  */
 public abstract class QueryWithVariablesParser<VarType extends ISopremoType> extends AbstractQueryParser {
 	private final StackedRegistry<VarType, IRegistry<VarType>> variableRegistry =

@@ -39,7 +39,6 @@ import org.apache.commons.logging.LogFactory;
 import eu.stratosphere.util.StreamUtil;
 
 /**
- * @author arv
  */
 public class PackageClassLoader extends ClassLoader {
 	private final List<JarInfo> jarInfos = new ArrayList<JarInfo>();

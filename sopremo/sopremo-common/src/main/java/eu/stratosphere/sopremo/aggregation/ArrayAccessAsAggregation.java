@@ -21,7 +21,6 @@ import eu.stratosphere.sopremo.type.CachingArrayNode;
 import eu.stratosphere.sopremo.type.IJsonNode;
 
 /**
- * @author Arvid Heise
  */
 public class ArrayAccessAsAggregation extends Aggregation {
 	private final int startIndex, endIndex;

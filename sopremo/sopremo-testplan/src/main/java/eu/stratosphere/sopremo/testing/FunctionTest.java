@@ -24,7 +24,6 @@ import eu.stratosphere.sopremo.type.IJsonNode;
 import eu.stratosphere.sopremo.type.JavaToJsonMapper;
 
 /**
- * @author Arvid Heise
  */
 @Ignore
 public class FunctionTest {

@@ -27,7 +27,6 @@ import com.esotericsoftware.kryo.io.Output;
  * <p>
  * This class is not thread-safe.
  * 
- * @author warneke
  */
 final class StackTraceElementSerializer extends Serializer<StackTraceElement> {
 

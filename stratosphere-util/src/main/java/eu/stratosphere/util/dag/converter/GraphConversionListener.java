@@ -16,7 +16,6 @@ import java.util.List;
  * Since the conversion of child nodes is recursive, multiple {@link #beforeSubgraphConversion(Object)} with different
  * nodes as parameter will occur before a {@link #beforeNodeConversion(Object, List)}.
  * 
- * @author Arvid Heise
  * @param <InputType>
  *        the type of the input node
  * @param <OutputType>

@@ -16,7 +16,6 @@ import eu.stratosphere.util.StringUtils;
 /**
  * The output servlet shows the JSON script of pact plan
  * 
- * @author André Greiner-Petter
  */
 public class OutputServlet extends AbstractServletGUI {
 

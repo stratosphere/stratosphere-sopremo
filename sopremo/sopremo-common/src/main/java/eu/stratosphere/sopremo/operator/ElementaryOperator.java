@@ -76,7 +76,6 @@ import eu.stratosphere.util.IdentityList;
  * <li>{@link #asPactModule(EvaluationContext)} gives complete control over the creation of the {@link PactModule}.
  * </ul>
  * 
- * @author Arvid Heise
  */
 @OutputCardinality(min = 1, max = 1)
 public abstract class ElementaryOperator<Self extends ElementaryOperator<Self>>

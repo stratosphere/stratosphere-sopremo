@@ -17,7 +17,6 @@ package eu.stratosphere.sopremo.util;
 import eu.stratosphere.types.Value;
 
 /**
- * @author Arvid Heise
  */
 public class SchemaUtils {
 

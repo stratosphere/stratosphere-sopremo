@@ -44,7 +44,6 @@ import eu.stratosphere.sopremo.type.IJsonNode;
 import eu.stratosphere.util.reflect.ReflectUtil;
 
 /**
- * @author Arvid Heise
  */
 public class PackageInfo extends AbstractSopremoType implements ISopremoType, ParsingScope {
 	private final transient PackageClassLoader classLoader;

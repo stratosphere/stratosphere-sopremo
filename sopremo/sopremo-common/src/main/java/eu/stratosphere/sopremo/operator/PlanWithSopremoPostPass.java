@@ -22,7 +22,6 @@ import eu.stratosphere.sopremo.serialization.SopremoRecordLayout;
 import eu.stratosphere.sopremo.serialization.SopremoRecordPostPass;
 
 /**
- * @author arv
  */
 public final class PlanWithSopremoPostPass extends Plan {
 	private final SopremoRecordLayout layout;

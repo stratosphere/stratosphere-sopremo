@@ -9,7 +9,6 @@ import java.util.Set;
 /**
  * A map implementation that returns a default value instead of <code>null</code>.
  * 
- * @author Arvid Heise
  * @param <K>
  *        the key
  * @param <V>

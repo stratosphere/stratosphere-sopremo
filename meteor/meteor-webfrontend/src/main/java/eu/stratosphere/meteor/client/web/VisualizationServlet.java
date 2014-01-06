@@ -12,7 +12,6 @@ import javax.servlet.http.HttpServletResponse;
  * This servlet creates content of the visualization frame modeled in
  * WebInterfaceServlet.
  * 
- * @author André Greiner-Petter
  */
 public class VisualizationServlet extends AbstractServletGUI {
 	private static final long serialVersionUID = -549622799004779557L;

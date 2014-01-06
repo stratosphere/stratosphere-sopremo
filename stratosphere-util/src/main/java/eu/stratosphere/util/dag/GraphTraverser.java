@@ -6,7 +6,6 @@ import java.util.Iterator;
  * Implementing classes traverse a directed acyclic graph (DAG) with a specific strategy. Unless explicitly stated, no
  * implementing class should visit a node more than once.
  * 
- * @author Arvid Heise
  */
 public interface GraphTraverser {
 	/**

@@ -13,13 +13,10 @@ import com.esotericsoftware.kryo.io.Output;
 /**
  * This node represents a boolean value.
  * 
- * @author Michael Hopstock
- * @author Tommy Neubert
  */
 public class BooleanNode extends AbstractJsonNode implements IPrimitiveNode {
 
 	/**
-	 * @author Arvid Heise
 	 */
 	@DefaultSerializer(UnmodifiableBoolean.BooleanSerializer.class)
 	private static final class UnmodifiableBoolean extends BooleanNode {

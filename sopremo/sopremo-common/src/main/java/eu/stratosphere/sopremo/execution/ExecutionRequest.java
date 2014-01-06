@@ -37,7 +37,6 @@ import eu.stratosphere.sopremo.pact.SopremoUtil;
 /**
  * Represents a request to a {@link MeteorExecutor} that encapsulates the query and optional settings.
  * 
- * @author Arvid Heise
  */
 public class ExecutionRequest implements KryoSerializable, KryoCopyable<ExecutionRequest>, IOReadableWritable {
 	private SopremoPlan query;

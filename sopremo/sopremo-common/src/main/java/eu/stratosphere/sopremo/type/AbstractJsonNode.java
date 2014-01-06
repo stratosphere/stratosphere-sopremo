@@ -5,8 +5,6 @@ import eu.stratosphere.sopremo.AbstractSopremoType;
 /**
  * Abstract class to provide basic implementations for all node types.
  * 
- * @author Michael Hopstock
- * @author Tommy Neubert
  */
 public abstract class AbstractJsonNode extends AbstractSopremoType implements IJsonNode {
 

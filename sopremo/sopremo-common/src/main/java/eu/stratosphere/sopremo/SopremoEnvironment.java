@@ -19,7 +19,6 @@ import eu.stratosphere.configuration.Configuration;
 import eu.stratosphere.sopremo.pact.SopremoUtil;
 
 /**
- * @author Arvid Heise
  */
 public class SopremoEnvironment {
 	/**

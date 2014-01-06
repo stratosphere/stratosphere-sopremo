@@ -20,7 +20,6 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import java.lang.reflect.Array;
 
 /**
- * @author Arvid Heise
  */
 public class ArrayCache<T> implements ISopremoCache {
 	private final Class<T> type;

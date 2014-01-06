@@ -19,7 +19,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 
 /**
- * @author Arvid Heise
  */
 public class BeanProperty<Type> extends DynamicProperty<Type> {
 	private final PropertyDescriptor propertyDescriptor;

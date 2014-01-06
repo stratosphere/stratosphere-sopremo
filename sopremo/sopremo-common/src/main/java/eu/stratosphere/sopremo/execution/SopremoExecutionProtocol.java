@@ -21,7 +21,6 @@ import eu.stratosphere.nephele.rpc.RPCProtocol;
 /**
  * A general purpose interface for everything that executes meteor scripts synchronically and asynchronically.
  * 
- * @author Arvid Heise
  */
 public interface SopremoExecutionProtocol extends LibraryTransferProtocol, RPCProtocol {
 

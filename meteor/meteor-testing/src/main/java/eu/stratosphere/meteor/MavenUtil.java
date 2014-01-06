@@ -25,7 +25,6 @@ import org.apache.maven.model.Model;
 import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 
 /**
- * @author arv
  */
 public class MavenUtil {
 

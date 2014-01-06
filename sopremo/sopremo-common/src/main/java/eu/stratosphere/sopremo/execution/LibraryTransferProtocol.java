@@ -25,8 +25,6 @@ import eu.stratosphere.nephele.execution.librarycache.LibraryCacheUpdate;
 /**
  * The library transfer protocol allows to query servers for cached libraries and submit these if necessary.
  * 
- * @author warneke
- * @author Arvid Heise
  */
 public interface LibraryTransferProtocol extends VersionedProtocol {
 	/**

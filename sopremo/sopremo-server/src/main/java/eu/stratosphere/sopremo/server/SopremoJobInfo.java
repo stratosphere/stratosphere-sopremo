@@ -24,7 +24,6 @@ import eu.stratosphere.sopremo.execution.ExecutionResponse.ExecutionState;
 import eu.stratosphere.sopremo.execution.SopremoID;
 
 /**
- * @author Arvid Heise
  */
 public class SopremoJobInfo {
 	private final ExecutionRequest initialRequest;

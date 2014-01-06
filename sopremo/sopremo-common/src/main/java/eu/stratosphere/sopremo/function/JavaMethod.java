@@ -25,7 +25,6 @@ import eu.stratosphere.util.reflect.DynamicMethod;
 import eu.stratosphere.util.reflect.Signature;
 
 /**
- * @author Arvid Heise
  */
 public class JavaMethod extends SopremoFunction {
 

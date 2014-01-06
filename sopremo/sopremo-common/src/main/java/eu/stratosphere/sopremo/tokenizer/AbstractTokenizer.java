@@ -19,7 +19,6 @@ import eu.stratosphere.sopremo.type.CachingArrayNode;
 import eu.stratosphere.sopremo.type.TextNode;
 
 /**
- * @author Arvid Heise
  */
 public abstract class AbstractTokenizer extends AbstractSopremoType implements Tokenizer {
 	protected void addToken(final CachingArrayNode<TextNode> tokens, final CharSequence text, final int tokenStart,

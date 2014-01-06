@@ -10,8 +10,6 @@ import eu.stratosphere.util.Immutable;
 /**
  * This node represents the value 'null'.
  * 
- * @author Michael Hopstock
- * @author Tommy Neubert
  */
 @Immutable
 @DefaultSerializer(NullNode.NullSerializer.class)

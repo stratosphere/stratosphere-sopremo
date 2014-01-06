@@ -9,7 +9,6 @@ import java.util.Map;
  * Implementing classes traverse a directed acyclic graph (DAG) with a specific strategy. Unless explicitly stated, no
  * implementing class should visit a node more than once.
  * 
- * @author Arvid Heise
  */
 public abstract class AbstractGraphTraverser implements GraphTraverser {
 

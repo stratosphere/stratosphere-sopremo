@@ -10,8 +10,6 @@ import eu.stratosphere.sopremo.pact.SopremoUtil;
 /**
  * This node represents a double value.
  * 
- * @author Michael Hopstock
- * @author Tommy Neubert
  */
 public class DoubleNode extends AbstractNumericNode implements INumericNode {
 

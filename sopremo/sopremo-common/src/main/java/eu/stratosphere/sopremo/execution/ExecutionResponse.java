@@ -23,7 +23,6 @@ import eu.stratosphere.core.io.IOReadableWritable;
 /**
  * A response from a {@link SopremoExecutionProtocol} that reflects the state of a job.
  * 
- * @author Arvid Heise
  */
 public class ExecutionResponse implements IOReadableWritable {
 

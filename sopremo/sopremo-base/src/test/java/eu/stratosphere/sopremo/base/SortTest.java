@@ -34,7 +34,6 @@ import eu.stratosphere.sopremo.type.IArrayNode;
 import eu.stratosphere.sopremo.type.IJsonNode;
 
 /**
- * @author arv
  */
 public class SortTest extends SopremoOperatorTestBase<Sort> {
 	@Override

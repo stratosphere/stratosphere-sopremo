@@ -20,7 +20,6 @@ package eu.stratosphere.api.plan;
  * of the plan which can be shown to the user. For a more detailed description
  * of what should be included in the description see getDescription().
  * 
- * @author Moritz Kaufmann
  */
 public interface PlanAssemblerDescription extends PlanAssembler
 {

@@ -24,7 +24,6 @@ import eu.stratosphere.types.Key;
 /**
  * Some convenience methods for dealing with the PACT-Builder pattern.
  * 
- * @author Aljoscha Krettek
  */
 public class PactBuilderUtil
 {

@@ -27,7 +27,6 @@ import eu.stratosphere.sopremo.expressions.FunctionCall;
 import eu.stratosphere.sopremo.packages.DefaultFunctionRegistry;
 
 /**
- * @author arvid
  */
 public class FunctionUtil {
 

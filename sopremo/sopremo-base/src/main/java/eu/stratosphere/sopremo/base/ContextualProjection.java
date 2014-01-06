@@ -16,7 +16,6 @@ import eu.stratosphere.sopremo.type.IJsonNode;
  * The side channel is given by the second input source.<br>
  * This operator is useful, when a projection needs the result of a prior global aggregation.
  * 
- * @author Arvid Heise
  */
 @InputCardinality(2)
 @Internal

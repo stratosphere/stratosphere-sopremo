@@ -32,7 +32,6 @@ import com.esotericsoftware.minlog.Log;
  * <p>
  * This class is thread-safe.
  * 
- * @author warneke
  */
 final class NetworkThread extends Thread {
 
@@ -56,7 +55,6 @@ final class NetworkThread extends Thread {
 	 * <p>
 	 * This class is not thread-safe.
 	 * 
-	 * @author warneke
 	 */
 	private static final class OutstandingTransmission {
 

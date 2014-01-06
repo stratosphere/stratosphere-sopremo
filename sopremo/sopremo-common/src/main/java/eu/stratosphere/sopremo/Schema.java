@@ -26,7 +26,6 @@ import eu.stratosphere.sopremo.expressions.ArrayAccess;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
 
 /**
- * @author arv
  */
 public class Schema extends AbstractSopremoType {
 	private final List<EvaluationExpression> keyExpressions = new ArrayList<EvaluationExpression>();

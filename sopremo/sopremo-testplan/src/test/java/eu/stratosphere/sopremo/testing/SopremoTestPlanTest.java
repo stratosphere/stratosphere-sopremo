@@ -55,7 +55,6 @@ import eu.stratosphere.sopremo.type.TextNode;
 /**
  * Tests {@link SopremoTestPlan}.
  * 
- * @author Arvid Heise
  */
 
 public class SopremoTestPlanTest extends EqualVerifyTest<SopremoTestPlan> {

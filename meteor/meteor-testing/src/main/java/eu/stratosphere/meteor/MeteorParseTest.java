@@ -29,7 +29,6 @@ import eu.stratosphere.sopremo.query.QueryParserException;
 import eu.stratosphere.sopremo.testing.SopremoTestUtil;
 
 /**
- * @author Arvid Heise
  */
 @Ignore
 public class MeteorParseTest {

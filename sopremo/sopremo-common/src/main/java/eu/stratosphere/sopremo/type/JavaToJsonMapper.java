@@ -21,7 +21,6 @@ import eu.stratosphere.util.reflect.ReflectUtil;
  */
 public class JavaToJsonMapper extends AbstractTypeMapper<TypeMapper<?, ?>> {
 	/**
-	 * @author arv
 	 */
 	@SuppressWarnings("rawtypes")
 	private static final class CollectionToArrayMapper extends TypeMapper<Collection, IArrayNode> {
@@ -172,7 +171,6 @@ public class JavaToJsonMapper extends AbstractTypeMapper<TypeMapper<?, ?>> {
 	}
 
 	/**
-	 * @author arvid
 	 */
 	@SuppressWarnings("rawtypes")
 	private static class ArrayToArrayMapper extends TypeMapper<Object, IArrayNode> {

@@ -22,7 +22,6 @@ import com.google.common.collect.Iterators;
 /**
  * Represents a reusable view on arrays.
  * 
- * @author Arvid Heise
  */
 @DefaultSerializer(AbstractArrayNode.ArraySerializer.class)
 public class SubArrayNode<T extends IJsonNode> extends AbstractArrayNode<T> {

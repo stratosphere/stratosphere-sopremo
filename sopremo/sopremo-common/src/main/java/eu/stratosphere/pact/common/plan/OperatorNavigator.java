@@ -9,7 +9,6 @@ import eu.stratosphere.util.dag.ConnectionNavigator;
 /**
  * {@link Navigator} for traversing a graph of {@link Operator}s.
  * 
- * @author Arvid Heise
  * @see Navigator
  */
 public class OperatorNavigator implements ConnectionNavigator<Operator> {

@@ -13,7 +13,6 @@ import eu.stratosphere.meteor.client.common.MeteorContextHandler;
 /**
  * Creates a servlet for error messages.
  * 
- * @author mleich
  */
 public class PactVisServlet extends HttpServlet {
 

@@ -13,7 +13,6 @@ import javax.servlet.http.HttpServletResponse;
 /**
  * The abstract servlet for each frame servlet. Build up the html body for each frame.
  * 
- * @author André Greiner-Petter
  */
 public abstract class AbstractServletGUI extends HttpServlet {
 

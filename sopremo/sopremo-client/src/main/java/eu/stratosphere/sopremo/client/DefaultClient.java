@@ -43,13 +43,11 @@ import eu.stratosphere.sopremo.execution.SopremoID;
 import eu.stratosphere.sopremo.operator.SopremoPlan;
 
 /**
- * @author Arvid Heise
  */
 public class DefaultClient implements Closeable {
 	/**
 	 * Avoids plenty of null checks.
 	 * 
-	 * @author Arvid Heise
 	 */
 	private static class ThrowingListener implements ProgressListener {
 		/*

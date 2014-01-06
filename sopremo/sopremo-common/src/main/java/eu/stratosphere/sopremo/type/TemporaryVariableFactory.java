@@ -22,7 +22,6 @@ import java.util.Queue;
 import eu.stratosphere.util.ReflectionUtil;
 
 /**
- * @author Arvid Heise
  */
 public class TemporaryVariableFactory {
 	public final static TemporaryVariableFactory INSTANCE = new TemporaryVariableFactory();

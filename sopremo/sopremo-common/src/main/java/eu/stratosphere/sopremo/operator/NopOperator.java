@@ -18,7 +18,6 @@ import eu.stratosphere.api.common.functions.Function;
 import eu.stratosphere.sopremo.pact.SopremoNop;
 
 /**
- * @author arv
  *
  */
 public class NopOperator extends ElementaryOperator<NopOperator> {

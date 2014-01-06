@@ -38,7 +38,6 @@ import eu.stratosphere.sopremo.execution.SopremoConstants;
 import eu.stratosphere.sopremo.operator.SopremoPlan;
 
 /**
- * @author Arvid Heise
  */
 public class CLClient {
 	private final Options options = new Options();

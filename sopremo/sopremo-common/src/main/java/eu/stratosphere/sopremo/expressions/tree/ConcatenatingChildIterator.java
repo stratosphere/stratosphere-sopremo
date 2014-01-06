@@ -19,7 +19,6 @@ import java.util.NoSuchElementException;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
 
 /**
- * @author Arvid Heise
  */
 public class ConcatenatingChildIterator implements ChildIterator {
 	private final ChildIterator[] iterators;

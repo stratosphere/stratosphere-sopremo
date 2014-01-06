@@ -8,7 +8,6 @@ import eu.stratosphere.sopremo.operator.Name;
 /**
  * A registry to manage elements, such as constants, methods, and operators.
  * 
- * @author Arvid Heise
  * @param <T>
  *        the type of the elements
  */

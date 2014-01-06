@@ -11,7 +11,6 @@ import java.util.ListIterator;
  * Provides a {@link List} that uses reference-equality and thus intentionally
  * violates the general List contract.
  * 
- * @author Arvid Heise
  * @param <E>
  *        the type of the elements
  * @see List

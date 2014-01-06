@@ -29,7 +29,6 @@ import eu.stratosphere.sopremo.type.IStreamNode;
 import eu.stratosphere.sopremo.type.JsonUtil;
 
 /**
- * @author Arvid Heise
  */
 @InputCardinality(1)
 @Internal

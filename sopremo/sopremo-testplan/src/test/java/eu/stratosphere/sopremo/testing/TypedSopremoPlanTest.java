@@ -28,7 +28,6 @@ import eu.stratosphere.sopremo.type.typed.ITypedObjectNode;
 import eu.stratosphere.sopremo.type.typed.TypedObjectNodeFactory;
 
 /**
- * @author arv
  */
 public class TypedSopremoPlanTest {
 	public enum TestAnnotationTag {

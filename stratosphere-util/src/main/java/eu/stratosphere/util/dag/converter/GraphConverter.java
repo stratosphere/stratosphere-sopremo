@@ -22,7 +22,6 @@ import eu.stratosphere.util.dag.ConnectionNavigator;
  * Converts a directly acyclic graph to another by performing recursive invocation of {@link NodeConverter}s for
  * specific node types.
  * 
- * @author Arvid Heise
  * @param <InputType>
  *        the type of the input node
  * @param <OutputType>
@@ -296,7 +295,6 @@ public class GraphConverter<InputType, OutputType> implements NodeConverter<Inpu
 	/**
 	 * Holds additional information about a converter mostly extracted from annotations.
 	 * 
-	 * @author Arvid Heise
 	 */
 	private static class NodeConverterInfo<InputType, OutputBase> {
 		private int appendIndex = -1;

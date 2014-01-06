@@ -26,7 +26,6 @@ import eu.stratosphere.sopremo.type.TextNode;
 //import eu.stratosphere.sopremo.SopremoTestPlan;
 
 /**
- * @author Arvid Heise
  */
 public class GlobalEnumerationTest {
 

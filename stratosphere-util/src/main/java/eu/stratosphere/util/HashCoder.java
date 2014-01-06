@@ -15,7 +15,6 @@
 package eu.stratosphere.util;
 
 /**
- * @author Arvid Heise
  */
 public interface HashCoder<T> {
 	public int hashCodeFor(Object object);

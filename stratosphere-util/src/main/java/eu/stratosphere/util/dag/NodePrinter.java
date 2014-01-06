@@ -3,7 +3,6 @@ package eu.stratosphere.util.dag;
 /**
  * May provide an alternative implementation of the {@link Object#toString()}.
  * 
- * @author Arvid Heise
  * @param <Node>
  *        the class of the node
  */

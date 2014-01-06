@@ -36,7 +36,6 @@ import eu.stratosphere.sopremo.expressions.InputSelection;
 import eu.stratosphere.sopremo.expressions.ObjectAccess;
 
 /**
- * @author arv
  */
 public class ExpressionIndex extends AbstractSopremoType {
 

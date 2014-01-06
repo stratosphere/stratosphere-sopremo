@@ -25,7 +25,6 @@ import eu.stratosphere.sopremo.type.NullNode;
 /**
  * Merges several arrays by taking the first non-null value for each respective array.
  * 
- * @author Arvid Heise
  */
 @OptimizerHints(scope = Scope.ARRAY, transitive = true, minNodes = 1, maxNodes = OptimizerHints.UNBOUND, iterating = true)
 public class ArrayMerger extends EvaluationExpression {

@@ -21,7 +21,6 @@ import eu.stratosphere.sopremo.function.Callable;
 /**
  * Registry that manages {@link SopremoFunction}s.
  * 
- * @author Arvid Heise
  */
 public interface IFunctionRegistry extends IRegistry<Callable<?, ?>> {
 	public void put(final Method method);

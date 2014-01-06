@@ -3,8 +3,6 @@ package eu.stratosphere.sopremo.type;
 /**
  * Abstract class to provide basic implementations for numeric type nodes.
  * 
- * @author Michael Hopstock
- * @author Tommy Neubert
  */
 public abstract class AbstractNumericNode extends AbstractJsonNode implements INumericNode {
 

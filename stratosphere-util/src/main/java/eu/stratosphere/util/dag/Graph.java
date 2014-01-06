@@ -27,7 +27,6 @@ import com.google.common.collect.Iterators;
 import eu.stratosphere.util.AbstractIterator;
 
 /**
- * @author Arvid Heise
  */
 public class Graph<Node> implements Iterable<Graph<Node>.NodePath> {
 	private List<Node> startNodes = new ArrayList<Node>();
@@ -138,7 +137,6 @@ public class Graph<Node> implements Iterable<Graph<Node>.NodePath> {
 	}
 
 	/**
-	 * @author Arvid Heise
 	 */
 	public class GraphIterator extends AbstractIterator<NodePath> {
 		private NodePath path = new StartPath();

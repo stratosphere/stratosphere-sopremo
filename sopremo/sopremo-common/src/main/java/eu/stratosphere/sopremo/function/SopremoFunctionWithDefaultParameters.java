@@ -19,7 +19,6 @@ import eu.stratosphere.sopremo.type.IArrayNode;
 import eu.stratosphere.sopremo.type.IJsonNode;
 
 /**
- * @author Arvid Heise
  */
 public class SopremoFunctionWithDefaultParameters extends SopremoFunction {
 	private final IArrayNode<IJsonNode> defaultParameters = new ArrayNode<IJsonNode>();

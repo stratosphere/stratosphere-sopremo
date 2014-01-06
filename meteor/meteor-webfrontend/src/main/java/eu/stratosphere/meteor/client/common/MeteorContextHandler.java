@@ -24,7 +24,6 @@ import eu.stratosphere.sopremo.query.QueryParserException;
 /**
  * This class is the context handler for server and handle all servlets.
  * 
- * @author André Greiner-Petter
  */
 public class MeteorContextHandler extends HandlerList {
 	/**
@@ -191,7 +190,6 @@ public class MeteorContextHandler extends HandlerList {
 	/**
 	 * A inner class to parallelize execution of meteor script.
 	 * 
-	 * @author André Greiner-Petter
 	 */
 	private static class JobThread extends Thread {
 		/** script to execute **/

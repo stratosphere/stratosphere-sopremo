@@ -25,7 +25,6 @@ import eu.stratosphere.sopremo.type.IJsonNode;
 /**
  * Replaces values in the first source by values in the dictionary given in the second source.
  * 
- * @author Arvid Heise
  */
 @InputCardinality(min = 2, max = 2)
 @Internal

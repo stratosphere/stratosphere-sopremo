@@ -48,7 +48,6 @@ import eu.stratosphere.sopremo.type.ReusingSerializer;
 import eu.stratosphere.sopremo.type.typed.TypedObjectNode;
 
 /**
- * @author Arvid Heise
  */
 @DefaultSerializer(value = SopremoRecord.SopremoRecordKryoSerializer.class)
 public class SopremoRecord extends AbstractSopremoType implements ISopremoType {

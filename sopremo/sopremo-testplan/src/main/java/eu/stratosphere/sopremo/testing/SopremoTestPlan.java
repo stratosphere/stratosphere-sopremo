@@ -86,7 +86,6 @@ import eu.stratosphere.util.dag.OneTimeTraverser;
  */
 public class SopremoTestPlan {
 	/**
-	 * @author arv
 	 */
 	public class SopremoRecordTestPlan extends GenericTestPlan<SopremoRecord, SopremoTestRecords> {
 		private final SopremoRecordLayout layout;

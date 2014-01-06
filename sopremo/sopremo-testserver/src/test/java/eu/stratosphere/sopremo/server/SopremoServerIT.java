@@ -39,7 +39,6 @@ import eu.stratosphere.sopremo.operator.SopremoPlan;
 import eu.stratosphere.sopremo.type.JsonUtil;
 
 /**
- * @author Arvid Heise
  */
 public class SopremoServerIT {
 	private SopremoTestServer testServer;

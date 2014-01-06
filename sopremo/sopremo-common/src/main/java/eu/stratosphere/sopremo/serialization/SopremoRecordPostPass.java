@@ -39,7 +39,6 @@ import eu.stratosphere.sopremo.pact.SopremoReduceOperator;
 import eu.stratosphere.sopremo.type.IJsonNode;
 
 /**
- * @author arvid
  */
 public class SopremoRecordPostPass extends GenericFlatTypePostPass<Class<? extends IJsonNode>, SopremoRecordSchema> {
 

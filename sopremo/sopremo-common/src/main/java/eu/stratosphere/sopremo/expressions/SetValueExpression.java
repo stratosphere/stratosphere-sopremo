@@ -21,7 +21,6 @@ import eu.stratosphere.sopremo.type.IJsonNode;
 /**
  * Returns the value of an attribute of one or more Json nodes.
  * 
- * @author Arvid Heise
  */
 @OptimizerHints(scope = Scope.OBJECT)
 public class SetValueExpression extends PathSegmentExpression {

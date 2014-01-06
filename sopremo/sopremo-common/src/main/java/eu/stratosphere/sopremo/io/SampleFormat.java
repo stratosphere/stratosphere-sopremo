@@ -27,7 +27,6 @@ import eu.stratosphere.sopremo.type.IJsonNode;
 import eu.stratosphere.util.reflect.ReflectUtil;
 
 /**
- * @author Arvid Heise
  */
 public class SampleFormat extends SopremoFormat {
 	private final SopremoFormat originalFormat = new JsonFormat();

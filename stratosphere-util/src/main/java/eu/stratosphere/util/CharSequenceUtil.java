@@ -15,7 +15,6 @@
 package eu.stratosphere.util;
 
 /**
- * @author Arvid Heise
  */
 public class CharSequenceUtil {
 

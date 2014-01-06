@@ -17,7 +17,6 @@ package eu.stratosphere.sopremo.expressions;
 import com.google.common.base.Function;
 
 /**
- * @author Arvid Heise
  */
 public interface TransformFunction extends Function<EvaluationExpression, EvaluationExpression> {
 }

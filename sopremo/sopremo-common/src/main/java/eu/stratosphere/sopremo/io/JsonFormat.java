@@ -137,7 +137,6 @@ public class JsonFormat extends SopremoFormat {
 	/**
 	 * Writes json files with {@link JsonGenerator}.
 	 * 
-	 * @author Arvid Heise
 	 */
 	public static class JsonOutputFormat extends SopremoFileOutputFormat {
 

@@ -35,7 +35,6 @@ import eu.stratosphere.util.reflect.ReflectUtil;
  * method.<br>
  * Implementations of an operator should either extend {@link ElementaryOperator} or {@link CompositeOperator}.
  * 
- * @author Arvid Heise
  */
 // @DefaultSerializer(Operator.OperatorSerializer.class)
 public abstract class Operator<Self extends Operator<Self>> extends ConfigurableSopremoType implements
@@ -563,7 +562,6 @@ public abstract class Operator<Self extends Operator<Self>> extends Configurable
 	 * Represents one output of this {@link Operator}. The output should be connected to another Operator to create a
 	 * directed acyclic graph of Operators.
 	 * 
-	 * @author Arvid Heise
 	 */
 	@DefaultSerializer(OperatorOutputSerializer.class)
 	public static class Output extends AbstractSopremoType implements JsonStream {

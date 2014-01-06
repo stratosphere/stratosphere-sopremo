@@ -53,7 +53,6 @@ import eu.stratosphere.sopremo.type.JsonUtil;
 import static org.mockito.Matchers.*;
 
 /**
- * @author Arvid Heise
  */
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({ SopremoExecutionThread.class, JobClient.class })
