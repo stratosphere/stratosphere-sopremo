@@ -97,6 +97,7 @@ public class SopremoExecuctionThreadTest {
 
 		this.mockClient = mock(JobClient.class);
 		whenNew(JobClient.class).withArguments(any(), any(), any()).thenReturn(this.mockClient);
+		whenNew(JobClient.class).withArguments(any(), any()).thenReturn(this.mockClient);
 	}
 
 	@Test
@@ -121,6 +122,7 @@ public class SopremoExecuctionThreadTest {
 	@Test
 	public void testFailBeforeRunning() throws Exception {
 		whenNew(JobClient.class).withArguments(any(), any(), any()).thenThrow(new IOException("io"));
+		whenNew(JobClient.class).withArguments(any(), any()).thenThrow(new IOException("io"));
 
 		this.thread.run();
 		Assert.assertSame(ExecutionState.ERROR, this.jobInfo.getStatus());
