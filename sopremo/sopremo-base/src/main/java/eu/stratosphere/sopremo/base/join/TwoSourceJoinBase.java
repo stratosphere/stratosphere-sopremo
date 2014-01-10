@@ -2,7 +2,6 @@ package eu.stratosphere.sopremo.base.join;
 
 import eu.stratosphere.sopremo.base.ArrayUnion;
 import eu.stratosphere.sopremo.expressions.AggregationExpression;
-import eu.stratosphere.sopremo.expressions.ObjectCreation;
 import eu.stratosphere.sopremo.operator.ElementaryOperator;
 import eu.stratosphere.sopremo.operator.InputCardinality;
 import eu.stratosphere.sopremo.operator.Internal;
