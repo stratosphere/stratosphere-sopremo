@@ -174,10 +174,6 @@ public class ElementarySopremoModule extends SopremoModule {
 						inputLists.set(listIndex, connectedInputs);
 					}
 					ContractUtil.setInputs(contract, inputLists);
-					
-					if(contract instanceof IterationOperator) {
-						System.err.println();
-					}
 				}
 			}
 		}

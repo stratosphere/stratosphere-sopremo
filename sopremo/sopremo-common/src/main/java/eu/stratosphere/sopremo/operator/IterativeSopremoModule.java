@@ -279,12 +279,15 @@ public class IterativeSopremoModule extends SopremoModule {
 				deltaIteration.setNextWorkset(stepModule.getOutput(1).getInputs().get(0));
 
 				iterationModule.getOutput(0).setInput(deltaIteration);
-				replace(stepModule.getReachableNodes(), stepModule.getInput(0), deltaIteration.getSolutionSet());
-				replace(stepModule.getReachableNodes(), stepModule.getInput(1), deltaIteration.getWorkset());
+				replace(stepModule.getReachableNodes(),
+					stepModule.getInput(getInputIndex(stepModule, stepSopremoModule.getInput(0))), deltaIteration.getSolutionSet());
+				replace(stepModule.getReachableNodes(), 
+					stepModule.getInput(getInputIndex(stepModule, stepSopremoModule.getInput(1))), deltaIteration.getWorkset());
 
 				for (int index = 2; index < stepInputs.size(); index++) {
 					int moduleIndex = this.stepIncomingEdges.indexOf(stepInputs.get(index));
-					replace(stepModule.getReachableNodes(), stepModule.getInput(index),
+					replace(stepModule.getReachableNodes(),
+						stepModule.getInput(getInputIndex(stepModule, stepSopremoModule.getInput(index))),
 						iterationModule.getInput(moduleIndex));
 //					final GenericDataSink contract = new GenericDataSink(JsonOutputFormat.class, "dummy for validation");
 //					contract.addInput(iterationModule.getInput(moduleIndex));
@@ -298,6 +301,13 @@ public class IterativeSopremoModule extends SopremoModule {
 			}
 
 			return super.asPactModule(context, layout);
+		}
+		
+		private int getInputIndex(PactModule pactModule, Source sopremoSource) {
+			for (int index = 0; index < pactModule.getNumInputs(); index++) 
+				if(pactModule.getInput(index).getName().equals(sopremoSource.getName()))
+					return index;
+			throw new IllegalStateException();
 		}
 
 		private SopremoModule getDeltaStep(Collection<JsonStream> orderedInputs) {

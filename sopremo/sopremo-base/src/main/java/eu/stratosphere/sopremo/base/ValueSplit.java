@@ -1,7 +1,6 @@
 package eu.stratosphere.sopremo.base;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import com.google.common.collect.Lists;
@@ -20,7 +19,6 @@ import eu.stratosphere.sopremo.type.IJsonNode;
 /**
  * Splits a tuple explicitly into multiple outgoing tuples.<br>
  * This operator provides a means to emit more than one tuple in contrast to most other base operators.
- * 
  */
 @Name(verb = "split value")
 @InputCardinality(1)
@@ -70,7 +68,7 @@ public class ValueSplit extends ElementaryOperator<ValueSplit> {
 		this.setProjections(projections);
 		return this;
 	}
-	
+
 	public ValueSplit withProjections(final EvaluationExpression... projections) {
 		this.setProjections(projections);
 		return this;

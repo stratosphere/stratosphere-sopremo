@@ -78,7 +78,7 @@ public class SopremoUtil {
 			final Configuration parameters) {
 		for (Class<?> clazz = instance.getClass(); clazz != null; clazz = clazz.getSuperclass()) {
 			for (final Field stubField : clazz.getDeclaredFields())
-				if ((stubField.getModifiers() & (Modifier.TRANSIENT | Modifier.FINAL | Modifier.STATIC)) == 0) {
+				if ((stubField.getModifiers() & (Modifier.TRANSIENT | Modifier.STATIC)) == 0) {
 					final Object fieldValue = SopremoUtil.getObject(parameters, stubField.getName(), null);
 					if (fieldValue != null)
 						try {
@@ -112,7 +112,7 @@ public class SopremoUtil {
 
 		for (Class<?> tarClass = targetClass; tarClass != null; tarClass = tarClass.getSuperclass()) {
 			for (final Field stubField : tarClass.getDeclaredFields())
-				if ((stubField.getModifiers() & (Modifier.TRANSIENT | Modifier.FINAL | Modifier.STATIC)) == 0)
+				if ((stubField.getModifiers() & (Modifier.TRANSIENT | Modifier.STATIC)) == 0)
 					for (Class<?> srcClass = sourceInstance.getClass(); srcClass != null; srcClass = srcClass
 						.getSuperclass()) {
 						Field thisField;
