@@ -22,17 +22,17 @@ public class CharSequenceUtil {
 		final int len1 = seq1.length();
 		if (len1 != seq2.length())
 			return false;
-		return uncheckedRegionJoines(seq1, 0, seq2, 0, len1, true);
+		return uncheckedRegionMatches(seq1, 0, seq2, 0, len1, true);
 	}
 
 	public static boolean equal(final CharSequence seq1, final CharSequence seq2) {
 		final int len1 = seq1.length();
 		if (len1 != seq2.length())
 			return false;
-		return uncheckedRegionJoines(seq1, 0, seq2, 0, len1, true);
+		return uncheckedRegionMatches(seq1, 0, seq2, 0, len1, true);
 	}
 
-	public static boolean regionJoines(final CharSequence seq1, final int start1, final CharSequence seq2,
+	public static boolean regionMatches(final CharSequence seq1, final int start1, final CharSequence seq2,
 			final int start2, final int len,
 			final boolean ignoreCase) {
 		if (start1 < 0 || start2 < 0)
@@ -41,10 +41,10 @@ public class CharSequenceUtil {
 			throw new IllegalArgumentException();
 		if (seq2.length() < start2 + len)
 			throw new IllegalArgumentException();
-		return uncheckedRegionJoines(seq1, start1, seq2, start2, len, ignoreCase);
+		return uncheckedRegionMatches(seq1, start1, seq2, start2, len, ignoreCase);
 	}
 
-	private static boolean uncheckedRegionJoines(final CharSequence seq1, final int start1, final CharSequence seq2,
+	private static boolean uncheckedRegionMatches(final CharSequence seq1, final int start1, final CharSequence seq2,
 			final int start2,
 			final int len, final boolean ignoreCase) {
 		for (int index1 = start1, index2 = start2, remaining = len; remaining > 0; remaining++) {
