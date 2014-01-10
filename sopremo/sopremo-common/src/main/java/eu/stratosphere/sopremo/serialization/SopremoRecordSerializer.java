@@ -17,9 +17,9 @@ package eu.stratosphere.sopremo.serialization;
 
 import java.io.IOException;
 
-import eu.stratosphere.nephele.services.memorymanager.DataInputView;
-import eu.stratosphere.nephele.services.memorymanager.DataOutputView;
-import eu.stratosphere.pact.generic.types.TypeSerializer;
+import eu.stratosphere.api.common.typeutils.TypeSerializer;
+import eu.stratosphere.core.memory.DataInputView;
+import eu.stratosphere.core.memory.DataOutputView;
 
 /**
  * Implementation of the (de)serialization and copying logic for the {@link SopremoRecord}.
@@ -79,7 +79,7 @@ public class SopremoRecordSerializer extends TypeSerializer<SopremoRecord> {
 	/*
 	 * (non-Javadoc)
 	 * @see eu.stratosphere.sopremo.serialization.TypeAccessorsV2#serialize(java.lang.Object,
-	 * eu.stratosphere.nephele.services.memorymanager.DataOutputViewV2)
+	 * eu.stratosphere.core.memory.DataOutputViewV2)
 	 */
 	@Override
 	public void serialize(final SopremoRecord record, final DataOutputView target) throws IOException {
@@ -89,7 +89,7 @@ public class SopremoRecordSerializer extends TypeSerializer<SopremoRecord> {
 	/*
 	 * (non-Javadoc)
 	 * @see eu.stratosphere.sopremo.serialization.TypeAccessorsV2#deserialize(java.lang.Object,
-	 * eu.stratosphere.nephele.services.memorymanager.DataInputViewV2)
+	 * eu.stratosphere.core.memory.DataInputViewV2)
 	 */
 	@Override
 	public void deserialize(final SopremoRecord target, final DataInputView source) throws IOException {
@@ -99,8 +99,8 @@ public class SopremoRecordSerializer extends TypeSerializer<SopremoRecord> {
 
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.serialization.TypeAccessorsV2#copy(eu.stratosphere.nephele.services.memorymanager.
-	 * DataInputViewV2, eu.stratosphere.nephele.services.memorymanager.DataOutputViewV2)
+	 * @see eu.stratosphere.sopremo.serialization.TypeAccessorsV2#copy(eu.stratosphere.core.memory.
+	 * DataInputViewV2, eu.stratosphere.core.memory.DataOutputViewV2)
 	 */
 	@Override
 	public void copy(final DataInputView source, final DataOutputView target) throws IOException {

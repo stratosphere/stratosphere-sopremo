@@ -7,7 +7,6 @@ import java.util.List;
  * well-defined number of inputs and outputs. It is designed to facilitate
  * modularization and thus to increase the maintainability of large graphs.
  * 
- * @author Arvid Heise
  * @param <Node>
  *        the type of all node
  * @param <InputNode>

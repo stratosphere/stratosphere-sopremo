@@ -34,7 +34,6 @@ import eu.stratosphere.sopremo.type.MissingNode;
 import eu.stratosphere.sopremo.type.TypeCoercer;
 
 /**
- * @author Arvid Heise
  */
 public class ExpressionUtil {
 	/**

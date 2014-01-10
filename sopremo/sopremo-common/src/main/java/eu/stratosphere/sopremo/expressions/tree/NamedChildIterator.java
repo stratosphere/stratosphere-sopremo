@@ -17,7 +17,6 @@ package eu.stratosphere.sopremo.expressions.tree;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
 
 /**
- * @author Arvid Heise
  */
 public abstract class NamedChildIterator implements ChildIterator {
 	private int index = -1;

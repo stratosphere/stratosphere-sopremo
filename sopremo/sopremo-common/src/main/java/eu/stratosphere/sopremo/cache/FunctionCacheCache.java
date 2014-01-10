@@ -20,7 +20,6 @@ import java.util.Map;
 import eu.stratosphere.sopremo.function.SopremoFunction;
 
 /**
- * @author Arvid Heise
  */
 public class FunctionCacheCache implements ISopremoCache {
 	// Thread-local may be overkill, but this ensures that the complete cache is garbage-collected after a thread ended

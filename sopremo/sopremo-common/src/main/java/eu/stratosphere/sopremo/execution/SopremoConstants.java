@@ -15,7 +15,6 @@
 package eu.stratosphere.sopremo.execution;
 
 /**
- * @author Arvid Heise
  */
 public class SopremoConstants {
 

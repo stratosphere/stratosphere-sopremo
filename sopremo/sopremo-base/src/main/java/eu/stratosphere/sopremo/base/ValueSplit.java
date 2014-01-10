@@ -16,7 +16,6 @@ import eu.stratosphere.sopremo.type.IJsonNode;
  * Splits a tuple explicitly into multiple outgoing tuples.<br>
  * This operator provides a means to emit more than one tuple in contrast to most other base operators.
  * 
- * @author Arvid Heise
  */
 @Name(verb = "split value")
 public class ValueSplit extends ElementaryOperator<ValueSplit> {

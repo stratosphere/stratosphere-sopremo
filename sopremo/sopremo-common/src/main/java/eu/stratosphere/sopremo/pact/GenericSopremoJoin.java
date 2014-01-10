@@ -2,25 +2,25 @@ package eu.stratosphere.sopremo.pact;
 
 import com.google.common.reflect.TypeToken;
 
-import eu.stratosphere.nephele.configuration.Configuration;
-import eu.stratosphere.pact.common.stubs.Collector;
-import eu.stratosphere.pact.generic.stub.AbstractStub;
-import eu.stratosphere.pact.generic.stub.GenericMatcher;
+import eu.stratosphere.api.common.functions.AbstractFunction;
+import eu.stratosphere.api.common.functions.GenericJoiner;
+import eu.stratosphere.configuration.Configuration;
 import eu.stratosphere.sopremo.EvaluationContext;
 import eu.stratosphere.sopremo.SopremoEnvironment;
 import eu.stratosphere.sopremo.serialization.SopremoRecord;
 import eu.stratosphere.sopremo.type.IJsonNode;
 import eu.stratosphere.sopremo.type.IObjectNode;
 import eu.stratosphere.sopremo.type.typed.TypedObjectNode;
+import eu.stratosphere.util.Collector;
 
 /**
- * An abstract implementation of the {@link GenericMatcher}. SopremoMatch provides the functionality to convert the
- * standard input of the GenericMatcher to a more manageable representation (both inputs are converted to a subclass of
+ * An abstract implementation of the {@link GenericJoiner}. SopremoJoin provides the functionality to convert the
+ * standard input of the GenericJoiner to a more manageable representation (both inputs are converted to a subclass of
  * {@link IJsonNode}).
  */
-public abstract class GenericSopremoMatch<Left extends IJsonNode, Right extends IJsonNode, Out extends IJsonNode>
-		extends AbstractStub
-		implements GenericMatcher<SopremoRecord, SopremoRecord, SopremoRecord>, SopremoStub {
+public abstract class GenericSopremoJoin<Left extends IJsonNode, Right extends IJsonNode, Out extends IJsonNode>
+		extends AbstractFunction
+		implements GenericJoiner<SopremoRecord, SopremoRecord, SopremoRecord>, SopremoFunction {
 	private EvaluationContext context;
 
 	private JsonCollector<Out> collector;
@@ -29,7 +29,7 @@ public abstract class GenericSopremoMatch<Left extends IJsonNode, Right extends 
 
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.pact.common.stubs.Stub#open(eu.stratosphere.nephele.configuration.Configuration)
+	 * @see eu.stratosphere.api.record.functions.Function#open(eu.stratosphere.configuration.Configuration)
 	 */
 	@Override
 	public void open(final Configuration parameters) throws Exception {
@@ -38,10 +38,10 @@ public abstract class GenericSopremoMatch<Left extends IJsonNode, Right extends 
 		this.context = SopremoEnvironment.getInstance().getEvaluationContext();
 		this.collector = new JsonCollector<>(this.context);
 		final TypedObjectNode[] typedNodes =
-			SopremoUtil.getTypedNodes(TypeToken.of(this.getClass()).getSupertype(GenericSopremoMatch.class));
+			SopremoUtil.getTypedNodes(TypeToken.of(this.getClass()).getSupertype(GenericSopremoJoin.class));
 		this.typedInputNode1 = typedNodes[0];
 		this.typedInputNode2 = typedNodes[1];
-		SopremoUtil.configureWithTransferredState(this, GenericSopremoMatch.class, parameters);
+		SopremoUtil.configureWithTransferredState(this, GenericSopremoJoin.class, parameters);
 	}
 
 	@Override
@@ -63,8 +63,8 @@ public abstract class GenericSopremoMatch<Left extends IJsonNode, Right extends 
 
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.pact.common.stubs.MatchStub#match(eu.stratosphere.pact.common.type.PactRecord,
-	 * eu.stratosphere.pact.common.type.PactRecord, eu.stratosphere.pact.common.stubs.Collector)
+	 * @see eu.stratosphere.api.record.functions.JoinFunction#match(eu.stratosphere.types.PactRecord,
+	 * eu.stratosphere.types.PactRecord, eu.stratosphere.api.record.functions.Collector)
 	 */
 	@SuppressWarnings("unchecked")
 	@Override

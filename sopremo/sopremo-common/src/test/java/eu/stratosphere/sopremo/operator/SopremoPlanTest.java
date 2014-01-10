@@ -12,13 +12,12 @@ import com.google.common.base.Predicates;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 
-import eu.stratosphere.pact.common.contract.GenericDataSink;
-import eu.stratosphere.pact.common.contract.GenericDataSource;
-import eu.stratosphere.pact.common.contract.ReduceContract.Combinable;
+import eu.stratosphere.api.common.Plan;
+import eu.stratosphere.api.common.functions.Function;
+import eu.stratosphere.api.common.operators.GenericDataSink;
+import eu.stratosphere.api.common.operators.GenericDataSource;
+import eu.stratosphere.api.common.operators.base.ReduceOperatorBase.Combinable;
 import eu.stratosphere.pact.common.plan.PactModule;
-import eu.stratosphere.pact.common.plan.Plan;
-import eu.stratosphere.pact.common.stubs.Stub;
-import eu.stratosphere.pact.generic.contract.Contract;
 import eu.stratosphere.sopremo.EqualCloneTest;
 import eu.stratosphere.sopremo.expressions.ObjectAccess;
 import eu.stratosphere.sopremo.io.Sink;
@@ -109,17 +108,19 @@ public class SopremoPlanTest extends EqualCloneTest<SopremoPlan> {
 		this.expectPact(plan.asPactPlan(), Identity.Implementation.class);
 	}
 
-	private void expectPact(final Plan plan, final Class<?> pactStub) {
+	private void expectPact(final Plan plan, final Class<?> pactFunction) {
 		final PactModule module = PactModule.valueOf(plan.getDataSinks());
-		final ArrayList<Contract> pacts = Lists.newArrayList(module.getReachableNodes());
+		final ArrayList<eu.stratosphere.api.common.operators.Operator> pacts =
+			Lists.newArrayList(module.getReachableNodes());
 
 		Assert.assertEquals(3, pacts.size());
 
 		Assert.assertTrue(Iterables.removeIf(pacts, Predicates.instanceOf(GenericDataSource.class)));
 		Assert.assertTrue(Iterables.removeIf(pacts, Predicates.instanceOf(GenericDataSink.class)));
-		final Contract contract = Iterables.find(pacts, Predicates.instanceOf(Contract.class));
+		final eu.stratosphere.api.common.operators.Operator contract =
+			Iterables.find(pacts, Predicates.instanceOf(eu.stratosphere.api.common.operators.Operator.class));
 		Assert.assertNotNull(contract);
-		Assert.assertSame(pactStub, contract.getUserCodeWrapper().getUserCodeClass());
+		Assert.assertSame(pactFunction, contract.getUserCodeWrapper().getUserCodeClass());
 	}
 }
 
@@ -153,9 +154,8 @@ class PolymorphOperator extends ElementaryOperator<PolymorphOperator> {
 	}
 
 	@Override
-	protected Class<? extends Stub> getStubClass() {
+	protected Class<? extends Function> getFunctionClass() {
 		switch (this.method) {
-		// the dafault case should do the same as the OpenNLP case
 		case TOKENIZE:
 			return TokenizeLine.Implementation.class;
 		case IDENTITY:
@@ -225,7 +225,7 @@ class TokenizeLine extends ElementaryOperator<TokenizeLine> {
 /**
  * Counts the number of values for a given key. Hence, the number of
  * occurences of a given token (word) is computed and emitted. The key is
- * not modified, hence a SameKey OutputContract is attached to this class.<br>
+ * not modified, hence a SameKey OutputOperator is attached to this class.<br>
  * Expected input: [{ word: "word1"}, { word: "word1"}] <br>
  * Output: [{ word: "word1", count: 2}]
  */

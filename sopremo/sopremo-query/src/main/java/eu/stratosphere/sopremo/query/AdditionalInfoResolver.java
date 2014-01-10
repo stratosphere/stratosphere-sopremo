@@ -18,7 +18,6 @@ import eu.stratosphere.sopremo.io.SopremoFormat;
 import eu.stratosphere.sopremo.operator.ConfigurableSopremoType;
 
 /**
- * @author arv
  */
 @SuppressWarnings("unchecked")
 public interface AdditionalInfoResolver {

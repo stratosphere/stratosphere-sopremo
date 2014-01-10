@@ -15,7 +15,6 @@
 package eu.stratosphere.sopremo.packages;
 
 /**
- * @author Arvid Heise
  */
 public interface EvaluationScope {
 

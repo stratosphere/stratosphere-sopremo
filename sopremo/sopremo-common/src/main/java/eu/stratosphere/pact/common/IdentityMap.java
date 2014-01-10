@@ -15,23 +15,23 @@
 
 package eu.stratosphere.pact.common;
 
-import eu.stratosphere.pact.common.stubs.Collector;
-import eu.stratosphere.pact.common.stubs.MapStub;
-import eu.stratosphere.pact.common.type.PactRecord;
+import eu.stratosphere.api.common.functions.AbstractFunction;
+import eu.stratosphere.api.common.functions.GenericMapper;
+import eu.stratosphere.sopremo.serialization.SopremoRecord;
+import eu.stratosphere.util.Collector;
 
 /**
  * Trivial PACT stub which emits the pairs without modifications.
  * 
- * @author Arvid Heise
  */
-public class IdentityMap extends MapStub {
+public class IdentityMap extends AbstractFunction implements GenericMapper<SopremoRecord, SopremoRecord> {
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.pact.common.stubs.MapStub#map(eu.stratosphere.pact.common.type.PactRecord,
-	 * eu.stratosphere.pact.common.stubs.Collector)
+	 * @see eu.stratosphere.api.record.functions.MapFunction#map(eu.stratosphere.types.PactRecord,
+	 * eu.stratosphere.api.record.functions.Collector)
 	 */
 	@Override
-	public void map(final PactRecord record, final Collector<PactRecord> out) {
+	public void map(final SopremoRecord record, final Collector<SopremoRecord> out) {
 		out.collect(record);
 	}
 }

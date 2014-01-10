@@ -10,8 +10,6 @@ import eu.stratosphere.sopremo.pact.SopremoUtil;
 /**
  * This node represents an integer value.
  * 
- * @author Michael Hopstock
- * @author Tommy Neubert
  */
 public class IntNode extends AbstractNumericNode implements INumericNode {
 

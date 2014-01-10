@@ -24,7 +24,6 @@ import eu.stratosphere.sopremo.type.IJsonNode;
 import eu.stratosphere.sopremo.type.SubArrayNode;
 
 /**
- * @author Arvid Heise
  */
 public class FunctionCache implements ISopremoCache {
 	private final SopremoFunction template;

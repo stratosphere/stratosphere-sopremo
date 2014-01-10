@@ -2,16 +2,16 @@ package eu.stratosphere.sopremo.pact;
 
 import com.google.common.reflect.TypeToken;
 
-import eu.stratosphere.nephele.configuration.Configuration;
-import eu.stratosphere.pact.common.stubs.Collector;
-import eu.stratosphere.pact.generic.stub.AbstractStub;
-import eu.stratosphere.pact.generic.stub.GenericCrosser;
+import eu.stratosphere.api.common.functions.AbstractFunction;
+import eu.stratosphere.api.common.functions.GenericCrosser;
+import eu.stratosphere.configuration.Configuration;
 import eu.stratosphere.sopremo.EvaluationContext;
 import eu.stratosphere.sopremo.SopremoEnvironment;
 import eu.stratosphere.sopremo.serialization.SopremoRecord;
 import eu.stratosphere.sopremo.type.IJsonNode;
 import eu.stratosphere.sopremo.type.IObjectNode;
 import eu.stratosphere.sopremo.type.typed.TypedObjectNode;
+import eu.stratosphere.util.Collector;
 
 /**
  * An abstract implementation of the {@link GenericCrosser}. SopremoCross provides the functionality to convert the
@@ -19,8 +19,8 @@ import eu.stratosphere.sopremo.type.typed.TypedObjectNode;
  * {@link IJsonNode}).
  */
 public abstract class GenericSopremoCross<Left extends IJsonNode, Right extends IJsonNode, Out extends IJsonNode>
-		extends AbstractStub
-		implements GenericCrosser<SopremoRecord, SopremoRecord, SopremoRecord>, SopremoStub {
+		extends AbstractFunction
+		implements GenericCrosser<SopremoRecord, SopremoRecord, SopremoRecord>, SopremoFunction {
 	private EvaluationContext context;
 
 	private JsonCollector<Out> collector;
@@ -29,7 +29,7 @@ public abstract class GenericSopremoCross<Left extends IJsonNode, Right extends 
 
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.pact.common.stubs.Stub#open(eu.stratosphere.nephele.configuration.Configuration)
+	 * @see eu.stratosphere.api.record.functions.Function#open(eu.stratosphere.configuration.Configuration)
 	 */
 	@Override
 	public void open(final Configuration parameters) throws Exception {
@@ -58,8 +58,8 @@ public abstract class GenericSopremoCross<Left extends IJsonNode, Right extends 
 
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.pact.common.stubs.CrossStub#cross(eu.stratosphere.pact.common.type.PactRecord,
-	 * eu.stratosphere.pact.common.type.PactRecord, eu.stratosphere.pact.common.stubs.Collector)
+	 * @see eu.stratosphere.api.record.functions.CrossFunction#cross(eu.stratosphere.types.PactRecord,
+	 * eu.stratosphere.types.PactRecord, eu.stratosphere.api.record.functions.Collector)
 	 */
 	@SuppressWarnings("unchecked")
 	@Override

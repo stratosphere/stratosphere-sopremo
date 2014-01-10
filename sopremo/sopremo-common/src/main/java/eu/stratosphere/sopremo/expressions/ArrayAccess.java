@@ -37,7 +37,6 @@ import eu.stratosphere.sopremo.type.NullNode;
  * range but in reversed order.
  * </ul>
  * 
- * @author Arvid Heise
  */
 @OptimizerHints(scope = Scope.ARRAY, iterating = true)
 public class ArrayAccess extends PathSegmentExpression {

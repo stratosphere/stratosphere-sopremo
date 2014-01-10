@@ -23,7 +23,6 @@ import eu.stratosphere.sopremo.type.CachingArrayNode;
 import eu.stratosphere.sopremo.type.TextNode;
 
 /**
- * @author Arvid Heise
  */
 public class RegexTokenizer extends AbstractTokenizer {
 	public final static Pattern WHITESPACE_PATTERN = Pattern.compile("\\p{javaWhitespace}+");

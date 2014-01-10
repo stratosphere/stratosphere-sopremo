@@ -21,7 +21,6 @@ import eu.stratosphere.util.IdentityList;
  * thus from nodes of the first level. However, D depends additionally on C and thus can not be included in the second
  * level.
  * 
- * @author Arvid Heise
  */
 public class GraphLevelPartitioner {
 
@@ -122,7 +121,6 @@ public class GraphLevelPartitioner {
 	/**
 	 * A level contains only nodes that depend (are referenced from) on nodes of the previous levels.
 	 * 
-	 * @author Arvid Heise
 	 * @see GraphLevelPartitioner
 	 * @param <Node>
 	 *        the type of the node

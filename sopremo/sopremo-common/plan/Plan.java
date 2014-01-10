@@ -13,16 +13,16 @@
  *
  **********************************************************************************************************************/
 
-package eu.stratosphere.pact.common.plan;
+package eu.stratosphere.api.plan;
 
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 
-import eu.stratosphere.pact.common.contract.GenericDataSink;
-import eu.stratosphere.pact.common.util.Visitable;
-import eu.stratosphere.pact.common.util.Visitor;
-import eu.stratosphere.pact.generic.contract.Contract;
+import eu.stratosphere.api.record.operators .GenericDataSink;
+import eu.stratosphere.util.Visitable;
+import eu.stratosphere.util.Visitor;
+import eu.stratosphere.pact.generic.contract.Operator;
 
 
 /**
@@ -31,7 +31,7 @@ import eu.stratosphere.pact.generic.contract.Contract;
  * The program (data flow) is references by this plan by holding it sinks, from which a traversal reaches all connected
  * nodes. 
  */
-public class Plan implements Visitable<Contract> {
+public class Plan implements Visitable<Operator> {
 	
 	/**
 	 * A collection of all sinks in the plan. Since the plan is traversed from the sinks to the sources, this
@@ -187,7 +187,7 @@ public class Plan implements Visitable<Contract> {
 	 * @return The postPassClassName.
 	 */
 	public String getPostPassClassName() {
-		return "eu.stratosphere.pact.compiler.postpass.GenericPactRecordPostPass";
+		return "eu.stratosphere.compiler.postpass.GenericPactRecordPostPass";
 	}
 	
 	// ------------------------------------------------------------------------
@@ -198,7 +198,7 @@ public class Plan implements Visitable<Contract> {
 	 * @see Visitable#accept(Visitor)
 	 */
 	@Override
-	public void accept(Visitor<Contract> visitor) {
+	public void accept(Visitor<Operator> visitor) {
 		for (GenericDataSink sink : this.sinks) {
 			sink.accept(visitor);
 		}

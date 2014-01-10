@@ -26,8 +26,7 @@ import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import com.google.common.reflect.TypeToken;
 
-import eu.stratosphere.nephele.configuration.Configuration;
-import eu.stratosphere.nephele.util.StringUtils;
+import eu.stratosphere.configuration.Configuration;
 import eu.stratosphere.sopremo.EvaluationContext;
 import eu.stratosphere.sopremo.ISopremoType;
 import eu.stratosphere.sopremo.SopremoEnvironment;
@@ -44,6 +43,7 @@ import eu.stratosphere.sopremo.type.typed.TypedObjectNode;
 import eu.stratosphere.sopremo.type.typed.TypedObjectNodeFactory;
 import eu.stratosphere.util.ICloneable;
 import eu.stratosphere.util.KryoUtil;
+import eu.stratosphere.util.StringUtils;
 
 /**
  * Provides utility methods for sopremo
@@ -221,8 +221,8 @@ public class SopremoUtil {
 	private final static TypeToken<?> ITypedObjectNodeType = TypeToken.of(ITypedObjectNode.class);
 
 	@SuppressWarnings("unchecked")
-	static TypedObjectNode[] getTypedNodes(final TypeToken<?> boundStub) {
-		final Type[] actualTypeArguments = ((ParameterizedType) boundStub.getType()).getActualTypeArguments();
+	static TypedObjectNode[] getTypedNodes(final TypeToken<?> boundFunction) {
+		final Type[] actualTypeArguments = ((ParameterizedType) boundFunction.getType()).getActualTypeArguments();
 		final TypedObjectNode[] nodes = new TypedObjectNode[actualTypeArguments.length - 1];
 		for (int index = 0; index < nodes.length; index++)
 			if (ITypedObjectNodeType.isAssignableFrom(actualTypeArguments[0]))

@@ -15,7 +15,6 @@
 package eu.stratosphere.sopremo.function;
 
 /**
- * @author Arvid Heise
  */
 public abstract class SopremoVarargFunction extends SopremoFunction {
 	/**

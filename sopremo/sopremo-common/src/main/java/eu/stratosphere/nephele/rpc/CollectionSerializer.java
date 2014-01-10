@@ -32,7 +32,6 @@ import com.esotericsoftware.kryo.io.Output;
  * <p>
  * This class is not thread-safe.
  * 
- * @author warneke
  */
 @SuppressWarnings("rawtypes")
 final class CollectionSerializer extends Serializer<Collection> {

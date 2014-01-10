@@ -23,16 +23,16 @@ import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
 
-import eu.stratosphere.nephele.configuration.Configuration;
-import eu.stratosphere.nephele.configuration.GlobalConfiguration;
+import eu.stratosphere.configuration.Configuration;
+import eu.stratosphere.configuration.GlobalConfiguration;
 import eu.stratosphere.nephele.execution.librarycache.LibraryCacheManager;
 import eu.stratosphere.nephele.execution.librarycache.LibraryCacheProfileRequest;
 import eu.stratosphere.nephele.execution.librarycache.LibraryCacheProfileResponse;
 import eu.stratosphere.nephele.execution.librarycache.LibraryCacheUpdate;
-import eu.stratosphere.nephele.fs.Path;
+import eu.stratosphere.core.fs.Path;
 import eu.stratosphere.nephele.jobgraph.JobID;
 import eu.stratosphere.nephele.rpc.RPCService;
-import eu.stratosphere.nephele.util.StringUtils;
+import eu.stratosphere.util.StringUtils;
 import eu.stratosphere.sopremo.execution.ExecutionRequest;
 import eu.stratosphere.sopremo.execution.ExecutionRequest.ExecutionMode;
 import eu.stratosphere.sopremo.execution.ExecutionResponse;
@@ -43,13 +43,11 @@ import eu.stratosphere.sopremo.execution.SopremoID;
 import eu.stratosphere.sopremo.operator.SopremoPlan;
 
 /**
- * @author Arvid Heise
  */
 public class DefaultClient implements Closeable {
 	/**
 	 * Avoids plenty of null checks.
 	 * 
-	 * @author Arvid Heise
 	 */
 	private static class ThrowingListener implements ProgressListener {
 		/*

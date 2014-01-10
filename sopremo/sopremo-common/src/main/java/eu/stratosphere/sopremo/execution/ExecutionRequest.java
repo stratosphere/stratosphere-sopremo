@@ -27,8 +27,8 @@ import com.esotericsoftware.kryo.KryoSerializable;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 
+import eu.stratosphere.core.io.IOReadableWritable;
 import eu.stratosphere.nephele.execution.librarycache.LibraryCacheManager;
-import eu.stratosphere.nephele.io.IOReadableWritable;
 import eu.stratosphere.nephele.jobgraph.JobID;
 import eu.stratosphere.sopremo.SopremoEnvironment;
 import eu.stratosphere.sopremo.operator.SopremoPlan;
@@ -37,7 +37,6 @@ import eu.stratosphere.sopremo.pact.SopremoUtil;
 /**
  * Represents a request to a {@link MeteorExecutor} that encapsulates the query and optional settings.
  * 
- * @author Arvid Heise
  */
 public class ExecutionRequest implements KryoSerializable, KryoCopyable<ExecutionRequest>, IOReadableWritable {
 	private SopremoPlan query;
@@ -140,7 +139,7 @@ public class ExecutionRequest implements KryoSerializable, KryoCopyable<Executio
 
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.nephele.io.IOReadableWritable#read(java.io.DataInput)
+	 * @see eu.stratosphere.core.io.IOReadableWritable#read(java.io.DataInput)
 	 */
 	@Override
 	public void read(final DataInput in) throws IOException {
@@ -172,7 +171,7 @@ public class ExecutionRequest implements KryoSerializable, KryoCopyable<Executio
 
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.nephele.io.IOReadableWritable#write(java.io.DataOutput)
+	 * @see eu.stratosphere.core.io.IOReadableWritable#write(java.io.DataOutput)
 	 */
 	@Override
 	public void write(final DataOutput out) throws IOException {

@@ -21,7 +21,6 @@ import eu.stratosphere.util.dag.GraphLevelPartitioner.Level;
 /**
  * The class <code>CompositeOperatorTest</code> contains tests for the class <code>{@link CompositeOperator<?>}</code>.
  * 
- * @author Arvid Heise
  */
 public class CompositeOperatorTest extends EqualCloneTest<CompositeOperatorTest.CompositeOperatorImpl> {
 	@Override

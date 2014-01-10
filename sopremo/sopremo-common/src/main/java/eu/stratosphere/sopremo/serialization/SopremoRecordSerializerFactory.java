@@ -15,9 +15,9 @@
 
 package eu.stratosphere.sopremo.serialization;
 
-import eu.stratosphere.nephele.configuration.Configuration;
-import eu.stratosphere.pact.generic.types.TypeSerializer;
-import eu.stratosphere.pact.generic.types.TypeSerializerFactory;
+import eu.stratosphere.api.common.typeutils.TypeSerializer;
+import eu.stratosphere.api.common.typeutils.TypeSerializerFactory;
+import eu.stratosphere.configuration.Configuration;
 import eu.stratosphere.sopremo.pact.SopremoUtil;
 
 /**
@@ -81,7 +81,7 @@ public class SopremoRecordSerializerFactory implements TypeSerializerFactory<Sop
 
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.pact.generic.types.TypeSerializerFactory#writeParametersToConfig(eu.stratosphere.nephele.
+	 * @see eu.stratosphere.api.typeutils.TypeSerializerFactory#writeParametersToConfig(eu.stratosphere.nephele.
 	 * configuration.Configuration)
 	 */
 	@Override
@@ -91,7 +91,7 @@ public class SopremoRecordSerializerFactory implements TypeSerializerFactory<Sop
 
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.pact.generic.types.TypeSerializerFactory#readParametersFromConfig(eu.stratosphere.nephele.
+	 * @see eu.stratosphere.api.typeutils.TypeSerializerFactory#readParametersFromConfig(eu.stratosphere.nephele.
 	 * configuration.Configuration, java.lang.ClassLoader)
 	 */
 	@Override

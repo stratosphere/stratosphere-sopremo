@@ -19,7 +19,6 @@ import eu.stratosphere.sopremo.type.CachingArrayNode;
 import eu.stratosphere.sopremo.type.TextNode;
 
 /**
- * @author Arvid Heise
  */
 public interface Tokenizer extends ISopremoType {
 

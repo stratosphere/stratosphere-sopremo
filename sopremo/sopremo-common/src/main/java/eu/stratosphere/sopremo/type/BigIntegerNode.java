@@ -10,8 +10,6 @@ import eu.stratosphere.sopremo.pact.SopremoUtil;
 /**
  * This node represents a {@link BigInteger}.
  * 
- * @author Michael Hopstock
- * @author Tommy Neubert
  */
 public class BigIntegerNode extends AbstractNumericNode implements INumericNode {
 

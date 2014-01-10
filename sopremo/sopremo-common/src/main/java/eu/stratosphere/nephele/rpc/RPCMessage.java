@@ -20,7 +20,6 @@ package eu.stratosphere.nephele.rpc;
  * <p>
  * This class is thread-safe.
  * 
- * @author warneke
  */
 abstract class RPCMessage {
 

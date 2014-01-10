@@ -17,7 +17,6 @@ package eu.stratosphere.sopremo.execution;
 import eu.stratosphere.nephele.io.AbstractID;
 
 /**
- * @author Arvid Heise
  */
 public class SopremoID extends AbstractID {
 

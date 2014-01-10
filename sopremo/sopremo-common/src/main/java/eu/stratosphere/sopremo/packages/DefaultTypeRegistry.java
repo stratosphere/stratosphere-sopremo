@@ -24,7 +24,6 @@ import java.util.Set;
 import eu.stratosphere.sopremo.type.IJsonNode;
 
 /**
- * @author arv
  */
 public class DefaultTypeRegistry extends AbstractRegistry<Class<? extends IJsonNode>> implements ITypeRegistry {
 	private final Map<String, Class<? extends IJsonNode>> elements = new HashMap<String, Class<? extends IJsonNode>>();

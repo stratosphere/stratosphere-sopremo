@@ -22,8 +22,6 @@ import eu.stratosphere.nephele.execution.librarycache.LibraryCacheProfileRespons
 import eu.stratosphere.nephele.execution.librarycache.LibraryCacheUpdate;
 
 /**
- * @author warneke
- * @author Arvid Heise
  */
 public class LibraryTransferAgent implements LibraryTransferProtocol {
 	/**

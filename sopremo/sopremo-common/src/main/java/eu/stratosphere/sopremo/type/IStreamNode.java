@@ -15,7 +15,6 @@
 package eu.stratosphere.sopremo.type;
 
 /**
- * @author Arvid Heise
  */
 public interface IStreamNode<T extends IJsonNode> extends IJsonNode, Iterable<T> {
 	/**

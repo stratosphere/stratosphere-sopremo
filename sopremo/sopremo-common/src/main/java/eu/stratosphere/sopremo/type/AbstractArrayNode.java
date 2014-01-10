@@ -31,7 +31,6 @@ import eu.stratosphere.sopremo.pact.SopremoUtil;
 import eu.stratosphere.util.AppendUtil;
 
 /**
- * @author Arvid Heise
  */
 @DefaultSerializer(AbstractArrayNode.ArraySerializer.class)
 public abstract class AbstractArrayNode<T extends IJsonNode> extends AbstractJsonNode implements IArrayNode<T>,

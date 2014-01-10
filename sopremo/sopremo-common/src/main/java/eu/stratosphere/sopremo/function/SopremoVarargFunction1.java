@@ -19,7 +19,6 @@ import eu.stratosphere.sopremo.type.IJsonNode;
 import eu.stratosphere.sopremo.type.SubArrayNode;
 
 /**
- * @author Arvid Heise
  */
 public abstract class SopremoVarargFunction1<Arg1 extends IJsonNode> extends SopremoVarargFunction {
 	private transient final SubArrayNode<IJsonNode> varargArguments = new SubArrayNode<IJsonNode>();

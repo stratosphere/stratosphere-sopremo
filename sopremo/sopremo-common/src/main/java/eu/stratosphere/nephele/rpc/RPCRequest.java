@@ -22,7 +22,6 @@ import java.lang.reflect.Method;
  * <p>
  * This class is thread-safe.
  * 
- * @author warneke
  */
 final class RPCRequest extends RPCMessage {
 

@@ -2,9 +2,9 @@ package eu.stratosphere.sopremo.base;
 
 import java.util.List;
 
+import eu.stratosphere.api.common.operators.Operator;
+import eu.stratosphere.api.common.operators.base.MapOperatorBase;
 import eu.stratosphere.pact.common.plan.PactModule;
-import eu.stratosphere.pact.generic.contract.Contract;
-import eu.stratosphere.pact.generic.contract.GenericMapContract;
 import eu.stratosphere.sopremo.EvaluationContext;
 import eu.stratosphere.sopremo.operator.ElementaryOperator;
 import eu.stratosphere.sopremo.operator.InputCardinality;
@@ -16,7 +16,6 @@ import eu.stratosphere.sopremo.serialization.SopremoRecordLayout;
 /**
  * Unifies the input json streams in a bag semantic.
  * 
- * @author Arvid Heise
  */
 // efficient implementation using pact union all mechanism
 @Name(verb = "union all")
@@ -31,9 +30,9 @@ public class UnionAll extends ElementaryOperator<UnionAll> {
 		final List<JsonStream> inputs = this.getInputs();
 		final PactModule module = new PactModule(inputs.size(), 1);
 		// // TODO: remove identity map, when Pact/Nephele can deal with direct source->sink connections
-		final GenericMapContract<SopremoNop> contract =
-			new GenericMapContract<SopremoNop>(SopremoNop.class, "union-nop");
-		for (final Contract input : module.getInputs())
+		final MapOperatorBase<SopremoNop> contract =
+			new MapOperatorBase<SopremoNop>(SopremoNop.class, "union-nop");
+		for (final Operator input : module.getInputs())
 			contract.addInput(input);
 		module.getOutput(0).setInput(contract);
 		// // without identity mapper

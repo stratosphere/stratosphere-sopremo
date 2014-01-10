@@ -23,7 +23,6 @@ import eu.stratosphere.sopremo.expressions.ArithmeticExpression.ArithmeticOperat
 import eu.stratosphere.sopremo.expressions.ComparativeExpression.BinaryOperator;
 
 /**
- * @author Arvid Heise
  */
 public class EvaluationExpressionTest {
 	@Test

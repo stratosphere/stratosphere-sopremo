@@ -18,7 +18,6 @@ import eu.stratosphere.sopremo.AbstractSopremoType;
 import eu.stratosphere.sopremo.ISopremoType;
 
 /**
- * @author Arvid Heise
  */
 public abstract class Callable<Result, InputType> extends AbstractSopremoType implements ISopremoType {
 

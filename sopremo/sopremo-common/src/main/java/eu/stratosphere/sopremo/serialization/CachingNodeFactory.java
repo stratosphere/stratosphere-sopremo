@@ -21,7 +21,6 @@ import eu.stratosphere.sopremo.type.IObjectNode;
 import eu.stratosphere.sopremo.type.ObjectNode;
 
 /**
- * @author arv
  */
 public class CachingNodeFactory extends DefaultNodeFactory {
 	private final static CachingNodeFactory Instance = (CachingNodeFactory) new CachingNodeFactory().

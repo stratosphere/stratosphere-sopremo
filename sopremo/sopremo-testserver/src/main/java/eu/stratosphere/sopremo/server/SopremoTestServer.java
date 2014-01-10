@@ -33,11 +33,11 @@ import org.apache.hadoop.fs.FileSystem;
 import org.junit.Assert;
 import org.junit.Ignore;
 
+import eu.stratosphere.client.minicluster.NepheleMiniCluster;
 import eu.stratosphere.nephele.execution.librarycache.LibraryCacheProfileRequest;
 import eu.stratosphere.nephele.execution.librarycache.LibraryCacheProfileResponse;
 import eu.stratosphere.nephele.execution.librarycache.LibraryCacheUpdate;
 import eu.stratosphere.nephele.rpc.RPCService;
-import eu.stratosphere.pact.client.minicluster.NepheleMiniCluster;
 import eu.stratosphere.sopremo.execution.ExecutionRequest;
 import eu.stratosphere.sopremo.execution.ExecutionResponse;
 import eu.stratosphere.sopremo.execution.ExecutionResponse.ExecutionState;
@@ -49,7 +49,6 @@ import eu.stratosphere.sopremo.io.JsonParser;
 import eu.stratosphere.sopremo.type.IJsonNode;
 
 /**
- * @author Arvid Heise
  */
 @Ignore
 public class SopremoTestServer implements Closeable, SopremoExecutionProtocol {

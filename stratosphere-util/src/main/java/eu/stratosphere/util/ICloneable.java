@@ -15,7 +15,6 @@
 package eu.stratosphere.util;
 
 /**
- * @author Arvid Heise
  */
 public interface ICloneable extends Cloneable {
 	public Object clone();

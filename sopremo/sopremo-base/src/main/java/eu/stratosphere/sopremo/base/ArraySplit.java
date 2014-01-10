@@ -19,7 +19,6 @@ import eu.stratosphere.sopremo.type.NullNode;
  * Splits an array into multiple tuples.<br>
  * This operator provides a means to emit more than one tuple in contrast to most other base operators.
  * 
- * @author Arvid Heise
  */
 @InputCardinality(1)
 @Name(verb = "split array")

@@ -15,7 +15,6 @@ import com.google.common.primitives.Primitives;
 /**
  * Convenience methods for reflective programming.
  * 
- * @author Arvid Heise
  */
 public class ReflectUtil {
 	private static Map<Class<?>, DynamicClass<?>> CACHED_CLASSES = new HashMap<Class<?>, DynamicClass<?>>();

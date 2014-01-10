@@ -27,7 +27,6 @@ import eu.stratosphere.sopremo.type.IJsonNode;
 import eu.stratosphere.sopremo.type.INumericNode;
 
 /**
- * @author Arvid Heise
  */
 public class MathFunctions implements BuiltinProvider {
 	public static final EvaluationExpression PI = new ConstantExpression(Math.PI), E = new ConstantExpression(Math.E);

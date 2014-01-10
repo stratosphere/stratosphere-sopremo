@@ -23,7 +23,6 @@ import eu.stratosphere.sopremo.query.AbstractQueryParser;
 import eu.stratosphere.sopremo.query.QueryParserException;
 
 /**
- * @author Arvid Heise
  */
 public class SyntaxTest extends MeteorParseTest {
 

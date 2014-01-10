@@ -25,7 +25,7 @@ import java.util.Queue;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
-import eu.stratosphere.nephele.util.StringUtils;
+import eu.stratosphere.util.StringUtils;
 import eu.stratosphere.sopremo.AbstractSopremoType;
 import eu.stratosphere.sopremo.ISopremoType;
 import eu.stratosphere.sopremo.io.SopremoFormat;
@@ -44,7 +44,6 @@ import eu.stratosphere.sopremo.type.IJsonNode;
 import eu.stratosphere.util.reflect.ReflectUtil;
 
 /**
- * @author Arvid Heise
  */
 public class PackageInfo extends AbstractSopremoType implements ISopremoType, ParsingScope {
 	private final transient PackageClassLoader classLoader;

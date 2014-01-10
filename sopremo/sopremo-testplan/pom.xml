@@ -24,7 +24,7 @@
 		</dependency>
 		<dependency>
 			<groupId>eu.stratosphere</groupId>
-			<artifactId>pact-testplan</artifactId>
+			<artifactId>stratosphere-testplan</artifactId>
 			<version>${pact-testplan.version}</version>
 		</dependency>
 		<dependency>

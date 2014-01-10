@@ -15,7 +15,6 @@
 package eu.stratosphere.sopremo.packages;
 
 /**
- * @author arv
  */
 public class DefaultNameChooserProvider implements NameChooserProvider {
 	private NameChooser constantNameChooser, functionNameChooser, operatorNameChooser, propertyNameChooser,

@@ -20,7 +20,6 @@ import java.util.Iterator;
 /**
  * Provides basic implementations of the required methods of {@link SopremoType}
  * 
- * @author Arvid Heise
  */
 public abstract class AbstractSopremoType implements ISopremoType {
 	/*

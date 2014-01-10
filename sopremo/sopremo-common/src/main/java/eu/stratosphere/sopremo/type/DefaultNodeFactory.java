@@ -52,6 +52,10 @@ public class DefaultNodeFactory implements NodeFactory {
 		final Class<? extends IJsonNode> defaultImplementation = this.interfaceImplementations.get(interfaceType);
 		if (defaultImplementation != null)
 			return (T) ReflectUtil.newInstance(defaultImplementation);
+		if (interfaceType == NullNode.class)
+			return (T) NullNode.getInstance();
+		if (interfaceType == MissingNode.class)
+			return (T) MissingNode.getInstance();
 		return ReflectUtil.newInstance(interfaceType);
 	}
 }

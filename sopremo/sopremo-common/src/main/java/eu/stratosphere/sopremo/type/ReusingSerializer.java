@@ -19,7 +19,6 @@ import com.esotericsoftware.kryo.Serializer;
 import com.esotericsoftware.kryo.io.Input;
 
 /**
- * @author arv
  */
 public abstract class ReusingSerializer<T> extends Serializer<T> {
 	/*

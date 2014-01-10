@@ -20,7 +20,6 @@ import eu.stratosphere.sopremo.type.AbstractJsonNode;
 import eu.stratosphere.sopremo.type.IJsonNode;
 
 /**
- * @author Arvid Heise
  */
 // @DefaultSerializer(FunctionNode.FunctionNodeSerializer.class)
 public class FunctionNode extends AbstractJsonNode {

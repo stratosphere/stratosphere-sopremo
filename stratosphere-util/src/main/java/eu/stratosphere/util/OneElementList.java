@@ -5,7 +5,6 @@ import java.util.AbstractList;
 /**
  * Provides a read-only, type-safe wrapper around one element.
  * 
- * @author Arvid Heise
  * @param <E>
  *        the type of the element
  */

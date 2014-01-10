@@ -28,7 +28,6 @@ import com.esotericsoftware.minlog.Log;
  * <p>
  * This class is thread safe.
  * 
- * @author warneke
  */
 public class RPCStatistics {
 
@@ -37,7 +36,6 @@ public class RPCStatistics {
 	 * <p>
 	 * This class is thread-safe.
 	 * 
-	 * @author warneke
 	 */
 	private static final class RTTStatistics {
 
@@ -176,7 +174,6 @@ public class RPCStatistics {
 	 * <p>
 	 * This class is thread-safe.
 	 * 
-	 * @author warneke
 	 */
 	private static final class RetryStatistics {
 

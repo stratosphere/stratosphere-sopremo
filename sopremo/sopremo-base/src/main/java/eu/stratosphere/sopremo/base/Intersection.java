@@ -20,7 +20,6 @@ import eu.stratosphere.sopremo.type.IStreamNode;
  * It is assumed that each value occurs only once in each input stream.<br>
  * A value <i>v</i> is emitted only iff <i>v</i> is contained once in every input stream.
  * 
- * @author Arvid Heise
  */
 @Name(verb = "intersect")
 @InputCardinality(min = 1)

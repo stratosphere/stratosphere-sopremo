@@ -26,7 +26,6 @@ import eu.stratosphere.sopremo.type.CachingArrayNode;
 import eu.stratosphere.sopremo.type.TextNode;
 
 /**
- * @author Arvid Heise
  */
 public class DelimiterTokenizer extends AbstractTokenizer implements Tokenizer {
 	private final CharSet delimiters = new CharOpenHashSet();

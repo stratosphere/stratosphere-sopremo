@@ -13,7 +13,7 @@
  *
  **********************************************************************************************************************/
 
-package eu.stratosphere.pact.common.plan;
+package eu.stratosphere.api.plan;
 
 public class PlanException extends RuntimeException {
 	

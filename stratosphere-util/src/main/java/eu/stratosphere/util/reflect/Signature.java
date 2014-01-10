@@ -6,7 +6,6 @@ import java.util.Arrays;
 /**
  * General signature of a method that handles exactly the specified argument types.
  * 
- * @author Arvid Heise
  */
 public class Signature implements Serializable {
 	/**

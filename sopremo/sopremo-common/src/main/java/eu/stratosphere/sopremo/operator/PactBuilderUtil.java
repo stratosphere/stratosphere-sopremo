@@ -16,19 +16,18 @@ package eu.stratosphere.sopremo.operator;
 
 import com.google.common.base.Preconditions;
 
-import eu.stratosphere.pact.common.contract.CoGroupContract;
-import eu.stratosphere.pact.common.contract.MatchContract;
-import eu.stratosphere.pact.common.contract.ReduceContract;
-import eu.stratosphere.pact.common.type.Key;
+import eu.stratosphere.api.java.record.operators.CoGroupOperator;
+import eu.stratosphere.api.java.record.operators.JoinOperator;
+import eu.stratosphere.api.java.record.operators.ReduceOperator;
+import eu.stratosphere.types.Key;
 
 /**
  * Some convenience methods for dealing with the PACT-Builder pattern.
  * 
- * @author Aljoscha Krettek
  */
 public class PactBuilderUtil
 {
-	public static void addKeys(final ReduceContract.Builder builder, final Class<? extends Key>[] keyClasses,
+	public static void addKeys(final ReduceOperator.Builder builder, final Class<? extends Key>[] keyClasses,
 			final int[] keyIndices) {
 		Preconditions.checkArgument(keyClasses.length == keyIndices.length,
 			"Lenght of keyClasses and keyIndices must match.");
@@ -36,7 +35,7 @@ public class PactBuilderUtil
 			builder.keyField(keyClasses[i], keyIndices[i]);
 	}
 
-	public static void addKeys(final CoGroupContract.Builder builder, final Class<? extends Key>[] keyClasses,
+	public static void addKeys(final CoGroupOperator.Builder builder, final Class<? extends Key>[] keyClasses,
 			final int[] keyIndices1,
 			final int[] keyIndices2) {
 		Preconditions.checkArgument(keyClasses.length == keyIndices1.length && keyClasses.length == keyIndices2.length,
@@ -45,7 +44,7 @@ public class PactBuilderUtil
 			builder.keyField(keyClasses[i], keyIndices1[i], keyIndices2[i]);
 	}
 
-	public static void addKeysExceptFirst(final CoGroupContract.Builder builder,
+	public static void addKeysExceptFirst(final CoGroupOperator.Builder builder,
 			final Class<? extends Key>[] keyClasses,
 			final int[] keyIndices1,
 			final int[] keyIndices2) {
@@ -55,7 +54,7 @@ public class PactBuilderUtil
 			builder.keyField(keyClasses[i], keyIndices1[i], keyIndices2[i]);
 	}
 
-	public static void addKeys(final MatchContract.Builder builder, final Class<? extends Key>[] keyClasses,
+	public static void addKeys(final JoinOperator.Builder builder, final Class<? extends Key>[] keyClasses,
 			final int[] keyIndices1,
 			final int[] keyIndices2) {
 		Preconditions.checkArgument(keyClasses.length == keyIndices1.length && keyClasses.length == keyIndices2.length,
@@ -64,7 +63,7 @@ public class PactBuilderUtil
 			builder.keyField(keyClasses[i], keyIndices1[i], keyIndices2[i]);
 	}
 
-	public static void addKeysExceptFirst(final MatchContract.Builder builder, final Class<? extends Key>[] keyClasses,
+	public static void addKeysExceptFirst(final JoinOperator.Builder builder, final Class<? extends Key>[] keyClasses,
 			final int[] keyIndices1,
 			final int[] keyIndices2) {
 		Preconditions.checkArgument(keyClasses.length == keyIndices1.length && keyClasses.length == keyIndices2.length,

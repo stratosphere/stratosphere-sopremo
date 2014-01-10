@@ -11,7 +11,6 @@ import eu.stratosphere.util.IdentitySet;
 /**
  * Basic traverse strategy that visits every reachable node exactly once.
  * 
- * @author Arvid Heise
  */
 public class OneTimeTraverser extends AbstractGraphTraverser {
 	/**

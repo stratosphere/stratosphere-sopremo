@@ -21,7 +21,6 @@ import eu.stratosphere.sopremo.expressions.tree.NamedChildIterator;
 import eu.stratosphere.sopremo.type.IJsonNode;
 
 /**
- * @author Arvid Heise
  */
 public abstract class PathSegmentExpression extends EvaluationExpression {
 	private EvaluationExpression inputExpression = EvaluationExpression.VALUE;

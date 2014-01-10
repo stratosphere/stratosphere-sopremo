@@ -24,15 +24,15 @@ import java.util.Map.Entry;
 
 import com.google.common.collect.Lists;
 
-import eu.stratosphere.nephele.configuration.Configuration;
-import eu.stratosphere.nephele.fs.FSDataInputStream;
-import eu.stratosphere.nephele.fs.FSDataOutputStream;
-import eu.stratosphere.nephele.fs.FileInputSplit;
-import eu.stratosphere.nephele.fs.FileStatus;
-import eu.stratosphere.nephele.fs.FileSystem;
-import eu.stratosphere.nephele.fs.LineReader;
-import eu.stratosphere.nephele.fs.Path;
-import eu.stratosphere.pact.common.contract.GenericDataSource;
+import eu.stratosphere.api.common.operators.GenericDataSource;
+import eu.stratosphere.configuration.Configuration;
+import eu.stratosphere.core.fs.FSDataInputStream;
+import eu.stratosphere.core.fs.FSDataOutputStream;
+import eu.stratosphere.core.fs.FileInputSplit;
+import eu.stratosphere.core.fs.FileStatus;
+import eu.stratosphere.core.fs.FileSystem;
+import eu.stratosphere.core.fs.Path;
+import eu.stratosphere.runtime.fs.LineReader;
 import eu.stratosphere.sopremo.operator.Name;
 import eu.stratosphere.sopremo.operator.Property;
 import eu.stratosphere.sopremo.type.IArrayNode;
@@ -162,8 +162,8 @@ public class CsvFormat extends SopremoFormat {
 	/*
 	 * (non-Javadoc)
 	 * @see
-	 * eu.stratosphere.sopremo.io.SopremoFormat#configureForInput(eu.stratosphere.nephele.configuration.Configuration,
-	 * eu.stratosphere.pact.common.contract.GenericDataSource, java.lang.String)
+	 * eu.stratosphere.sopremo.io.SopremoFormat#configureForInput(eu.stratosphere.configuration.Configuration,
+	 * eu.stratosphere.api.record.operators .GenericDataSource, java.lang.String)
 	 */
 	@Override
 	public void configureForInput(final Configuration configuration, final GenericDataSource<?> source,
@@ -175,7 +175,7 @@ public class CsvFormat extends SopremoFormat {
 	/*
 	 * (non-Javadoc)
 	 * @see
-	 * eu.stratosphere.sopremo.io.SopremoFormat#configureForOutput(eu.stratosphere.nephele.configuration.Configuration,
+	 * eu.stratosphere.sopremo.io.SopremoFormat#configureForOutput(eu.stratosphere.configuration.Configuration,
 	 * java.net.URI)
 	 */
 	@Override
@@ -262,7 +262,7 @@ public class CsvFormat extends SopremoFormat {
 
 		/*
 		 * (non-Javadoc)
-		 * @see eu.stratosphere.sopremo.io.SopremoFormat.SopremoFileOutputFormat#open(eu.stratosphere.nephele.fs.
+		 * @see eu.stratosphere.sopremo.io.SopremoFormat.SopremoFileOutputFormat#open(eu.stratosphere.core.fs.
 		 * FSDataOutputStream, int)
 		 */
 		@Override
@@ -272,7 +272,7 @@ public class CsvFormat extends SopremoFormat {
 
 		/*
 		 * (non-Javadoc)
-		 * @see eu.stratosphere.pact.common.io.FileOutputFormat#close()
+		 * @see eu.stratosphere.api.io .FileOutputFormat#close()
 		 */
 		@Override
 		public void close() throws IOException {
@@ -593,7 +593,7 @@ public class CsvFormat extends SopremoFormat {
 
 		/*
 		 * (non-Javadoc)
-		 * @see eu.stratosphere.pact.common.io.FileInputFormat#close()
+		 * @see eu.stratosphere.api.io .FileInputFormat#close()
 		 */
 		@Override
 		public void close() throws IOException {
@@ -673,7 +673,6 @@ public class CsvFormat extends SopremoFormat {
 	}
 
 	/**
-	 * @author Arvid Heise
 	 */
 	public static class CountingReader extends Reader {
 		private long absolutePos = 0, limit = 0;

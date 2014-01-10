@@ -14,17 +14,17 @@
  **********************************************************************************************************************/
 package eu.stratosphere.sopremo.pact;
 
-import eu.stratosphere.pact.common.contract.Ordering;
-import eu.stratosphere.pact.generic.contract.GenericCoGroupContract;
+import eu.stratosphere.api.common.operators.Ordering;
+import eu.stratosphere.api.common.operators.base.CoGroupOperatorBase;
 import eu.stratosphere.sopremo.operator.ElementaryOperator;
 
 @SuppressWarnings({ "unchecked", "rawtypes" })
-public class SopremoCoGroupContract extends GenericCoGroupContract {
+public class SopremoCoGroupOperator extends CoGroupOperatorBase {
 	private final ElementaryOperator<?> operator;
 
 	private Ordering firstInnerGroupOrdering, secondInnerGroupOrdering;
 
-	public SopremoCoGroupContract(final ElementaryOperator<?> operator, final Class udf, final int[] keyPositions1,
+	public SopremoCoGroupOperator(final ElementaryOperator<?> operator, final Class udf, final int[] keyPositions1,
 			final int[] keyPositions2, final String name) {
 		super(udf, keyPositions1, keyPositions2, name);
 		this.operator = operator;
@@ -32,7 +32,7 @@ public class SopremoCoGroupContract extends GenericCoGroupContract {
 
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.pact.generic.contract.GenericCoGroupContract#isCombinableFirst()
+	 * @see eu.stratosphere.pact.generic.contract.GenericCoGroupOperator#isCombinableFirst()
 	 */
 	@Override
 	public boolean isCombinableFirst() {
@@ -41,7 +41,7 @@ public class SopremoCoGroupContract extends GenericCoGroupContract {
 
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.pact.generic.contract.GenericCoGroupContract#isCombinableSecond()
+	 * @see eu.stratosphere.pact.generic.contract.GenericCoGroupOperator#isCombinableSecond()
 	 */
 	@Override
 	public boolean isCombinableSecond() {

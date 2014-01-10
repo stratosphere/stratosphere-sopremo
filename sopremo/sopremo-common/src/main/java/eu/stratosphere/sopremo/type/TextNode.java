@@ -14,8 +14,6 @@ import com.esotericsoftware.kryo.io.Output;
 /**
  * This node represents a string value.
  * 
- * @author Michael Hopstock
- * @author Tommy Neubert
  */
 @DefaultSerializer(TextNode.TextNodeSerializer.class)
 public class TextNode extends AbstractJsonNode implements IPrimitiveNode,

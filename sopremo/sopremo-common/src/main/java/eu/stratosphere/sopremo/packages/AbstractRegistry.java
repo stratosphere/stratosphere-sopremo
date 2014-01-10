@@ -22,7 +22,6 @@ import eu.stratosphere.sopremo.operator.Internal;
 import eu.stratosphere.sopremo.operator.Name;
 
 /**
- * @author arv
  * @param <T>
  */
 public abstract class AbstractRegistry<T> extends AbstractSopremoType implements IRegistry<T> {

@@ -7,9 +7,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
-import eu.stratosphere.pact.common.contract.GenericDataSink;
-import eu.stratosphere.pact.common.plan.Plan;
-import eu.stratosphere.pact.generic.contract.Contract;
+import eu.stratosphere.api.common.Plan;
+import eu.stratosphere.api.common.operators.GenericDataSink;
 import eu.stratosphere.sopremo.AbstractSopremoType;
 import eu.stratosphere.sopremo.EvaluationContext;
 import eu.stratosphere.sopremo.io.Sink;
@@ -19,7 +18,6 @@ import eu.stratosphere.sopremo.serialization.SopremoRecordLayout;
 /**
  * Encapsulate a complete query in Sopremo and translates it to a Pact {@link Plan}.
  * 
- * @author Arvid Heise
  */
 public class SopremoPlan extends AbstractSopremoType implements Serializable {
 
@@ -81,10 +79,10 @@ public class SopremoPlan extends AbstractSopremoType implements Serializable {
 	 * Checks if all contracts are {@link GenericDataSink}s.
 	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	private Collection<GenericDataSink> checkForSinks(final Collection<Contract> contracts) {
-		for (final Contract contract : contracts)
+	private Collection<GenericDataSink> checkForSinks(final Collection<eu.stratosphere.api.common.operators.Operator> contracts) {
+		for (final eu.stratosphere.api.common.operators.Operator contract : contracts)
 			if (!GenericDataSink.class.isInstance(contract))
-				throw new IllegalStateException("Contract without connected sink detected " + contract);
+				throw new IllegalStateException("Operator without connected sink detected " + contract);
 		return (Collection) contracts;
 	}
 
@@ -116,12 +114,12 @@ public class SopremoPlan extends AbstractSopremoType implements Serializable {
 
 	/**
 	 * Assembles the Pacts of the contained Sopremo operators and returns a list
-	 * of all Pact sinks. These sinks may either be directly a {@link FileDataSinkContract} or an unconnected
-	 * {@link Contract}.
+	 * of all Pact sinks. These sinks may either be directly a {@link FileDataSinkOperator} or an unconnected
+	 * {@link Operator}.
 	 * 
 	 * @return a list of Pact sinks
 	 */
-	public Collection<Contract> assemblePact() {
+	public Collection<eu.stratosphere.api.common.operators.Operator> assemblePact() {
 		final ElementarySopremoModule elementaryModule = this.module.asElementary(this.context);
 		elementaryModule.inferSchema();
 		this.layout = SopremoRecordLayout.create(elementaryModule.getSchema().getKeyExpressions());

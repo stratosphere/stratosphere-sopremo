@@ -21,7 +21,6 @@ import java.util.regex.Pattern;
 import eu.stratosphere.sopremo.type.TextNode;
 
 /**
- * @author Arvid Heise
  */
 public final class PatternCache implements ISopremoCache {
 	private final transient Map<CharSequence, Pattern> cache = new HashMap<CharSequence, Pattern>();

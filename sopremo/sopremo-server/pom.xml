@@ -36,17 +36,11 @@
 			<version>${project.version}</version>
 			<scope>test</scope>
 		</dependency>
-
+		
 		<dependency>
 			<groupId>eu.stratosphere</groupId>
-			<artifactId>nephele-hdfs</artifactId>
-			<version>${ozone.version}</version>
-		</dependency>
-
-		<dependency>
-			<groupId>eu.stratosphere</groupId>
-			<artifactId>pact-clients</artifactId>
-			<version>${ozone.version}</version>
+			<artifactId>stratosphere-clients</artifactId>
+			<version>${core.version}</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>

@@ -23,7 +23,7 @@ import org.junit.Test;
 
 import com.google.common.collect.Lists;
 
-import eu.stratosphere.pact.common.contract.Order;
+import eu.stratosphere.api.common.operators.Order;
 import eu.stratosphere.sopremo.expressions.ArrayAccess;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
 import eu.stratosphere.sopremo.expressions.OrderingExpression;
@@ -34,7 +34,6 @@ import eu.stratosphere.sopremo.type.IArrayNode;
 import eu.stratosphere.sopremo.type.IJsonNode;
 
 /**
- * @author arv
  */
 public class SortTest extends SopremoOperatorTestBase<Sort> {
 	@Override

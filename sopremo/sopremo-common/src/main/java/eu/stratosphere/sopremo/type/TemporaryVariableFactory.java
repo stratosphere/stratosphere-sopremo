@@ -19,10 +19,9 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Queue;
 
-import eu.stratosphere.pact.common.util.ReflectionUtil;
+import eu.stratosphere.util.ReflectionUtil;
 
 /**
- * @author Arvid Heise
  */
 public class TemporaryVariableFactory {
 	public final static TemporaryVariableFactory INSTANCE = new TemporaryVariableFactory();

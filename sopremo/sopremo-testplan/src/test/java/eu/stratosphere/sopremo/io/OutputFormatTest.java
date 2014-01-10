@@ -21,9 +21,9 @@ import java.util.Collection;
 
 import org.junit.Ignore;
 
-import eu.stratosphere.nephele.configuration.Configuration;
-import eu.stratosphere.pact.generic.io.FormatUtil;
-import eu.stratosphere.pact.generic.io.OutputFormat;
+import eu.stratosphere.api.common.io.FormatUtil;
+import eu.stratosphere.api.common.io.OutputFormat;
+import eu.stratosphere.configuration.Configuration;
 import eu.stratosphere.pact.testing.AssertUtil;
 import eu.stratosphere.sopremo.EvaluationContext;
 import eu.stratosphere.sopremo.io.SopremoFormat.SopremoFileOutputFormat;

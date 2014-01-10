@@ -19,7 +19,6 @@ import java.util.Iterator;
 /**
  * This utility class provides functionality to work easier with iterators.
  * 
- * @author Arvid Heise
  */
 public class IteratorUtil {
 

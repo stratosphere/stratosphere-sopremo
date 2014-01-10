@@ -37,7 +37,6 @@ import eu.stratosphere.sopremo.type.IJsonNode;
 import eu.stratosphere.sopremo.type.JsonUtil;
 
 /**
- * @author Arvid Heise
  */
 public class SecondOrderFunctionTest extends MeteorParseTest {
 

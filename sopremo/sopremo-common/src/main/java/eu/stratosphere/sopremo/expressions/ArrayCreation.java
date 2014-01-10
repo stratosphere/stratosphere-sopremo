@@ -28,7 +28,6 @@ import eu.stratosphere.sopremo.type.IJsonNode;
 /**
  * Creates an array of the given expressions.
  * 
- * @author Arvid Heise
  */
 @OptimizerHints(scope = Scope.ANY)
 public class ArrayCreation extends EvaluationExpression {

@@ -1,6 +1,6 @@
 package eu.stratosphere.sopremo.base;
 
-import eu.stratosphere.pact.generic.contract.GenericCrossContract.CrossWithSmall;
+import eu.stratosphere.api.common.operators.base.CrossOperatorBase.CrossWithSmall;
 import eu.stratosphere.sopremo.expressions.ObjectAccess;
 import eu.stratosphere.sopremo.expressions.PathSegmentExpression;
 import eu.stratosphere.sopremo.operator.ElementaryOperator;
@@ -16,7 +16,6 @@ import eu.stratosphere.sopremo.type.IJsonNode;
  * The side channel is given by the second input source.<br>
  * This operator is useful, when a projection needs the result of a prior global aggregation.
  * 
- * @author Arvid Heise
  */
 @InputCardinality(2)
 @Internal

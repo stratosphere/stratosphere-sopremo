@@ -26,8 +26,6 @@ import org.junit.Test;
 import eu.stratosphere.pact.testing.AssertUtil;
 
 /**
- * @author Michael Hopstock
- * @author Tommy Neubert
  */
 public class ObjectNodeTest extends JsonNodeTest<ObjectNode> {
 	/*

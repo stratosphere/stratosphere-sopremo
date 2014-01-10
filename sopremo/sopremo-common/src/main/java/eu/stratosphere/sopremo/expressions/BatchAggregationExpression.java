@@ -44,7 +44,6 @@ import eu.stratosphere.sopremo.type.ReusingSerializer;
 /**
  * Batch aggregates one stream of {@link IJsonNode} with several {@link AggregationFunction}s.
  * 
- * @author Arvid Heise
  */
 // @DefaultSerializer(BatchAggregationExpression.BAESerializer.class)
 public class BatchAggregationExpression extends PathSegmentExpression {

@@ -18,7 +18,6 @@ import eu.stratosphere.util.reflect.ReflectUtil;
  * singleton and already created class instances of {@link TypedObjectNode}s are
  * cached.
  * 
- * @author fabian
  */
 
 public class TypedObjectNodeFactory {

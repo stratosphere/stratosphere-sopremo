@@ -28,7 +28,6 @@ import eu.stratosphere.sopremo.expressions.ObjectCreation;
 import eu.stratosphere.sopremo.testing.SopremoTestPlan;
 
 /**
- * @author arvid
  */
 public class SPJGTest {
 	@Test

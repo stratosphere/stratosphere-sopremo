@@ -27,7 +27,7 @@ import java.util.TreeMap;
 
 import com.esotericsoftware.kryo.Kryo;
 
-import eu.stratosphere.nephele.fs.Path;
+import eu.stratosphere.core.fs.Path;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
 import eu.stratosphere.sopremo.packages.DefaultNameChooserProvider;
 import eu.stratosphere.sopremo.packages.DefaultTypeRegistry;
@@ -44,7 +44,6 @@ import eu.stratosphere.sopremo.type.TypeCoercer;
 import eu.stratosphere.util.SopremoKryo;
 
 /**
- * @author arvid
  */
 public class EvaluationContext extends AbstractSopremoType {
 

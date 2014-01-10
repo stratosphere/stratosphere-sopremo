@@ -8,7 +8,6 @@ import java.util.NoSuchElementException;
  * This skeleton implementation eases the development of new iterators since only {@link #loadNext()} needs to be
  * overwritten.
  * 
- * @author Arvid Heise
  * @param <T>
  *        the type of the elements
  */

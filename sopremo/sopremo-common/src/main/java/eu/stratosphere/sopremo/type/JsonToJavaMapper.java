@@ -37,11 +37,9 @@ import eu.stratosphere.util.CollectionUtil;
 import eu.stratosphere.util.reflect.ReflectUtil;
 
 /**
- * @author arv
  */
 public class JsonToJavaMapper extends AbstractTypeMapper<TypeMapper<?, ?>> {
 	/**
-	 * @author arv
 	 */
 	@SuppressWarnings("rawtypes")
 	private static final class ArrayToArrayMapper extends TypeMapper<IArrayNode, Object> {
@@ -203,7 +201,6 @@ public class JsonToJavaMapper extends AbstractTypeMapper<TypeMapper<?, ?>> {
 	};
 
 	/**
-	 * @author arv
 	 */
 	private static final TypeMapper<INumericNode, Number> DefaultNumberMapper = new TypeMapper<INumericNode, Number>(
 		null) {

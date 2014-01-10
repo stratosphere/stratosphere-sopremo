@@ -13,7 +13,7 @@
  *
  **********************************************************************************************************************/
 
-package eu.stratosphere.pact.common.plan;
+package eu.stratosphere.api.plan;
 
 /**
  * Interface that shows that the class contains the method to generate the plan for a Pact Program.

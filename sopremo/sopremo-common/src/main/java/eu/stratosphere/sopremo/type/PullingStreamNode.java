@@ -23,8 +23,6 @@ import com.google.common.collect.Iterators;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
 
 /**
- * @author rico
- * @author Arvid Heise
  */
 public class PullingStreamNode<T extends IJsonNode> extends StreamNode<T> {
 	private Iterator<IJsonNode> source;

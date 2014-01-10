@@ -20,7 +20,6 @@ import java.lang.reflect.Modifier;
 import eu.stratosphere.sopremo.operator.Name;
 
 /**
- * @author arv
  */
 public class BuiltinUtil {
 	public static String[] getNames(final Object element, final NameChooser nameChooser) {

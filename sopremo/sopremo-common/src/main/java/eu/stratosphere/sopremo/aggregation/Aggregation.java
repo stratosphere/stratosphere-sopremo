@@ -20,7 +20,6 @@ import eu.stratosphere.sopremo.type.IJsonNode;
  * <li>Finally, the aggregator is retrieved with {@link Aggregation#getFinalAggregate()}.
  * </ol>
  * 
- * @author Arvid Heise
  */
 public abstract class Aggregation extends AbstractSopremoType implements ISopremoType {
 

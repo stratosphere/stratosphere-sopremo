@@ -17,7 +17,6 @@ package eu.stratosphere.util;
 import com.esotericsoftware.kryo.Kryo;
 
 /**
- * @author arv
  */
 public class KryoUtil {
 

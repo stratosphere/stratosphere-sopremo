@@ -14,7 +14,6 @@ import eu.stratosphere.sopremo.expressions.PathSegmentExpression;
 /**
  * Provides a set of utility functions and objects to handle json data.
  * 
- * @author Arvid Heise
  */
 public class JsonUtil {
 	/**

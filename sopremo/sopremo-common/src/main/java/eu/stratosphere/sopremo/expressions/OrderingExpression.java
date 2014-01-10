@@ -17,7 +17,7 @@ package eu.stratosphere.sopremo.expressions;
 import java.io.IOException;
 import java.util.Comparator;
 
-import eu.stratosphere.pact.common.contract.Order;
+import eu.stratosphere.api.common.operators.Order;
 import eu.stratosphere.sopremo.type.IArrayNode;
 import eu.stratosphere.sopremo.type.IJsonNode;
 import eu.stratosphere.sopremo.type.IntNode;

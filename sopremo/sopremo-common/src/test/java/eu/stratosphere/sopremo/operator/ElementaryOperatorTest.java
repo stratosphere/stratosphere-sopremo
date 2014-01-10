@@ -7,18 +7,17 @@ import java.util.Arrays;
 
 import org.junit.Test;
 
-import eu.stratosphere.nephele.configuration.Configuration;
-import eu.stratosphere.pact.common.stubs.Stub;
-import eu.stratosphere.pact.generic.contract.Contract;
-import eu.stratosphere.pact.generic.contract.GenericMapContract;
-import eu.stratosphere.pact.generic.contract.SingleInputContract;
-import eu.stratosphere.pact.generic.contract.UserCodeClassWrapper;
-import eu.stratosphere.pact.generic.stub.AbstractStub;
+import eu.stratosphere.api.common.functions.AbstractFunction;
+import eu.stratosphere.api.common.functions.Function;
+import eu.stratosphere.api.common.operators.SingleInputOperator;
+import eu.stratosphere.api.common.operators.base.MapOperatorBase;
+import eu.stratosphere.api.common.operators.util.UserCodeClassWrapper;
+import eu.stratosphere.configuration.Configuration;
 import eu.stratosphere.sopremo.expressions.ObjectAccess;
 import eu.stratosphere.sopremo.pact.JsonCollector;
 import eu.stratosphere.sopremo.pact.SopremoMap;
 import eu.stratosphere.sopremo.pact.SopremoReduce;
-import eu.stratosphere.sopremo.pact.SopremoReduceContract;
+import eu.stratosphere.sopremo.pact.SopremoReduceOperator;
 import eu.stratosphere.sopremo.serialization.SopremoRecordLayout;
 import eu.stratosphere.sopremo.type.IJsonNode;
 import eu.stratosphere.sopremo.type.IStreamNode;
@@ -26,7 +25,6 @@ import eu.stratosphere.sopremo.type.IStreamNode;
 /**
  * The class <code>ElementaryOperatorTest</code> contains tests for the class <code>{@link ElementaryOperator}</code>.
  * 
- * @author Arvid Heise
  */
 public class ElementaryOperatorTest {
 	/**
@@ -35,39 +33,41 @@ public class ElementaryOperatorTest {
 	private static final SopremoRecordLayout LAYOUT = SopremoRecordLayout.create();
 
 	@Test(expected = IllegalStateException.class)
-	public void getContractShouldFailIfContractNotInstancable() {
-		new OperatorWithUninstantiableStub().getContract(LAYOUT);
+	public void getOperatorShouldFailIfOperatorNotInstancable() {
+		new OperatorWithUninstantiableFunction().getOperator(LAYOUT);
 	}
 
 	@Test(expected = IllegalStateException.class)
-	public void getContractShouldFailIfNoStub() {
-		new OperatorWithNoStubs().getContract(LAYOUT);
+	public void getOperatorShouldFailIfNoFunction() {
+		new OperatorWithNoFunctions().getOperator(LAYOUT);
 	}
 
 	@Test(expected = IllegalStateException.class)
-	public void getContractShouldFailIfOnlyInstanceStub() {
-		new OperatorWithInstanceStub().getContract(LAYOUT);
+	public void getOperatorShouldFailIfOnlyInstanceFunction() {
+		new OperatorWithInstanceFunction().getOperator(LAYOUT);
 	}
 
 	@Test(expected = IllegalStateException.class)
-	public void getContractShouldFailIfOnlyUnknownStub() {
-		new OperatorWithUnknownStub().getContract(LAYOUT);
+	public void getOperatorShouldFailIfOnlyUnknownFunction() {
+		new OperatorWithUnknownFunction().getOperator(LAYOUT);
 	}
 
 	@Test
-	public void getContractShouldReturnTheMatchingContractToTheFirstStub() {
+	public void getOperatorShouldReturnTheJoiningOperatorToTheFirstFunction() {
 		final SopremoRecordLayout layout = SopremoRecordLayout.create(new ObjectAccess("someField"));
-		final Contract contract = new OperatorWithTwoStubs().getContract(layout);
-		assertEquals(SopremoReduceContract.class, contract.getClass());
-		assertTrue(Arrays.asList(OperatorWithTwoStubs.Implementation1.class,
-			OperatorWithTwoStubs.Implementation2.class).contains(contract.getUserCodeWrapper().getUserCodeClass()));
+		final eu.stratosphere.api.common.operators.Operator contract =
+			new OperatorWithTwoFunctions().getOperator(layout);
+		assertEquals(SopremoReduceOperator.class, contract.getClass());
+		assertTrue(Arrays.asList(OperatorWithTwoFunctions.Implementation1.class,
+			OperatorWithTwoFunctions.Implementation2.class).contains(contract.getUserCodeWrapper().getUserCodeClass()));
 	}
 
 	@Test
-	public void getContractShouldReturnTheMatchingContractToTheOnlyStub() {
-		final Contract contract = new OperatorWithOneStub().getContract(LAYOUT);
-		assertEquals(GenericMapContract.class, contract.getClass());
-		assertEquals(OperatorWithOneStub.Implementation.class, contract.getUserCodeWrapper().getUserCodeClass());
+	public void getOperatorShouldReturnTheJoiningOperatorToTheOnlyFunction() {
+		final eu.stratosphere.api.common.operators.Operator contract =
+			new OperatorWithOneFunction().getOperator(LAYOUT);
+		assertEquals(MapOperatorBase.class, contract.getClass());
+		assertEquals(OperatorWithOneFunction.Implementation.class, contract.getUserCodeWrapper().getUserCodeClass());
 	}
 
 	@SuppressWarnings({ "rawtypes" })
@@ -77,27 +77,26 @@ public class ElementaryOperatorTest {
 	}
 
 	@Test
-	public void getStubClassShouldReturnNullIfNoStub() {
-		assertEquals(null, new OperatorWithNoStubs().getStubClass());
+	public void getFunctionClassShouldReturnNullIfNoFunction() {
+		assertEquals(null, new OperatorWithNoFunctions().getFunctionClass());
 	}
 
 	@Test
-	public void getStubClassShouldReturnTheFirstStub() {
-		final Class<? extends eu.stratosphere.pact.common.stubs.Stub> stubClass = new OperatorWithTwoStubs()
-			.getStubClass();
-		assertEquals(OperatorWithTwoStubs.class, stubClass.getDeclaringClass());
-		assertTrue(Arrays.asList(OperatorWithTwoStubs.Implementation1.class,
-			OperatorWithTwoStubs.Implementation2.class).contains(stubClass));
+	public void getFunctionClassShouldReturnTheFirstFunction() {
+		final Class<? extends Function> stubClass = new OperatorWithTwoFunctions().getFunctionClass();
+		assertEquals(OperatorWithTwoFunctions.class, stubClass.getDeclaringClass());
+		assertTrue(Arrays.asList(OperatorWithTwoFunctions.Implementation1.class,
+			OperatorWithTwoFunctions.Implementation2.class).contains(stubClass));
 	}
 
 	@Test
-	public void getStubClassShouldReturnTheOnlyStub() {
-		assertEquals(OperatorWithOneStub.Implementation.class,
-			new OperatorWithOneStub().getStubClass());
+	public void getFunctionClassShouldReturnTheOnlyFunction() {
+		assertEquals(OperatorWithOneFunction.Implementation.class,
+			new OperatorWithOneFunction().getFunctionClass());
 	}
 
 	@InputCardinality(1)
-	static class OperatorWithInstanceStub extends ElementaryOperator<OperatorWithInstanceStub> {
+	static class OperatorWithInstanceFunction extends ElementaryOperator<OperatorWithInstanceFunction> {
 		class Implementation extends SopremoMap {
 			/*
 			 * (non-Javadoc)
@@ -111,11 +110,11 @@ public class ElementaryOperatorTest {
 	}
 
 	@InputCardinality(1)
-	static class OperatorWithNoStubs extends ElementaryOperator<OperatorWithNoStubs> {
+	static class OperatorWithNoFunctions extends ElementaryOperator<OperatorWithNoFunctions> {
 	}
 
 	@InputCardinality(1)
-	static class OperatorWithOneStub extends ElementaryOperator<OperatorWithOneStub> {
+	static class OperatorWithOneFunction extends ElementaryOperator<OperatorWithOneFunction> {
 		static class Implementation extends SopremoMap {
 			/*
 			 * (non-Javadoc)
@@ -129,11 +128,11 @@ public class ElementaryOperatorTest {
 	}
 
 	@InputCardinality(1)
-	static class OperatorWithTwoStubs extends ElementaryOperator<OperatorWithTwoStubs> {
+	static class OperatorWithTwoFunctions extends ElementaryOperator<OperatorWithTwoFunctions> {
 		/**
-		 * Initializes ElementaryOperatorTest.OperatorWithTwoStubs.
+		 * Initializes ElementaryOperatorTest.OperatorWithTwoFunctions.
 		 */
-		public OperatorWithTwoStubs() {
+		public OperatorWithTwoFunctions() {
 			this.setKeyExpressions(0, new ObjectAccess("someField"));
 		}
 
@@ -162,12 +161,12 @@ public class ElementaryOperatorTest {
 	}
 
 	@InputCardinality(1)
-	static class OperatorWithUnknownStub extends ElementaryOperator<OperatorWithUnknownStub> {
-		static class Implementation extends AbstractStub {
+	static class OperatorWithUnknownFunction extends ElementaryOperator<OperatorWithUnknownFunction> {
+		static class Implementation extends AbstractFunction {
 
 			/*
 			 * (non-Javadoc)
-			 * @see eu.stratosphere.pact.common.stubs.Stub#open(eu.stratosphere.nephele.configuration.Configuration)
+			 * @see eu.stratosphere.api.record.functions.Function#open(eu.stratosphere.configuration.Configuration)
 			 */
 			@Override
 			public void open(final Configuration parameters) throws Exception {
@@ -175,7 +174,7 @@ public class ElementaryOperatorTest {
 
 			/*
 			 * (non-Javadoc)
-			 * @see eu.stratosphere.pact.common.stubs.Stub#close()
+			 * @see eu.stratosphere.api.record.functions.Function#close()
 			 */
 			@Override
 			public void close() throws Exception {
@@ -184,12 +183,12 @@ public class ElementaryOperatorTest {
 	}
 
 	@InputCardinality(1)
-	static class OperatorWithUninstantiableStub extends ElementaryOperator<OperatorWithUnknownStub> {
+	static class OperatorWithUninstantiableFunction extends ElementaryOperator<OperatorWithUnknownFunction> {
 		@InputCardinality(1)
-		static class UninstanceableContract extends SingleInputContract<Stub> {
+		static class UninstanceableOperator extends SingleInputOperator<Function> {
 
-			public UninstanceableContract(final Class<? extends Stub> clazz, final String name) {
-				super(new UserCodeClassWrapper<Stub>(clazz), name);
+			public UninstanceableOperator(final Class<? extends Function> clazz, final String name) {
+				super(new UserCodeClassWrapper<Function>(clazz), name);
 				throw new IllegalStateException("not instanceable");
 			}
 

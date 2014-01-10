@@ -243,6 +243,7 @@ public class GroupingTest extends SopremoOperatorTestBase<Grouping> {
 		sopremoPlan.getExpectedOutput(0).
 			addValue(7);
 
+		sopremoPlan.trace();
 		sopremoPlan.run();
 	}
 }

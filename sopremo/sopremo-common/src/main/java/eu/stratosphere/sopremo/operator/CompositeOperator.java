@@ -12,7 +12,6 @@ import eu.stratosphere.sopremo.serialization.SopremoRecordLayout;
  * This class should always be used as a base for new operators which would be translated to more than one PACT,
  * especially if some kind of projection or selection is used.
  * 
- * @author Arvid Heise
  */
 public abstract class CompositeOperator<Self extends CompositeOperator<Self>> extends Operator<Self> {
 	private static final Log LOG = LogFactory.getLog(CompositeOperator.class);

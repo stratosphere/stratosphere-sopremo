@@ -12,13 +12,20 @@
  * specific language governing permissions and limitations under the License.
  *
  **********************************************************************************************************************/
-package eu.stratosphere.sopremo.pact;
+package eu.stratosphere.sopremo.operator;
 
-import eu.stratosphere.sopremo.EvaluationContext;
+import eu.stratosphere.api.common.functions.Function;
+import eu.stratosphere.sopremo.pact.SopremoNop;
 
 /**
- * @author Arvid Heise
+ *
  */
-public interface SopremoStub {
-	public EvaluationContext getContext();
+public class NopOperator extends ElementaryOperator<NopOperator> {
+	/* (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.operator.ElementaryOperator#getFunctionClass()
+	 */
+	@Override
+	protected Class<? extends Function> getFunctionClass() {
+		return SopremoNop.class;
+	}
 }

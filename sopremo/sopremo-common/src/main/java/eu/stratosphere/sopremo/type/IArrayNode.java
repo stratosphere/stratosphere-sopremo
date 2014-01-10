@@ -19,9 +19,6 @@ import eu.stratosphere.sopremo.cache.ArrayCache;
 /**
  * Interface for all array type nodes.
  * 
- * @author Michael Hopstock
- * @author Tommy Neubert
- * @author Arvid Heise
  */
 public interface IArrayNode<T extends IJsonNode> extends IStreamNode<T> {
 

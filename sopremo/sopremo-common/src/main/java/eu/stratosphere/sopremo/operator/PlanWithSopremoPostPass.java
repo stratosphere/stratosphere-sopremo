@@ -16,13 +16,12 @@ package eu.stratosphere.sopremo.operator;
 
 import java.util.Collection;
 
-import eu.stratosphere.pact.common.contract.GenericDataSink;
-import eu.stratosphere.pact.common.plan.Plan;
+import eu.stratosphere.api.common.Plan;
+import eu.stratosphere.api.common.operators.GenericDataSink;
 import eu.stratosphere.sopremo.serialization.SopremoRecordLayout;
 import eu.stratosphere.sopremo.serialization.SopremoRecordPostPass;
 
 /**
- * @author arv
  */
 public final class PlanWithSopremoPostPass extends Plan {
 	private final SopremoRecordLayout layout;
@@ -50,7 +49,7 @@ public final class PlanWithSopremoPostPass extends Plan {
 
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.pact.common.plan.Plan#getPostPassClassName()
+	 * @see eu.stratosphere.api.plan.Plan#getPostPassClassName()
 	 */
 	@Override
 	public String getPostPassClassName() {

@@ -7,7 +7,6 @@ import java.util.List;
  * The NodeConverter may be annotated with {@link AppendChildren} to aggregate graphs to flat structures or {@link Leaf}
  * for faster processing.
  * 
- * @author Arvid Heise
  * @param <InputType>
  *        the type of the input node
  * @param <OutputType>

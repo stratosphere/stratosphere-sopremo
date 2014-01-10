@@ -21,7 +21,6 @@ import eu.stratosphere.sopremo.type.IJsonNode;
 /**
  * Registry that manages {@link SopremoFunction}s.
  * 
- * @author Arvid Heise
  */
 public interface ITypeRegistry extends IRegistry<Class<? extends IJsonNode>> {
 	public List<Class<? extends IJsonNode>> getTypes();

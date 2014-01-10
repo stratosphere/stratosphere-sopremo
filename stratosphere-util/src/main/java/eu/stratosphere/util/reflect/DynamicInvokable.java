@@ -63,7 +63,6 @@ public abstract class DynamicInvokable<MemberType extends Member, DeclaringType,
 			}
 	}
 
-	@SuppressWarnings("unchecked")
 	private final static List<Class<? extends Signature>> SignatureTypes = Arrays.asList(Signature.class,
 		ArraySignature.class, VarArgSignature.class);
 

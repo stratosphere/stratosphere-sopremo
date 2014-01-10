@@ -20,7 +20,6 @@ import eu.stratosphere.sopremo.serialization.SopremoRecord;
 import eu.stratosphere.sopremo.type.IJsonNode;
 
 /**
- * @author arvid
  * @param <Elem>
  */
 public interface RecordToJsonIterator<Elem extends IJsonNode> extends Iterator<Elem> {

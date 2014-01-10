@@ -13,14 +13,13 @@
  *
  **********************************************************************************************************************/
 
-package eu.stratosphere.pact.common.plan;
+package eu.stratosphere.api.plan;
 
 /**
  * Implementing this interface allows a PlanAssembler to have a description
  * of the plan which can be shown to the user. For a more detailed description
  * of what should be included in the description see getDescription().
  * 
- * @author Moritz Kaufmann
  */
 public interface PlanAssemblerDescription extends PlanAssembler
 {

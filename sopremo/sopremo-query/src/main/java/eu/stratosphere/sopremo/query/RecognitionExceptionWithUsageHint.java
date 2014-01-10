@@ -19,7 +19,6 @@ import org.antlr.runtime.RecognitionException;
 import org.antlr.runtime.Token;
 
 /**
- * @author Arvid Heise
  */
 public class RecognitionExceptionWithUsageHint extends RecognitionException {
 

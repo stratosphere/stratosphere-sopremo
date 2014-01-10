@@ -20,7 +20,6 @@ import it.unimi.dsi.fastutil.objects.ObjectArrays;
 /**
  * A list implementation that does not release removed elements but allows them to be reused.
  * 
- * @author Arvid Heise
  */
 public class CachingList<T> extends ObjectArrayList<T> {
 	/**

@@ -54,7 +54,7 @@ public class FunctionRegistryTest {
 	}
 
 	@Test(expected = EvaluationException.class)
-	public void shouldFailIfNoApproporiateMatchingJavaFunction() {
+	public void shouldFailIfNoApproporiateJoiningJavaFunction() {
 		this.registry.put(JavaFunctions.class);
 
 		this.evaluate("sum", new IntNode(1), new IntNode(2), new TextNode("3"));
@@ -82,7 +82,7 @@ public class FunctionRegistryTest {
 	}
 
 	@Test
-	public void shouldInvokeExactMatchingJavaFunction() {
+	public void shouldInvokeExactJoiningJavaFunction() {
 		this.registry.put(JavaFunctions.class);
 
 		Assert.assertSame(TWO_INT_NODE, this.evaluate("count", new IntNode(1), new IntNode(2)));
@@ -96,7 +96,7 @@ public class FunctionRegistryTest {
 	}
 
 	@Test
-	public void shouldInvokeGenericVarargJavaFunctionsIfNoExactMatch() {
+	public void shouldInvokeGenericVarargJavaFunctionsIfNoExactJoin() {
 		this.registry.put(JavaFunctions.class);
 
 		Assert.assertSame(GENERIC_VARARG_NODE,

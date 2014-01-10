@@ -11,10 +11,7 @@ import javax.servlet.http.HttpServletResponse;
 import eu.stratosphere.meteor.client.common.HDFSUtil;
 
 /**
- * 
  * Creates a servlet for error messages.
- * 
- * @author mleich
  * 
  */
 public class HDFSServelet extends HttpServlet {
@@ -26,23 +23,22 @@ public class HDFSServelet extends HttpServlet {
 	}
 
 	@Override
-	protected void doGet(HttpServletRequest req, HttpServletResponse resp)
+	protected void doGet(final HttpServletRequest req, final HttpServletResponse resp)
 			throws ServletException, IOException {
 		resp.setContentType("text/html");
 		resp.setStatus(HttpServletResponse.SC_OK);
 
-		PrintWriter writer = resp.getWriter();
-		String hdfsPath = req.getParameter("path");
-		
-			try {
-				HDFSUtil.getHDFSContent(hdfsPath, writer);
-				
-			} catch (Exception e) {
-				writer.write("Could not read file:" + "\n");
-				writer.write(e.getMessage() + "\n");
-				e.printStackTrace(writer);
-			}
-		
+		final PrintWriter writer = resp.getWriter();
+		final String hdfsPath = req.getParameter("path");
+
+		try {
+			HDFSUtil.getHDFSContent(hdfsPath, writer);
+
+		} catch (final Exception e) {
+			writer.write("Could not read file:" + "\n");
+			writer.write(e.getMessage() + "\n");
+			e.printStackTrace(writer);
+		}
 
 	}
 

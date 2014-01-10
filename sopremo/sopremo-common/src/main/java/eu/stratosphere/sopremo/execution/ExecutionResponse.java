@@ -18,12 +18,11 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-import eu.stratosphere.nephele.io.IOReadableWritable;
+import eu.stratosphere.core.io.IOReadableWritable;
 
 /**
  * A response from a {@link SopremoExecutionProtocol} that reflects the state of a job.
  * 
- * @author Arvid Heise
  */
 public class ExecutionResponse implements IOReadableWritable {
 
@@ -88,7 +87,7 @@ public class ExecutionResponse implements IOReadableWritable {
 
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.nephele.io.IOReadableWritable#read(java.io.DataInput)
+	 * @see eu.stratosphere.core.io.IOReadableWritable#read(java.io.DataInput)
 	 */
 	@Override
 	public void read(final DataInput in) throws IOException {
@@ -100,7 +99,7 @@ public class ExecutionResponse implements IOReadableWritable {
 
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.nephele.io.IOReadableWritable#write(java.io.DataOutput)
+	 * @see eu.stratosphere.core.io.IOReadableWritable#write(java.io.DataOutput)
 	 */
 	@Override
 	public void write(final DataOutput out) throws IOException {

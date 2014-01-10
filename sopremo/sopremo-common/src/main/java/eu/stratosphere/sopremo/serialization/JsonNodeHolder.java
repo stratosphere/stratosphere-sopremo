@@ -17,7 +17,6 @@ package eu.stratosphere.sopremo.serialization;
 import eu.stratosphere.sopremo.type.IJsonNode;
 
 /**
- * @author arvid
  */
 public class JsonNodeHolder {
 	private IJsonNode node;

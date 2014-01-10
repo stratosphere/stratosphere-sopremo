@@ -20,7 +20,6 @@ package eu.stratosphere.nephele.rpc;
  * <p>
  * This message is thread-safe.
  * 
- * @author warneke
  */
 final class RPCThrowable extends RPCResponse {
 

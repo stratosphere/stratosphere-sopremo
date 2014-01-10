@@ -33,7 +33,6 @@ import eu.stratosphere.sopremo.type.IArrayNode;
 import eu.stratosphere.sopremo.type.IJsonNode;
 
 /**
- * @author Arvid Heise
  */
 public abstract class MeteorIT extends MeteorParseTest {
 
@@ -83,11 +82,11 @@ public abstract class MeteorIT extends MeteorParseTest {
 			FileNotFoundException {
 		final JsonParser parser = new JsonParser(new FileReader(fileName));
 		parser.setWrappingArraySkipping(false);
-		final IJsonNode expectedValues = parser.readValueAsTree();
+		final IArrayNode<?> expectedValues = (IArrayNode<?>) parser.readValueAsTree();
 
-		final IJsonNode[] content = new IJsonNode[((IArrayNode) expectedValues).size()];
+		final IJsonNode[] content = new IJsonNode[expectedValues.size()];
 		for (int i = 0; i < content.length; i++)
-			content[i] = ((IArrayNode) expectedValues).get(i);
+			content[i] = expectedValues.get(i);
 		return content;
 	}
 }

@@ -3,13 +3,12 @@ package eu.stratosphere.pact.common.plan;
 import java.util.IdentityHashMap;
 import java.util.Map;
 
-import eu.stratosphere.pact.common.util.Visitable;
-import eu.stratosphere.pact.common.util.Visitor;
+import eu.stratosphere.util.Visitable;
+import eu.stratosphere.util.Visitor;
 
 /**
  * Visitor adapter that guarantees to visit all {@link Visitable}s only once.
  * 
- * @author Arvid Heise
  * @param <T>
  *        the type of the Visitable
  */

@@ -43,7 +43,6 @@ import eu.stratosphere.sopremo.query.IConfObjectRegistry;
 import eu.stratosphere.sopremo.type.JsonUtil;
 
 /**
- * @author arv
  */
 public class MultiOutputTest extends MeteorParseTest {
 	/*

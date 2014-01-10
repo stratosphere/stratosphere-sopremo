@@ -19,7 +19,6 @@ import eu.stratosphere.sopremo.operator.Operator;
 import eu.stratosphere.sopremo.packages.EvaluationScope;
 
 /**
- * @author Arvid Heise
  */
 public interface ParsingScope extends EvaluationScope {
 	public IConfObjectRegistry<Operator<?>> getOperatorRegistry();

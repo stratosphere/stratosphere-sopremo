@@ -21,7 +21,6 @@ import eu.stratosphere.util.dag.GraphLevelPartitioner.Level;
  * All nodes have a maximum width that can be adjusted ({@link #setWidth(int)}). <br>
  * To visualize the edges, a {@link ConnectorProvider} provides printable strings between the nodes.
  * 
- * @author Arvid Heise
  * @param <Node>
  *        the class of the node
  */
@@ -211,7 +210,6 @@ public class GraphPrinter<Node> {
 	/**
 	 * Formats node using a given format pattern and {@link String#format(String, Object...)}.
 	 * 
-	 * @author Arvid Heise
 	 * @param <Node>
 	 *        the class of the node
 	 */
@@ -232,7 +230,6 @@ public class GraphPrinter<Node> {
 	 * Placeholder to format connections between nodes above several levels. There are two types: spacers and
 	 * connectors.
 	 * 
-	 * @author Arvid Heise
 	 */
 	private static class Placeholder {
 		private final List<Object> targets = new ArrayList<Object>(1);
@@ -429,7 +426,6 @@ public class GraphPrinter<Node> {
 	/**
 	 * Default printer, which simply invokes {@link Object#toString()}
 	 * 
-	 * @author Arvid Heise
 	 * @param <Node>
 	 *        the class of the node
 	 */

@@ -19,7 +19,6 @@ import java.util.ListIterator;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
 
 /**
- * @author Arvid Heise
  */
 public abstract class GenericListChildIterator<E extends EvaluationExpression> implements ChildIterator {
 	private final ListIterator<E> expressionIterator;

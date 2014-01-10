@@ -27,7 +27,6 @@ import eu.stratosphere.sopremo.operator.Name;
 import eu.stratosphere.sopremo.operator.Property;
 
 /**
- * @author arv
  */
 @Internal
 public abstract class ReplaceBase<Op extends ReplaceBase<Op>> extends CompositeOperator<Op> {

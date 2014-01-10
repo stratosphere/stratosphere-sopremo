@@ -31,7 +31,6 @@ import eu.stratosphere.sopremo.type.IJsonNode;
 import eu.stratosphere.sopremo.type.NullNode;
 
 /**
- * @author Arvid Heise
  */
 public class SecondOrderFunctions implements BuiltinProvider {
 	@Name(verb = "map")

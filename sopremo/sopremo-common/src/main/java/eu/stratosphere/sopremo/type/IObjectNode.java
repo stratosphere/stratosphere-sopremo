@@ -21,8 +21,6 @@ import java.util.SortedSet;
 /**
  * Interface for all object type nodes.
  * 
- * @author Michael Hopstock
- * @author Tommy Neubert
  */
 public interface IObjectNode extends IJsonNode, Iterable<Entry<String, IJsonNode>> {
 

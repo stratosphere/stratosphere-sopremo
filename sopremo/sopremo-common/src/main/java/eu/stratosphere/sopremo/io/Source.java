@@ -4,9 +4,9 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import eu.stratosphere.pact.common.contract.GenericDataSource;
+import eu.stratosphere.api.common.io.InputFormat;
+import eu.stratosphere.api.common.operators.GenericDataSource;
 import eu.stratosphere.pact.common.plan.PactModule;
-import eu.stratosphere.pact.generic.io.InputFormat;
 import eu.stratosphere.sopremo.EvaluationContext;
 import eu.stratosphere.sopremo.expressions.ArrayCreation;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;

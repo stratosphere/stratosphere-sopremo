@@ -25,7 +25,6 @@ import com.google.common.collect.Iterables;
 /**
  * A facility to easily browse through the hierarchy of types.
  * 
- * @author Arvid Heise
  */
 public class TypeHierarchyBrowser {
 	public static TypeHierarchyBrowser INSTANCE = new TypeHierarchyBrowser();
@@ -109,7 +108,7 @@ public class TypeHierarchyBrowser {
 		},
 		ALL;
 
-		boolean shouldInvokeCallback(@SuppressWarnings("unused") final Class<?> superType) {
+		boolean shouldInvokeCallback(final Class<?> superType) {
 			return true;
 		}
 

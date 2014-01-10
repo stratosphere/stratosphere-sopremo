@@ -42,7 +42,6 @@ public abstract class AssociativeAggregation<ElementType extends IJsonNode> exte
 	}
 
 	/**
-	 * @author arv
 	 */
 	public static class AssociativeAggregationSerializer extends Serializer<AssociativeAggregation<?>> {
 		/*

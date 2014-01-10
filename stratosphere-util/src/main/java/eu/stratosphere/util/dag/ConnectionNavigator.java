@@ -5,7 +5,6 @@ import java.util.List;
 /**
  * Navigates through the directed acyclic graph by returning the targets of the directed edges.
  * 
- * @author Arvid Heise
  * @param <Node>
  *        the class of the node
  */

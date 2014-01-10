@@ -5,8 +5,6 @@ import eu.stratosphere.sopremo.AbstractSopremoType;
 /**
  * Abstract class to provide basic implementations for all node types.
  * 
- * @author Michael Hopstock
- * @author Tommy Neubert
  */
 public abstract class AbstractJsonNode extends AbstractSopremoType implements IJsonNode {
 
@@ -21,7 +19,7 @@ public abstract class AbstractJsonNode extends AbstractSopremoType implements IJ
 
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.type.IJsonNode#compareTo(eu.stratosphere.pact.common.type.Key)
+	 * @see eu.stratosphere.sopremo.type.IJsonNode#compareTo(eu.stratosphere.types.Key)
 	 */
 
 	@Override

@@ -27,7 +27,6 @@ import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 
 /**
- * @author Arvid Heise
  */
 @DefaultSerializer(StreamNode.StreamNodeSerializer.class)
 public class StreamNode<T extends IJsonNode> extends AbstractJsonNode implements IStreamNode<T> {

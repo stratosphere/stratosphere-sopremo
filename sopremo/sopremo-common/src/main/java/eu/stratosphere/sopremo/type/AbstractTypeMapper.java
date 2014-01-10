@@ -27,7 +27,6 @@ import eu.stratosphere.util.reflect.TypeHierarchyBrowser.Mode;
 import eu.stratosphere.util.reflect.Visitor;
 
 /**
- * @author arv
  */
 public abstract class AbstractTypeMapper<M> {
 

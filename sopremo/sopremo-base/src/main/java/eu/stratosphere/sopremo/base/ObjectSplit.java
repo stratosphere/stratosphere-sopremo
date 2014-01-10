@@ -21,7 +21,6 @@ import eu.stratosphere.sopremo.type.TextNode;
  * Splits an object into multiple outgoing tuples.<br>
  * This operator provides a means to emit more than one tuple in contrast to most other base operators.
  * 
- * @author Arvid Heise
  */
 // TODO: needs to be refactored
 @Internal

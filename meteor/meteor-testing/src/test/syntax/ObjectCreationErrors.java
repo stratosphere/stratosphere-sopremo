@@ -17,7 +17,6 @@ package eu.stratosphere.meteor.syntax;
 import org.junit.Test;
 
 /**
- * @author Arvid Heise
  */
 public class ObjectCreationErrors extends SyntaxTest {
 

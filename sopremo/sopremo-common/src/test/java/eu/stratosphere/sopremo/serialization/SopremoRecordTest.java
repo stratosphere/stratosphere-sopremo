@@ -34,7 +34,6 @@ import eu.stratosphere.sopremo.type.IntNode;
 import eu.stratosphere.sopremo.type.JsonUtil;
 
 /**
- * @author arv
  */
 public class SopremoRecordTest extends EqualCloneTest<SopremoRecord> {
 	/*

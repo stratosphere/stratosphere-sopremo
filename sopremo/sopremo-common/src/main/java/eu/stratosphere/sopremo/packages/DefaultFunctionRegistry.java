@@ -36,7 +36,6 @@ import eu.stratosphere.sopremo.type.IJsonNode;
 import eu.stratosphere.util.reflect.ReflectUtil;
 
 /**
- * @author Arvid Heise
  */
 public class DefaultFunctionRegistry extends DefaultRegistry<Callable<?, ?>> implements IFunctionRegistry {
 	private final Map<String, Callable<?, ?>> methods = new HashMap<String, Callable<?, ?>>();

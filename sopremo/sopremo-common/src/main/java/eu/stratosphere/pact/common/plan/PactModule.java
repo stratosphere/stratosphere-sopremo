@@ -19,16 +19,16 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
-import eu.stratosphere.pact.common.contract.FileDataSink;
-import eu.stratosphere.pact.common.contract.FileDataSource;
-import eu.stratosphere.pact.common.contract.GenericDataSink;
-import eu.stratosphere.pact.common.contract.GenericDataSource;
-import eu.stratosphere.pact.common.util.Visitable;
-import eu.stratosphere.pact.common.util.Visitor;
-import eu.stratosphere.pact.generic.contract.Contract;
-import eu.stratosphere.pact.generic.contract.ContractUtil;
-import eu.stratosphere.pact.generic.io.FileInputFormat;
-import eu.stratosphere.pact.generic.io.FileOutputFormat;
+import eu.stratosphere.api.common.io.FileInputFormat;
+import eu.stratosphere.api.common.io.FileOutputFormat;
+import eu.stratosphere.api.common.operators.FileDataSink;
+import eu.stratosphere.api.common.operators.FileDataSource;
+import eu.stratosphere.api.common.operators.GenericDataSink;
+import eu.stratosphere.api.common.operators.GenericDataSource;
+import eu.stratosphere.api.common.operators.Operator;
+import eu.stratosphere.api.common.operators.util.ContractUtil;
+import eu.stratosphere.util.Visitable;
+import eu.stratosphere.util.Visitor;
 import eu.stratosphere.util.dag.GraphModule;
 import eu.stratosphere.util.dag.GraphPrinter;
 import eu.stratosphere.util.dag.GraphTraverseListener;
@@ -40,12 +40,12 @@ import eu.stratosphere.util.dag.OneTimeTraverser;
  * well-defined number of inputs and outputs. It is designed to facilitate
  * modularization and thus to increase the maintainability of large
  * PactPrograms. While the interface of the module are the number of inputs and
- * outputs, the actual implementation consists of several interconnected {@link Contract}s that are connected to the
+ * outputs, the actual implementation consists of several interconnected {@link Operator}s that are connected to the
  * inputs and outputs of the
  * PactModule.
  */
-public class PactModule extends GraphModule<Contract, GenericDataSource<?>, GenericDataSink> implements
-		Visitable<Contract> {
+public class PactModule extends GraphModule<Operator, GenericDataSource<?>, GenericDataSink> implements
+		Visitable<Operator> {
 	/**
 	 * Initializes a PactModule having the given name, number of inputs, and
 	 * number of outputs.
@@ -57,7 +57,7 @@ public class PactModule extends GraphModule<Contract, GenericDataSource<?>, Gene
 	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public PactModule(final int numberOfInputs, final int numberOfOutputs) {
-		super(numberOfInputs, numberOfOutputs, ContractNavigator.INSTANCE);
+		super(numberOfInputs, numberOfOutputs, OperatorNavigator.INSTANCE);
 		for (int index = 0; index < numberOfInputs; index++)
 			this.setInput(index,
 				new FileDataSource((Class) FileInputFormat.class, String.format("file:///%d", index),
@@ -71,21 +71,21 @@ public class PactModule extends GraphModule<Contract, GenericDataSource<?>, Gene
 	 * Traverses the pact plan, starting from the data outputs that were added
 	 * to this program.
 	 * 
-	 * @see eu.stratosphere.pact.common.plan.Visitable#accept(eu.stratosphere.pact.common.plan.Visitor)
+	 * @see eu.stratosphere.api.plan.Visitable#accept(eu.stratosphere.api.plan.Visitor)
 	 */
 	@Override
-	public void accept(final Visitor<Contract> visitor) {
-		final OneTimeVisitor<Contract> oneTimeVisitor = new OneTimeVisitor<Contract>(visitor);
-		for (final Contract output : this.getAllOutputs())
+	public void accept(final Visitor<Operator> visitor) {
+		final OneTimeVisitor<Operator> oneTimeVisitor = new OneTimeVisitor<Operator>(visitor);
+		for (final Operator output : this.getAllOutputs())
 			output.accept(oneTimeVisitor);
 	}
 
 	@Override
 	public String toString() {
-		final GraphPrinter<Contract> dagPrinter = new GraphPrinter<Contract>();
-		dagPrinter.setNodePrinter(new NodePrinter<Contract>() {
+		final GraphPrinter<Operator> dagPrinter = new GraphPrinter<Operator>();
+		dagPrinter.setNodePrinter(new NodePrinter<Operator>() {
 			@Override
-			public String toString(final Contract node) {
+			public String toString(final Operator node) {
 				final int inputIndex = PactModule.this.inputNodes.indexOf(node);
 				if (inputIndex != -1)
 					return String.format("Input %d", inputIndex);
@@ -96,7 +96,7 @@ public class PactModule extends GraphModule<Contract, GenericDataSource<?>, Gene
 			}
 		});
 		dagPrinter.setWidth(40);
-		return dagPrinter.toString(this.getAllOutputs(), ContractNavigator.INSTANCE);
+		return dagPrinter.toString(this.getAllOutputs(), OperatorNavigator.INSTANCE);
 	}
 
 	/**
@@ -109,18 +109,18 @@ public class PactModule extends GraphModule<Contract, GenericDataSource<?>, Gene
 	 *        all sinks that span the graph to wrap
 	 * @return a PactModule representing the given graph
 	 */
-	public static PactModule valueOf(final Collection<? extends Contract> sinks) {
-		final List<Contract> inputs = new ArrayList<Contract>();
+	public static PactModule valueOf(final Collection<? extends Operator> sinks) {
+		final List<Operator> inputs = new ArrayList<Operator>();
 
-		OneTimeTraverser.INSTANCE.traverse(sinks, ContractNavigator.INSTANCE,
-			new GraphTraverseListener<Contract>() {
+		OneTimeTraverser.INSTANCE.traverse(sinks, OperatorNavigator.INSTANCE,
+			new GraphTraverseListener<Operator>() {
 				@Override
-				public void nodeTraversed(final Contract node) {
-					final List<List<Contract>> contractInputs = ContractUtil.getInputs(node);
+				public void nodeTraversed(final Operator node) {
+					final List<List<Operator>> contractInputs = ContractUtil.getInputs(node);
 					if (contractInputs.size() == 0)
 						inputs.add(node);
 					else
-						for (final List<Contract> input : contractInputs)
+						for (final List<Operator> input : contractInputs)
 							if (input.size() == 0)
 								inputs.add(node);
 				};
@@ -128,7 +128,7 @@ public class PactModule extends GraphModule<Contract, GenericDataSource<?>, Gene
 
 		final PactModule module = new PactModule(inputs.size(), sinks.size());
 		int sinkIndex = 0;
-		for (final Contract sink : sinks) {
+		for (final Operator sink : sinks) {
 			if (sink instanceof GenericDataSink)
 				module.setOutput(sinkIndex, (GenericDataSink) sink);
 			else
@@ -137,8 +137,8 @@ public class PactModule extends GraphModule<Contract, GenericDataSource<?>, Gene
 		}
 
 		for (int index = 0; index < inputs.size();) {
-			final Contract node = inputs.get(index);
-			final List<List<Contract>> contractInputs = ContractUtil.getInputs(node);
+			final Operator node = inputs.get(index);
+			final List<List<Operator>> contractInputs = ContractUtil.getInputs(node);
 			if (contractInputs.isEmpty())
 				module.setInput(index++, (GenericDataSource<?>) node);
 			else {
@@ -161,7 +161,7 @@ public class PactModule extends GraphModule<Contract, GenericDataSource<?>, Gene
 	 *        all sinks that span the graph to wrap
 	 * @return a PactModule representing the given graph
 	 */
-	public static PactModule valueOf(final Contract... sinks) {
+	public static PactModule valueOf(final Operator... sinks) {
 		return valueOf(Arrays.asList(sinks));
 	}
 

@@ -3,8 +3,6 @@ package eu.stratosphere.sopremo.type;
 /**
  * Abstract class to provide basic implementations for numeric type nodes.
  * 
- * @author Michael Hopstock
- * @author Tommy Neubert
  */
 public abstract class AbstractNumericNode extends AbstractJsonNode implements INumericNode {
 
@@ -42,7 +40,7 @@ public abstract class AbstractNumericNode extends AbstractJsonNode implements IN
 
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.type.AbstractJsonNode#compareToOtherType(eu.stratosphere.pact.common.type.Key)
+	 * @see eu.stratosphere.sopremo.type.AbstractJsonNode#compareToOtherType(eu.stratosphere.types.Key)
 	 */
 	@Override
 	protected int compareToOtherType(final IJsonNode other) {

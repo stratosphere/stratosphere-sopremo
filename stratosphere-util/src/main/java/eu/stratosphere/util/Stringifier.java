@@ -15,7 +15,6 @@
 package eu.stratosphere.util;
 
 /**
- * @author Arvid Heise
  */
 public interface Stringifier<T> {
 	public String stringify(T object);

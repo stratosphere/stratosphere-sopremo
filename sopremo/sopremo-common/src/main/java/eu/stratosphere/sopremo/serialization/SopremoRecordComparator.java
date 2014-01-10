@@ -17,10 +17,10 @@ package eu.stratosphere.sopremo.serialization;
 
 import java.io.IOException;
 
-import eu.stratosphere.nephele.services.memorymanager.DataInputView;
-import eu.stratosphere.nephele.services.memorymanager.DataOutputView;
-import eu.stratosphere.nephele.services.memorymanager.MemorySegment;
-import eu.stratosphere.pact.generic.types.TypeComparator;
+import eu.stratosphere.api.common.typeutils.TypeComparator;
+import eu.stratosphere.core.memory.DataInputView;
+import eu.stratosphere.core.memory.DataOutputView;
+import eu.stratosphere.core.memory.MemorySegment;
 import eu.stratosphere.sopremo.cache.NodeCache;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
 import eu.stratosphere.sopremo.pact.SopremoUtil;
@@ -97,7 +97,7 @@ public final class SopremoRecordComparator extends TypeComparator<SopremoRecord>
 
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.pact.generic.types.TypeComparator#hash(java.lang.Object)
+	 * @see eu.stratosphere.api.typeutils.TypeComparator#hash(java.lang.Object)
 	 */
 	@Override
 	public int hash(final SopremoRecord record) {
@@ -116,7 +116,7 @@ public final class SopremoRecordComparator extends TypeComparator<SopremoRecord>
 
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.pact.generic.types.TypeComparator#setReference(java.lang.Object)
+	 * @see eu.stratosphere.api.typeutils.TypeComparator#setReference(java.lang.Object)
 	 */
 	@Override
 	public void setReference(final SopremoRecord toCompare) {
@@ -132,7 +132,7 @@ public final class SopremoRecordComparator extends TypeComparator<SopremoRecord>
 
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.pact.generic.types.TypeComparator#equalToReference(java.lang.Object)
+	 * @see eu.stratosphere.api.typeutils.TypeComparator#equalToReference(java.lang.Object)
 	 */
 	@Override
 	public boolean equalToReference(final SopremoRecord candidate) {
@@ -151,7 +151,7 @@ public final class SopremoRecordComparator extends TypeComparator<SopremoRecord>
 
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.pact.generic.types.TypeComparator#compareToReference(eu.stratosphere.pact.generic.types.
+	 * @see eu.stratosphere.api.typeutils.TypeComparator#compareToReference(eu.stratosphere.api.typeutils.
 	 * TypeComparator)
 	 */
 	@Override
@@ -168,8 +168,8 @@ public final class SopremoRecordComparator extends TypeComparator<SopremoRecord>
 
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.pact.generic.types.TypeComparator#compare(eu.stratosphere.nephele.services.memorymanager.
-	 * DataInputView, eu.stratosphere.nephele.services.memorymanager.DataInputView)
+	 * @see eu.stratosphere.api.typeutils.TypeComparator#compare(eu.stratosphere.core.memory.
+	 * DataInputView, eu.stratosphere.core.memory.DataInputView)
 	 */
 	@Override
 	public int compare(final DataInputView firstSource, final DataInputView secondSource) throws IOException {
@@ -189,7 +189,7 @@ public final class SopremoRecordComparator extends TypeComparator<SopremoRecord>
 
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.pact.generic.types.TypeComparator#supportsNormalizedKey()
+	 * @see eu.stratosphere.api.typeutils.TypeComparator#supportsNormalizedKey()
 	 */
 	@Override
 	public boolean supportsNormalizedKey() {
@@ -198,7 +198,7 @@ public final class SopremoRecordComparator extends TypeComparator<SopremoRecord>
 
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.pact.generic.types.TypeComparator#supportsSerializationWithKeyNormalization()
+	 * @see eu.stratosphere.api.typeutils.TypeComparator#supportsSerializationWithKeyNormalization()
 	 */
 	@Override
 	public boolean supportsSerializationWithKeyNormalization() {
@@ -207,7 +207,7 @@ public final class SopremoRecordComparator extends TypeComparator<SopremoRecord>
 
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.pact.generic.types.TypeComparator#getNormalizeKeyLen()
+	 * @see eu.stratosphere.api.typeutils.TypeComparator#getNormalizeKeyLen()
 	 */
 	@Override
 	public int getNormalizeKeyLen() {
@@ -216,7 +216,7 @@ public final class SopremoRecordComparator extends TypeComparator<SopremoRecord>
 
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.pact.generic.types.TypeComparator#isNormalizedKeyPrefixOnly(int)
+	 * @see eu.stratosphere.api.typeutils.TypeComparator#isNormalizedKeyPrefixOnly(int)
 	 */
 	@Override
 	public boolean isNormalizedKeyPrefixOnly(final int keyBytes) {
@@ -225,8 +225,8 @@ public final class SopremoRecordComparator extends TypeComparator<SopremoRecord>
 
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.pact.generic.types.TypeComparator#putNormalizedKey(java.lang.Object,
-	 * eu.stratosphere.nephele.services.memorymanager.MemorySegment, int, int)
+	 * @see eu.stratosphere.api.typeutils.TypeComparator#putNormalizedKey(java.lang.Object,
+	 * eu.stratosphere.core.memory.MemorySegment, int, int)
 	 */
 	@Override
 	public void putNormalizedKey(final SopremoRecord record, final MemorySegment target, final int offset,
@@ -235,8 +235,8 @@ public final class SopremoRecordComparator extends TypeComparator<SopremoRecord>
 
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.pact.generic.types.TypeComparator#writeWithKeyNormalization(java.lang.Object,
-	 * eu.stratosphere.nephele.services.memorymanager.DataOutputView)
+	 * @see eu.stratosphere.api.typeutils.TypeComparator#writeWithKeyNormalization(java.lang.Object,
+	 * eu.stratosphere.core.memory.DataOutputView)
 	 */
 	@Override
 	public void writeWithKeyNormalization(final SopremoRecord record, final DataOutputView target) throws IOException {
@@ -244,8 +244,8 @@ public final class SopremoRecordComparator extends TypeComparator<SopremoRecord>
 
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.pact.generic.types.TypeComparator#readWithKeyDenormalization(java.lang.Object,
-	 * eu.stratosphere.nephele.services.memorymanager.DataInputView)
+	 * @see eu.stratosphere.api.typeutils.TypeComparator#readWithKeyDenormalization(java.lang.Object,
+	 * eu.stratosphere.core.memory.DataInputView)
 	 */
 	@Override
 	public void readWithKeyDenormalization(final SopremoRecord record, final DataInputView source) throws IOException {
@@ -253,7 +253,7 @@ public final class SopremoRecordComparator extends TypeComparator<SopremoRecord>
 
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.pact.generic.types.TypeComparator#invertNormalizedKey()
+	 * @see eu.stratosphere.api.typeutils.TypeComparator#invertNormalizedKey()
 	 */
 	@Override
 	public boolean invertNormalizedKey() {
@@ -262,7 +262,7 @@ public final class SopremoRecordComparator extends TypeComparator<SopremoRecord>
 
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.pact.generic.types.TypeComparator#duplicate()
+	 * @see eu.stratosphere.api.typeutils.TypeComparator#duplicate()
 	 */
 	@Override
 	public TypeComparator<SopremoRecord> duplicate() {

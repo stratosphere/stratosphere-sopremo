@@ -21,7 +21,6 @@ import eu.stratosphere.util.dag.OneTimeTraverser;
 /**
  * Encapsulate a partial query in Sopremo and translates it to a {@link PactModule}.
  * 
- * @author Arvid Heise
  */
 public class SopremoModule extends GraphModule<Operator<?>, Source, Sink> implements ISopremoType/*
 																								 * ,
