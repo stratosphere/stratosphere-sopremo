@@ -1,12 +1,17 @@
 package eu.stratosphere.sopremo.base;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+
+import com.google.common.collect.Lists;
 
 import eu.stratosphere.sopremo.expressions.ArrayCreation;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
 import eu.stratosphere.sopremo.operator.ElementaryOperator;
+import eu.stratosphere.sopremo.operator.InputCardinality;
 import eu.stratosphere.sopremo.operator.Name;
+import eu.stratosphere.sopremo.operator.OutputCardinality;
 import eu.stratosphere.sopremo.operator.Property;
 import eu.stratosphere.sopremo.pact.JsonCollector;
 import eu.stratosphere.sopremo.pact.SopremoMap;
@@ -18,6 +23,8 @@ import eu.stratosphere.sopremo.type.IJsonNode;
  * 
  */
 @Name(verb = "split value")
+@InputCardinality(1)
+@OutputCardinality(1)
 public class ValueSplit extends ElementaryOperator<ValueSplit> {
 	private List<EvaluationExpression> projections = new ArrayList<EvaluationExpression>();
 
@@ -52,7 +59,19 @@ public class ValueSplit extends ElementaryOperator<ValueSplit> {
 		this.projections = projections;
 	}
 
+	public void setProjections(final EvaluationExpression... projections) {
+		if (projections == null)
+			throw new NullPointerException("projections must not be null");
+
+		this.projections = Lists.newArrayList(projections);
+	}
+
 	public ValueSplit withProjections(final List<EvaluationExpression> projections) {
+		this.setProjections(projections);
+		return this;
+	}
+	
+	public ValueSplit withProjections(final EvaluationExpression... projections) {
 		this.setProjections(projections);
 		return this;
 	}

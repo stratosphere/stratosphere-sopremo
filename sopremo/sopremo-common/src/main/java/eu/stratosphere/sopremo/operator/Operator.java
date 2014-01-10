@@ -34,7 +34,6 @@ import eu.stratosphere.util.reflect.ReflectUtil;
  * Each Sopremo operator may be converted to a {@link PactModule} with the {@link #asPactModule(EvaluationContext)}
  * method.<br>
  * Implementations of an operator should either extend {@link ElementaryOperator} or {@link CompositeOperator}.
- * 
  */
 // @DefaultSerializer(Operator.OperatorSerializer.class)
 public abstract class Operator<Self extends Operator<Self>> extends ConfigurableSopremoType implements
@@ -109,15 +108,6 @@ public abstract class Operator<Self extends Operator<Self>> extends Configurable
 	}
 
 	public abstract ElementarySopremoModule asElementaryOperators(EvaluationContext context);
-
-	/**
-	 * Converts this operator to a {@link PactModule} using the provided {@link EvaluationContext}.
-	 * 
-	 * @param context
-	 *        the context in which the evaluation should be conducted
-	 * @return the {@link PactModule} representing this operator
-	 */
-	public abstract PactModule asPactModule(EvaluationContext context, SopremoRecordLayout layout);
 
 	@SuppressWarnings("unchecked")
 	@Override
@@ -561,7 +551,6 @@ public abstract class Operator<Self extends Operator<Self>> extends Configurable
 	/**
 	 * Represents one output of this {@link Operator}. The output should be connected to another Operator to create a
 	 * directed acyclic graph of Operators.
-	 * 
 	 */
 	@DefaultSerializer(OperatorOutputSerializer.class)
 	public static class Output extends AbstractSopremoType implements JsonStream {

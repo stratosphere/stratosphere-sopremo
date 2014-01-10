@@ -11,7 +11,6 @@ import eu.stratosphere.sopremo.serialization.SopremoRecordLayout;
  * A composite operator may be composed of several {@link ElementaryOperator}s and other CompositeOperators.<br>
  * This class should always be used as a base for new operators which would be translated to more than one PACT,
  * especially if some kind of projection or selection is used.
- * 
  */
 public abstract class CompositeOperator<Self extends CompositeOperator<Self>> extends Operator<Self> {
 	private static final Log LOG = LogFactory.getLog(CompositeOperator.class);
@@ -53,7 +52,7 @@ public abstract class CompositeOperator<Self extends CompositeOperator<Self>> ex
 	 * @return a module of ElementaryOperators
 	 */
 	@Override
-	public final ElementarySopremoModule asElementaryOperators(final EvaluationContext context) {
+	public ElementarySopremoModule asElementaryOperators(final EvaluationContext context) {
 		final SopremoModule module = new SopremoModule(this.getNumInputs(), this.getNumOutputs());
 		module.setName(this.getName());
 		this.addImplementation(module, context);
@@ -71,14 +70,4 @@ public abstract class CompositeOperator<Self extends CompositeOperator<Self>> ex
 
 	public abstract void addImplementation(SopremoModule module, EvaluationContext context);
 
-	@Override
-	public PactModule asPactModule(final EvaluationContext context, final SopremoRecordLayout layout) {
-		if (LOG.isTraceEnabled())
-			LOG.trace("Transforming\n" + this);
-		final ElementarySopremoModule elementaryPlan = this.asElementaryOperators(context);
-		if (LOG.isTraceEnabled())
-			LOG.trace(" to elementary plan\n" + elementaryPlan);
-		final PactModule pactModule = elementaryPlan.asPactModule(context);
-		return pactModule;
-	}
 }

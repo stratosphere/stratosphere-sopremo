@@ -123,7 +123,7 @@ public class SopremoPlan extends AbstractSopremoType implements Serializable {
 		final ElementarySopremoModule elementaryModule = this.module.asElementary(this.context);
 		elementaryModule.inferSchema();
 		this.layout = SopremoRecordLayout.create(elementaryModule.getSchema().getKeyExpressions());
-		return elementaryModule.assemblePact(this.context);
+		return elementaryModule.assemblePact(this.context, this.layout);
 	}
 
 	/**

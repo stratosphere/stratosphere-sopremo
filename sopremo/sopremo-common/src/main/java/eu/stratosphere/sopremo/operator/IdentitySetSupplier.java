@@ -14,20 +14,26 @@
  **********************************************************************************************************************/
 package eu.stratosphere.sopremo.operator;
 
-import eu.stratosphere.api.common.functions.Function;
-import eu.stratosphere.sopremo.pact.SopremoNop;
+import java.util.Set;
+
+import com.google.common.base.Supplier;
+
+import eu.stratosphere.util.IdentitySet;
 
 /**
- *
+ * 
  */
-@InputCardinality
-@OutputCardinality
-public class NopOperator extends ElementaryOperator<NopOperator> {
-	/* (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.operator.ElementaryOperator#getFunctionClass()
-	 */
+public class IdentitySetSupplier<T> implements Supplier<Set<T>> {
+	@SuppressWarnings("rawtypes")
+	private final static IdentitySetSupplier Instance = new IdentitySetSupplier();
+	
 	@Override
-	protected Class<? extends Function> getFunctionClass() {
-		return SopremoNop.class;
+	public Set<T> get() {
+		return new IdentitySet<>();
+	}
+	
+	@SuppressWarnings("unchecked")
+	public static <T> IdentitySetSupplier<T> getInstance() {
+		return Instance;
 	}
 }

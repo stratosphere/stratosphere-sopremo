@@ -283,7 +283,7 @@ public class SopremoRecordLayout extends AbstractSopremoType {
 	 * @param keyExpressions
 	 * @return
 	 */
-	public int[] getIndices(final EvaluationExpression[] keyExpressions) {
+	public int[] getIndices(final EvaluationExpression... keyExpressions) {
 		final int[] indices = new int[keyExpressions.length];
 		for (int index = 0; index < indices.length; index++)
 			indices[index] = this.getKeyIndex(keyExpressions[index]);

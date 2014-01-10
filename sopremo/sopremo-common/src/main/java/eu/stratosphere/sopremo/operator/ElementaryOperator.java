@@ -298,7 +298,6 @@ public abstract class ElementaryOperator<Self extends ElementaryOperator<Self>>
 		return this.self();
 	}
 
-	@Override
 	public PactModule asPactModule(final EvaluationContext context, final SopremoRecordLayout layout) {
 		final eu.stratosphere.api.common.operators.Operator contract = this.getOperator(layout);
 		context.setResultProjection(this.resultProjection);

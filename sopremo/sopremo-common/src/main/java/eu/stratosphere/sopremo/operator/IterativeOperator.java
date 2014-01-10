@@ -14,132 +14,66 @@
  **********************************************************************************************************************/
 package eu.stratosphere.sopremo.operator;
 
-import eu.stratosphere.api.common.operators.BulkIteration;
-import eu.stratosphere.pact.common.plan.PactModule;
+import java.util.ArrayList;
+import java.util.List;
+
+import com.google.common.collect.Lists;
+
 import eu.stratosphere.sopremo.EvaluationContext;
-import eu.stratosphere.sopremo.serialization.SopremoRecordLayout;
+import eu.stratosphere.sopremo.expressions.EvaluationExpression;
+import eu.stratosphere.sopremo.io.Sink;
 
 /**
  */
-@InputCardinality(min = 1, max = 2)
-@OutputCardinality(min = 1, max = 2)
-public class IterativeOperator<Self extends IterativeOperator<Self>> extends ElementaryOperator<Self> {
-	private Operator<?> terminationCriterion;
+@OutputCardinality(1)
+public abstract class IterativeOperator<Self extends IterativeOperator<Self>> extends CompositeOperator<Self> {
+	public abstract void addImplementation(IterativeSopremoModule iterativeSopremoModule, EvaluationContext context);
 
-	private Operator<?> workingSetOperator, solutionSetOperator;
-
-	public JsonStream getInitialWorkingSet() {
-		return getInput(1);
-	}
-
-	public void setInitialWorkingSet(JsonStream workingSet) {
-		if (workingSet == null)
-			throw new NullPointerException("workingSet must not be null");
-
-		this.setInput(1, workingSet);
-	}
-
-	public JsonStream getInitialSolutionSet() {
-		return getInput(0);
-	}
-
-	public void setInitialSolutionSet(JsonStream solutionSet) {
-		if (solutionSet == null)
-			throw new NullPointerException("solutionSet must not be null");
-
-		this.setInput(0, solutionSet);
-	}
-
-	public Operator<?> getWorkingSetOperator() {
-		return this.workingSetOperator;
-	}
-
-	public void setWorkingSetOperator(Operator<?> workingSetOperator) {
-		if (workingSetOperator == null)
-			throw new NullPointerException("workingSetOperator must not be null");
-
-		this.workingSetOperator = workingSetOperator;
-	}
-
-	public Operator<?> getSolutionSetOperator() {
-		return this.solutionSetOperator;
-	}
-
-	public void setSolutionSetOperator(Operator<?> solutionSetOperator) {
-		if (solutionSetOperator == null)
-			throw new NullPointerException("solutionSetOperator must not be null");
-
-		this.solutionSetOperator = solutionSetOperator;
-	}
+	private List<? extends EvaluationExpression> solutionSetKeyExpressions =
+		new ArrayList<EvaluationExpression>();
 
 	/**
-	 * Sets the terminationCriterion to the specified value.
+	 * Sets the solutionSetKeyExpressions to the specified value.
 	 * 
-	 * @param terminationCriterion
-	 *        the terminationCriterion to set
+	 * @param solutionSetKeyExpressions
+	 *        the solutionSetKeyExpressions to set
 	 */
-	public void setTerminationCriterion(Operator<?> terminationCriterion) {
-		if (terminationCriterion == null)
-			throw new NullPointerException("terminationCriterion must not be null");
+	protected void setSolutionSetKeyExpressions(List<? extends EvaluationExpression> solutionSetKeyExpressions) {
+		if (solutionSetKeyExpressions == null)
+			throw new NullPointerException("solutionSetKeyExpressions must not be null");
 
-		this.terminationCriterion = terminationCriterion;
+		this.solutionSetKeyExpressions = solutionSetKeyExpressions;
 	}
 
 	/**
-	 * Returns the terminationCriterion.
+	 * Sets the solutionSetKeyExpressions to the specified value.
 	 * 
-	 * @return the terminationCriterion
+	 * @param solutionSetKeyExpressions
+	 *        the solutionSetKeyExpressions to set
 	 */
-	public Operator<?> getTerminationCriterion() {
-		return this.terminationCriterion;
+	protected void setSolutionSetKeyExpressions(EvaluationExpression... solutionSetKeyExpressions) {
+		if (solutionSetKeyExpressions == null)
+			throw new NullPointerException("solutionSetKeyExpressions must not be null");
+
+		this.solutionSetKeyExpressions = Lists.newArrayList(solutionSetKeyExpressions);
 	}
 
-	/**
-	 * The maximum number of iterations. Possibly used only as a safeguard.
-	 */
-	private int maxNumberOfIterations = -1;
-
-	/**
-	 * Sets the maxNumberOfIterations to the specified value.
-	 * 
-	 * @param maxNumberOfIterations
-	 *        the maxNumberOfIterations to set
-	 */
-	public void setMaxNumberOfIterations(int maxNumberOfIterations) {
-		if (maxNumberOfIterations < 1)
-			throw new NullPointerException("maxNumberOfIterations must >= 1");
-
-		this.maxNumberOfIterations = maxNumberOfIterations;
+	protected List<? extends EvaluationExpression> getSolutionSetKeyExpressions() {
+		return this.solutionSetKeyExpressions;
 	}
-
-	/**
-	 * Returns the maxNumberOfIterations.
-	 * 
-	 * @return the maxNumberOfIterations
-	 */
-	public int getMaxNumberOfIterations() {
-		return this.maxNumberOfIterations;
-	}
-
+	
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.operator.ElementaryOperator#asPactModule(eu.stratosphere.sopremo.EvaluationContext,
-	 * eu.stratosphere.sopremo.serialization.SopremoRecordLayout)
+	 * @see
+	 * eu.stratosphere.sopremo.operator.CompositeOperator#addImplementation(eu.stratosphere.sopremo.operator.SopremoModule
+	 * , eu.stratosphere.sopremo.EvaluationContext)
 	 */
 	@Override
-	public PactModule asPactModule(EvaluationContext context, SopremoRecordLayout layout) {
-		PactModule module = new PactModule(getNumInputs(), getNumOutputs());
-
-//		switch (getNumInputs()) {
-//		case 1:
-//			final BulkIteration bulkIteration = new BulkIteration();
-//			bulkIteration.setDegreeOfParallelism(getDegreeOfParallelism());
-//			if (maxNumberOfIterations != -1)
-//				bulkIteration.setMaximumNumberOfIterations(maxNumberOfIterations);
-//			if (terminationCriterion != null)
-//				bulkIteration.setTerminationCriterion(terminationCriterion.asPactModule(context, layout));
-//			module.getOutput(0).addInput(bulkIteration.getPartialSolution());
-//		}
-		return module;
+	public void addImplementation(SopremoModule module, EvaluationContext context) {
+		final IterativeSopremoModule iterativeModule =
+			new IterativeSopremoModule(module.getNumInputs(), module.getNumOutputs());
+		addImplementation(iterativeModule, context);
+		iterativeModule.setSolutionSetKeyExpressions(solutionSetKeyExpressions);
+		iterativeModule.embedInto(module);
 	}
 }

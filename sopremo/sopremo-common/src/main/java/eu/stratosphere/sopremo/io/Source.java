@@ -254,7 +254,7 @@ public class Source extends ElementaryOperator<Source> {
 	 */
 	@Override
 	public void appendAsString(final Appendable appendable) throws IOException {
-		appendable.append("Source [");
+		appendable.append(getName()).append(" [");
 		if (this.isAdhoc())
 			this.adhocExpression.appendAsString(appendable);
 		else {

@@ -328,11 +328,6 @@ public class OperatorTest extends EqualCloneTest<OperatorTest.OpImpl> {
 		}
 
 		@Override
-		public PactModule asPactModule(final EvaluationContext context, final SopremoRecordLayout layout) {
-			return null;
-		}
-
-		@Override
 		public boolean equals(final Object obj) {
 			if (this == obj)
 				return true;
