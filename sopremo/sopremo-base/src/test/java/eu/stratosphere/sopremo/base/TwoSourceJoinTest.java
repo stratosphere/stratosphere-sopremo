@@ -38,6 +38,7 @@ public class TwoSourceJoinTest extends SopremoOperatorTestBase<TwoSourceJoin> {
 			createPath("0", "DeptName"), Quantor.EXISTS_NOT_IN, createPath("1", "Name"));
 		final TwoSourceJoin join = new TwoSourceJoin().withCondition(condition);
 		join.setInputs(sopremoPlan.getInputOperators(0, 2));
+		join.setResultProjection(ObjectCreation.CONCATENATION);
 		sopremoPlan.getOutputOperator(0).setInputs(join);
 		sopremoPlan.getInput(0).
 			addObject("Name", "Harry", "EmpId", 3415, "DeptName", "Finance").
@@ -62,6 +63,7 @@ public class TwoSourceJoinTest extends SopremoOperatorTestBase<TwoSourceJoin> {
 			createPath("1", "DeptName"), Quantor.EXISTS_NOT_IN, createPath("0", "Name"));
 		final TwoSourceJoin join = new TwoSourceJoin().withCondition(condition);
 		join.setInputs(sopremoPlan.getInputOperators(0, 2));
+		join.setResultProjection(ObjectCreation.CONCATENATION);
 		sopremoPlan.getOutputOperator(0).setInputs(join);
 		sopremoPlan.getInput(1).
 			addObject("Name", "Harry", "EmpId", 3415, "DeptName", "Finance").
@@ -86,6 +88,7 @@ public class TwoSourceJoinTest extends SopremoOperatorTestBase<TwoSourceJoin> {
 			BinaryOperator.EQUAL, createPath("0", "userid"));
 		final TwoSourceJoin join = new TwoSourceJoin().withCondition(condition);
 		join.setInputs(sopremoPlan.getInputOperators(0, 2));
+		join.setResultProjection(ObjectCreation.CONCATENATION);
 		sopremoPlan.getOutputOperator(0).setInputs(join);
 		sopremoPlan.getInput(1).
 			addObject("name", "Jon Doe", "password", "asdf1234", "id", 1).
@@ -115,6 +118,7 @@ public class TwoSourceJoinTest extends SopremoOperatorTestBase<TwoSourceJoin> {
 			BinaryOperator.EQUAL, createPath("1", "userid"));
 		final TwoSourceJoin join = new TwoSourceJoin().withCondition(condition);
 		join.setInputs(sopremoPlan.getInputOperators(0, 2));
+		join.setResultProjection(ObjectCreation.CONCATENATION);
 		sopremoPlan.getOutputOperator(0).setInputs(join);
 		sopremoPlan.getInput(0).
 			addObject("name", "Jon Doe", "password", "asdf1234", "id", 1).
@@ -146,6 +150,7 @@ public class TwoSourceJoinTest extends SopremoOperatorTestBase<TwoSourceJoin> {
 		final TwoSourceJoin join = new TwoSourceJoin().withCondition(condition).
 			withOuterJoinSources(new ArrayCreation(new InputSelection(0), new InputSelection(1)));
 		join.setInputs(sopremoPlan.getInputOperators(0, 2));
+		join.setResultProjection(ObjectCreation.CONCATENATION);
 		sopremoPlan.getOutputOperator(0).setInputs(join);
 		sopremoPlan.getInput(0).
 			addObject("name", "Jon Doe", "password", "asdf1234", "id", 1).
@@ -180,6 +185,7 @@ public class TwoSourceJoinTest extends SopremoOperatorTestBase<TwoSourceJoin> {
 			Quantor.EXISTS_NOT_IN, rightTwoSourceJoinKey);
 		final TwoSourceJoin join = new TwoSourceJoin().withCondition(condition);
 		join.setInputs(sopremoPlan.getInputOperators(0, 2));
+		join.setResultProjection(ObjectCreation.CONCATENATION);
 		sopremoPlan.getOutputOperator(0).setInputs(join);
 		sopremoPlan.getInput(0).
 			addObject("v3", JsonUtil.createObjectNode("id", null, "worksFor", "CompanyABC")).
@@ -211,6 +217,7 @@ public class TwoSourceJoinTest extends SopremoOperatorTestBase<TwoSourceJoin> {
 				new ObjectCreation.CopyFields(new InputSelection(1)),
 				new ObjectCreation.FieldAssignment("worksFor", JsonUtil.createPath("0", "worksFor"))));
 		join.setInputs(sopremoPlan.getInputOperators(0, 2));
+		join.setResultProjection(ObjectCreation.CONCATENATION);
 		sopremoPlan.getOutputOperator(0).setInputs(join);
 		sopremoPlan.getInput(0).
 			addObject("biographyId", "A000029", "worksFor", "CompanyXYZ").
@@ -243,6 +250,7 @@ public class TwoSourceJoinTest extends SopremoOperatorTestBase<TwoSourceJoin> {
 		final TwoSourceJoin join = new TwoSourceJoin().withCondition(condition).
 			withOuterJoinSources(new InputSelection(0));
 		join.setInputs(sopremoPlan.getInputOperators(0, 2));
+		join.setResultProjection(ObjectCreation.CONCATENATION);
 		sopremoPlan.getOutputOperator(0).setInputs(join);
 		sopremoPlan.getInput(0).
 			addObject("name", "Jon Doe", "password", "asdf1234", "id", 1).
@@ -276,6 +284,7 @@ public class TwoSourceJoinTest extends SopremoOperatorTestBase<TwoSourceJoin> {
 		final TwoSourceJoin join = new TwoSourceJoin().withCondition(condition).
 			withOuterJoinSources(new InputSelection(1));
 		join.setInputs(sopremoPlan.getInputOperators(0, 2));
+		join.setResultProjection(ObjectCreation.CONCATENATION);
 		sopremoPlan.getOutputOperator(0).setInputs(join);
 		sopremoPlan.getInput(0).
 			addObject("name", "Jon Doe", "password", "asdf1234", "id", 1).
@@ -307,6 +316,7 @@ public class TwoSourceJoinTest extends SopremoOperatorTestBase<TwoSourceJoin> {
 			"DeptName"), Quantor.EXISTS_IN, createPath("1", "Name"));
 		final TwoSourceJoin join = new TwoSourceJoin().withCondition(condition);
 		join.setInputs(sopremoPlan.getInputOperators(0, 2));
+		join.setResultProjection(ObjectCreation.CONCATENATION);
 		sopremoPlan.getOutputOperator(0).setInputs(join);
 		sopremoPlan.getInput(0).
 			addObject("Name", "Harry", "EmpId", 3415, "DeptName", "Finance").
@@ -331,6 +341,7 @@ public class TwoSourceJoinTest extends SopremoOperatorTestBase<TwoSourceJoin> {
 			BinaryOperator.LESS, createPath("1", "userid"));
 		final TwoSourceJoin join = new TwoSourceJoin().withCondition(condition);
 		join.setInputs(sopremoPlan.getInputOperators(0, 2));
+		join.setResultProjection(ObjectCreation.CONCATENATION);
 		sopremoPlan.getOutputOperator(0).setInputs(join);
 		sopremoPlan.getInput(0).
 			addObject("name", "Jon Doe", "password", "asdf1234", "id", 1).
@@ -362,6 +373,7 @@ public class TwoSourceJoinTest extends SopremoOperatorTestBase<TwoSourceJoin> {
 		final TwoSourceJoin join = new TwoSourceJoin().withCondition(condition).
 			withOuterJoinSources(new ArrayCreation(new InputSelection(0), new InputSelection(1)));
 		join.setInputs(sopremoPlan.getInputOperators(0, 2));
+		join.setResultProjection(ObjectCreation.CONCATENATION);
 		sopremoPlan.getOutputOperator(0).setInputs(join);
 		sopremoPlan.getInput(1).
 			addObject("name", "Jon Doe", "password", "asdf1234", "id", 1).
@@ -397,6 +409,7 @@ public class TwoSourceJoinTest extends SopremoOperatorTestBase<TwoSourceJoin> {
 		final TwoSourceJoin join = new TwoSourceJoin().withCondition(condition).
 			withOuterJoinSources(new InputSelection(1));
 		join.setInputs(sopremoPlan.getInputOperators(0, 2));
+		join.setResultProjection(ObjectCreation.CONCATENATION);
 		sopremoPlan.getOutputOperator(0).setInputs(join);
 		sopremoPlan.getInput(1).
 			addObject("name", "Jon Doe", "password", "asdf1234", "id", 1).
@@ -430,6 +443,7 @@ public class TwoSourceJoinTest extends SopremoOperatorTestBase<TwoSourceJoin> {
 		final TwoSourceJoin join = new TwoSourceJoin().withCondition(condition).
 			withOuterJoinSources(new InputSelection(0));
 		join.setInputs(sopremoPlan.getInputOperators(0, 2));
+		join.setResultProjection(ObjectCreation.CONCATENATION);
 		sopremoPlan.getOutputOperator(0).setInputs(join);
 		sopremoPlan.getInput(1).
 			addObject("name", "Jon Doe", "password", "asdf1234", "id", 1).
@@ -458,6 +472,7 @@ public class TwoSourceJoinTest extends SopremoOperatorTestBase<TwoSourceJoin> {
 			"DeptName"), Quantor.EXISTS_IN, createPath("0", "Name"));
 		final TwoSourceJoin join = new TwoSourceJoin().withCondition(condition);
 		join.setInputs(sopremoPlan.getInputOperators(0, 2));
+		join.setResultProjection(ObjectCreation.CONCATENATION);
 		sopremoPlan.getOutputOperator(0).setInputs(join);
 		sopremoPlan.getInput(1).
 			addObject("Name", "Harry", "EmpId", 3415, "DeptName", "Finance").
@@ -482,6 +497,7 @@ public class TwoSourceJoinTest extends SopremoOperatorTestBase<TwoSourceJoin> {
 			BinaryOperator.LESS, createPath("0", "userid"));
 		final TwoSourceJoin join = new TwoSourceJoin().withCondition(condition);
 		join.setInputs(sopremoPlan.getInputOperators(0, 2));
+		join.setResultProjection(ObjectCreation.CONCATENATION);
 		sopremoPlan.getOutputOperator(0).setInputs(join);
 		sopremoPlan.getInput(1).
 			addObject("name", "Jon Doe", "password", "asdf1234", "id", 1).
