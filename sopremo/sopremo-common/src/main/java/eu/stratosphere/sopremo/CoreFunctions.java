@@ -442,7 +442,7 @@ public class CoreFunctions implements BuiltinProvider {
 			this.result.setValue(input, start, end + 1);
 			return this.result;
 		}
-	}.withDefaultParameters(new IntNode(-1));
+	};
 
 	@Name(verb = "unionAll")
 	public static final SopremoFunction UNION_ALL = new SopremoVarargFunction1<IStreamNode<?>>() {
