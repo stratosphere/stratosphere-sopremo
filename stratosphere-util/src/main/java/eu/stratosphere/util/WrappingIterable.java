@@ -18,7 +18,6 @@ import java.util.Iterator;
 
 /**
  * Base class to wrap an <code>Iterable</code> and manipulate its elements on-the-fly.
- * 
  */
 public abstract class WrappingIterable<I, O> extends AbstractIterable<O> {
 	private final Iterable<? extends I> originalIterable;
@@ -42,15 +41,6 @@ public abstract class WrappingIterable<I, O> extends AbstractIterable<O> {
 		return this.wrap(this.originalIterable.iterator());
 	}
 
-	/**
-	 * Returns an {@link Iterator} that wraps the iterator of the wrapped {@link Iterable}.
-	 * 
-	 * @param iterator
-	 *        the iterator to wrap
-	 * @return the wrapped iterator
-	 */
-	protected abstract Iterator<O> wrap(Iterator<? extends I> iterator);
-
 	/*
 	 * (non-Javadoc)
 	 * @see java.lang.Object#toString()
@@ -68,4 +58,13 @@ public abstract class WrappingIterable<I, O> extends AbstractIterable<O> {
 		this.appendElements(builder, this, numberOfElements);
 		return builder.toString();
 	}
+
+	/**
+	 * Returns an {@link Iterator} that wraps the iterator of the wrapped {@link Iterable}.
+	 * 
+	 * @param iterator
+	 *        the iterator to wrap
+	 * @return the wrapped iterator
+	 */
+	protected abstract Iterator<O> wrap(Iterator<? extends I> iterator);
 }

@@ -30,6 +30,11 @@ public class ArrayCache<T> implements ISopremoCache {
 		this.type = type;
 	}
 
+	@Override
+	public ArrayCache<T> clone() {
+		return new ArrayCache<T>(this.type);
+	}
+
 	public T[] getArray(final int size) {
 		final T[] cachedArray = this.cache.get(size);
 		if (cachedArray != null)
@@ -38,10 +43,5 @@ public class ArrayCache<T> implements ISopremoCache {
 		final T[] newArray = (T[]) Array.newInstance(this.type, size);
 		this.cache.put(size, newArray);
 		return newArray;
-	}
-
-	@Override
-	public ArrayCache<T> clone() {
-		return new ArrayCache<T>(this.type);
 	}
 }

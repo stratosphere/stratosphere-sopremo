@@ -9,7 +9,6 @@ import eu.stratosphere.sopremo.type.IJsonNode;
 
 /**
  * A base for built-in and user-defined functions.
- * 
  */
 public abstract class SopremoFunction extends Callable<IJsonNode, IArrayNode<IJsonNode>> {
 
@@ -38,6 +37,18 @@ public abstract class SopremoFunction extends Callable<IJsonNode, IArrayNode<IJs
 			SopremoEnvironment.getInstance().getEvaluationContext().getNameChooserProvider().getFunctionNameChooser())[0]);
 	}
 
+	/**
+	 * Binds a function by setting the last X parameters to predefined values.
+	 */
+	public SopremoFunction bind(final IJsonNode... boundParameters) {
+		final int fixedParameters = this.getMinimumNumberOfParameters() - boundParameters.length;
+		final SopremoFunctionWithDefaultParameters sfdp =
+			new SopremoFunctionWithDefaultParameters(this, fixedParameters, fixedParameters);
+		for (int index = 0; index < boundParameters.length; index++)
+			sfdp.setDefaultParameter(fixedParameters + index, boundParameters[index]);
+		return sfdp;
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * @see eu.stratosphere.sopremo.AbstractSopremoType#clone()
@@ -53,18 +64,6 @@ public abstract class SopremoFunction extends Callable<IJsonNode, IArrayNode<IJs
 			new SopremoFunctionWithDefaultParameters(this, fixedParameters);
 		for (int index = 0; index < defaultValues.length; index++)
 			sfdp.setDefaultParameter(fixedParameters + index, defaultValues[index]);
-		return sfdp;
-	}
-
-	/**
-	 * Binds a function by setting the last X parameters to predefined values.
-	 */
-	public SopremoFunction bind(final IJsonNode... boundParameters) {
-		final int fixedParameters = this.getMinimumNumberOfParameters() - boundParameters.length;
-		final SopremoFunctionWithDefaultParameters sfdp =
-			new SopremoFunctionWithDefaultParameters(this, fixedParameters, fixedParameters);
-		for (int index = 0; index < boundParameters.length; index++)
-			sfdp.setDefaultParameter(fixedParameters + index, boundParameters[index]);
 		return sfdp;
 	}
 }

@@ -23,12 +23,6 @@
 			<version>${core.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>eu.stratosphere</groupId>
-			<artifactId>pact-testplan</artifactId>
-			<version>${pact-testplan.version}</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
 			<groupId>javolution</groupId>
 			<artifactId>javolution</artifactId>
 			<version>5.5.1</version>
@@ -53,6 +47,12 @@
 			<groupId>eu.stratosphere</groupId>
 			<artifactId>stratosphere-util</artifactId>
 			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>eu.stratosphere</groupId>
+			<artifactId>stratosphere-testplan</artifactId>
+			<version>${stratosphere-testing.version}</version>
+			<scope>test</scope>
 		</dependency>
 
 		<!-- <dependency> -->

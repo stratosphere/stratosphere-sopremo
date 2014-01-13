@@ -18,7 +18,6 @@ public interface ConnectorProvider {
 
 	/**
 	 * The basic four direction used to compose the complex {@link Route}.
-	 * 
 	 */
 	static enum BaseDirection {
 		TOP, DOWN, RIGHT, LEFT
@@ -26,7 +25,6 @@ public interface ConnectorProvider {
 
 	/**
 	 * Represents a line from a starting point to an ending point at a given square.
-	 * 
 	 */
 	static enum Route {
 		TOP_DOWN(BaseDirection.TOP, BaseDirection.DOWN),

@@ -18,7 +18,6 @@ import eu.stratosphere.sopremo.expressions.EvaluationExpression;
 
 /**
  * Registry that manages constants in the form of {@link EvaluationExpression}s.
- * 
  */
 public interface IConstantRegistry extends IRegistry<EvaluationExpression> {
 

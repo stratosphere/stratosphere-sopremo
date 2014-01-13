@@ -29,35 +29,6 @@ public abstract class GenericSopremoCross<Left extends IJsonNode, Right extends 
 
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.api.record.functions.Function#open(eu.stratosphere.configuration.Configuration)
-	 */
-	@Override
-	public void open(final Configuration parameters) throws Exception {
-		SopremoEnvironment.getInstance().setConfiguration(parameters);
-		// SopremoEnvironment.getInstance().setConfigurationAndContext(parameters, getRuntimeContext());
-		this.context = SopremoEnvironment.getInstance().getEvaluationContext();
-		this.collector = new JsonCollector<>(this.context);
-		final TypedObjectNode[] typedNodes =
-			SopremoUtil.getTypedNodes(TypeToken.of(this.getClass()).getSupertype(GenericSopremoCross.class));
-		this.typedInputNode1 = typedNodes[0];
-		this.typedInputNode2 = typedNodes[1];
-		SopremoUtil.configureWithTransferredState(this, GenericSopremoCross.class, parameters);
-	}
-
-	/**
-	 * This method must be implemented to provide a user implementation of a cross.
-	 * 
-	 * @param values1
-	 *        an {@link IJsonNode} from the first input
-	 * @param values2
-	 *        an {@link IJsonNode} from the second input
-	 * @param out
-	 *        a collector that collects all output pairs
-	 */
-	protected abstract void cross(Left value1, Right value2, JsonCollector<Out> out);
-
-	/*
-	 * (non-Javadoc)
 	 * @see eu.stratosphere.api.record.functions.CrossFunction#cross(eu.stratosphere.types.PactRecord,
 	 * eu.stratosphere.types.PactRecord, eu.stratosphere.api.record.functions.Collector)
 	 */
@@ -88,4 +59,33 @@ public abstract class GenericSopremoCross<Left extends IJsonNode, Right extends 
 	public final EvaluationContext getContext() {
 		return this.context;
 	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.api.record.functions.Function#open(eu.stratosphere.configuration.Configuration)
+	 */
+	@Override
+	public void open(final Configuration parameters) throws Exception {
+		SopremoEnvironment.getInstance().setConfiguration(parameters);
+		// SopremoEnvironment.getInstance().setConfigurationAndContext(parameters, getRuntimeContext());
+		this.context = SopremoEnvironment.getInstance().getEvaluationContext();
+		this.collector = new JsonCollector<>(this.context);
+		final TypedObjectNode[] typedNodes =
+			SopremoUtil.getTypedNodes(TypeToken.of(this.getClass()).getSupertype(GenericSopremoCross.class));
+		this.typedInputNode1 = typedNodes[0];
+		this.typedInputNode2 = typedNodes[1];
+		SopremoUtil.configureWithTransferredState(this, GenericSopremoCross.class, parameters);
+	}
+
+	/**
+	 * This method must be implemented to provide a user implementation of a cross.
+	 * 
+	 * @param value1
+	 *        an {@link IJsonNode} from the first input
+	 * @param value2
+	 *        an {@link IJsonNode} from the second input
+	 * @param out
+	 *        a collector that collects all output pairs
+	 */
+	protected abstract void cross(Left value1, Right value2, JsonCollector<Out> out);
 }

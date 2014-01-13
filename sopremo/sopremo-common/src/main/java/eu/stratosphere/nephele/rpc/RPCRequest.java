@@ -21,7 +21,6 @@ import java.lang.reflect.Method;
  * This class implements a request message for the RPC service.
  * <p>
  * This class is thread-safe.
- * 
  */
 final class RPCRequest extends RPCMessage {
 
@@ -79,6 +78,16 @@ final class RPCRequest extends RPCMessage {
 	}
 
 	/**
+	 * Returns the arguments for the remote procedure call.
+	 * 
+	 * @return the arguments for the remote procedure call
+	 */
+	Object[] getArgs() {
+
+		return this.args;
+	}
+
+	/**
 	 * Returns the name of the protocol this message is designed for.
 	 * 
 	 * @return the name of the protocol this message is designed for
@@ -106,15 +115,5 @@ final class RPCRequest extends RPCMessage {
 	Class<?>[] getParameterTypes() {
 
 		return this.parameterTypes;
-	}
-
-	/**
-	 * Returns the arguments for the remote procedure call.
-	 * 
-	 * @return the arguments for the remote procedure call
-	 */
-	Object[] getArgs() {
-
-		return this.args;
 	}
 }

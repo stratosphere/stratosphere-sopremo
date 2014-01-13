@@ -35,17 +35,6 @@ public class DynamicClass<DeclaringClass> {
 		return this.constructor;
 	}
 
-	private synchronized Field getField(final String name) {
-		Field field = this.fields.get(name);
-		if (field == null)
-			try {
-				this.fields.put(name, field = this.declaringClass.getField(name));
-			} catch (final Exception e) {
-				throw new RuntimeException(e);
-			}
-		return field;
-	}
-
 	public Object getFieldValue(final DeclaringClass instance, final String name) {
 		try {
 			return this.getField(name).get(instance);
@@ -59,6 +48,22 @@ public class DynamicClass<DeclaringClass> {
 		if (method == null)
 			this.methods.put(name, method = DynamicMethod.valueOf(this.declaringClass, name));
 		return method;
+	}
+
+	public Iterable<DynamicProperty<?>> getProperties() {
+		if (this.needsInit(PROPERTY_INIT))
+			this.initProperties();
+		return this.properties.values();
+	}
+
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public <BaseType> Iterable<DynamicProperty<BaseType>> getProperties(final Class<BaseType> baseType) {
+		return (Iterable) Iterables.filter(this.getProperties(), new Predicate<DynamicProperty>() {
+			@Override
+			public boolean apply(final DynamicProperty property) {
+				return baseType.isAssignableFrom(property.getType());
+			}
+		});
 	}
 
 	public Object getStaticFieldValue(final String name) {
@@ -81,6 +86,10 @@ public class DynamicClass<DeclaringClass> {
 		return this.getConstructor().isInvokableFor();
 	}
 
+	public boolean needsInit(final int stateBit) {
+		return (this.stateMask & stateBit) == 0;
+	}
+
 	public DynamicInstance<DeclaringClass> newDynamicInstance(final Object... params) throws Throwable {
 		return new DynamicInstance<DeclaringClass>(this, params);
 	}
@@ -97,6 +106,10 @@ public class DynamicClass<DeclaringClass> {
 		}
 	}
 
+	public void setState(final int stateBit) {
+		this.stateMask |= stateBit;
+	}
+
 	public void setStaticFieldValue(final String name, final Object value) {
 		try {
 			this.getField(name).set(null, value);
@@ -105,28 +118,15 @@ public class DynamicClass<DeclaringClass> {
 		}
 	}
 
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public <BaseType> Iterable<DynamicProperty<BaseType>> getProperties(final Class<BaseType> baseType) {
-		return (Iterable) Iterables.filter(this.getProperties(), new Predicate<DynamicProperty>() {
-			@Override
-			public boolean apply(final DynamicProperty property) {
-				return baseType.isAssignableFrom(property.getType());
+	private synchronized Field getField(final String name) {
+		Field field = this.fields.get(name);
+		if (field == null)
+			try {
+				this.fields.put(name, field = this.declaringClass.getField(name));
+			} catch (final Exception e) {
+				throw new RuntimeException(e);
 			}
-		});
-	}
-
-	public boolean needsInit(final int stateBit) {
-		return (this.stateMask & stateBit) == 0;
-	}
-
-	public void setState(final int stateBit) {
-		this.stateMask |= stateBit;
-	}
-
-	public Iterable<DynamicProperty<?>> getProperties() {
-		if (this.needsInit(PROPERTY_INIT))
-			this.initProperties();
-		return this.properties.values();
+		return field;
 	}
 
 	@SuppressWarnings("rawtypes")

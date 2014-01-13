@@ -59,6 +59,28 @@ public class ArrayAccessTest extends MeteorParseTest {
 	}
 
 	@Test
+	public void testArrayProjectionOnMethodCall() {
+		final SopremoPlan actualPlan =
+			this.parseScript(
+				"$input = read from 'file://input.json';\n" +
+					"$result = transform $input into { result: $input.all()[*].street };\n" +
+					"write $result to 'file://output.json'; ");
+
+		final SopremoPlan expectedPlan = new SopremoPlan();
+		final Source input = new Source("file://input.json");
+		final Projection projection = new Projection().
+			withInputs(input).
+			withResultProjection(new ObjectCreation(
+				new ObjectCreation.FieldAssignment("result",
+					new ArrayProjection(new ObjectAccess("street")).
+						withInputExpression(createFunctionCall(CoreFunctions.ALL, new InputSelection(0))))));
+		final Sink sink = new Sink("file://output.json").withInputs(projection);
+		expectedPlan.setSinks(sink);
+
+		assertPlanEquals(expectedPlan, actualPlan);
+	}
+
+	@Test
 	public void testArrayProjectionWithMethodCall() {
 		final SopremoPlan actualPlan =
 			this.parseScript(
@@ -75,28 +97,6 @@ public class ArrayAccessTest extends MeteorParseTest {
 					new ArrayProjection(createFunctionCall(CoreFunctions.COUNT, EvaluationExpression.VALUE)).
 						withInputExpression(
 						new ObjectAccess("addresses").withInputExpression(new InputSelection(0))))));
-		final Sink sink = new Sink("file://output.json").withInputs(projection);
-		expectedPlan.setSinks(sink);
-
-		assertPlanEquals(expectedPlan, actualPlan);
-	}
-
-	@Test
-	public void testArrayProjectionOnMethodCall() {
-		final SopremoPlan actualPlan =
-			this.parseScript(
-				"$input = read from 'file://input.json';\n" +
-					"$result = transform $input into { result: $input.all()[*].street };\n" +
-					"write $result to 'file://output.json'; ");
-
-		final SopremoPlan expectedPlan = new SopremoPlan();
-		final Source input = new Source("file://input.json");
-		final Projection projection = new Projection().
-			withInputs(input).
-			withResultProjection(new ObjectCreation(
-				new ObjectCreation.FieldAssignment("result",
-					new ArrayProjection(new ObjectAccess("street")).
-						withInputExpression(createFunctionCall(CoreFunctions.ALL, new InputSelection(0))))));
 		final Sink sink = new Sink("file://output.json").withInputs(projection);
 		expectedPlan.setSinks(sink);
 

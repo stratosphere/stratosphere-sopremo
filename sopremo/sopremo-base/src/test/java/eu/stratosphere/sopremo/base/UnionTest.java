@@ -6,15 +6,6 @@ import eu.stratosphere.sopremo.testing.SopremoOperatorTestBase;
 import eu.stratosphere.sopremo.testing.SopremoTestPlan;
 
 public class UnionTest extends SopremoOperatorTestBase<Union> {
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.EqualVerifyTest#createDefaultInstance(int)
-	 */
-	@Override
-	protected Union createDefaultInstance(final int index) {
-		return new Union();
-	}
-
 	@Test
 	public void shouldSupportArraysOfPrimitives() {
 		final SopremoTestPlan sopremoPlan = new SopremoTestPlan(2, 1);
@@ -142,5 +133,14 @@ public class UnionTest extends SopremoOperatorTestBase<Union> {
 			addValue(5);
 
 		sopremoPlan.run();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.EqualVerifyTest#createDefaultInstance(int)
+	 */
+	@Override
+	protected Union createDefaultInstance(final int index) {
+		return new Union();
 	}
 }

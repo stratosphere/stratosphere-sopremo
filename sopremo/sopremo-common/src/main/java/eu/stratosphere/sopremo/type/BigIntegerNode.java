@@ -9,11 +9,17 @@ import eu.stratosphere.sopremo.pact.SopremoUtil;
 
 /**
  * This node represents a {@link BigInteger}.
- * 
  */
 public class BigIntegerNode extends AbstractNumericNode implements INumericNode {
 
 	private BigInteger value;
+
+	/**
+	 * Initializes a BigIntegerNode which represents 0.
+	 */
+	public BigIntegerNode() {
+		this.value = BigInteger.ZERO;
+	}
 
 	/**
 	 * Initializes a BigIntegerNode which represents the given {@link BigInteger}. To create new BigIntegerNodes please
@@ -26,28 +32,30 @@ public class BigIntegerNode extends AbstractNumericNode implements INumericNode 
 		this.value = v;
 	}
 
-	/**
-	 * Initializes a BigIntegerNode which represents 0.
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.ISopremoType#toString(java.lang.StringBuilder)
 	 */
-	public BigIntegerNode() {
-		this.value = BigInteger.ZERO;
+	@Override
+	public void appendAsString(final Appendable appendable) throws IOException {
+		TextFormat.getInstance(BigInteger.class).format(this.value, appendable);
 	}
 
 	@Override
-	public BigInteger getJavaValue() {
-		return this.value;
-	}
-
-	public void setValue(final BigInteger value) {
-		this.value = value;
+	public void clear() {
+		if (SopremoUtil.DEBUG)
+			this.value = BigInteger.ZERO;
 	}
 
 	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + this.value.hashCode();
-		return result;
+	public int compareToSameType(final IJsonNode other) {
+		return this.value.compareTo(((BigIntegerNode) other).value);
+	}
+
+	@Override
+	public void copyValueFrom(final IJsonNode otherNode) {
+		checkNumber(otherNode);
+		this.value = ((INumericNode) otherNode).getBigIntegerValue();
 	}
 
 	@Override
@@ -65,29 +73,6 @@ public class BigIntegerNode extends AbstractNumericNode implements INumericNode 
 		return true;
 	}
 
-	/**
-	 * Creates a new BigIntegerNode which represents the given {@link BigInteger}.
-	 * 
-	 * @param bigInteger
-	 *        the value that should be represented by this node
-	 * @return the new BigIntegerNode
-	 */
-	public static BigIntegerNode valueOf(final BigInteger bigInteger) {
-		if (bigInteger != null)
-			return new BigIntegerNode(bigInteger);
-		throw new NullPointerException();
-	}
-
-	@Override
-	public int getIntValue() {
-		return this.value.intValue();
-	}
-
-	@Override
-	public long getLongValue() {
-		return this.value.longValue();
-	}
-
 	@Override
 	public BigInteger getBigIntegerValue() {
 		return this.value;
@@ -103,32 +88,6 @@ public class BigIntegerNode extends AbstractNumericNode implements INumericNode 
 		return this.value.doubleValue();
 	}
 
-	@Override
-	public boolean isIntegralNumber() {
-		return true;
-	}
-
-	@Override
-	public String getValueAsText() {
-		return this.value.toString();
-	}
-
-	@Override
-	public Class<BigIntegerNode> getType() {
-		return BigIntegerNode.class;
-	}
-
-	@Override
-	public void copyValueFrom(final IJsonNode otherNode) {
-		checkNumber(otherNode);
-		this.value = ((INumericNode) otherNode).getBigIntegerValue();
-	}
-
-	@Override
-	public int compareToSameType(final IJsonNode other) {
-		return this.value.compareTo(((BigIntegerNode) other).value);
-	}
-
 	/*
 	 * (non-Javadoc)
 	 * @see eu.stratosphere.sopremo.type.INumericNode#getGeneralilty()
@@ -139,17 +98,57 @@ public class BigIntegerNode extends AbstractNumericNode implements INumericNode 
 	}
 
 	@Override
-	public void clear() {
-		if (SopremoUtil.DEBUG)
-			this.value = BigInteger.ZERO;
+	public int getIntValue() {
+		return this.value.intValue();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.ISopremoType#toString(java.lang.StringBuilder)
-	 */
 	@Override
-	public void appendAsString(final Appendable appendable) throws IOException {
-		TextFormat.getInstance(BigInteger.class).format(this.value, appendable);
+	public BigInteger getJavaValue() {
+		return this.value;
+	}
+
+	@Override
+	public long getLongValue() {
+		return this.value.longValue();
+	}
+
+	@Override
+	public Class<BigIntegerNode> getType() {
+		return BigIntegerNode.class;
+	}
+
+	@Override
+	public String getValueAsText() {
+		return this.value.toString();
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + this.value.hashCode();
+		return result;
+	}
+
+	@Override
+	public boolean isIntegralNumber() {
+		return true;
+	}
+
+	public void setValue(final BigInteger value) {
+		this.value = value;
+	}
+
+	/**
+	 * Creates a new BigIntegerNode which represents the given {@link BigInteger}.
+	 * 
+	 * @param bigInteger
+	 *        the value that should be represented by this node
+	 * @return the new BigIntegerNode
+	 */
+	public static BigIntegerNode valueOf(final BigInteger bigInteger) {
+		if (bigInteger != null)
+			return new BigIntegerNode(bigInteger);
+		throw new NullPointerException();
 	}
 }

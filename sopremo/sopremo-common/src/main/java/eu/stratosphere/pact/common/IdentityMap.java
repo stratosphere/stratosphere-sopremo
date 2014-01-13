@@ -22,7 +22,6 @@ import eu.stratosphere.util.Collector;
 
 /**
  * Trivial PACT stub which emits the pairs without modifications.
- * 
  */
 public class IdentityMap extends AbstractFunction implements GenericMapper<SopremoRecord, SopremoRecord> {
 	/*

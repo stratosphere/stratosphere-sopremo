@@ -13,10 +13,13 @@ import eu.stratosphere.sopremo.type.TextNode;
 
 public class TernaryExpressionTest extends EvaluableExpressionTest<TernaryExpression> {
 
-	@Override
-	protected TernaryExpression createDefaultInstance(final int index) {
-		return new TernaryExpression(new ConstantExpression(BooleanNode.TRUE), new ConstantExpression(
-			IntNode.valueOf(index)), new ConstantExpression(IntNode.valueOf(index)));
+	@Test
+	public void shouldBeMissingIfThenExprIsEmpty() {
+		final IJsonNode result = new TernaryExpression(new InputSelection(1),
+			new ConstantExpression(IntNode.valueOf(0))).evaluate(
+			createArrayNode(BooleanNode.TRUE, BooleanNode.FALSE));
+
+		Assert.assertEquals(MissingNode.getInstance(), result);
 	}
 
 	@Test
@@ -27,24 +30,6 @@ public class TernaryExpressionTest extends EvaluableExpressionTest<TernaryExpres
 			createArrayNode(BooleanNode.TRUE, BooleanNode.FALSE));
 
 		Assert.assertEquals(TextNode.valueOf("if"), result);
-	}
-
-	@Test
-	public void shouldEvaluateThenExpIfClauseIsTrue() {
-		final IJsonNode result = new TernaryExpression(new InputSelection(1),
-			new ConstantExpression(IntNode.valueOf(0)), new ConstantExpression(IntNode.valueOf(1))).evaluate(
-			createArrayNode(BooleanNode.TRUE, BooleanNode.FALSE));
-
-		Assert.assertEquals(IntNode.valueOf(1), result);
-	}
-
-	@Test
-	public void shouldBeMissingIfThenExprIsEmpty() {
-		final IJsonNode result = new TernaryExpression(new InputSelection(1),
-			new ConstantExpression(IntNode.valueOf(0))).evaluate(
-			createArrayNode(BooleanNode.TRUE, BooleanNode.FALSE));
-
-		Assert.assertEquals(MissingNode.getInstance(), result);
 	}
 
 	@Test
@@ -62,5 +47,20 @@ public class TernaryExpressionTest extends EvaluableExpressionTest<TernaryExpres
 			new ConstantExpression(IntNode.valueOf(0))).evaluate(IntNode.valueOf(42));
 
 		Assert.assertEquals(IntNode.valueOf(0), result);
+	}
+
+	@Test
+	public void shouldEvaluateThenExpIfClauseIsTrue() {
+		final IJsonNode result = new TernaryExpression(new InputSelection(1),
+			new ConstantExpression(IntNode.valueOf(0)), new ConstantExpression(IntNode.valueOf(1))).evaluate(
+			createArrayNode(BooleanNode.TRUE, BooleanNode.FALSE));
+
+		Assert.assertEquals(IntNode.valueOf(1), result);
+	}
+
+	@Override
+	protected TernaryExpression createDefaultInstance(final int index) {
+		return new TernaryExpression(new ConstantExpression(BooleanNode.TRUE), new ConstantExpression(
+			IntNode.valueOf(index)), new ConstantExpression(IntNode.valueOf(index)));
 	}
 }

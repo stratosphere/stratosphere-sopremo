@@ -27,6 +27,38 @@ public abstract class GenericSopremoJoin<Left extends IJsonNode, Right extends I
 
 	private TypedObjectNode typedInputNode1, typedInputNode2;
 
+	@Override
+	public final EvaluationContext getContext() {
+		return this.context;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.api.record.functions.JoinFunction#match(eu.stratosphere.types.PactRecord,
+	 * eu.stratosphere.types.PactRecord, eu.stratosphere.api.record.functions.Collector)
+	 */
+	@SuppressWarnings("unchecked")
+	@Override
+	public void join(final SopremoRecord record1, final SopremoRecord record2, final Collector<SopremoRecord> out) {
+		this.collector.configure(out);
+		final IJsonNode input1 = record1.getNode(), input2 = record2.getNode();
+		if (SopremoUtil.LOG.isTraceEnabled())
+			SopremoUtil.LOG.trace(String.format("%s %s/%s", this.getContext().getOperatorDescription(), input1,
+				input2));
+		try {
+			this.join(
+				(Left) (this.typedInputNode1 == null ? input1
+					: this.typedInputNode1.withBackingNode((IObjectNode) input1)),
+				(Right) (this.typedInputNode2 == null ? input2
+					: this.typedInputNode2.withBackingNode((IObjectNode) input2)),
+				this.collector);
+		} catch (final RuntimeException e) {
+			SopremoUtil.LOG.error(String.format("Error occurred @ %s with %s/%s: %s", this.getContext()
+				.getOperatorDescription(), input1, input2, e));
+			throw e;
+		}
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * @see eu.stratosphere.api.record.functions.Function#open(eu.stratosphere.configuration.Configuration)
@@ -44,11 +76,6 @@ public abstract class GenericSopremoJoin<Left extends IJsonNode, Right extends I
 		SopremoUtil.configureWithTransferredState(this, GenericSopremoJoin.class, parameters);
 	}
 
-	@Override
-	public final EvaluationContext getContext() {
-		return this.context;
-	}
-
 	/**
 	 * This method must be implemented to provide a user implementation of a match.
 	 * 
@@ -59,32 +86,5 @@ public abstract class GenericSopremoJoin<Left extends IJsonNode, Right extends I
 	 * @param out
 	 *        a collector that collects all output pairs
 	 */
-	protected abstract void match(Left value1, Right value2, JsonCollector<Out> out);
-
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.api.record.functions.JoinFunction#match(eu.stratosphere.types.PactRecord,
-	 * eu.stratosphere.types.PactRecord, eu.stratosphere.api.record.functions.Collector)
-	 */
-	@SuppressWarnings("unchecked")
-	@Override
-	public void match(final SopremoRecord record1, final SopremoRecord record2, final Collector<SopremoRecord> out) {
-		this.collector.configure(out);
-		final IJsonNode input1 = record1.getNode(), input2 = record2.getNode();
-		if (SopremoUtil.LOG.isTraceEnabled())
-			SopremoUtil.LOG.trace(String.format("%s %s/%s", this.getContext().getOperatorDescription(), input1,
-				input2));
-		try {
-			this.match(
-				(Left) (this.typedInputNode1 == null ? input1
-					: this.typedInputNode1.withBackingNode((IObjectNode) input1)),
-				(Right) (this.typedInputNode2 == null ? input2
-					: this.typedInputNode2.withBackingNode((IObjectNode) input2)),
-				this.collector);
-		} catch (final RuntimeException e) {
-			SopremoUtil.LOG.error(String.format("Error occurred @ %s with %s/%s: %s", this.getContext()
-				.getOperatorDescription(), input1, input2, e));
-			throw e;
-		}
-	}
+	protected abstract void join(Left value1, Right value2, JsonCollector<Out> out);
 }

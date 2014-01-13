@@ -1,8 +1,8 @@
 package eu.stratosphere.util.reflect;
 
+
 /**
  * Signature that takes an array of types as its only parameter.
- * 
  */
 public class ArraySignature extends Signature {
 	/**
@@ -32,7 +32,7 @@ public class ArraySignature extends Signature {
 	 * Returns the sum of the distance of all types of the actual signature to the array component type of this
 	 * signature.
 	 * 
-	 * @return the distance or {@link MethodSignature#INCOMPATIBLE}
+	 * @return the distance or {@link Signature#INCOMPATIBLE}
 	 */
 	@Override
 	public int getDistance(final Signature actualSignature) {

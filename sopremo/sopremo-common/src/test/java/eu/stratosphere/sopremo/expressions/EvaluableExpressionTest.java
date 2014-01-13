@@ -16,6 +16,11 @@ import eu.stratosphere.sopremo.EqualCloneTest;
 public abstract class EvaluableExpressionTest<T extends EvaluationExpression> extends EqualCloneTest<T> {
 	// protected EvaluationContext context;
 
+	@Before
+	public void initContext() {
+		// this.context = new EvaluationContext();
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * @see eu.stratosphere.sopremo.EqualCloneTest#shouldComplyEqualsOperator()
@@ -26,17 +31,6 @@ public abstract class EvaluableExpressionTest<T extends EvaluationExpression> ex
 		super.shouldComplyEqualsOperator();
 	}
 
-	@Before
-	public void initContext() {
-		// this.context = new EvaluationContext();
-	}
-
-	@Override
-	protected void initVerifier(final EqualsVerifier<T> equalVerifier) {
-		super.initVerifier(equalVerifier);
-		equalVerifier.suppress(Warning.TRANSIENT_FIELDS);
-	}
-
 	@Test
 	public void testToString() throws IOException {
 		final StringBuilder builder = new StringBuilder();
@@ -44,6 +38,12 @@ public abstract class EvaluableExpressionTest<T extends EvaluationExpression> ex
 		Assert.assertFalse(
 			"builder did not write anything - override this test if it is indeed the desired behavior",
 			builder.length() == 0);
+	}
+
+	@Override
+	protected void initVerifier(final EqualsVerifier<T> equalVerifier) {
+		super.initVerifier(equalVerifier);
+		equalVerifier.suppress(Warning.TRANSIENT_FIELDS);
 	}
 
 }

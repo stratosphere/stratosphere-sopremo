@@ -45,37 +45,6 @@ import eu.stratosphere.sopremo.type.JsonUtil;
  */
 public class DefaultClientIT {
 
-	private static final class StateRecorder extends StateListener {
-		private final Deque<ExecutionState> states = new LinkedList<ExecutionState>();
-
-		private String lastDetail;
-
-		@Override
-		public void stateChanged(final ExecutionState executionStatus, final String detail) {
-			this.states.add(executionStatus);
-			this.lastDetail = detail;
-			System.out.println(detail);
-		}
-
-		/**
-		 * Returns the lastDetail.
-		 * 
-		 * @return the lastDetail
-		 */
-		public String getLastDetail() {
-			return this.lastDetail;
-		}
-
-		/**
-		 * Returns the states.
-		 * 
-		 * @return the states
-		 */
-		public Deque<ExecutionState> getStates() {
-			return this.states;
-		}
-	}
-
 	private SopremoTestServer testServer;
 
 	private DefaultClient client;
@@ -116,50 +85,6 @@ public class DefaultClientIT {
 	}
 
 	@Test
-	public void testSuccessfulExecution() throws IOException {
-		final SopremoPlan plan = this.createPlan("output.json");
-
-		this.client.submit(plan, this.stateRecorder);
-		Assert.assertSame(ExecutionState.SETUP, this.stateRecorder.getStates().getFirst());
-		Assert.assertSame(ExecutionState.FINISHED, this.stateRecorder.getStates().getLast());
-		Assert.assertEquals("", this.stateRecorder.getLastDetail());
-
-		this.testServer.checkContentsOf("output.json",
-			JsonUtil.createObjectNode("name", "Vince Wayne", "income", 32500, "mgr", false),
-			JsonUtil.createObjectNode("name", "Jane Dean", "income", 72000, "mgr", true));
-	}
-
-	@Test
-	public void testSuccessfulExecutionWithStatistics() throws IOException {
-		final SopremoPlan plan = this.createPlan("output.json");
-
-		this.client.setExecutionMode(ExecutionMode.RUN_WITH_STATISTICS);
-		this.client.submit(plan, this.stateRecorder);
-		Assert.assertSame(ExecutionState.SETUP, this.stateRecorder.getStates().getFirst());
-		Assert.assertSame(ExecutionState.FINISHED, this.stateRecorder.getStates().getLast());
-		Assert.assertFalse("".equals(this.stateRecorder.getLastDetail()));
-
-		this.testServer.checkContentsOf("output.json",
-			JsonUtil.createObjectNode("name", "Vince Wayne", "income", 32500, "mgr", false),
-			JsonUtil.createObjectNode("name", "Jane Dean", "income", 72000, "mgr", true));
-	}
-
-	@Test
-	public void testMultipleSuccessfulExecutions() throws IOException {
-		final ExecutionResponse[] responses = new ExecutionResponse[3];
-		for (int index = 0; index < responses.length; index++) {
-			final SopremoPlan plan = this.createPlan("output" + index + ".json");
-			this.client.submit(plan, this.stateRecorder);
-			Assert.assertSame(ExecutionState.SETUP, this.stateRecorder.getStates().getFirst());
-			Assert.assertSame(ExecutionState.FINISHED, this.stateRecorder.getStates().getLast());
-
-			this.testServer.checkContentsOf("output" + index + ".json",
-				JsonUtil.createObjectNode("name", "Vince Wayne", "income", 32500, "mgr", false),
-				JsonUtil.createObjectNode("name", "Jane Dean", "income", 72000, "mgr", true));
-		}
-	}
-
-	@Test
 	public void testFailIfInvalidPlan() {
 		final SopremoPlan plan = new SopremoPlan();
 		plan.setSinks(new Sink("file:///invalidSink"));
@@ -195,6 +120,50 @@ public class DefaultClientIT {
 		Assert.assertNotSame("", this.stateRecorder.getLastDetail());
 	}
 
+	@Test
+	public void testMultipleSuccessfulExecutions() throws IOException {
+		final ExecutionResponse[] responses = new ExecutionResponse[3];
+		for (int index = 0; index < responses.length; index++) {
+			final SopremoPlan plan = this.createPlan("output" + index + ".json");
+			this.client.submit(plan, this.stateRecorder);
+			Assert.assertSame(ExecutionState.SETUP, this.stateRecorder.getStates().getFirst());
+			Assert.assertSame(ExecutionState.FINISHED, this.stateRecorder.getStates().getLast());
+
+			this.testServer.checkContentsOf("output" + index + ".json",
+				JsonUtil.createObjectNode("name", "Vince Wayne", "income", 32500, "mgr", false),
+				JsonUtil.createObjectNode("name", "Jane Dean", "income", 72000, "mgr", true));
+		}
+	}
+
+	@Test
+	public void testSuccessfulExecution() throws IOException {
+		final SopremoPlan plan = this.createPlan("output.json");
+
+		this.client.submit(plan, this.stateRecorder);
+		Assert.assertSame(ExecutionState.SETUP, this.stateRecorder.getStates().getFirst());
+		Assert.assertSame(ExecutionState.FINISHED, this.stateRecorder.getStates().getLast());
+		Assert.assertEquals("", this.stateRecorder.getLastDetail());
+
+		this.testServer.checkContentsOf("output.json",
+			JsonUtil.createObjectNode("name", "Vince Wayne", "income", 32500, "mgr", false),
+			JsonUtil.createObjectNode("name", "Jane Dean", "income", 72000, "mgr", true));
+	}
+
+	@Test
+	public void testSuccessfulExecutionWithStatistics() throws IOException {
+		final SopremoPlan plan = this.createPlan("output.json");
+
+		this.client.setExecutionMode(ExecutionMode.RUN_WITH_STATISTICS);
+		this.client.submit(plan, this.stateRecorder);
+		Assert.assertSame(ExecutionState.SETUP, this.stateRecorder.getStates().getFirst());
+		Assert.assertSame(ExecutionState.FINISHED, this.stateRecorder.getStates().getLast());
+		Assert.assertFalse("".equals(this.stateRecorder.getLastDetail()));
+
+		this.testServer.checkContentsOf("output.json",
+			JsonUtil.createObjectNode("name", "Vince Wayne", "income", 32500, "mgr", false),
+			JsonUtil.createObjectNode("name", "Jane Dean", "income", 72000, "mgr", true));
+	}
+
 	private SopremoPlan createPlan(final String outputName) throws IOException {
 		final SopremoPlan plan = new SopremoPlan();
 		final Source input = new Source(this.inputDir.toURI().toString());
@@ -208,6 +177,37 @@ public class DefaultClientIT {
 		final Sink output = new Sink(this.testServer.createFile(outputName).toURI().toString()).withInputs(selection);
 		plan.setSinks(output);
 		return plan;
+	}
+
+	private static final class StateRecorder extends StateListener {
+		private final Deque<ExecutionState> states = new LinkedList<ExecutionState>();
+
+		private String lastDetail;
+
+		/**
+		 * Returns the lastDetail.
+		 * 
+		 * @return the lastDetail
+		 */
+		public String getLastDetail() {
+			return this.lastDetail;
+		}
+
+		/**
+		 * Returns the states.
+		 * 
+		 * @return the states
+		 */
+		public Deque<ExecutionState> getStates() {
+			return this.states;
+		}
+
+		@Override
+		public void stateChanged(final ExecutionState executionStatus, final String detail) {
+			this.states.add(executionStatus);
+			this.lastDetail = detail;
+			System.out.println(detail);
+		}
 	}
 
 }

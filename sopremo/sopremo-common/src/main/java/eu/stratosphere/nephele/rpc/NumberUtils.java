@@ -19,7 +19,6 @@ package eu.stratosphere.nephele.rpc;
  * This class provides a number of convenience methods to deal with numbers and the conversion of them.
  * <p>
  * This class is thread-safe.
- * 
  */
 public final class NumberUtils {
 
@@ -29,15 +28,28 @@ public final class NumberUtils {
 	private NumberUtils() {
 	}
 
+	/**
+	 * Reads and deserializes an integer number from the given byte array.
+	 * 
+	 * @param byteArray
+	 *        the byte array to read from
+	 * @param offset
+	 *        the offset at which to start reading the byte array
+	 * @return the deserialized integer number
+	 */
+	public static int byteArrayToInteger(final byte[] byteArray, final int offset) {
+
+		int integer = 0;
+
+		for (int i = 0; i < 4; ++i)
+			integer |= (byteArray[offset + 3 - i] & 0xff) << (i << 3);
+
+		return integer;
+	}
+
 	public static short byteArrayToShort(final byte[] arr, final int offset) {
 
 		return (short) (arr[offset] << 8 | arr[offset + 1] & 0xFF);
-	}
-
-	public static void shortToByteArray(final short val, final byte[] arr, final int offset) {
-
-		arr[offset] = (byte) ((val & 0xFF00) >> 8);
-		arr[offset + 1] = (byte) (val & 0x00FF);
 	}
 
 	/**
@@ -58,22 +70,9 @@ public final class NumberUtils {
 		}
 	}
 
-	/**
-	 * Reads and deserializes an integer number from the given byte array.
-	 * 
-	 * @param byteArray
-	 *        the byte array to read from
-	 * @param offset
-	 *        the offset at which to start reading the byte array
-	 * @return the deserialized integer number
-	 */
-	public static int byteArrayToInteger(final byte[] byteArray, final int offset) {
+	public static void shortToByteArray(final short val, final byte[] arr, final int offset) {
 
-		int integer = 0;
-
-		for (int i = 0; i < 4; ++i)
-			integer |= (byteArray[offset + 3 - i] & 0xff) << (i << 3);
-
-		return integer;
+		arr[offset] = (byte) ((val & 0xFF00) >> 8);
+		arr[offset + 1] = (byte) (val & 0x00FF);
 	}
 }

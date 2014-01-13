@@ -27,10 +27,6 @@ public class SopremoFunctionWithDefaultParameters extends SopremoFunction {
 
 	/**
 	 * Initializes SopremoFunctionWithDefaultParameters.
-	 * 
-	 * @param name
-	 * @param minimumNumberOfParameters
-	 * @param maximumNumberOfParameters
 	 */
 	public SopremoFunctionWithDefaultParameters(final SopremoFunction originalFunction,
 			final int minimumNumberOfParameters) {
@@ -41,7 +37,6 @@ public class SopremoFunctionWithDefaultParameters extends SopremoFunction {
 	/**
 	 * Initializes SopremoFunctionWithDefaultParameters.
 	 * 
-	 * @param name
 	 * @param minimumNumberOfParameters
 	 * @param maximumNumberOfParameters
 	 */

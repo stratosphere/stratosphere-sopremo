@@ -13,11 +13,6 @@ import eu.stratosphere.sopremo.type.IJsonNode;
 public class ExpressionFunction extends SopremoFunction {
 	private final EvaluationExpression definition;
 
-	public ExpressionFunction(final int numParams, final EvaluationExpression definition) {
-		super(numParams, numParams);
-		this.definition = definition;
-	}
-
 	/**
 	 * Initializes ExpressionFunction.
 	 */
@@ -26,14 +21,9 @@ public class ExpressionFunction extends SopremoFunction {
 		this.definition = null;
 	}
 
-	public EvaluationExpression inline(final EvaluationExpression... paramList) {
-		return this.getDefinition().clone().replace(Predicates.instanceOf(InputSelection.class),
-			new TransformFunction() {
-				@Override
-				public EvaluationExpression apply(final EvaluationExpression in) {
-					return paramList[((InputSelection) in).getIndex()].clone();
-				}
-			}).simplify();
+	public ExpressionFunction(final int numParams, final EvaluationExpression definition) {
+		super(numParams, numParams);
+		this.definition = definition;
 	}
 
 	/*
@@ -56,14 +46,6 @@ public class ExpressionFunction extends SopremoFunction {
 	}
 
 	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = super.hashCode();
-		result = prime * result + this.definition.hashCode();
-		return result;
-	}
-
-	@Override
 	public boolean equals(final Object obj) {
 		if (this == obj)
 			return true;
@@ -77,5 +59,23 @@ public class ExpressionFunction extends SopremoFunction {
 
 	public EvaluationExpression getDefinition() {
 		return this.definition;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result + this.definition.hashCode();
+		return result;
+	}
+
+	public EvaluationExpression inline(final EvaluationExpression... paramList) {
+		return this.getDefinition().clone().replace(Predicates.instanceOf(InputSelection.class),
+			new TransformFunction() {
+				@Override
+				public EvaluationExpression apply(final EvaluationExpression in) {
+					return paramList[((InputSelection) in).getIndex()].clone();
+				}
+			}).simplify();
 	}
 }

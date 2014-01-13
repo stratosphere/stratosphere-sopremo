@@ -17,6 +17,7 @@ package eu.stratosphere.sopremo.expressions;
 import java.io.IOException;
 
 import eu.stratosphere.sopremo.aggregation.Aggregation;
+import eu.stratosphere.sopremo.aggregation.AggregationFunction;
 import eu.stratosphere.sopremo.type.IJsonNode;
 import eu.stratosphere.sopremo.type.IStreamNode;
 
@@ -52,17 +53,24 @@ public class AggregationExpression extends PathSegmentExpression {
 		this.aggregation = null;
 	}
 
+	@Override
+	public void appendAsString(final Appendable appendable) throws IOException {
+		this.aggregation.appendAsString(appendable);
+		appendable.append('(');
+		if (this.getInputExpression() != EvaluationExpression.VALUE)
+			this.getInputExpression().appendAsString(appendable);
+		appendable.append(')');
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * @see
-	 * eu.stratosphere.sopremo.expressions.PathSegmentExpression#evaluateSegment(eu.stratosphere.sopremo.type.IJsonNode)
+	 * eu.stratosphere.sopremo.expressions.PathSegmentExpression#equalsSameClass(eu.stratosphere.sopremo.expressions
+	 * .PathSegmentExpression)
 	 */
 	@Override
-	protected IJsonNode evaluateSegment(final IJsonNode nodes) {
-		this.aggregation.initialize();
-		for (final IJsonNode node : (IStreamNode<?>) nodes)
-			this.aggregation.aggregate(node);
-		return this.aggregation.getFinalAggregate();
+	public boolean equalsSameClass(final PathSegmentExpression other) {
+		return this.aggregation.equals(((AggregationExpression) other).aggregation);
 	}
 
 	/**
@@ -77,12 +85,25 @@ public class AggregationExpression extends PathSegmentExpression {
 	/*
 	 * (non-Javadoc)
 	 * @see
-	 * eu.stratosphere.sopremo.expressions.PathSegmentExpression#equalsSameClass(eu.stratosphere.sopremo.expressions
-	 * .PathSegmentExpression)
+	 * eu.stratosphere.sopremo.expressions.PathSegmentExpression#withInputExpression(eu.stratosphere.sopremo.expressions
+	 * .EvaluationExpression)
 	 */
 	@Override
-	public boolean equalsSameClass(final PathSegmentExpression other) {
-		return this.aggregation.equals(((AggregationExpression) other).aggregation);
+	public AggregationExpression withInputExpression(final EvaluationExpression inputExpression) {
+		return (AggregationExpression) super.withInputExpression(inputExpression);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see
+	 * eu.stratosphere.sopremo.expressions.PathSegmentExpression#evaluateSegment(eu.stratosphere.sopremo.type.IJsonNode)
+	 */
+	@Override
+	protected IJsonNode evaluateSegment(final IJsonNode nodes) {
+		this.aggregation.initialize();
+		for (final IJsonNode node : (IStreamNode<?>) nodes)
+			this.aggregation.aggregate(node);
+		return this.aggregation.getFinalAggregate();
 	}
 
 	/*
@@ -92,25 +113,5 @@ public class AggregationExpression extends PathSegmentExpression {
 	@Override
 	protected int segmentHashCode() {
 		return this.aggregation.hashCode();
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see
-	 * eu.stratosphere.sopremo.expressions.PathSegmentExpression#withInputExpression(eu.stratosphere.sopremo.expressions
-	 * .EvaluationExpression)
-	 */
-	@Override
-	public AggregationExpression withInputExpression(final EvaluationExpression inputExpression) {
-		return (AggregationExpression) super.withInputExpression(inputExpression);
-	}
-
-	@Override
-	public void appendAsString(final Appendable appendable) throws IOException {
-		this.aggregation.appendAsString(appendable);
-		appendable.append('(');
-		if (this.getInputExpression() != EvaluationExpression.VALUE)
-			this.getInputExpression().appendAsString(appendable);
-		appendable.append(')');
 	}
 }

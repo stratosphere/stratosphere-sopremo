@@ -12,7 +12,8 @@ import java.util.List;
 import eu.stratosphere.util.dag.GraphLevelPartitioner.Level;
 
 /**
- * Utility class to pretty print arbitrary directed acyclic graphs. It needs a {@link Navigator} to traverse form the
+ * Utility class to pretty print arbitrary directed acyclic graphs. It needs a {@link ConnectionNavigator} to traverse
+ * form the
  * start nodes through the graph and optionally a {@link NodePrinter} to format the nodes.<br>
  * <br>
  * The nodes are printed in rows visualizing the dependencies. A dependency of node A is a node B iff there exists an
@@ -66,8 +67,8 @@ public class GraphPrinter<Node> {
 	}
 
 	/**
-	 * Prints the directed acyclic graph to a string representation where each node is formatted by the specified
-	 * {@link Formatter} format and all structural elements are formatted with the given width.
+	 * Prints the directed acyclic graph to a string representation where all structural elements are formatted with the
+	 * given width.
 	 * 
 	 * @param appendable
 	 *        the target of the print operations
@@ -85,8 +86,8 @@ public class GraphPrinter<Node> {
 	}
 
 	/**
-	 * Prints the directed acyclic graph to a string representation where each node is formatted by the specified
-	 * {@link Formatter} format and all structural elements are formatted with the given width.
+	 * Prints the directed acyclic graph to a string representation where all structural elements are formatted with the
+	 * given width.
 	 * 
 	 * @param appendable
 	 *        the target of the print operations
@@ -98,14 +99,13 @@ public class GraphPrinter<Node> {
 	 *         if an I/O error occurred during the print operation
 	 */
 	public void print(final Appendable appendable, final Iterator<? extends Node> startNodes,
-			final ConnectionNavigator<Node> navigator)
-			throws IOException {
+			final ConnectionNavigator<Node> navigator) throws IOException {
 		new PrintState(appendable, GraphLevelPartitioner.getLevels(startNodes, navigator)).printDAG();
 	}
 
 	/**
-	 * Prints the directed acyclic graph to a string representation where each node is formatted by the specified
-	 * {@link Formatter} format and all structural elements are formatted with the given width.
+	 * Prints the directed acyclic graph to a string representation where all structural elements are formatted with the
+	 * given width.
 	 * 
 	 * @param appendable
 	 *        the target of the print operations
@@ -227,9 +227,22 @@ public class GraphPrinter<Node> {
 	}
 
 	/**
+	 * Default printer, which simply invokes {@link Object#toString()}
+	 * 
+	 * @param <Node>
+	 *        the class of the node
+	 */
+	public static class StandardPrinter<Node> implements NodePrinter<Node> {
+		@Override
+		public String toString(final Object node) {
+			return node.toString();
+		}
+
+	}
+
+	/**
 	 * Placeholder to format connections between nodes above several levels. There are two types: spacers and
 	 * connectors.
-	 * 
 	 */
 	private static class Placeholder {
 		private final List<Object> targets = new ArrayList<Object>(1);
@@ -419,20 +432,6 @@ public class GraphPrinter<Node> {
 					nodeString = nodeString.substring(0, GraphPrinter.this.width);
 				this.appender.append(String.format(GraphPrinter.this.widthString, nodeString));
 			}
-		}
-
-	}
-
-	/**
-	 * Default printer, which simply invokes {@link Object#toString()}
-	 * 
-	 * @param <Node>
-	 *        the class of the node
-	 */
-	public static class StandardPrinter<Node> implements NodePrinter<Node> {
-		@Override
-		public String toString(final Object node) {
-			return node.toString();
 		}
 
 	}

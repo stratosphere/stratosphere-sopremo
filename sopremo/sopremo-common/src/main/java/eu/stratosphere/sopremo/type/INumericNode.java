@@ -19,19 +19,15 @@ import java.math.BigInteger;
 
 /**
  * Interface for all nodes that store numerical values.
- * 
  */
 public interface INumericNode extends IPrimitiveNode {
 
-	/**
-	 * Returns this nodes value as an <code>int</code>.
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.type.IJsonNode#clone()
 	 */
-	public abstract int getIntValue();
-
-	/**
-	 * Returns this nodes value as a <code>long</code>.
-	 */
-	public abstract long getLongValue();
+	@Override
+	public INumericNode clone();
 
 	/**
 	 * Returns this nodes value as a {@link BigInteger}.
@@ -49,6 +45,35 @@ public interface INumericNode extends IPrimitiveNode {
 	public abstract double getDoubleValue();
 
 	/**
+	 * Returns an integer that represents the generality. For two numbers with generality X and Y, the following should
+	 * hold in most occasions: X&lt;Y -&gt; the first number can be converted to the type of the second number without
+	 * loss of information.<br/>
+	 * <br/>
+	 * The five built-in types have the following order:<br/>
+	 * {@link IntNode} < {@link LongNode} < {@link BigIntegerNode} < {@link DoubleNode} < {@link DecimalNode}.<br/>
+	 * There are obviously cases where the conversion of BigIntegerNode to DoubleNode is not lossless, but that is in
+	 * general to be expected when working with DoubleNode instead of DecimalNode.
+	 * The standard values are equi-distant from 16 to 80 with a step size of 16 to allow custom numeric types to
+	 * seamlessly integrate.
+	 */
+	public byte getGeneralilty();
+
+	/**
+	 * Returns this nodes value as an <code>int</code>.
+	 */
+	public abstract int getIntValue();
+
+	/**
+	 * Returns the java number.
+	 */
+	public abstract Number getJavaValue();
+
+	/**
+	 * Returns this nodes value as a <code>long</code>.
+	 */
+	public abstract long getLongValue();
+
+	/**
 	 * Returns the String representation of this nodes value.
 	 */
 	public abstract String getValueAsText();
@@ -62,32 +87,4 @@ public interface INumericNode extends IPrimitiveNode {
 	 * Returns either this node represents an integral number or not.
 	 */
 	public abstract boolean isIntegralNumber();
-
-	/**
-	 * Returns an integer that represents the generality. For two numbers with generality X and Y, the following should
-	 * hold in most occasions: X&lt;Y -&gt; the first number can be converted to the type of the second number without
-	 * loss of information.<br/>
-	 * <br/>
-	 * The five built-in types have the following order:<br/>
-	 * {@link IntNode} < {@link LongNode} < {@link BigIntegerNode} < {@link DoubleNode} < {@link DecimalNode}.<br/>
-	 * There are obviously cases where the conversion of BigIntegerNode to DoubleNode is not lossless, but that is in
-	 * general to be expected when working with DoubleNode instead of DecimalNode.
-	 * The standard values are equi-distant from 16 to 80 with a step size of 16 to allow custom numeric types to
-	 * seamlessly integrate.
-	 * 
-	 * @return
-	 */
-	public byte getGeneralilty();
-
-	/**
-	 * Returns the java number.
-	 */
-	public abstract Number getJavaValue();
-
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.type.IJsonNode#clone()
-	 */
-	@Override
-	public INumericNode clone();
 }

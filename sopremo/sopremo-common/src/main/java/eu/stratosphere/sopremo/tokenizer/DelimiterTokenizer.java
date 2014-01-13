@@ -43,8 +43,8 @@ public class DelimiterTokenizer extends AbstractTokenizer implements Tokenizer {
 	 * 
 	 * @param delimiters
 	 */
-	public DelimiterTokenizer(final Collection<Character> delimiters) {
-		this.delimiters.addAll(delimiters);
+	public DelimiterTokenizer(final Character... delimiters) {
+		this(Arrays.asList(delimiters));
 	}
 
 	/**
@@ -52,13 +52,25 @@ public class DelimiterTokenizer extends AbstractTokenizer implements Tokenizer {
 	 * 
 	 * @param delimiters
 	 */
-	public DelimiterTokenizer(final Character... delimiters) {
-		this(Arrays.asList(delimiters));
+	public DelimiterTokenizer(final Collection<Character> delimiters) {
+		this.delimiters.addAll(delimiters);
 	}
 
 	public DelimiterTokenizer addDelimiter(final char delimiter) {
 		this.delimiters.add(delimiter);
 		return this;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.ISopremoType#toString(java.lang.StringBuilder)
+	 */
+	@Override
+	public void appendAsString(final Appendable appendable) throws IOException {
+		appendable.append("DelimiterTokenizer [");
+		appendable.append("delimiters=");
+		TextFormat.getInstance(CharSet.class).format(this.delimiters, appendable);
+		appendable.append("]");
 	}
 
 	/**
@@ -73,18 +85,6 @@ public class DelimiterTokenizer extends AbstractTokenizer implements Tokenizer {
 
 		this.delimiters.clear();
 		this.delimiters.addAll(delimiters);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.ISopremoType#toString(java.lang.StringBuilder)
-	 */
-	@Override
-	public void appendAsString(final Appendable appendable) throws IOException {
-		appendable.append("DelimiterTokenizer [");
-		appendable.append("delimiters=");
-		TextFormat.getInstance(CharSet.class).format(this.delimiters, appendable);
-		appendable.append("]");
 	}
 
 	/*

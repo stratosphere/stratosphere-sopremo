@@ -13,17 +13,23 @@ import eu.stratosphere.sopremo.type.NullNode;
 
 public class ArrayMergerTest extends EvaluableExpressionTest<ArrayMerger> {
 
-	@Override
-	protected ArrayMerger createDefaultInstance(final int index) {
-		return new ArrayMerger();
+	@Test
+	public void shouldFillNullNodesWithValuesFromOtherArrays() {
+		final IJsonNode result = new ArrayMerger().evaluate(
+			createArrayNode(
+				createArrayNode(NullNode.getInstance(), createObjectNode("fieldName", 2),
+					NullNode.getInstance()), createArrayNode(createObjectNode("fieldName", 1)),
+				createArrayNode(null, null, createObjectNode("fieldName", 3))));
+		Assert.assertEquals(createArrayNode(createObjectNode("fieldName", 1), createObjectNode("fieldName", 2),
+			createObjectNode("fieldName", 3)), result);
 	}
 
 	@Test
-	public void shouldMergeOneArray() {
+	public void shouldFillNullValuesWithValuesFromOtherArrays() {
 		final IJsonNode result = new ArrayMerger().evaluate(
-			createArrayNode(createArrayNode(createObjectNode("fieldName", 1), createObjectNode("fieldName", 2),
+			createArrayNode(createArrayNode(null, createObjectNode("fieldName", 2),
 				createObjectNode("fieldName", 3), createObjectNode("fieldName", 4),
-				createObjectNode("fieldName", 5))));
+				createObjectNode("fieldName", 5)), createArrayNode(createObjectNode("fieldName", 1))));
 		Assert.assertEquals(createArrayNode(createObjectNode("fieldName", 1), createObjectNode("fieldName", 2),
 			createObjectNode("fieldName", 3), createObjectNode("fieldName", 4),
 			createObjectNode("fieldName", 5)), result);
@@ -41,25 +47,14 @@ public class ArrayMergerTest extends EvaluableExpressionTest<ArrayMerger> {
 	}
 
 	@Test
-	public void shouldFillNullValuesWithValuesFromOtherArrays() {
+	public void shouldMergeOneArray() {
 		final IJsonNode result = new ArrayMerger().evaluate(
-			createArrayNode(createArrayNode(null, createObjectNode("fieldName", 2),
+			createArrayNode(createArrayNode(createObjectNode("fieldName", 1), createObjectNode("fieldName", 2),
 				createObjectNode("fieldName", 3), createObjectNode("fieldName", 4),
-				createObjectNode("fieldName", 5)), createArrayNode(createObjectNode("fieldName", 1))));
+				createObjectNode("fieldName", 5))));
 		Assert.assertEquals(createArrayNode(createObjectNode("fieldName", 1), createObjectNode("fieldName", 2),
 			createObjectNode("fieldName", 3), createObjectNode("fieldName", 4),
 			createObjectNode("fieldName", 5)), result);
-	}
-
-	@Test
-	public void shouldFillNullNodesWithValuesFromOtherArrays() {
-		final IJsonNode result = new ArrayMerger().evaluate(
-			createArrayNode(
-				createArrayNode(NullNode.getInstance(), createObjectNode("fieldName", 2),
-					NullNode.getInstance()), createArrayNode(createObjectNode("fieldName", 1)),
-				createArrayNode(null, null, createObjectNode("fieldName", 3))));
-		Assert.assertEquals(createArrayNode(createObjectNode("fieldName", 1), createObjectNode("fieldName", 2),
-			createObjectNode("fieldName", 3)), result);
 	}
 
 	@Test
@@ -73,5 +68,10 @@ public class ArrayMergerTest extends EvaluableExpressionTest<ArrayMerger> {
 
 		Assert.assertEquals(createArrayNode(IntNode.valueOf(1), IntNode.valueOf(2), IntNode.valueOf(3)), result2);
 		Assert.assertSame(result1, result2);
+	}
+
+	@Override
+	protected ArrayMerger createDefaultInstance(final int index) {
+		return new ArrayMerger();
 	}
 }

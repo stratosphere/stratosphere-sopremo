@@ -31,6 +31,11 @@ public class FunctionCacheCache implements ISopremoCache {
 			};
 		};
 
+	@Override
+	public FunctionCacheCache clone() {
+		return new FunctionCacheCache();
+	}
+
 	public FunctionCache get(final SopremoFunction function) {
 		final FunctionCache cache = this.caches.get().get(function);
 		if (cache != null)
@@ -38,10 +43,5 @@ public class FunctionCacheCache implements ISopremoCache {
 		final FunctionCache newCache = new FunctionCache(function);
 		this.caches.get().put(function, newCache);
 		return newCache;
-	}
-
-	@Override
-	public FunctionCacheCache clone() {
-		return new FunctionCacheCache();
 	}
 }

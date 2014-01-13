@@ -29,6 +29,24 @@ public abstract class GenericListChildIterator<E extends EvaluationExpression> i
 
 	/*
 	 * (non-Javadoc)
+	 * @see java.util.ListIterator#add(java.lang.Object)
+	 */
+	@Override
+	public void add(final EvaluationExpression e) {
+		this.expressionIterator.add(this.convert(e));
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.expressions.tree.ChildIterator#isNamed()
+	 */
+	@Override
+	public boolean canChildBeRemoved() {
+		return true;
+	}
+
+	/*
+	 * (non-Javadoc)
 	 * @see eu.stratosphere.sopremo.expressions.tree.ChildIterator#getChildName()
 	 */
 	@Override
@@ -44,35 +62,6 @@ public abstract class GenericListChildIterator<E extends EvaluationExpression> i
 	@Override
 	public boolean hasPrevious() {
 		return this.expressionIterator.hasPrevious();
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see java.util.ListIterator#add(java.lang.Object)
-	 */
-	@Override
-	public void add(final EvaluationExpression e) {
-		this.expressionIterator.add(this.convert(e));
-	}
-
-	protected abstract E convert(EvaluationExpression childExpression);
-
-	/*
-	 * (non-Javadoc)
-	 * @see java.util.ListIterator#set(java.lang.Object)
-	 */
-	@Override
-	public void set(final EvaluationExpression e) {
-		this.expressionIterator.set(this.convert(e));
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.expressions.tree.ChildIterator#isNamed()
-	 */
-	@Override
-	public boolean canChildBeRemoved() {
-		return true;
 	}
 
 	@Override
@@ -99,6 +88,17 @@ public abstract class GenericListChildIterator<E extends EvaluationExpression> i
 	public void remove() {
 		this.expressionIterator.remove();
 	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see java.util.ListIterator#set(java.lang.Object)
+	 */
+	@Override
+	public void set(final EvaluationExpression e) {
+		this.expressionIterator.set(this.convert(e));
+	}
+
+	protected abstract E convert(EvaluationExpression childExpression);
 
 	/**
 	 * Returns the expressionIterator.

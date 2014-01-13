@@ -40,6 +40,22 @@ import eu.stratosphere.util.SopremoKryo;
 public abstract class SopremoOperatorTestBase<T extends Operator<T>> extends EqualCloneTest<T> {
 
 	@Test
+	public void testPlanClone() throws IllegalAccessException {
+		for (final T original : this.getInstances()) {
+			final SopremoPlan plan = new SopremoPlan();
+			final int numOutputs = original.getNumOutputs();
+			if (numOutputs == 0)
+				continue;
+			final List<Sink> sinks = new ArrayList<Sink>();
+			for (int index = 0; index < numOutputs; index++)
+				sinks.add(new Sink("file:///out" + index).withInputs(original.getOutput(index)));
+			plan.setSinks(sinks);
+			final Object clone = plan.clone();
+			this.testPropertyClone(SopremoPlan.class, plan, clone);
+		}
+	}
+
+	@Test
 	public void testPlanSerialization() {
 		final Kryo k = new SopremoKryo();
 
@@ -64,21 +80,5 @@ public abstract class SopremoOperatorTestBase<T extends Operator<T>> extends Equ
 		instances.add(this.second);
 		instances.addAll(this.more);
 		return instances;
-	}
-
-	@Test
-	public void testPlanClone() throws IllegalAccessException {
-		for (final T original : this.getInstances()) {
-			final SopremoPlan plan = new SopremoPlan();
-			final int numOutputs = original.getNumOutputs();
-			if (numOutputs == 0)
-				continue;
-			final List<Sink> sinks = new ArrayList<Sink>();
-			for (int index = 0; index < numOutputs; index++)
-				sinks.add(new Sink("file:///out" + index).withInputs(original.getOutput(index)));
-			plan.setSinks(sinks);
-			final Object clone = plan.clone();
-			this.testPropertyClone(SopremoPlan.class, plan, clone);
-		}
 	}
 }

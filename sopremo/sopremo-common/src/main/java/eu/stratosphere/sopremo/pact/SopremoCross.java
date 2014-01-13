@@ -1,5 +1,6 @@
 package eu.stratosphere.sopremo.pact;
 
+import eu.stratosphere.api.java.record.functions.CrossFunction;
 import eu.stratosphere.sopremo.type.IJsonNode;
 
 /**

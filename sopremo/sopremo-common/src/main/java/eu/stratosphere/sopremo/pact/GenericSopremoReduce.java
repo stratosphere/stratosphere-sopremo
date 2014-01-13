@@ -6,11 +6,13 @@ import com.google.common.reflect.TypeToken;
 
 import eu.stratosphere.api.common.functions.AbstractFunction;
 import eu.stratosphere.api.common.functions.GenericReducer;
+import eu.stratosphere.api.common.operators.base.ReduceOperatorBase.Combinable;
 import eu.stratosphere.configuration.Configuration;
 import eu.stratosphere.sopremo.EvaluationContext;
 import eu.stratosphere.sopremo.SopremoEnvironment;
 import eu.stratosphere.sopremo.serialization.SopremoRecord;
 import eu.stratosphere.sopremo.type.ArrayNode;
+import eu.stratosphere.sopremo.type.IArrayNode;
 import eu.stratosphere.sopremo.type.IJsonNode;
 import eu.stratosphere.sopremo.type.IStreamNode;
 import eu.stratosphere.sopremo.type.StreamNode;
@@ -31,39 +33,6 @@ public abstract class GenericSopremoReduce<Elem extends IJsonNode, Out extends I
 	private RecordToJsonIterator<? extends Elem> iterator;
 
 	private final StreamNode<Elem> array = new StreamNode<Elem>();
-
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.api.record.functions.Function#open(eu.stratosphere.configuration.Configuration)
-	 */
-	@Override
-	public void open(final Configuration parameters) {
-		SopremoEnvironment.getInstance().setConfiguration(parameters);
-		// SopremoEnvironment.getInstance().setConfigurationAndContext(parameters, getRuntimeContext());
-		this.context = SopremoEnvironment.getInstance().getEvaluationContext();
-		final TypedObjectNode typedInputNode =
-			SopremoUtil.getTypedNodes(TypeToken.of(this.getClass()).getSupertype(GenericSopremoReduce.class))[0];
-		this.iterator = typedInputNode == null ?
-			new UntypedRecordToJsonIterator<Elem>() : new TypedRecordToJsonIterator<Elem>(typedInputNode);
-		this.collector = new JsonCollector<>(this.context);
-		SopremoUtil.configureWithTransferredState(this, GenericSopremoReduce.class, parameters);
-		this.array.setNodeIterator(this.iterator);
-	}
-
-	@Override
-	public final EvaluationContext getContext() {
-		return this.context;
-	}
-
-	/**
-	 * This method must be implemented to provide a user implementation of a reduce.
-	 * 
-	 * @param values
-	 *        an {@link IArrayNode} that holds all elements that belong to the same key
-	 * @param out
-	 *        a collector that collects all output nodes
-	 */
-	protected abstract void reduce(IStreamNode<Elem> values, JsonCollector<Out> collector);
 
 	/*
 	 * (non-Javadoc)
@@ -91,28 +60,27 @@ public abstract class GenericSopremoReduce<Elem extends IJsonNode, Out extends I
 		}
 	}
 
-	/**
-	 * This method can be overridden by reduce stubs that want to make use of the combining feature.
-	 * In addition, the ReduceFunction extending class must be annotated as Combinable.
-	 * <p>
-	 * The use of the combiner is typically a pre-reduction of the data. It works similar as the reducer, only that is
-	 * is not guaranteed to see all values with the same key in one call to the combine function. Since it is called
-	 * prior to the <code>reduce()</code> method, input and output types of the combine method are the input types of
-	 * the <code>reduce()</code> method.
-	 * 
-	 * @see eu.stratosphere.api.record.operators .ReduceOperator.Combinable
-	 * @param records
-	 *        The records to be combined. Unlike in the reduce method, these are not necessarily all records
-	 *        belonging to the given key.
-	 * @param out
-	 *        The collector to write the result to.
-	 * @throws Exception
-	 *         Implementations may forward exceptions, which are caught by the runtime. When the
-	 *         runtime catches an exception, it aborts the combine task and lets the fail-over logic
-	 *         decide whether to retry the combiner execution.
+	@Override
+	public final EvaluationContext getContext() {
+		return this.context;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.api.record.functions.Function#open(eu.stratosphere.configuration.Configuration)
 	 */
-	protected void combine(final IStreamNode<Elem> values, final JsonCollector<Out> out) {
-		this.reduce(values, out);
+	@Override
+	public void open(final Configuration parameters) {
+		SopremoEnvironment.getInstance().setConfiguration(parameters);
+		// SopremoEnvironment.getInstance().setConfigurationAndContext(parameters, getRuntimeContext());
+		this.context = SopremoEnvironment.getInstance().getEvaluationContext();
+		final TypedObjectNode typedInputNode =
+			SopremoUtil.getTypedNodes(TypeToken.of(this.getClass()).getSupertype(GenericSopremoReduce.class))[0];
+		this.iterator = typedInputNode == null ?
+			new UntypedRecordToJsonIterator<Elem>() : new TypedRecordToJsonIterator<Elem>(typedInputNode);
+		this.collector = new JsonCollector<>(this.context);
+		SopremoUtil.configureWithTransferredState(this, GenericSopremoReduce.class, parameters);
+		this.array.setNodeIterator(this.iterator);
 	}
 
 	/*
@@ -139,4 +107,35 @@ public abstract class GenericSopremoReduce<Elem extends IJsonNode, Out extends I
 			throw e;
 		}
 	}
+
+	/**
+	 * This method can be overridden by reduce stubs that want to make use of the combining feature.
+	 * In addition, the ReduceFunction extending class must be annotated as Combinable.
+	 * <p>
+	 * The use of the combiner is typically a pre-reduction of the data. It works similar as the reducer, only that is
+	 * is not guaranteed to see all values with the same key in one call to the combine function. Since it is called
+	 * prior to the <code>reduce()</code> method, input and output types of the combine method are the input types of
+	 * the <code>reduce()</code> method.
+	 * 
+	 * @see Combinable
+	 * @param values
+	 *        The records to be combined. Unlike in the reduce method, these are not necessarily all records
+	 *        belonging to the given key.
+	 * @param out
+	 *        The collector to write the result to.
+	 *        decide whether to retry the combiner execution.
+	 */
+	protected void combine(final IStreamNode<Elem> values, final JsonCollector<Out> out) {
+		this.reduce(values, out);
+	}
+
+	/**
+	 * This method must be implemented to provide a user implementation of a reduce.
+	 * 
+	 * @param values
+	 *        an {@link IArrayNode} that holds all elements that belong to the same key
+	 * @param collector
+	 *        a collector that collects all output nodes
+	 */
+	protected abstract void reduce(IStreamNode<Elem> values, JsonCollector<Out> collector);
 }

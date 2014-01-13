@@ -47,6 +47,15 @@ public class PullingStreamNode<T extends IJsonNode> extends StreamNode<T> {
 		return !this.iterator.hasNext();
 	}
 
+	@Override
+	public Iterator<T> iterator() {
+		return this.iterator;
+	}
+
+	public void setExpression(final EvaluationExpression expression) {
+		this.expression = expression;
+	}
+
 	@SuppressWarnings("unchecked")
 	public void setSource(final IStreamNode<?> node) {
 		this.source = (Iterator<IJsonNode>) node.iterator();
@@ -56,14 +65,5 @@ public class PullingStreamNode<T extends IJsonNode> extends StreamNode<T> {
 				return (T) PullingStreamNode.this.expression.evaluate(inputNode);
 			}
 		});
-	}
-
-	@Override
-	public Iterator<T> iterator() {
-		return this.iterator;
-	}
-
-	public void setExpression(final EvaluationExpression expression) {
-		this.expression = expression;
 	}
 }

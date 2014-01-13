@@ -7,10 +7,6 @@ import eu.stratosphere.sopremo.operator.Internal;
 public class EquiJoin extends TwoSourceJoinBase<EquiJoin> {
 	private Mode mode = Mode.BOTH;
 
-	public enum Mode {
-		NONE, LEFT, RIGHT, BOTH;
-	}
-
 	public Mode getMode() {
 		return this.mode;
 	}
@@ -31,18 +27,6 @@ public class EquiJoin extends TwoSourceJoinBase<EquiJoin> {
 	/**
 	 * Sets the mode of the outer join.
 	 * 
-	 * @param mode
-	 *        the mode to set
-	 * @return this
-	 */
-	public EquiJoin withMode(final Mode mode) {
-		this.setMode(mode);
-		return this;
-	}
-
-	/**
-	 * Sets the mode of the outer join.
-	 * 
 	 * @param retainLeft
 	 *        whether left side should be retained
 	 * @param retainRight
@@ -52,6 +36,18 @@ public class EquiJoin extends TwoSourceJoinBase<EquiJoin> {
 	public EquiJoin withMode(final boolean retainLeft, final boolean retainRight) {
 		final int modeIndex = (retainLeft ? 1 : 0) + 2 * (retainRight ? 1 : 0);
 		this.setMode(Mode.values()[modeIndex]);
+		return this;
+	}
+
+	/**
+	 * Sets the mode of the outer join.
+	 * 
+	 * @param mode
+	 *        the mode to set
+	 * @return this
+	 */
+	public EquiJoin withMode(final Mode mode) {
+		this.setMode(mode);
 		return this;
 	}
 
@@ -69,5 +65,9 @@ public class EquiJoin extends TwoSourceJoinBase<EquiJoin> {
 		default:
 			throw new IllegalStateException();
 		}
+	}
+
+	public enum Mode {
+		NONE, LEFT, RIGHT, BOTH;
 	}
 }

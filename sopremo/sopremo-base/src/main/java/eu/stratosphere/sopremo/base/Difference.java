@@ -20,7 +20,6 @@ import eu.stratosphere.sopremo.type.IStreamNode;
  * Specifically, given a value <i>v</i> of the first input, the output contains <i>v</i> iff no other input contains an
  * equal value to <i>v</i>.<br>
  * If the first input contains multiple identical entries, only one representation is emitted.
- * 
  */
 @Name(verb = "subtract")
 @InputCardinality(min = 1)

@@ -53,15 +53,6 @@ public abstract class ConfigurableSopremoType extends AbstractSopremoType implem
 		super();
 	}
 
-	protected void addPropertiesFrom(final ConfigurableSopremoType type) {
-		this.additionalBeanInfos.remove(type);
-		this.additionalBeanInfos.add(type);
-	}
-
-	protected void removePropertiesFrom(final ConfigurableSopremoType type) {
-		this.additionalBeanInfos.remove(type);
-	}
-
 	@Override
 	public ConfigurableSopremoType[] getAdditionalBeanInfo() {
 		if (this.additionalBeanInfos.isEmpty())
@@ -104,11 +95,20 @@ public abstract class ConfigurableSopremoType extends AbstractSopremoType implem
 		return this.getBeanInfo().getPropertyDescriptors();
 	}
 
+	protected void addPropertiesFrom(final ConfigurableSopremoType type) {
+		this.additionalBeanInfos.remove(type);
+		this.additionalBeanInfos.add(type);
+	}
+
 	protected Info getBeanInfo() {
 		Info beanInfo = beanInfos.get(this.getClass());
 		if (beanInfo == null)
 			beanInfos.put(this.getClass(), beanInfo = new Info(this.getClass()));
 		return beanInfo;
+	}
+
+	protected void removePropertiesFrom(final ConfigurableSopremoType type) {
+		this.additionalBeanInfos.remove(type);
 	}
 
 	public static class Info extends SimpleBeanInfo {

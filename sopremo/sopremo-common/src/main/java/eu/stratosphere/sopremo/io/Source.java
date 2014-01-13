@@ -33,6 +33,14 @@ public class Source extends ElementaryOperator<Source> {
 	private SopremoFormat format;
 
 	/**
+	 * Initializes a Source. This Source uses {@link Source#Source(EvaluationExpression)} with an {@link ArrayCreation}.
+	 * This means the provided input data of this Source is empty.
+	 */
+	public Source() {
+		this(new ArrayCreation());
+	}
+
+	/**
 	 * Initializes a Source with the given {@link EvaluationExpression}. This expression serves as the data provider.
 	 * 
 	 * @param adhocValue
@@ -44,10 +52,20 @@ public class Source extends ElementaryOperator<Source> {
 	}
 
 	/**
-	 * Initializes a Source with the given {@link FileInputFormat} and the given path.
+	 * Initializes a Source with the given {@link SopremoFormat}.
 	 * 
-	 * @param inputFormat
-	 *        the InputFormat that should be used
+	 * @param format
+	 *        the SopremoFormat that should be used
+	 */
+	public Source(final SopremoFormat format) {
+		this(format, null);
+	}
+
+	/**
+	 * Initializes a Source with the given {@link SopremoFormat} and the given path.
+	 * 
+	 * @param format
+	 *        the SopremoFormat that should be used
 	 * @param inputPath
 	 *        the path to the input file
 	 */
@@ -65,18 +83,7 @@ public class Source extends ElementaryOperator<Source> {
 	}
 
 	/**
-	 * Initializes a Source with the given {@link FileInputFormat}.
-	 * 
-	 * @param inputFormat
-	 *        the InputFormat that should be used
-	 */
-	public Source(final SopremoFormat format) {
-		this(format, null);
-	}
-
-	/**
-	 * Initializes a Source with the given path. This Source uses {@link Source#Source(Class, String)} with the given
-	 * path and a {@link JsonInputFormat} to read the data.
+	 * Initializes a Source with the given path. This Source uses a {@link JsonFormat} to read the data.
 	 * 
 	 * @param inputPath
 	 *        the path to the input file
@@ -85,91 +92,21 @@ public class Source extends ElementaryOperator<Source> {
 		this(new JsonFormat(), inputPath);
 	}
 
-	/**
-	 * Initializes a Source. This Source uses {@link Source#Source(EvaluationExpression)} with an {@link ArrayCreation}.
-	 * This means the provided input data of this Source is empty.
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.operator.ElementaryOperator#appendAsString(java.lang.Appendable)
 	 */
-	public Source() {
-		this(new ArrayCreation());
-	}
-
-	/**
-	 * Returns the inputPath.
-	 * 
-	 * @return the path
-	 */
-	public String getInputPath() {
-		return this.inputPath;
-	}
-
-	/**
-	 * Sets the path to the input file.
-	 * 
-	 * @param inputPath
-	 *        the path
-	 */
-	public void setInputPath(final String inputPath) {
-		if (inputPath == null)
-			throw new NullPointerException("inputPath must not be null");
-
-		this.adhocExpression = null;
-		this.inputPath = inputPath;
-		this.checkPath();
-	}
-
-	/**
-	 * 
-	 */
-	private void checkPath() {
-		try {
-			final URI uri = new URI(this.inputPath);
-			if (uri.getScheme() == null)
-				throw new IllegalStateException(
-					"File name of source does not have a valid schema (such as hdfs or file): " + this.inputPath);
-		} catch (final URISyntaxException e) {
-			throw new IllegalArgumentException("Invalid path", e);
+	@Override
+	public void appendAsString(final Appendable appendable) throws IOException {
+		appendable.append(this.getName()).append(" [");
+		if (this.isAdhoc())
+			this.adhocExpression.appendAsString(appendable);
+		else {
+			if (this.inputPath != null)
+				appendable.append(this.inputPath).append(", ");
+			this.format.appendAsString(appendable);
 		}
-	}
-
-	/**
-	 * Returns the format.
-	 * 
-	 * @return the format
-	 */
-	public SopremoFormat getFormat() {
-		return this.format;
-	}
-
-	/**
-	 * Sets the format to the specified value.
-	 * 
-	 * @param format
-	 *        the format to set
-	 */
-	@Property(preferred = true)
-	public void setFormat(final SopremoFormat format) {
-		if (format == null)
-			throw new NullPointerException("format must not be null");
-		if (format.getInputFormat() == null)
-			throw new IllegalArgumentException("reading for the given format is not supported");
-
-		this.removePropertiesFrom(this.format);
-		this.format = format;
-		this.addPropertiesFrom(format);
-	}
-
-	/**
-	 * Sets the adhoc expression of this Source.
-	 * 
-	 * @param adhocExpression
-	 *        the expression that should be used
-	 */
-	public void setAdhocExpression(final EvaluationExpression adhocExpression) {
-		if (adhocExpression == null)
-			throw new NullPointerException("adhocExpression must not be null");
-
-		this.inputPath = null;
-		this.adhocExpression = adhocExpression;
+		appendable.append("]");
 	}
 
 	@Override
@@ -191,16 +128,6 @@ public class Source extends ElementaryOperator<Source> {
 		pactModule.getOutput(0).setInput(contract);
 		// pactModule.setInput(0, contract);
 		return pactModule;
-	}
-
-	/**
-	 * Determines if this Source is adhoc (read his data from an {@link EvaluationExpression}) or not (read his data
-	 * from a file)
-	 * 
-	 * @return either this Source is adhoc or not
-	 */
-	public boolean isAdhoc() {
-		return this.adhocExpression != null;
 	}
 
 	@Override
@@ -238,6 +165,24 @@ public class Source extends ElementaryOperator<Source> {
 		return this.getAdhocExpression().evaluate(NullNode.getInstance());
 	}
 
+	/**
+	 * Returns the format.
+	 * 
+	 * @return the format
+	 */
+	public SopremoFormat getFormat() {
+		return this.format;
+	}
+
+	/**
+	 * Returns the inputPath.
+	 * 
+	 * @return the path
+	 */
+	public String getInputPath() {
+		return this.inputPath;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -248,20 +193,74 @@ public class Source extends ElementaryOperator<Source> {
 		return result;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.operator.ElementaryOperator#appendAsString(java.lang.Appendable)
+	/**
+	 * Determines if this Source is adhoc (read his data from an {@link EvaluationExpression}) or not (read his data
+	 * from a file)
+	 * 
+	 * @return either this Source is adhoc or not
 	 */
-	@Override
-	public void appendAsString(final Appendable appendable) throws IOException {
-		appendable.append(getName()).append(" [");
-		if (this.isAdhoc())
-			this.adhocExpression.appendAsString(appendable);
-		else {
-			if (this.inputPath != null)
-				appendable.append(this.inputPath).append(", ");
-			this.format.appendAsString(appendable);
+	public boolean isAdhoc() {
+		return this.adhocExpression != null;
+	}
+
+	/**
+	 * Sets the adhoc expression of this Source.
+	 * 
+	 * @param adhocExpression
+	 *        the expression that should be used
+	 */
+	public void setAdhocExpression(final EvaluationExpression adhocExpression) {
+		if (adhocExpression == null)
+			throw new NullPointerException("adhocExpression must not be null");
+
+		this.inputPath = null;
+		this.adhocExpression = adhocExpression;
+	}
+
+	/**
+	 * Sets the format to the specified value.
+	 * 
+	 * @param format
+	 *        the format to set
+	 */
+	@Property(preferred = true)
+	public void setFormat(final SopremoFormat format) {
+		if (format == null)
+			throw new NullPointerException("format must not be null");
+		if (format.getInputFormat() == null)
+			throw new IllegalArgumentException("reading for the given format is not supported");
+
+		this.removePropertiesFrom(this.format);
+		this.format = format;
+		this.addPropertiesFrom(format);
+	}
+
+	/**
+	 * Sets the path to the input file.
+	 * 
+	 * @param inputPath
+	 *        the path
+	 */
+	public void setInputPath(final String inputPath) {
+		if (inputPath == null)
+			throw new NullPointerException("inputPath must not be null");
+
+		this.adhocExpression = null;
+		this.inputPath = inputPath;
+		this.checkPath();
+	}
+
+	/**
+	 * 
+	 */
+	private void checkPath() {
+		try {
+			final URI uri = new URI(this.inputPath);
+			if (uri.getScheme() == null)
+				throw new IllegalStateException(
+					"File name of source does not have a valid schema (such as hdfs or file): " + this.inputPath);
+		} catch (final URISyntaxException e) {
+			throw new IllegalArgumentException("Invalid path", e);
 		}
-		appendable.append("]");
 	}
 }

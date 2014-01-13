@@ -34,8 +34,87 @@ public class QueryParser {
 
 	private final PackageManager packageManager = new PackageManager(MeteorParserBase.NameChooserProvider);
 
-	private void appendExpression(final Object value, final JavaRenderInfo renderInfo) {
-		renderInfo.adaptor.addJavaFragment(value, renderInfo.builder);
+	/**
+	 * Returns the inputDirectory.
+	 * 
+	 * @return the inputDirectory
+	 */
+	public File getInputDirectory() {
+		return this.inputDirectory;
+	}
+
+	/**
+	 * Returns the packageManager.
+	 * 
+	 * @return the packageManager
+	 */
+	public PackageManager getPackageManager() {
+		return this.packageManager;
+	}
+
+	public MeteorParser getParser(final CharStream charStream) {
+		final MeteorLexer lexer = new MeteorLexer(charStream);
+		final CommonTokenStream tokens = new CommonTokenStream();
+		tokens.setTokenSource(lexer);
+		final MeteorParser parser = new MeteorParser(tokens);
+		SopremoEnvironment.getInstance().getEvaluationContext()
+			.setWorkingPath(new Path(this.inputDirectory.toURI().toString()));
+		parser.getPackageManager().addAll(this.packageManager);
+		parser.getPackageManager().addJarPathLocation(this.inputDirectory);
+		parser.setTreeAdaptor(new SopremoTreeAdaptor());
+		return parser;
+	}
+
+	public MeteorParser getParser(final InputStream stream) throws IOException {
+		return this.getParser(new ANTLRInputStream(stream));
+	}
+
+	public MeteorParser getParser(final String script) {
+		return this.getParser(new ANTLRStringStream(script));
+	}
+
+	/**
+	 * Sets the inputDirectory to the specified value.
+	 * 
+	 * @param inputDirectory
+	 *        the inputDirectory to set
+	 */
+	public void setInputDirectory(final File inputDirectory) {
+		if (inputDirectory == null)
+			throw new NullPointerException("inputDirectory must not be null");
+
+		this.inputDirectory = inputDirectory;
+	}
+
+	public String toSopremoCode(final InputStream stream) throws IOException, QueryParserException {
+		return this.toSopremoCode(new ANTLRInputStream(stream));
+	}
+
+	public String toSopremoCode(final String script) throws QueryParserException {
+		return this.toSopremoCode(new ANTLRStringStream(script));
+	}
+
+	public SopremoPlan tryParse(final CharStream charStream) {
+		return this.getParser(charStream).parse();
+	}
+
+	public SopremoPlan tryParse(final InputStream stream) throws IOException, QueryParserException {
+		return this.tryParse(new ANTLRInputStream(stream));
+	}
+
+	public SopremoPlan tryParse(final String script) throws QueryParserException {
+		return this.tryParse(new ANTLRStringStream(script));
+	}
+
+	/**
+	 * Sets the inputDirectory to the specified value.
+	 * 
+	 * @param inputDirectory
+	 *        the inputDirectory to set
+	 */
+	public QueryParser withInputDirectory(final File inputDirectory) {
+		this.setInputDirectory(inputDirectory);
+		return this;
 	}
 
 	protected <O extends Operator<?>> void appendInputProperties(final O op, final JavaRenderInfo renderInfo,
@@ -100,28 +179,6 @@ public class QueryParser {
 		}
 	}
 
-	/**
-	 * Returns the inputDirectory.
-	 * 
-	 * @return the inputDirectory
-	 */
-	public File getInputDirectory() {
-		return this.inputDirectory;
-	}
-
-	/**
-	 * Sets the inputDirectory to the specified value.
-	 * 
-	 * @param inputDirectory
-	 *        the inputDirectory to set
-	 */
-	public void setInputDirectory(final File inputDirectory) {
-		if (inputDirectory == null)
-			throw new NullPointerException("inputDirectory must not be null");
-
-		this.inputDirectory = inputDirectory;
-	}
-
 	protected String toSopremoCode(final CharStream input) {
 		final MeteorLexer lexer = new MeteorLexer(input);
 		final CommonTokenStream tokens = new CommonTokenStream();
@@ -135,71 +192,14 @@ public class QueryParser {
 		return info.builder.toString();
 	}
 
-	public String toSopremoCode(final InputStream stream) throws IOException, QueryParserException {
-		return this.toSopremoCode(new ANTLRInputStream(stream));
-	}
-
 	protected String toSopremoCode(final SopremoPlan result, final JavaRenderInfo info) {
 		for (final Operator<?> op : result.getContainedOperators())
 			this.appendJavaOperator(op, info);
 		return info.builder.toString();
 	}
 
-	public String toSopremoCode(final String script) throws QueryParserException {
-		return this.toSopremoCode(new ANTLRStringStream(script));
-	}
-
-	public SopremoPlan tryParse(final CharStream charStream) {
-		return this.getParser(charStream).parse();
-	}
-
-	public MeteorParser getParser(final String script) {
-		return this.getParser(new ANTLRStringStream(script));
-	}
-
-	public MeteorParser getParser(final InputStream stream) throws IOException {
-		return this.getParser(new ANTLRInputStream(stream));
-	}
-
-	public MeteorParser getParser(final CharStream charStream) {
-		final MeteorLexer lexer = new MeteorLexer(charStream);
-		final CommonTokenStream tokens = new CommonTokenStream();
-		tokens.setTokenSource(lexer);
-		final MeteorParser parser = new MeteorParser(tokens);
-		SopremoEnvironment.getInstance().getEvaluationContext()
-			.setWorkingPath(new Path(this.inputDirectory.toURI().toString()));
-		parser.getPackageManager().addAll(this.packageManager);
-		parser.getPackageManager().addJarPathLocation(this.inputDirectory);
-		parser.setTreeAdaptor(new SopremoTreeAdaptor());
-		return parser;
-	}
-
-	/**
-	 * Returns the packageManager.
-	 * 
-	 * @return the packageManager
-	 */
-	public PackageManager getPackageManager() {
-		return this.packageManager;
-	}
-
-	public SopremoPlan tryParse(final InputStream stream) throws IOException, QueryParserException {
-		return this.tryParse(new ANTLRInputStream(stream));
-	}
-
-	public SopremoPlan tryParse(final String script) throws QueryParserException {
-		return this.tryParse(new ANTLRStringStream(script));
-	}
-
-	/**
-	 * Sets the inputDirectory to the specified value.
-	 * 
-	 * @param inputDirectory
-	 *        the inputDirectory to set
-	 */
-	public QueryParser withInputDirectory(final File inputDirectory) {
-		this.setInputDirectory(inputDirectory);
-		return this;
+	private void appendExpression(final Object value, final JavaRenderInfo renderInfo) {
+		renderInfo.adaptor.addJavaFragment(value, renderInfo.builder);
 	}
 
 	public static String getPrefixedName(final String prefix, final String name) {

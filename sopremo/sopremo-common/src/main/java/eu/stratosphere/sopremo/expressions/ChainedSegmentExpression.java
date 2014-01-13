@@ -31,12 +31,10 @@ public class ChainedSegmentExpression extends PathSegmentExpression {
 	private final List<EvaluationExpression> expressions;
 
 	/**
-	 * Initializes ChainedSegmentExpression.
-	 * 
-	 * @param expressions
+	 * Initializes InputSelection.
 	 */
-	public ChainedSegmentExpression(final EvaluationExpression... expressions) {
-		this(Arrays.asList(expressions));
+	public ChainedSegmentExpression() {
+		this.expressions = new ArrayList<EvaluationExpression>();
 	}
 
 	/**
@@ -49,23 +47,22 @@ public class ChainedSegmentExpression extends PathSegmentExpression {
 	}
 
 	/**
-	 * Initializes InputSelection.
+	 * Initializes ChainedSegmentExpression.
+	 * 
+	 * @param expressions
 	 */
-	public ChainedSegmentExpression() {
-		this.expressions = new ArrayList<EvaluationExpression>();
+	public ChainedSegmentExpression(final EvaluationExpression... expressions) {
+		this(Arrays.asList(expressions));
 	}
 
 	public void addExpression(final EvaluationExpression expression) {
 		this.expressions.add(expression);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.expressions.PathSegmentExpression#segmentHashCode()
-	 */
 	@Override
-	protected int segmentHashCode() {
-		return this.expressions.hashCode();
+	public void appendAsString(final Appendable appendable) throws IOException {
+		this.appendInputAsString(appendable);
+		this.append(appendable, this.expressions, "->");
 	}
 
 	/*
@@ -79,12 +76,22 @@ public class ChainedSegmentExpression extends PathSegmentExpression {
 		return this.expressions.equals(((ChainedSegmentExpression) other).expressions);
 	}
 
+	/**
+	 * Returns the expressions.
+	 * 
+	 * @return the expressions
+	 */
+	public List<EvaluationExpression> getExpressions() {
+		return this.expressions;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.expressions.PathSegmentExpression#iterator()
+	 */
 	@Override
-	protected IJsonNode evaluateSegment(final IJsonNode node) {
-		IJsonNode result = node;
-		for (final EvaluationExpression expression : this.expressions)
-			result = expression.evaluate(result);
-		return result;
+	public ChildIterator iterator() {
+		return new ListChildIterator(this.expressions.listIterator());
 	}
 
 	/*
@@ -104,27 +111,20 @@ public class ChainedSegmentExpression extends PathSegmentExpression {
 		}
 	}
 
+	@Override
+	protected IJsonNode evaluateSegment(final IJsonNode node) {
+		IJsonNode result = node;
+		for (final EvaluationExpression expression : this.expressions)
+			result = expression.evaluate(result);
+		return result;
+	}
+
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.expressions.PathSegmentExpression#iterator()
+	 * @see eu.stratosphere.sopremo.expressions.PathSegmentExpression#segmentHashCode()
 	 */
 	@Override
-	public ChildIterator iterator() {
-		return new ListChildIterator(this.expressions.listIterator());
-	}
-
-	/**
-	 * Returns the expressions.
-	 * 
-	 * @return the expressions
-	 */
-	public List<EvaluationExpression> getExpressions() {
-		return this.expressions;
-	}
-
-	@Override
-	public void appendAsString(final Appendable appendable) throws IOException {
-		this.appendInputAsString(appendable);
-		this.append(appendable, this.expressions, "->");
+	protected int segmentHashCode() {
+		return this.expressions.hashCode();
 	}
 }

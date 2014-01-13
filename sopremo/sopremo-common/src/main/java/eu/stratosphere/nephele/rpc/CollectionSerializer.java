@@ -31,7 +31,6 @@ import com.esotericsoftware.kryo.io.Output;
  * serialized.
  * <p>
  * This class is not thread-safe.
- * 
  */
 @SuppressWarnings("rawtypes")
 final class CollectionSerializer extends Serializer<Collection> {
@@ -46,6 +45,27 @@ final class CollectionSerializer extends Serializer<Collection> {
 	 */
 	CollectionSerializer() {
 		this.defaultSerializer = new com.esotericsoftware.kryo.serializers.CollectionSerializer();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public Collection read(final Kryo kryo, final Input input, final Class<Collection> type) {
+
+		if (hasNonArgConstructor(type))
+			return this.defaultSerializer.read(kryo, input, type);
+
+		final ArrayList al = kryo.readObject(input, ArrayList.class, this.defaultSerializer);
+
+		try {
+			final Constructor<Collection> constructor = type.getDeclaredConstructor(List.class);
+			constructor.setAccessible(true);
+			return constructor.newInstance(al);
+
+		} catch (final Exception e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	/**
@@ -83,26 +103,5 @@ final class CollectionSerializer extends Serializer<Collection> {
 		}
 
 		return false;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public Collection read(final Kryo kryo, final Input input, final Class<Collection> type) {
-
-		if (hasNonArgConstructor(type))
-			return this.defaultSerializer.read(kryo, input, type);
-
-		final ArrayList al = kryo.readObject(input, ArrayList.class, this.defaultSerializer);
-
-		try {
-			final Constructor<Collection> constructor = type.getDeclaredConstructor(List.class);
-			constructor.setAccessible(true);
-			return constructor.newInstance(al);
-
-		} catch (final Exception e) {
-			throw new RuntimeException(e);
-		}
 	}
 }

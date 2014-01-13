@@ -14,6 +14,7 @@
  **********************************************************************************************************************/
 package eu.stratosphere.sopremo.server;
 
+import static org.mockito.Matchers.any;
 import static org.powermock.api.mockito.PowerMockito.mock;
 import static org.powermock.api.mockito.PowerMockito.when;
 import static org.powermock.api.mockito.PowerMockito.whenNew;
@@ -50,7 +51,6 @@ import eu.stratosphere.sopremo.io.Source;
 import eu.stratosphere.sopremo.operator.SopremoPlan;
 import eu.stratosphere.sopremo.testing.SopremoTestUtil;
 import eu.stratosphere.sopremo.type.JsonUtil;
-import static org.mockito.Matchers.*;
 
 /**
  */
@@ -63,21 +63,6 @@ public class SopremoExecuctionThreadTest {
 	private JobClient mockClient;
 
 	private SopremoExecutionThread thread;
-
-	static SopremoPlan createPlan() {
-		final SopremoPlan plan = new SopremoPlan();
-		final Source input = new Source(SopremoTestUtil.createTemporaryFile("input"));
-		final Selection selection = new Selection().
-			withCondition(
-				new OrExpression(
-					new UnaryExpression(JsonUtil.createPath("0", "mgr")),
-					new ComparativeExpression(JsonUtil.createPath("0", "income"), BinaryOperator.GREATER,
-						new ConstantExpression(30000)))).
-			withInputs(input);
-		final Sink output = new Sink(SopremoTestUtil.createTemporaryFile("output")).withInputs(selection);
-		plan.setSinks(output);
-		return plan;
-	}
 
 	@Before
 	public void setup() throws Exception {
@@ -101,6 +86,25 @@ public class SopremoExecuctionThreadTest {
 	}
 
 	@Test
+	public void testFailBeforeRunning() throws Exception {
+		whenNew(JobClient.class).withArguments(any(), any(), any()).thenThrow(new IOException("io"));
+		whenNew(JobClient.class).withArguments(any(), any()).thenThrow(new IOException("io"));
+
+		this.thread.run();
+		Assert.assertSame(ExecutionState.ERROR, this.jobInfo.getStatus());
+		Assert.assertNotSame("", this.jobInfo.getDetail());
+	}
+
+	@Test
+	public void testFailDuringRun() throws Exception {
+		when(this.mockClient.submitJobAndWait()).thenThrow(new JobExecutionException("jee", false));
+
+		this.thread.run();
+		Assert.assertSame(ExecutionState.ERROR, this.jobInfo.getStatus());
+		Assert.assertNotSame("", this.jobInfo.getDetail());
+	}
+
+	@Test
 	public void testSuccessfulExecution() throws Exception {
 		when(this.mockClient.submitJobAndWait()).thenReturn(new JobExecutionResult(1, new HashMap<String, Object>()));
 
@@ -119,23 +123,19 @@ public class SopremoExecuctionThreadTest {
 		Assert.assertNotSame("", this.jobInfo.getDetail());
 	}
 
-	@Test
-	public void testFailBeforeRunning() throws Exception {
-		whenNew(JobClient.class).withArguments(any(), any(), any()).thenThrow(new IOException("io"));
-		whenNew(JobClient.class).withArguments(any(), any()).thenThrow(new IOException("io"));
-
-		this.thread.run();
-		Assert.assertSame(ExecutionState.ERROR, this.jobInfo.getStatus());
-		Assert.assertNotSame("", this.jobInfo.getDetail());
-	}
-
-	@Test
-	public void testFailDuringRun() throws Exception {
-		when(this.mockClient.submitJobAndWait()).thenThrow(new JobExecutionException("jee", false));
-
-		this.thread.run();
-		Assert.assertSame(ExecutionState.ERROR, this.jobInfo.getStatus());
-		Assert.assertNotSame("", this.jobInfo.getDetail());
+	static SopremoPlan createPlan() {
+		final SopremoPlan plan = new SopremoPlan();
+		final Source input = new Source(SopremoTestUtil.createTemporaryFile("input"));
+		final Selection selection = new Selection().
+			withCondition(
+				new OrExpression(
+					new UnaryExpression(JsonUtil.createPath("0", "mgr")),
+					new ComparativeExpression(JsonUtil.createPath("0", "income"), BinaryOperator.GREATER,
+						new ConstantExpression(30000)))).
+			withInputs(input);
+		final Sink output = new Sink(SopremoTestUtil.createTemporaryFile("output")).withInputs(selection);
+		plan.setSinks(output);
+		return plan;
 	}
 
 }

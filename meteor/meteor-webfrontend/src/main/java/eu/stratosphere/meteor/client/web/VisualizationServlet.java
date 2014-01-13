@@ -38,10 +38,8 @@ public class VisualizationServlet extends AbstractServletGUI {
 	 * Update contents with link to svg graphic and link to configure
 	 * visualization
 	 * 
-	 * @param timeLineSource
-	 *        to svg
-	 * @param link
-	 *        to configuration
+	 * @param jsonPath
+	 *        to jsonPath
 	 */
 	public void update(final String jsonPath) {
 		this.jsonPath = jsonPath;

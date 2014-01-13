@@ -33,6 +33,10 @@ public class GenerateExpression extends EvaluationExpression {
 
 	private transient EvaluationContext context;
 
+	private transient final TextNode result = new TextNode();
+
+	private transient final Formatter formatter = new Formatter(this.result);
+
 	/**
 	 * Initializes a GenerateExpression with the given pattern.
 	 * 
@@ -51,19 +55,15 @@ public class GenerateExpression extends EvaluationExpression {
 		this.context = SopremoEnvironment.getInstance().getEvaluationContext();
 	}
 
-	private void readObject(final ObjectInputStream ois) throws IOException, ClassNotFoundException {
-		ois.defaultReadObject();
-		this.context = SopremoEnvironment.getInstance().getEvaluationContext();
-	}
-
-	private transient final TextNode result = new TextNode();
-
-	private transient final Formatter formatter = new Formatter(this.result);
-
 	@Override
 	public IJsonNode evaluate(final IJsonNode node) {
 		this.result.clear();
 		this.formatter.format(this.pattern, this.context.getTaskId(), this.id++);
 		return this.result;
+	}
+
+	private void readObject(final ObjectInputStream ois) throws IOException, ClassNotFoundException {
+		ois.defaultReadObject();
+		this.context = SopremoEnvironment.getInstance().getEvaluationContext();
 	}
 }

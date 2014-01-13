@@ -62,41 +62,6 @@ public abstract class EqualVerifyTest<T> {
 		super();
 	}
 
-	protected void initInstances(final T first, final T second, final Collection<T> more) {
-		this.first = first;
-		this.second = second;
-		this.more = more;
-	}
-
-	@Test
-	public void testKryoSerialization() {
-		for (final Object original : Iterables.concat(Arrays.asList(this.first, this.second), this.more))
-			this.testKryoSerialization(original);
-	}
-
-	protected void testKryoSerialization(final Object original) {
-		final Kryo kryo = KryoUtil.getKryo();
-
-		kryo.reset();
-		final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		final Output output = new Output(baos);
-		kryo.writeClassAndObject(output, original);
-		output.close();
-
-		kryo.reset();
-		final ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-		final Object deserialized = kryo.readClassAndObject(new Input(bais));
-
-		Assert.assertEquals(original, deserialized);
-	}
-
-	protected abstract T createDefaultInstance(final int index);
-
-	protected void createInstances() {
-		this.initInstances(this.createDefaultInstance(0), this.createDefaultInstance(1),
-			Collections.singleton(this.createDefaultInstance(2)));
-	}
-
 	@SuppressWarnings("unchecked")
 	@Before
 	public void initInstances() {
@@ -106,25 +71,6 @@ public abstract class EqualVerifyTest<T> {
 			this.type = (Class<T>) TypeToken.of(boundParamType).getRawType();
 			this.createInstances();
 		}
-	}
-
-	protected void initVerifier(final EqualsVerifier<T> equalVerifier) {
-		final BitSet blackBitSet = new BitSet();
-		blackBitSet.set(1);
-		final ArrayList<Object> redList = new ArrayList<Object>();
-		redList.add(null);
-		final ArrayList<Object> blackList = new ArrayList<Object>(redList);
-		blackList.add(null);
-		final Map<Object, Object> blackMap = new HashMap<Object, Object>();
-		blackMap.put("test", null);
-
-		equalVerifier
-			.suppress(Warning.NULL_FIELDS)
-			.suppress(Warning.NONFINAL_FIELDS)
-			.withPrefabValues(BitSet.class, new BitSet(), blackBitSet)
-			.withPrefabValues(List.class, redList, blackList)
-			.withPrefabValues(Map.class, new HashMap<Object, Object>(), blackMap)
-			.usingGetClass();
 	}
 
 	@SuppressWarnings("unchecked")
@@ -147,6 +93,60 @@ public abstract class EqualVerifyTest<T> {
 		final EqualsVerifier<T> equalVerifier = EqualsVerifier.forExamples(first, second, more);
 		this.initVerifier(equalVerifier);
 		equalVerifier.verify();
+	}
+
+	@Test
+	public void testKryoSerialization() {
+		for (final Object original : Iterables.concat(Arrays.asList(this.first, this.second), this.more))
+			this.testKryoSerialization(original);
+	}
+
+	protected abstract T createDefaultInstance(final int index);
+
+	protected void createInstances() {
+		this.initInstances(this.createDefaultInstance(0), this.createDefaultInstance(1),
+			Collections.singleton(this.createDefaultInstance(2)));
+	}
+
+	protected void initInstances(final T first, final T second, final Collection<T> more) {
+		this.first = first;
+		this.second = second;
+		this.more = more;
+	}
+
+	protected void initVerifier(final EqualsVerifier<T> equalVerifier) {
+		final BitSet blackBitSet = new BitSet();
+		blackBitSet.set(1);
+		final ArrayList<Object> redList = new ArrayList<Object>();
+		redList.add(null);
+		final ArrayList<Object> blackList = new ArrayList<Object>(redList);
+		blackList.add(null);
+		final Map<Object, Object> blackMap = new HashMap<Object, Object>();
+		blackMap.put("test", null);
+
+		equalVerifier
+			.suppress(Warning.NULL_FIELDS)
+			.suppress(Warning.NONFINAL_FIELDS)
+			.withPrefabValues(BitSet.class, new BitSet(), blackBitSet)
+			.withPrefabValues(List.class, redList, blackList)
+			.withPrefabValues(Map.class, new HashMap<Object, Object>(), blackMap)
+			.usingGetClass();
+	}
+
+	protected void testKryoSerialization(final Object original) {
+		final Kryo kryo = KryoUtil.getKryo();
+
+		kryo.reset();
+		final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		final Output output = new Output(baos);
+		kryo.writeClassAndObject(output, original);
+		output.close();
+
+		kryo.reset();
+		final ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
+		final Object deserialized = kryo.readClassAndObject(new Input(bais));
+
+		Assert.assertEquals(original, deserialized);
 	}
 
 }

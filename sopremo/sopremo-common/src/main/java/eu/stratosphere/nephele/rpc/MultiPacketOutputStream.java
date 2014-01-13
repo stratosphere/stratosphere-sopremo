@@ -20,7 +20,6 @@ import java.io.OutputStream;
 import java.net.DatagramPacket;
 import java.net.InetSocketAddress;
 
-
 final class MultiPacketOutputStream extends OutputStream {
 
 	private byte[] buf;
@@ -34,31 +33,19 @@ final class MultiPacketOutputStream extends OutputStream {
 	}
 
 	@Override
-	public void write(final int b) throws IOException {
+	public void close() {
+		// Nothing to do here
+	}
 
-		if (this.totalLen + RPCMessage.METADATA_SIZE == this.buf.length)
-			this.resizeBuffer();
-
-		if (this.lenInPacket == RPCMessage.MAXIMUM_MSG_SIZE) {
-			this.lenInPacket = 0;
-			this.totalLen += RPCMessage.METADATA_SIZE;
-		}
-
-		this.buf[this.totalLen++] = (byte) b;
-		++this.lenInPacket;
+	@Override
+	public void flush() {
+		// Nothing to do here
 	}
 
 	@Override
 	public void write(final byte[] b) throws IOException {
 
 		this.write(b, 0, b.length);
-	}
-
-	private static int getLengthIncludingMetaData(final int length) {
-
-		final int numberOfPackets = (length + RPCMessage.MAXIMUM_MSG_SIZE - 1) / RPCMessage.MAXIMUM_MSG_SIZE;
-
-		return length + numberOfPackets * RPCMessage.METADATA_SIZE;
 	}
 
 	@Override
@@ -84,26 +71,19 @@ final class MultiPacketOutputStream extends OutputStream {
 		}
 	}
 
-	private void resizeBuffer() {
-
-		final byte[] newBuf = new byte[this.buf.length * 2];
-		System.arraycopy(this.buf, 0, newBuf, 0, this.totalLen);
-		this.buf = newBuf;
-	}
-
 	@Override
-	public void close() {
-		// Nothing to do here
-	}
+	public void write(final int b) throws IOException {
 
-	@Override
-	public void flush() {
-		// Nothing to do here
-	}
+		if (this.totalLen + RPCMessage.METADATA_SIZE == this.buf.length)
+			this.resizeBuffer();
 
-	void reset() {
-		this.lenInPacket = 0;
-		this.totalLen = 0;
+		if (this.lenInPacket == RPCMessage.MAXIMUM_MSG_SIZE) {
+			this.lenInPacket = 0;
+			this.totalLen += RPCMessage.METADATA_SIZE;
+		}
+
+		this.buf[this.totalLen++] = (byte) b;
+		++this.lenInPacket;
 	}
 
 	DatagramPacket[] createPackets(final InetSocketAddress remoteAddress) {
@@ -144,5 +124,24 @@ final class MultiPacketOutputStream extends OutputStream {
 		}
 
 		return packets;
+	}
+
+	void reset() {
+		this.lenInPacket = 0;
+		this.totalLen = 0;
+	}
+
+	private void resizeBuffer() {
+
+		final byte[] newBuf = new byte[this.buf.length * 2];
+		System.arraycopy(this.buf, 0, newBuf, 0, this.totalLen);
+		this.buf = newBuf;
+	}
+
+	private static int getLengthIncludingMetaData(final int length) {
+
+		final int numberOfPackets = (length + RPCMessage.MAXIMUM_MSG_SIZE - 1) / RPCMessage.MAXIMUM_MSG_SIZE;
+
+		return length + numberOfPackets * RPCMessage.METADATA_SIZE;
 	}
 }

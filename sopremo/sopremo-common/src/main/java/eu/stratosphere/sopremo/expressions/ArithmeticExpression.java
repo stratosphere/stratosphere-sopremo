@@ -35,7 +35,6 @@ import eu.stratosphere.sopremo.type.LongNode;
 /**
  * Represents all basic arithmetic expressions covering the addition, subtraction, division, and multiplication for
  * various types of numbers.
- * 
  */
 @OptimizerHints(scope = Scope.NUMBER, minNodes = 2, maxNodes = 2, transitive = true)
 public class ArithmeticExpression extends EvaluationExpression {
@@ -160,7 +159,6 @@ public class ArithmeticExpression extends EvaluationExpression {
 
 	/**
 	 * Closed set of basic arithmetic operators.
-	 * 
 	 */
 	public static enum ArithmeticOperator {
 		/**
@@ -305,7 +303,6 @@ public class ArithmeticExpression extends EvaluationExpression {
 
 	/**
 	 * Taken from Groovy's org.codehaus.groovy.runtime.typehandling.BigDecimalMath
-	 * 
 	 */
 	static class DivisionEvaluator implements NumberEvaluator<DecimalNode> {
 		private static final DivisionEvaluator INSTANCE = new DivisionEvaluator();

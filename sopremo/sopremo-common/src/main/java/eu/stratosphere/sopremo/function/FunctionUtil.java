@@ -30,30 +30,13 @@ import eu.stratosphere.sopremo.packages.DefaultFunctionRegistry;
  */
 public class FunctionUtil {
 
-	public static EvaluationExpression createFunctionCall(final Class<?> methodProvider, final String methodName,
-			final EvaluationExpression... params) {
-		final DefaultFunctionRegistry registry = new DefaultFunctionRegistry();
-		registry.put(methodProvider);
-		return createMethodCall(registry.get(methodName), null, params);
-	}
-
-	public static EvaluationExpression createFunctionCall(final Callable<?, ?> callable,
-			final EvaluationExpression... params) {
-		return createMethodCall(callable, null, params);
-	}
-
-	public static EvaluationExpression createFunctionCall(final Aggregation aggregation,
-			final EvaluationExpression... params) {
-		return createMethodCall(new AggregationFunction(aggregation), null, params);
+	public static EvaluationExpression addToBatch(final BatchAggregationExpression bae, final Aggregation aggregation) {
+		return bae.add(aggregation);
 	}
 
 	public static EvaluationExpression addToBatch(final BatchAggregationExpression bae, final Aggregation aggregation,
 			final EvaluationExpression preprocessing) {
 		return bae.add(aggregation, preprocessing);
-	}
-
-	public static EvaluationExpression addToBatch(final BatchAggregationExpression bae, final Aggregation aggregation) {
-		return bae.add(aggregation);
 	}
 
 	public static EvaluationExpression addToBatch(final BatchAggregationExpression bae,
@@ -73,6 +56,23 @@ public class FunctionUtil {
 						ExpressionUtil.replaceArrayProjections(ae.getInputExpression()));
 				}
 			});
+	}
+
+	public static EvaluationExpression createFunctionCall(final Aggregation aggregation,
+			final EvaluationExpression... params) {
+		return createMethodCall(new AggregationFunction(aggregation), null, params);
+	}
+
+	public static EvaluationExpression createFunctionCall(final Callable<?, ?> callable,
+			final EvaluationExpression... params) {
+		return createMethodCall(callable, null, params);
+	}
+
+	public static EvaluationExpression createFunctionCall(final Class<?> methodProvider, final String methodName,
+			final EvaluationExpression... params) {
+		final DefaultFunctionRegistry registry = new DefaultFunctionRegistry();
+		registry.put(methodProvider);
+		return createMethodCall(registry.get(methodName), null, params);
 	}
 
 	public static EvaluationExpression createMethodCall(final Callable<?, ?> callable,

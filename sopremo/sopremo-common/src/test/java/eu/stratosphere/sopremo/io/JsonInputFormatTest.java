@@ -21,7 +21,6 @@ import eu.stratosphere.sopremo.type.IntNode;
 
 /**
  * Tests {@link JsonInputFormat}.
- * 
  */
 public class JsonInputFormatTest {
 

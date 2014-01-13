@@ -38,19 +38,6 @@ public class EvaluationExpressionTest {
 	}
 
 	@Test
-	public void shouldReplaceValues() {
-		final EvaluationExpression path =
-			new ComparativeExpression(createPath("0", "id"), BinaryOperator.EQUAL, createPath("1", "userid"));
-
-		final EvaluationExpression expected =
-			new ComparativeExpression(createPath("[0]", "id"), BinaryOperator.EQUAL, createPath("[1]", "userid"));
-
-		Assert.assertEquals(expected, path.
-			replace(new InputSelection(1), new ArrayAccess(1)).
-			replace(new InputSelection(0), new ArrayAccess(0)));
-	}
-
-	@Test
 	public void shouldRemoveValues() {
 		final InputSelection inputSelection = new InputSelection(1);
 		final ObjectAccess objectAccess = new ObjectAccess("test");
@@ -72,5 +59,18 @@ public class EvaluationExpressionTest {
 
 		Assert.assertEquals(expected, expression);
 		Assert.assertNull(expression.findFirst(InputSelection.class));
+	}
+
+	@Test
+	public void shouldReplaceValues() {
+		final EvaluationExpression path =
+			new ComparativeExpression(createPath("0", "id"), BinaryOperator.EQUAL, createPath("1", "userid"));
+
+		final EvaluationExpression expected =
+			new ComparativeExpression(createPath("[0]", "id"), BinaryOperator.EQUAL, createPath("[1]", "userid"));
+
+		Assert.assertEquals(expected, path.
+			replace(new InputSelection(1), new ArrayAccess(1)).
+			replace(new InputSelection(0), new ArrayAccess(0)));
 	}
 }

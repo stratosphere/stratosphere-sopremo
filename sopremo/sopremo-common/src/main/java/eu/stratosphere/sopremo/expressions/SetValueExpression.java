@@ -20,7 +20,6 @@ import eu.stratosphere.sopremo.type.IJsonNode;
 
 /**
  * Returns the value of an attribute of one or more Json nodes.
- * 
  */
 @OptimizerHints(scope = Scope.OBJECT)
 public class SetValueExpression extends PathSegmentExpression {
@@ -41,13 +40,12 @@ public class SetValueExpression extends PathSegmentExpression {
 		this.replaceExpression = EvaluationExpression.VALUE;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.expressions.PathSegmentExpression#segmentHashCode()
-	 */
 	@Override
-	protected int segmentHashCode() {
-		return 41 * this.valueLocator.hashCode() + this.replaceExpression.hashCode();
+	public void appendAsString(final Appendable appendable) throws IOException {
+		this.appendInputAsString(appendable);
+		this.valueLocator.appendAsString(appendable);
+		appendable.append("<-");
+		this.replaceExpression.appendAsString(appendable);
 	}
 
 	/*
@@ -91,11 +89,12 @@ public class SetValueExpression extends PathSegmentExpression {
 		return this.valueLocator.set(node, this.replaceExpression.evaluate(node));
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.expressions.PathSegmentExpression#segmentHashCode()
+	 */
 	@Override
-	public void appendAsString(final Appendable appendable) throws IOException {
-		this.appendInputAsString(appendable);
-		this.valueLocator.appendAsString(appendable);
-		appendable.append("<-");
-		this.replaceExpression.appendAsString(appendable);
+	protected int segmentHashCode() {
+		return 41 * this.valueLocator.hashCode() + this.replaceExpression.hashCode();
 	}
 }

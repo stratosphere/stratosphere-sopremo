@@ -4,6 +4,10 @@ import eu.stratosphere.sopremo.expressions.EvaluationExpression;
 
 public abstract class MacroBase extends Callable<EvaluationExpression, EvaluationExpression[]> {
 
+	public MacroBase(final int numberOfParameters) {
+		super(numberOfParameters, numberOfParameters);
+	}
+
 	/**
 	 * Initializes MacroBase.
 	 * 
@@ -12,10 +16,6 @@ public abstract class MacroBase extends Callable<EvaluationExpression, Evaluatio
 	 */
 	public MacroBase(final int minimumNumberOfParameters, final int maximumNumberOfParameters) {
 		super(minimumNumberOfParameters, maximumNumberOfParameters);
-	}
-
-	public MacroBase(final int numberOfParameters) {
-		super(numberOfParameters, numberOfParameters);
 	}
 
 	/*

@@ -46,10 +46,15 @@ public abstract class AbstractRegistry<T> extends AbstractSopremoType implements
 	}
 
 	@Override
-	public void put(final Name nameAnnotation, final T element) {
-		final String[] names = this.getNameChooser().getNames(nameAnnotation);
-		for (final String name : names)
-			this.put(name, element);
+	public boolean equals(final Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (this.getClass() != obj.getClass())
+			return false;
+		final AbstractRegistry<?> other = (AbstractRegistry<?>) obj;
+		return this.nameChooser.equals(other.nameChooser);
 	}
 
 	/*
@@ -70,14 +75,19 @@ public abstract class AbstractRegistry<T> extends AbstractSopremoType implements
 		return this.nameChooser;
 	}
 
-	protected String[] getNames(final Class<?> object) {
-		final Name nameAnnotation = object.getAnnotation(Name.class);
-		if (nameAnnotation == null) {
-			if (object.getAnnotation(Internal.class) != null)
-				return new String[] { String.format("__%s", object.getSimpleName()) };
-			throw new IllegalArgumentException(object + " has no name annotation");
-		}
-		return this.getNameChooser().getNames(nameAnnotation);
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + this.nameChooser.hashCode();
+		return result;
+	}
+
+	@Override
+	public void put(final Name nameAnnotation, final T element) {
+		final String[] names = this.getNameChooser().getNames(nameAnnotation);
+		for (final String name : names)
+			this.put(name, element);
 	}
 
 	protected String[] getNames(final AccessibleObject object) {
@@ -90,24 +100,14 @@ public abstract class AbstractRegistry<T> extends AbstractSopremoType implements
 		return this.getNameChooser().getNames(nameAnnotation);
 	}
 
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + this.nameChooser.hashCode();
-		return result;
-	}
-
-	@Override
-	public boolean equals(final Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (this.getClass() != obj.getClass())
-			return false;
-		final AbstractRegistry<?> other = (AbstractRegistry<?>) obj;
-		return this.nameChooser.equals(other.nameChooser);
+	protected String[] getNames(final Class<?> object) {
+		final Name nameAnnotation = object.getAnnotation(Name.class);
+		if (nameAnnotation == null) {
+			if (object.getAnnotation(Internal.class) != null)
+				return new String[] { String.format("__%s", object.getSimpleName()) };
+			throw new IllegalArgumentException(object + " has no name annotation");
+		}
+		return this.getNameChooser().getNames(nameAnnotation);
 	}
 
 }

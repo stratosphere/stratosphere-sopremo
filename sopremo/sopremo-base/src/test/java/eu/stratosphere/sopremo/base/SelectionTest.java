@@ -17,13 +17,6 @@ import eu.stratosphere.sopremo.testing.SopremoTestPlan;
 //import eu.stratosphere.sopremo.SopremoTestPlan;
 
 public class SelectionTest extends SopremoOperatorTestBase<Selection> {
-	@Override
-	protected Selection createDefaultInstance(final int index) {
-		final AndExpression condition = new AndExpression(new UnaryExpression(
-			createPath(String.valueOf(index))));
-		return new Selection().withCondition(condition);
-	}
-
 	@Test
 	public void shouldSelectSomeEntries() {
 		final SopremoTestPlan sopremoPlan = new SopremoTestPlan(1, 1);
@@ -70,5 +63,12 @@ public class SelectionTest extends SopremoOperatorTestBase<Selection> {
 			addObject("name", "Jane Dean", "income", 72000, "mgr", true);
 
 		sopremoPlan.run();
+	}
+
+	@Override
+	protected Selection createDefaultInstance(final int index) {
+		final AndExpression condition = new AndExpression(new UnaryExpression(
+			createPath(String.valueOf(index))));
+		return new Selection().withCondition(condition);
 	}
 }

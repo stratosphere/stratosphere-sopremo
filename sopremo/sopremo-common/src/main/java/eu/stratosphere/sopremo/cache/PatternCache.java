@@ -25,15 +25,15 @@ import eu.stratosphere.sopremo.type.TextNode;
 public final class PatternCache implements ISopremoCache {
 	private final transient Map<CharSequence, Pattern> cache = new HashMap<CharSequence, Pattern>();
 
+	@Override
+	public PatternCache clone() {
+		return new PatternCache();
+	}
+
 	public Pattern getPatternOf(final TextNode node) {
 		Pattern pattern = this.cache.get(node);
 		if (pattern == null)
 			this.cache.put((CharSequence) node.clone(), pattern = Pattern.compile(node.toString()));
 		return pattern;
-	}
-
-	@Override
-	public PatternCache clone() {
-		return new PatternCache();
 	}
 }

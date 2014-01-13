@@ -18,9 +18,23 @@ import java.util.Iterator;
 
 /**
  * This utility class provides functionality to work easier with iterators.
- * 
  */
 public class IteratorUtil {
+
+	/**
+	 * Determines if two given iterators are equal concerning {@link Object#equals(Object)}.
+	 * 
+	 * @param expectedIterator
+	 *        the first iterator
+	 * @param actualIterator
+	 *        the second iterator
+	 * @return
+	 *         either the two iterators are equal or not
+	 */
+	public static <T> boolean equal(final Iterator<? extends T> expectedIterator,
+			final Iterator<? extends T> actualIterator) {
+		return IteratorUtil.equal(expectedIterator, actualIterator, Equaler.JavaEquals);
+	}
 
 	/**
 	 * Determines if two given iterators are equal concerning the given {@link Equaler}.
@@ -48,18 +62,15 @@ public class IteratorUtil {
 	}
 
 	/**
-	 * Determines if two given iterators are equal concerning {@link Object#equals(Object)}.
+	 * Generates the hash code of the given iterator. {@link Object#hashCode()} is used for calculation.
 	 * 
-	 * @param expectedIterator
-	 *        the first iterator
-	 * @param actualIterator
-	 *        the second iterator
+	 * @param iterator
+	 *        the iterator that should be used
 	 * @return
-	 *         either the two iterators are equal or not
+	 *         the hash code
 	 */
-	public static <T> boolean equal(final Iterator<? extends T> expectedIterator,
-			final Iterator<? extends T> actualIterator) {
-		return IteratorUtil.equal(expectedIterator, actualIterator, Equaler.JavaEquals);
+	public static <T> int hashCode(final Iterator<? extends T> iterator) {
+		return IteratorUtil.hashCode(iterator, HashCoder.JavaHashCode);
 	}
 
 	/**
@@ -82,15 +93,19 @@ public class IteratorUtil {
 	}
 
 	/**
-	 * Generates the hash code of the given iterator. {@link Object#hashCode()} is used for calculation.
+	 * Generates a string representation of the given iterator. Each element will be transformed to a string by using
+	 * {@link Object#toString()}.
 	 * 
 	 * @param iterator
 	 *        the iterator that should be used
+	 * @param maxEntries
+	 *        The maximum of elements that should be transformed into strings. Should the iterator contain more, than
+	 *        his string representation will have a trailing <code>...</code>
 	 * @return
-	 *         the hash code
+	 *         the string representation
 	 */
-	public static <T> int hashCode(final Iterator<? extends T> iterator) {
-		return IteratorUtil.hashCode(iterator, HashCoder.JavaHashCode);
+	public static <T> String toString(final Iterator<? extends T> iterator, final int maxEntries) {
+		return toString(iterator, maxEntries, Stringifier.JavaString);
 	}
 
 	/**
@@ -118,21 +133,5 @@ public class IteratorUtil {
 		if (iterator.hasNext())
 			stringBuilder.append("...");
 		return stringBuilder.toString();
-	}
-
-	/**
-	 * Generates a string representation of the given iterator. Each element will be transformed to a string by using
-	 * {@link Object#toString()}.
-	 * 
-	 * @param iterator
-	 *        the iterator that should be used
-	 * @param maxEntries
-	 *        The maximum of elements that should be transformed into strings. Should the iterator contain more, than
-	 *        his string representation will have a trailing <code>...</code>
-	 * @return
-	 *         the string representation
-	 */
-	public static <T> String toString(final Iterator<? extends T> iterator, final int maxEntries) {
-		return toString(iterator, maxEntries, Stringifier.JavaString);
 	}
 }

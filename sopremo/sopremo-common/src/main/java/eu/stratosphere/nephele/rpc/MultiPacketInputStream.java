@@ -40,25 +40,6 @@ final class MultiPacketInputStream extends InputStream {
 		this.creationTime = System.currentTimeMillis();
 	}
 
-	long getCreationTime() {
-		return this.creationTime;
-	}
-
-	int addPacket(final int packetNumber, final DatagramPacket datagramPacket) {
-
-		if (packetNumber != this.nextPacketToAdd)
-			return this.nextPacketToAdd;
-
-		this.packets[packetNumber] = datagramPacket;
-
-		return this.nextPacketToAdd++;
-	}
-
-	boolean isComplete() {
-
-		return this.nextPacketToAdd == this.packets.length;
-	}
-
 	@Override
 	public int available() {
 
@@ -97,22 +78,6 @@ final class MultiPacketInputStream extends InputStream {
 			return -1;
 
 		return this.currentBuffer[this.read++];
-	}
-
-	private boolean moreDataAvailable() {
-
-		while (this.read == this.currentLength) {
-
-			if (this.nextPacketToRead == this.packets.length)
-				return false;
-
-			final DatagramPacket dp = this.packets[this.nextPacketToRead++];
-			this.currentBuffer = dp.getData();
-			this.currentLength = dp.getLength() - RPCMessage.METADATA_SIZE;
-			this.read = 0;
-		}
-
-		return true;
 	}
 
 	@Override
@@ -158,6 +123,41 @@ final class MultiPacketInputStream extends InputStream {
 		this.read += (int) n;
 
 		return n;
+	}
+
+	int addPacket(final int packetNumber, final DatagramPacket datagramPacket) {
+
+		if (packetNumber != this.nextPacketToAdd)
+			return this.nextPacketToAdd;
+
+		this.packets[packetNumber] = datagramPacket;
+
+		return this.nextPacketToAdd++;
+	}
+
+	long getCreationTime() {
+		return this.creationTime;
+	}
+
+	boolean isComplete() {
+
+		return this.nextPacketToAdd == this.packets.length;
+	}
+
+	private boolean moreDataAvailable() {
+
+		while (this.read == this.currentLength) {
+
+			if (this.nextPacketToRead == this.packets.length)
+				return false;
+
+			final DatagramPacket dp = this.packets[this.nextPacketToRead++];
+			this.currentBuffer = dp.getData();
+			this.currentLength = dp.getLength() - RPCMessage.METADATA_SIZE;
+			this.read = 0;
+		}
+
+		return true;
 	}
 
 }

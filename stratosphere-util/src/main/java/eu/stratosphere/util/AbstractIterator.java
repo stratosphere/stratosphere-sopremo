@@ -27,13 +27,6 @@ public abstract class AbstractIterator<T> implements Iterator<T> {
 		return this.hasNext;
 	}
 
-	/**
-	 * Returns the next element or the result of {@link #noMoreElements()}.
-	 * 
-	 * @return the next element
-	 */
-	protected abstract T loadNext();
-
 	@Override
 	public T next() {
 		if (!this.hasNext)
@@ -48,6 +41,18 @@ public abstract class AbstractIterator<T> implements Iterator<T> {
 		return value;
 	}
 
+	@Override
+	public void remove() {
+		throw new UnsupportedOperationException();
+	}
+
+	/**
+	 * Returns the next element or the result of {@link #noMoreElements()}.
+	 * 
+	 * @return the next element
+	 */
+	protected abstract T loadNext();
+
 	/**
 	 * Signal methods that should be invoked when no more elements are in the iterator.
 	 * 
@@ -56,10 +61,5 @@ public abstract class AbstractIterator<T> implements Iterator<T> {
 	protected T noMoreElements() {
 		this.hasNext = false;
 		return null;
-	}
-
-	@Override
-	public void remove() {
-		throw new UnsupportedOperationException();
 	}
 }

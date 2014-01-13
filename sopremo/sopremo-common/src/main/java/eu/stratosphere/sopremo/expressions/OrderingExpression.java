@@ -29,16 +29,16 @@ public class OrderingExpression extends EvaluationExpression {
 
 	private final transient IntNode result = new IntNode();
 
-	public OrderingExpression(final Order order, final PathSegmentExpression path) {
-		this.order = order;
-		this.path = path;
-	}
-
 	/**
 	 * Initializes OrderingExpression.
 	 */
 	public OrderingExpression() {
 		this(Order.ASCENDING, EvaluationExpression.VALUE);
+	}
+
+	public OrderingExpression(final Order order, final PathSegmentExpression path) {
+		this.order = order;
+		this.path = path;
 	}
 
 	/*
@@ -49,6 +49,38 @@ public class OrderingExpression extends EvaluationExpression {
 	public void appendAsString(final Appendable appendable) throws IOException {
 		appendable.append(this.order.toString()).append(' ');
 		this.path.appendAsString(appendable);
+	}
+
+	public Comparator<IJsonNode> asComparator() {
+		return new Comparator<IJsonNode>() {
+			/*
+			 * (non-Javadoc)
+			 * @see java.util.Comparator#compare(java.lang.Object, java.lang.Object)
+			 */
+			@Override
+			public int compare(final IJsonNode node1, final IJsonNode node2) {
+				final int result =
+					OrderingExpression.this.path.evaluate(node1).compareTo(OrderingExpression.this.path.evaluate(node2));
+				return OrderingExpression.this.order == Order.DESCENDING ? -result : result;
+			}
+		};
+	}
+
+	public int compare(final IJsonNode node1, final IJsonNode node2) {
+		final int result = this.path.evaluate(node1).compareTo(this.path.evaluate(node2));
+		return this.order == Order.DESCENDING ? -result : result;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.expressions.EvaluationExpression#evaluate(eu.stratosphere.sopremo.type.IJsonNode)
+	 */
+	@Override
+	public IntNode evaluate(final IJsonNode node) {
+		@SuppressWarnings("unchecked")
+		final IArrayNode<IJsonNode> pair = (IArrayNode<IJsonNode>) node;
+		this.result.setValue(this.compare(pair.get(0), pair.get(1)));
+		return this.result;
 	}
 
 	/**
@@ -70,19 +102,6 @@ public class OrderingExpression extends EvaluationExpression {
 	}
 
 	/**
-	 * Sets the path to the specified value.
-	 * 
-	 * @param path
-	 *        the path to set
-	 */
-	public void setPath(final EvaluationExpression path) {
-		if (path == null)
-			throw new NullPointerException("path must not be null");
-
-		this.path = path;
-	}
-
-	/**
 	 * Sets the order to the specified value.
 	 * 
 	 * @param order
@@ -95,35 +114,16 @@ public class OrderingExpression extends EvaluationExpression {
 		this.order = order;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.expressions.EvaluationExpression#evaluate(eu.stratosphere.sopremo.type.IJsonNode)
+	/**
+	 * Sets the path to the specified value.
+	 * 
+	 * @param path
+	 *        the path to set
 	 */
-	@Override
-	public IntNode evaluate(final IJsonNode node) {
-		@SuppressWarnings("unchecked")
-		final IArrayNode<IJsonNode> pair = (IArrayNode<IJsonNode>) node;
-		this.result.setValue(this.compare(pair.get(0), pair.get(1)));
-		return this.result;
-	}
+	public void setPath(final EvaluationExpression path) {
+		if (path == null)
+			throw new NullPointerException("path must not be null");
 
-	public int compare(final IJsonNode node1, final IJsonNode node2) {
-		final int result = this.path.evaluate(node1).compareTo(this.path.evaluate(node2));
-		return this.order == Order.DESCENDING ? -result : result;
-	}
-
-	public Comparator<IJsonNode> asComparator() {
-		return new Comparator<IJsonNode>() {
-			/*
-			 * (non-Javadoc)
-			 * @see java.util.Comparator#compare(java.lang.Object, java.lang.Object)
-			 */
-			@Override
-			public int compare(final IJsonNode node1, final IJsonNode node2) {
-				final int result =
-					OrderingExpression.this.path.evaluate(node1).compareTo(OrderingExpression.this.path.evaluate(node2));
-				return OrderingExpression.this.order == Order.DESCENDING ? -result : result;
-			}
-		};
+		this.path = path;
 	}
 }

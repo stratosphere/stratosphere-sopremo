@@ -15,6 +15,24 @@ import eu.stratosphere.sopremo.type.IJsonNode;
 
 public class AndExpressionTest extends BooleanExpressionTest<AndExpression> {
 
+	@Test
+	public void shouldBeFalseIfOneExprIsFalse() {
+		final IJsonNode result =
+			new AndExpression(TRUE, BooleanExpression.ensureBooleanExpression(EvaluationExpression.VALUE), TRUE).
+				evaluate(BooleanNode.FALSE);
+
+		Assert.assertEquals(BooleanNode.FALSE, result);
+	}
+
+	@Test
+	public void shouldBeTrueIfAllExprAreTrue() {
+		final IJsonNode result =
+			new AndExpression(TRUE, BooleanExpression.ensureBooleanExpression(EvaluationExpression.VALUE), TRUE).
+				evaluate(BooleanNode.TRUE);
+
+		Assert.assertEquals(BooleanNode.TRUE, result);
+	}
+
 	@Override
 	protected AndExpression createDefaultInstance(final int index) {
 		final BooleanExpression[] params = new BooleanExpression[index + 1];
@@ -32,24 +50,6 @@ public class AndExpressionTest extends BooleanExpressionTest<AndExpression> {
 		super.initVerifier(equalVerifier);
 		equalVerifier.withPrefabValues(List.class, new ArrayList<Object>(), new ArrayList<EvaluationExpression>(
 			Collections.singleton(TRUE)));
-	}
-
-	@Test
-	public void shouldBeTrueIfAllExprAreTrue() {
-		final IJsonNode result =
-			new AndExpression(TRUE, BooleanExpression.ensureBooleanExpression(EvaluationExpression.VALUE), TRUE).
-				evaluate(BooleanNode.TRUE);
-
-		Assert.assertEquals(BooleanNode.TRUE, result);
-	}
-
-	@Test
-	public void shouldBeFalseIfOneExprIsFalse() {
-		final IJsonNode result =
-			new AndExpression(TRUE, BooleanExpression.ensureBooleanExpression(EvaluationExpression.VALUE), TRUE).
-				evaluate(BooleanNode.FALSE);
-
-		Assert.assertEquals(BooleanNode.FALSE, result);
 	}
 
 }

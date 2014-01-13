@@ -17,8 +17,6 @@ package eu.stratosphere.util.reflect;
 /**
  */
 public abstract class DynamicProperty<Type> {
-	public abstract void set(Object instance, Type value);
-
 	public abstract Type get(Object instance);
 
 	public abstract int getModifiers();
@@ -26,4 +24,6 @@ public abstract class DynamicProperty<Type> {
 	public abstract String getName();
 
 	public abstract Class<Type> getType();
+
+	public abstract void set(Object instance, Type value);
 }

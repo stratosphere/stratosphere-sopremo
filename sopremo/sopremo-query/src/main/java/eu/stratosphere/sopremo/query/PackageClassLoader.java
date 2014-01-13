@@ -43,12 +43,52 @@ import eu.stratosphere.util.StreamUtil;
 public class PackageClassLoader extends ClassLoader {
 	private final List<JarInfo> jarInfos = new ArrayList<JarInfo>();
 
+	private static final Log LOG = LogFactory.getLog(PackageClassLoader.class);
+
 	public PackageClassLoader() {
 		super();
 	}
 
 	public PackageClassLoader(final ClassLoader parent) {
 		super(parent);
+	}
+
+	/**
+	 * @param jarFileLocation
+	 */
+	public void addJar(final File jarFileLocation) {
+		try {
+			this.jarInfos.add(new JarInfo(jarFileLocation));
+		} catch (final IOException e) {
+			LOG.error("Error loading jar " + jarFileLocation, e);
+		}
+	}
+
+	public List<File> getFiles() {
+		final List<File> files = new ArrayList<File>();
+		for (final JarInfo jarInfo : this.jarInfos)
+			jarInfo.collectFiles(files);
+		return files;
+	}
+
+	@Override
+	protected Class<?> findClass(final String name) throws ClassNotFoundException {
+		for (final JarInfo jarInfo : this.jarInfos) {
+			final Class<?> clazz = jarInfo.findClass(name);
+			if (clazz != null)
+				return clazz;
+		}
+		throw new ClassNotFoundException(name);
+	}
+
+	@Override
+	protected URL findResource(final String name) {
+		for (final JarInfo jarInfo : this.jarInfos) {
+			final URL resource = jarInfo.findResource(name);
+			if (resource != null)
+				return resource;
+		}
+		return null;
 	}
 
 	/*
@@ -72,46 +112,6 @@ public class PackageClassLoader extends ClassLoader {
 		return c;
 	}
 
-	@Override
-	protected Class<?> findClass(final String name) throws ClassNotFoundException {
-		for (final JarInfo jarInfo : this.jarInfos) {
-			final Class<?> clazz = jarInfo.findClass(name);
-			if (clazz != null)
-				return clazz;
-		}
-		throw new ClassNotFoundException(name);
-	}
-
-	@Override
-	protected URL findResource(final String name) {
-		for (final JarInfo jarInfo : this.jarInfos) {
-			final URL resource = jarInfo.findResource(name);
-			if (resource != null)
-				return resource;
-		}
-		return null;
-	}
-
-	public List<File> getFiles() {
-		final List<File> files = new ArrayList<File>();
-		for (final JarInfo jarInfo : this.jarInfos)
-			jarInfo.collectFiles(files);
-		return files;
-	}
-
-	/**
-	 * @param jarFileLocation
-	 */
-	public void addJar(final File jarFileLocation) {
-		try {
-			this.jarInfos.add(new JarInfo(jarFileLocation));
-		} catch (final IOException e) {
-			LOG.error("Error loading jar " + jarFileLocation, e);
-		}
-	}
-
-	private static final Log LOG = LogFactory.getLog(PackageClassLoader.class);
-
 	private final class JarInfo implements Closeable {
 		private File file;
 
@@ -126,21 +126,32 @@ public class PackageClassLoader extends ClassLoader {
 		private final Set<JarInfo> containedInfos = new HashSet<JarInfo>();
 
 		/**
+		 * Initializes JarInfo.
+		 * 
+		 * @param jarFileLocation
+		 */
+		public JarInfo(final File jarFileLocation) throws IOException {
+			this.file = jarFileLocation;
+			this.loadJar();
+		}
+
+		/**
 		 * Initializes PackageClassLoader.JarInfo.
 		 */
 		public JarInfo(final InputStream inputStream) {
 			this.inputStream = inputStream;
 		}
 
-		/**
-		 * Returns the file.
-		 * 
-		 * @return the file
+		/*
+		 * (non-Javadoc)
+		 * @see java.io.Closeable#close()
 		 */
-		public File getFile() {
-			if (this.file == null)
-				this.cache();
-			return this.file;
+		@Override
+		public void close() throws IOException {
+			if (this.inputStream != null)
+				this.inputStream.close();
+			if (this.jarFile != null)
+				this.jarFile.close();
 		}
 
 		public void collectFiles(final List<File> files) {
@@ -149,35 +160,6 @@ public class PackageClassLoader extends ClassLoader {
 				info.collectFiles(files);
 		}
 
-		/**
-		 * @param name
-		 * @return
-		 */
-		public URL findResource(final String name) {
-			if (this.jarFile == null)
-				this.cache();
-			final JarEntry jarEntry = this.containedResources.get(name);
-			if (jarEntry == null) {
-				for (final JarInfo info : this.containedInfos) {
-					final URL resource = info.findResource(name);
-					if (resource != null)
-						return resource;
-				}
-				return null;
-			}
-			try {
-				return new URL("jar", "", -1,
-					String.format("%s!/%s", this.file.toURI().toURL(), jarEntry.getName()));
-			} catch (final MalformedURLException e) {
-				LOG.error("Error loading resource " + name, e);
-				return null;
-			}
-		}
-
-		/**
-		 * @param name
-		 * @return
-		 */
 		public Class<?> findClass(final String name) {
 			if (this.file == null)
 				this.cache();
@@ -200,38 +182,36 @@ public class PackageClassLoader extends ClassLoader {
 			}
 		}
 
-		/**
-		 * 
-		 */
-		private void cache() {
+		public URL findResource(final String name) {
+			if (this.jarFile == null)
+				this.cache();
+			final JarEntry jarEntry = this.containedResources.get(name);
+			if (jarEntry == null) {
+				for (final JarInfo info : this.containedInfos) {
+					final URL resource = info.findResource(name);
+					if (resource != null)
+						return resource;
+				}
+				return null;
+			}
 			try {
-				this.file = StreamUtil.cacheFile(this.inputStream);
-				this.loadJar();
-			} catch (final IOException e) {
-				LOG.error(e.getMessage(), e);
+				return new URL("jar", "", -1,
+					String.format("%s!/%s", this.file.toURI().toURL(), jarEntry.getName()));
+			} catch (final MalformedURLException e) {
+				LOG.error("Error loading resource " + name, e);
+				return null;
 			}
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see java.io.Closeable#close()
-		 */
-		@Override
-		public void close() throws IOException {
-			if (this.inputStream != null)
-				this.inputStream.close();
-			if (this.jarFile != null)
-				this.jarFile.close();
-		}
-
 		/**
-		 * Initializes JarInfo.
+		 * Returns the file.
 		 * 
-		 * @param jarFileLocation
+		 * @return the file
 		 */
-		public JarInfo(final File jarFileLocation) throws IOException {
-			this.file = jarFileLocation;
-			this.loadJar();
+		public File getFile() {
+			if (this.file == null)
+				this.cache();
+			return this.file;
 		}
 
 		public void loadJar() throws IOException {
@@ -254,6 +234,18 @@ public class PackageClassLoader extends ClassLoader {
 					this.containedInfos.add(new JarInfo(this.jarFile.getInputStream(jarEntry)));
 				else
 					this.containedResources.put(entryName, jarEntry);
+			}
+		}
+
+		/**
+		 * 
+		 */
+		private void cache() {
+			try {
+				this.file = StreamUtil.cacheFile(this.inputStream);
+				this.loadJar();
+			} catch (final IOException e) {
+				LOG.error(e.getMessage(), e);
 			}
 		}
 

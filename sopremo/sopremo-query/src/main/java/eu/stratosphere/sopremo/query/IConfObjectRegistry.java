@@ -19,13 +19,12 @@ import eu.stratosphere.sopremo.packages.IRegistry;
 import eu.stratosphere.sopremo.packages.NameChooser;
 
 /**
- * Registry that manages {@link Operator}s.
- * 
+ * Registry that manages {@link ConfObjectInfo}s.
  */
 public interface IConfObjectRegistry<T extends ConfigurableSopremoType> extends IRegistry<ConfObjectInfo<T>> {
-	void put(Class<? extends T> clazz, AdditionalInfoResolver additionalInfoResolver);
-
 	ConfObjectInfo<T> get(Class<?> clazz);
 
 	NameChooser getPropertyNameChooser();
+
+	void put(Class<? extends T> clazz, AdditionalInfoResolver additionalInfoResolver);
 }

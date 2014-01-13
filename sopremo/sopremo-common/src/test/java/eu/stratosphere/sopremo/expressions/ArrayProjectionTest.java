@@ -7,17 +7,12 @@ import static eu.stratosphere.sopremo.type.JsonUtil.createStreamArrayNode;
 import org.junit.Assert;
 import org.junit.Test;
 
-import eu.stratosphere.pact.testing.AssertUtil;
+import eu.stratosphere.core.testing.AssertUtil;
 import eu.stratosphere.sopremo.type.IArrayNode;
 import eu.stratosphere.sopremo.type.IJsonNode;
 import eu.stratosphere.sopremo.type.IStreamNode;
 
 public class ArrayProjectionTest extends EvaluableExpressionTest<ArrayProjection> {
-	@Override
-	protected ArrayProjection createDefaultInstance(final int index) {
-		return new ArrayProjection().withInputExpression(new ObjectAccess(String.valueOf(index)));
-	}
-
 	@Test
 	public void shouldAccessFieldOfArray() {
 		final ArrayProjection arrayProjection = new ArrayProjection(new ObjectAccess("fieldName"));
@@ -37,6 +32,11 @@ public class ArrayProjectionTest extends EvaluableExpressionTest<ArrayProjection
 		Assert.assertFalse(result instanceof IArrayNode);
 		Assert.assertTrue(result instanceof IStreamNode);
 		AssertUtil.assertIteratorEquals(createArrayNode(1, 2, 3).iterator(), ((Iterable<IJsonNode>) result).iterator());
+	}
+
+	@Override
+	protected ArrayProjection createDefaultInstance(final int index) {
+		return new ArrayProjection().withInputExpression(new ObjectAccess(String.valueOf(index)));
 	}
 
 }

@@ -17,10 +17,18 @@ package eu.stratosphere.sopremo.aggregation;
 import java.io.IOException;
 
 import javolution.text.TypeFormat;
+import eu.stratosphere.sopremo.expressions.ArrayAccess;
+import eu.stratosphere.sopremo.expressions.BatchAggregationExpression;
+import eu.stratosphere.sopremo.pact.SopremoCoGroup;
+import eu.stratosphere.sopremo.pact.SopremoReduce;
 import eu.stratosphere.sopremo.type.CachingArrayNode;
 import eu.stratosphere.sopremo.type.IJsonNode;
+import eu.stratosphere.sopremo.type.IStreamNode;
 
 /**
+ * Replaces simple {@link ArrayAccess}es in {@link SopremoReduce} and {@link SopremoCoGroup}.<br/>
+ * A general {@link ArrayAccess} does not interact well with {@link IStreamNode}; this implementation can be used in
+ * {@link BatchAggregationExpression} and is thus more versatile.
  */
 public class ArrayAccessAsAggregation extends Aggregation {
 	private final int startIndex, endIndex;
@@ -29,16 +37,7 @@ public class ArrayAccessAsAggregation extends Aggregation {
 
 	private final boolean range;
 
-	/**
-	 * Initializes ArrayAccessAsAggregation.
-	 * 
-	 * @param name
-	 */
-	public ArrayAccessAsAggregation(final int startIndex, final int endIndex, final boolean range) {
-		this.startIndex = startIndex;
-		this.endIndex = endIndex;
-		this.range = range;
-	}
+	private transient final CachingArrayNode<IJsonNode> arrayResult = new CachingArrayNode<IJsonNode>();
 
 	public ArrayAccessAsAggregation(final int index) {
 		this(index, index, false);
@@ -47,21 +46,17 @@ public class ArrayAccessAsAggregation extends Aggregation {
 	/**
 	 * Initializes ArrayAccessAsAggregation.
 	 */
-	ArrayAccessAsAggregation() {
-		this(0, 0, false);
+	public ArrayAccessAsAggregation(final int startIndex, final int endIndex, final boolean range) {
+		this.startIndex = startIndex;
+		this.endIndex = endIndex;
+		this.range = range;
 	}
 
-	private transient final CachingArrayNode<IJsonNode> arrayResult = new CachingArrayNode<IJsonNode>();
-
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.aggregation.Aggregation#initialize()
+	/**
+	 * Initializes ArrayAccessAsAggregation.
 	 */
-	@Override
-	public void initialize() {
-		this.elementsToSkip = this.startIndex;
-		this.remainingElements = this.endIndex - this.startIndex + 1;
-		this.arrayResult.clear();
+	ArrayAccessAsAggregation() {
+		this(0, 0, false);
 	}
 
 	/*
@@ -76,15 +71,6 @@ public class ArrayAccessAsAggregation extends Aggregation {
 			this.arrayResult.addClone(element);
 			this.remainingElements--;
 		}
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.aggregation.Aggregation#clone()
-	 */
-	@Override
-	public Aggregation clone() {
-		return new ArrayAccessAsAggregation(this.startIndex, this.endIndex, this.range);
 	}
 
 	/*
@@ -105,6 +91,15 @@ public class ArrayAccessAsAggregation extends Aggregation {
 
 	/*
 	 * (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.aggregation.Aggregation#clone()
+	 */
+	@Override
+	public Aggregation clone() {
+		return new ArrayAccessAsAggregation(this.startIndex, this.endIndex, this.range);
+	}
+
+	/*
+	 * (non-Javadoc)
 	 * @see eu.stratosphere.sopremo.aggregation.Aggregation#getFinalAggregate()
 	 */
 	@Override
@@ -112,5 +107,16 @@ public class ArrayAccessAsAggregation extends Aggregation {
 		if (this.range)
 			return this.arrayResult;
 		return this.arrayResult.get(0);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.aggregation.Aggregation#initialize()
+	 */
+	@Override
+	public void initialize() {
+		this.elementsToSkip = this.startIndex;
+		this.remainingElements = this.endIndex - this.startIndex + 1;
+		this.arrayResult.clear();
 	}
 }

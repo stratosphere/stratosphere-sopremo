@@ -7,6 +7,7 @@ import org.junit.Test;
 import eu.stratosphere.sopremo.base.Grouping;
 import eu.stratosphere.sopremo.expressions.ArrayAccess;
 import eu.stratosphere.sopremo.expressions.ArrayProjection;
+import eu.stratosphere.sopremo.expressions.BatchAggregationExpression;
 import eu.stratosphere.sopremo.expressions.ExpressionUtil;
 import eu.stratosphere.sopremo.expressions.InputSelection;
 import eu.stratosphere.sopremo.expressions.ObjectAccess;
@@ -14,7 +15,7 @@ import eu.stratosphere.sopremo.expressions.ObjectCreation;
 import eu.stratosphere.sopremo.testing.SopremoTestPlan;
 
 /**
- * Tests {@link BuiltinFunctions}
+ * Tests a complex {@link Grouping} and indeed tests {@link BatchAggregationExpression} as well. 
  */
 public class AggregationIT {
 	@Test

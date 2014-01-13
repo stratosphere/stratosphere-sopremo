@@ -16,11 +16,11 @@ package eu.stratosphere.sopremo.packages;
 
 import java.util.List;
 
+import eu.stratosphere.sopremo.function.SopremoFunction;
 import eu.stratosphere.sopremo.type.IJsonNode;
 
 /**
  * Registry that manages {@link SopremoFunction}s.
- * 
  */
 public interface ITypeRegistry extends IRegistry<Class<? extends IJsonNode>> {
 	public List<Class<? extends IJsonNode>> getTypes();

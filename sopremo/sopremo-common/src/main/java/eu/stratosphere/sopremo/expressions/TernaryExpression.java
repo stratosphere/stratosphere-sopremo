@@ -33,34 +33,7 @@ public class TernaryExpression extends PathSegmentExpression {
 
 	private EvaluationExpression ifExpression, thenExpression;
 
-	/**
-	 * Initializes a TernaryExpression with the given {@link EvaluationExpression}s.
-	 * 
-	 * @param ifClause
-	 *        the expression that represents the condition of this {@link TernaryExpression}
-	 * @param ifExpression
-	 *        the expression that should be evaluated if the iFClause evaluation results in {@link BooleanNode.TRUE}
-	 * @param thenExpression
-	 *        the expression that should be evaluated if the iFClause evaluation results in {@link BooleanNode.FALSE}
-	 */
-	public TernaryExpression(final EvaluationExpression ifClause, final EvaluationExpression ifExpression,
-			final EvaluationExpression thenExpression) {
-		this.ifClause = ifClause;
-		this.ifExpression = ifExpression;
-		this.thenExpression = thenExpression;
-	}
-
-	/**
-	 * Initializes a TernaryExpression with the given {@link EvaluationExpression}s.
-	 * 
-	 * @param ifClause
-	 *        the expression that represents the condition of this {@link TernaryExpression}
-	 * @param ifExpression
-	 *        the expression that should be evaluated if the iFClause evaluation results in {@link BooleanNode.TRUE}
-	 */
-	public TernaryExpression(final EvaluationExpression ifClause, final EvaluationExpression ifExpression) {
-		this(ifClause, ifExpression, ConstantExpression.MISSING);
-	}
+	private final transient NodeCache nodeCache = new NodeCache();
 
 	/**
 	 * Initializes TernaryExpression.
@@ -69,6 +42,44 @@ public class TernaryExpression extends PathSegmentExpression {
 		this.ifClause = null;
 		this.ifExpression = null;
 		this.thenExpression = null;
+	}
+
+	/**
+	 * Initializes a TernaryExpression with the given {@link EvaluationExpression}s.
+	 * 
+	 * @param ifClause
+	 *        the expression that represents the condition of this {@link TernaryExpression}
+	 * @param ifExpression
+	 *        the expression that should be evaluated if the iFClause evaluation results in {@link BooleanNode#TRUE}
+	 */
+	public TernaryExpression(final EvaluationExpression ifClause, final EvaluationExpression ifExpression) {
+		this(ifClause, ifExpression, ConstantExpression.MISSING);
+	}
+
+	/**
+	 * Initializes a TernaryExpression with the given {@link EvaluationExpression}s.
+	 * 
+	 * @param ifClause
+	 *        the expression that represents the condition of this {@link TernaryExpression}
+	 * @param ifExpression
+	 *        the expression that should be evaluated if the iFClause evaluation results in {@link BooleanNode#TRUE}
+	 * @param thenExpression
+	 *        the expression that should be evaluated if the iFClause evaluation results in {@link BooleanNode#FALSE}
+	 */
+	public TernaryExpression(final EvaluationExpression ifClause, final EvaluationExpression ifExpression,
+			final EvaluationExpression thenExpression) {
+		this.ifClause = ifClause;
+		this.ifExpression = ifExpression;
+		this.thenExpression = thenExpression;
+	}
+
+	@Override
+	public void appendAsString(final Appendable appendable) throws IOException {
+		this.ifClause.appendAsString(appendable);
+		appendable.append(" ? ");
+		this.ifExpression.appendAsString(appendable);
+		appendable.append(" : ");
+		this.thenExpression.appendAsString(appendable);
 	}
 
 	/**
@@ -98,7 +109,55 @@ public class TernaryExpression extends PathSegmentExpression {
 		return this.thenExpression;
 	}
 
-	private final transient NodeCache nodeCache = new NodeCache();
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.expressions.ExpressionParent#iterator()
+	 */
+	@Override
+	public ChildIterator iterator() {
+		return new ConcatenatingNamedChildIterator(super.namedChildIterator(),
+			new NamedChildIterator("ifClause", "ifExpression", "thenExpression") {
+				@Override
+				protected EvaluationExpression get(final int index) {
+					switch (index) {
+					case 0:
+						return TernaryExpression.this.ifClause;
+					case 1:
+						return TernaryExpression.this.ifExpression;
+					default:
+						return TernaryExpression.this.thenExpression;
+					}
+				}
+
+				@Override
+				protected void set(final int index, final EvaluationExpression childExpression) {
+					switch (index) {
+					case 0:
+						TernaryExpression.this.ifClause = childExpression;
+						break;
+					case 1:
+						TernaryExpression.this.ifExpression = childExpression;
+						break;
+					default:
+						TernaryExpression.this.thenExpression = childExpression;
+					}
+				}
+			});
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see
+	 * eu.stratosphere.sopremo.expressions.PathSegmentExpression#equalsSameClass(eu.stratosphere.sopremo.expressions
+	 * .PathSegmentExpression)
+	 */
+	@Override
+	protected boolean equalsSameClass(final PathSegmentExpression obj) {
+		final TernaryExpression other = (TernaryExpression) obj;
+		return this.ifClause.equals(other.ifClause)
+			&& this.ifExpression.equals(other.ifExpression)
+			&& this.thenExpression.equals(other.thenExpression);
+	}
 
 	/*
 	 * (non-Javadoc)
@@ -115,51 +174,6 @@ public class TernaryExpression extends PathSegmentExpression {
 
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.expressions.ExpressionParent#iterator()
-	 */
-	@Override
-	public ChildIterator iterator() {
-		return new ConcatenatingNamedChildIterator(super.namedChildIterator(),
-			new NamedChildIterator("ifClause", "ifExpression", "thenExpression") {
-				@Override
-				protected void set(final int index, final EvaluationExpression childExpression) {
-					switch (index) {
-					case 0:
-						TernaryExpression.this.ifClause = childExpression;
-						break;
-					case 1:
-						TernaryExpression.this.ifExpression = childExpression;
-						break;
-					default:
-						TernaryExpression.this.thenExpression = childExpression;
-					}
-				}
-
-				@Override
-				protected EvaluationExpression get(final int index) {
-					switch (index) {
-					case 0:
-						return TernaryExpression.this.ifClause;
-					case 1:
-						return TernaryExpression.this.ifExpression;
-					default:
-						return TernaryExpression.this.thenExpression;
-					}
-				}
-			});
-	}
-
-	@Override
-	public void appendAsString(final Appendable appendable) throws IOException {
-		this.ifClause.appendAsString(appendable);
-		appendable.append(" ? ");
-		this.ifExpression.appendAsString(appendable);
-		appendable.append(" : ");
-		this.thenExpression.appendAsString(appendable);
-	}
-
-	/*
-	 * (non-Javadoc)
 	 * @see eu.stratosphere.sopremo.expressions.PathSegmentExpression#segmentHashCode()
 	 */
 	@Override
@@ -170,20 +184,6 @@ public class TernaryExpression extends PathSegmentExpression {
 		result = prime * result + this.ifExpression.hashCode();
 		result = prime * result + this.thenExpression.hashCode();
 		return result;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see
-	 * eu.stratosphere.sopremo.expressions.PathSegmentExpression#equalsSameClass(eu.stratosphere.sopremo.expressions
-	 * .PathSegmentExpression)
-	 */
-	@Override
-	protected boolean equalsSameClass(final PathSegmentExpression obj) {
-		final TernaryExpression other = (TernaryExpression) obj;
-		return this.ifClause.equals(other.ifClause)
-			&& this.ifExpression.equals(other.ifExpression)
-			&& this.thenExpression.equals(other.thenExpression);
 	}
 
 }

@@ -20,26 +20,26 @@ import eu.stratosphere.sopremo.pact.SopremoUtil;
 import eu.stratosphere.sopremo.type.IJsonNode;
 
 /**
- * This traceExpression logs the evaluation of an {@link EvaluationExpression} with the help of {@link SopremoUtil.LOG}.
+ * This traceExpression logs the evaluation of an {@link EvaluationExpression} with the help of {@link SopremoUtil#LOG}.
  */
 public class TraceExpression extends EvaluationExpression {
 	private EvaluationExpression traceExpression;
-
-	/**
-	 * Initializes a TraceExpression with the given {@link EvaluationExpression}.
-	 * 
-	 * @param traceExpression
-	 *        the traceExpression where the evauation should be logged
-	 */
-	public TraceExpression(final EvaluationExpression expression) {
-		this.traceExpression = expression;
-	}
 
 	/**
 	 * Initializes TraceExpression.
 	 */
 	public TraceExpression() {
 		this(VALUE);
+	}
+
+	/**
+	 * Initializes a TraceExpression with the given {@link EvaluationExpression}.
+	 * 
+	 * @param traceExpression
+	 *        the traceExpression where the evaluation should be logged
+	 */
+	public TraceExpression(final EvaluationExpression traceExpression) {
+		this.traceExpression = traceExpression;
 	}
 
 	@Override
@@ -57,13 +57,13 @@ public class TraceExpression extends EvaluationExpression {
 		return new NamedChildIterator("traceExpression") {
 
 			@Override
-			protected void set(final int index, final EvaluationExpression e) {
-				TraceExpression.this.traceExpression = e;
+			protected EvaluationExpression get(final int index) {
+				return TraceExpression.this.traceExpression;
 			}
 
 			@Override
-			protected EvaluationExpression get(final int index) {
-				return TraceExpression.this.traceExpression;
+			protected void set(final int index, final EvaluationExpression e) {
+				TraceExpression.this.traceExpression = e;
 			}
 		};
 	}

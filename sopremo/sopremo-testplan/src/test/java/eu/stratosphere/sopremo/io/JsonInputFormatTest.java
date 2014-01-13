@@ -10,6 +10,7 @@ import org.junit.Test;
 
 import eu.stratosphere.api.common.io.FormatUtil;
 import eu.stratosphere.configuration.Configuration;
+import eu.stratosphere.core.testing.TestPlan;
 import eu.stratosphere.sopremo.EvaluationContext;
 import eu.stratosphere.sopremo.io.JsonFormat.JsonInputFormat;
 import eu.stratosphere.sopremo.io.SopremoFormat.SopremoFileInputFormat;
@@ -22,7 +23,6 @@ import eu.stratosphere.sopremo.type.IntNode;
 
 /**
  * Tests {@link JsonInputFormat}.
- * 
  */
 public class JsonInputFormatTest {
 
@@ -53,11 +53,6 @@ public class JsonInputFormatTest {
 		final SopremoTestPlan testPlan = new SopremoTestPlan(read);
 		testPlan.getExpectedOutput(0).load(this.getResource("SopremoTestPlan/test.json"));
 		testPlan.run();
-	}
-
-	private String getResource(final String name) throws IOException {
-		return JsonInputFormatTest.class.getClassLoader().getResources(name)
-			.nextElement().toString();
 	}
 
 	/**
@@ -129,5 +124,10 @@ public class JsonInputFormatTest {
 			Assert.assertEquals("other order expected", index,
 				((IntNode) ((IObjectNode) arrayNode.get(index - 1)).get("id")).getIntValue());
 		}
+	}
+
+	private String getResource(final String name) throws IOException {
+		return JsonInputFormatTest.class.getClassLoader().getResources(name)
+			.nextElement().toString();
 	}
 }

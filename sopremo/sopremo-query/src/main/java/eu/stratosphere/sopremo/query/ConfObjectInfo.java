@@ -37,6 +37,133 @@ import eu.stratosphere.util.reflect.ReflectUtil;
 
 public class ConfObjectInfo<Obj extends ConfigurableSopremoType> extends AbstractSopremoType implements ISopremoType {
 
+	private final Class<Obj> operatorClass;
+
+	private final String name;
+
+	private final NameChooser propertyNameChooser;
+
+	private final IRegistry<ConfObjectPropertyInfo> operatorPropertyRegistry =
+		new DefaultRegistry<ConfObjectPropertyInfo>();
+
+	private final IRegistry<ConfObjectIndexedPropertyInfo> inputPropertyRegistry =
+		new DefaultRegistry<ConfObjectIndexedPropertyInfo>();
+
+	private final BeanInfo beanInfo;
+
+	private final AdditionalInfoResolver additionalInfoResolver;
+
+	private final AtomicBoolean needsInitialization = new AtomicBoolean(true);
+
+	public ConfObjectInfo(final AdditionalInfoResolver additionalInfoResolver, final NameChooser propertyNameChooser,
+			final Class<Obj> operatorClass, final String name) {
+		this.operatorClass = operatorClass;
+		try {
+			this.beanInfo = Introspector.getBeanInfo(this.operatorClass);
+		} catch (final IntrospectionException e) {
+			throw new RuntimeException(e);
+		}
+		this.name = name;
+		this.propertyNameChooser = propertyNameChooser;
+		this.additionalInfoResolver = additionalInfoResolver;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.ISopremoType#appendAsString(java.lang.Appendable)
+	 */
+	@Override
+	public void appendAsString(final Appendable appendable) throws IOException {
+		appendable.append(this.name);
+	}
+
+	public IRegistry<ConfObjectIndexedPropertyInfo> getInputPropertyRegistry(final ConfigurableSopremoType object) {
+		if (this.needsInitialization())
+			this.initProperties();
+		if (object != null) {
+			final ConfigurableSopremoType[] additionalBeanInfos = object.getAdditionalBeanInfo();
+			if (additionalBeanInfos != null && additionalBeanInfos.length > 0) {
+				final StackedRegistry<ConfObjectIndexedPropertyInfo, IRegistry<ConfObjectIndexedPropertyInfo>> stackedRegistry =
+					new StackedRegistry<ConfObjectIndexedPropertyInfo, IRegistry<ConfObjectIndexedPropertyInfo>>(
+						this.inputPropertyRegistry);
+				for (final ConfigurableSopremoType beanInfo : additionalBeanInfos) {
+					final ConfObjectInfo<?> additionalConfInfo = this.additionalInfoResolver.get(beanInfo);
+					stackedRegistry.push(additionalConfInfo.getInputPropertyRegistry(beanInfo));
+				}
+				return stackedRegistry;
+			}
+		}
+		return this.inputPropertyRegistry;
+	}
+
+	public String getName() {
+		return this.name;
+	}
+
+	/**
+	 * Returns the operatorClass.
+	 * 
+	 * @return the operatorClass
+	 */
+	public Class<Obj> getOperatorClass() {
+		return this.operatorClass;
+	}
+
+	public IRegistry<ConfObjectPropertyInfo> getOperatorPropertyRegistry(final ConfigurableSopremoType object) {
+		if (this.needsInitialization())
+			this.initProperties();
+		if (object != null) {
+			final ConfigurableSopremoType[] additionalBeanInfos = object.getAdditionalBeanInfo();
+			if (additionalBeanInfos != null && additionalBeanInfos.length > 0) {
+				final StackedRegistry<ConfObjectPropertyInfo, IRegistry<ConfObjectPropertyInfo>> stackedRegistry =
+					new StackedRegistry<ConfObjectPropertyInfo, IRegistry<ConfObjectPropertyInfo>>(
+						this.operatorPropertyRegistry);
+				for (final ConfigurableSopremoType beanInfo : additionalBeanInfos) {
+					final ConfObjectInfo<?> additionalConfInfo = this.additionalInfoResolver.get(beanInfo);
+					stackedRegistry.push(additionalConfInfo.getOperatorPropertyRegistry(beanInfo));
+				}
+				return stackedRegistry;
+			}
+		}
+		return this.operatorPropertyRegistry;
+	}
+
+	public Obj newInstance() {
+		return ReflectUtil.newInstance(this.operatorClass);
+	}
+
+	protected boolean needsInitialization() {
+		return this.needsInitialization.getAndSet(false);
+	}
+
+	private void initProperties() {
+		final PropertyDescriptor[] propertyDescriptors = this.beanInfo.getPropertyDescriptors();
+		for (final PropertyDescriptor propertyDescriptor : propertyDescriptors) {
+			final Name nameAnnotation = (Name) propertyDescriptor.getValue(ConfigurableSopremoType.Info.NAME);
+			String[] names;
+			if (nameAnnotation == null || (names = this.propertyNameChooser.getNames(nameAnnotation)) == null)
+				names = new String[] { propertyDescriptor.getName() };
+
+			if (propertyDescriptor.getValue(ConfigurableSopremoType.Info.INPUT) == Boolean.TRUE)
+				for (final String name : names)
+					this.inputPropertyRegistry.put(name, new ConfObjectIndexedPropertyInfo(this.additionalInfoResolver,
+						name,
+						(IndexedPropertyDescriptor) propertyDescriptor));
+			else
+				for (final String name : names)
+					this.operatorPropertyRegistry.put(name, new ConfObjectPropertyInfo(this.additionalInfoResolver,
+						name,
+						propertyDescriptor));
+		}
+	}
+
+	public static Object coerce(final EvaluationExpression expression, final Class<?> propertyType) {
+		if (EvaluationExpression.class.isAssignableFrom(propertyType))
+			return expression;
+		final IJsonNode constantExpressionResult = expression.evaluate(MissingNode.getInstance());
+		return JsonToJavaMapper.INSTANCE.map(constantExpressionResult, null, propertyType);
+	}
+
 	public static class ConfObjectIndexedPropertyInfo extends PropertyInfo {
 
 		/**
@@ -67,20 +194,6 @@ public class ConfObjectInfo<Obj extends ConfigurableSopremoType> extends Abstrac
 			}
 		}
 
-		public void setValue(final ConfigurableSopremoType operator, final int index, final Object value) {
-			final ConfigurableSopremoType delegate = this.getDelegate(operator);
-			if (delegate != operator) {
-				this.setValue(delegate, index, value);
-				return;
-			}
-			try {
-				this.getDescriptor().getIndexedWriteMethod().invoke(operator, index, value);
-			} catch (final Exception e) {
-				throw new RuntimeException(
-					String.format("Could not set property %s of %s to %s", this.getName(), operator, value), e);
-			}
-		}
-
 		public void setValue(final ConfigurableSopremoType operator, final int index,
 				final EvaluationExpression expression) {
 			final ConfigurableSopremoType delegate = this.getDelegate(operator);
@@ -94,6 +207,20 @@ public class ConfObjectInfo<Obj extends ConfigurableSopremoType> extends Abstrac
 			} catch (final Exception e) {
 				throw new RuntimeException(
 					String.format("Could not set property %s of %s to %s", this.getName(), operator, expression), e);
+			}
+		}
+
+		public void setValue(final ConfigurableSopremoType operator, final int index, final Object value) {
+			final ConfigurableSopremoType delegate = this.getDelegate(operator);
+			if (delegate != operator) {
+				this.setValue(delegate, index, value);
+				return;
+			}
+			try {
+				this.getDescriptor().getIndexedWriteMethod().invoke(operator, index, value);
+			} catch (final Exception e) {
+				throw new RuntimeException(
+					String.format("Could not set property %s of %s to %s", this.getName(), operator, value), e);
 			}
 		}
 
@@ -124,20 +251,6 @@ public class ConfObjectInfo<Obj extends ConfigurableSopremoType> extends Abstrac
 			}
 		}
 
-		public void setValue(final ConfigurableSopremoType operator, final Object value) {
-			final ConfigurableSopremoType delegate = this.getDelegate(operator);
-			if (delegate != operator) {
-				this.setValue(delegate, value);
-				return;
-			}
-			try {
-				this.getDescriptor().getWriteMethod().invoke(operator, value);
-			} catch (final Exception e) {
-				throw new RuntimeException(
-					String.format("Could not set property %s of %s to %s", this.getName(), operator, value), e);
-			}
-		}
-
 		public void setValue(final ConfigurableSopremoType operator, final EvaluationExpression expression) {
 			final ConfigurableSopremoType delegate = this.getDelegate(operator);
 			if (delegate != operator) {
@@ -151,6 +264,20 @@ public class ConfObjectInfo<Obj extends ConfigurableSopremoType> extends Abstrac
 				throw new RuntimeException(
 					String.format("Could not set property '%s' of '%s' to: %s", this.getName(), operator, expression),
 					e);
+			}
+		}
+
+		public void setValue(final ConfigurableSopremoType operator, final Object value) {
+			final ConfigurableSopremoType delegate = this.getDelegate(operator);
+			if (delegate != operator) {
+				this.setValue(delegate, value);
+				return;
+			}
+			try {
+				this.getDescriptor().getWriteMethod().invoke(operator, value);
+			} catch (final Exception e) {
+				throw new RuntimeException(
+					String.format("Could not set property %s of %s to %s", this.getName(), operator, value), e);
 			}
 		}
 
@@ -170,6 +297,15 @@ public class ConfObjectInfo<Obj extends ConfigurableSopremoType> extends Abstrac
 			this.descriptor = descriptor;
 		}
 
+		/*
+		 * (non-Javadoc)
+		 * @see eu.stratosphere.sopremo.ISopremoType#appendAsString(java.lang.Appendable)
+		 */
+		@Override
+		public void appendAsString(final Appendable appendable) throws IOException {
+			appendable.append(this.name);
+		}
+
 		/**
 		 * Returns the descriptor.
 		 * 
@@ -177,10 +313,6 @@ public class ConfObjectInfo<Obj extends ConfigurableSopremoType> extends Abstrac
 		 */
 		public PropertyDescriptor getDescriptor() {
 			return this.descriptor;
-		}
-
-		public boolean isFlag() {
-			return this.getType() == Boolean.TYPE;
 		}
 
 		/**
@@ -193,19 +325,14 @@ public class ConfObjectInfo<Obj extends ConfigurableSopremoType> extends Abstrac
 		}
 
 		/**
-		 * @return
+		 * @return the type of the property
 		 */
 		public Class<?> getType() {
 			return this.descriptor.getPropertyType();
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see eu.stratosphere.sopremo.ISopremoType#appendAsString(java.lang.Appendable)
-		 */
-		@Override
-		public void appendAsString(final Appendable appendable) throws IOException {
-			appendable.append(this.name);
+		public boolean isFlag() {
+			return this.getType() == Boolean.TYPE;
 		}
 
 		protected ConfigurableSopremoType getDelegate(final ConfigurableSopremoType operator) {
@@ -218,132 +345,5 @@ public class ConfObjectInfo<Obj extends ConfigurableSopremoType> extends Abstrac
 				}
 			return operator;
 		}
-	}
-
-	private final Class<Obj> operatorClass;
-
-	private final String name;
-
-	private final NameChooser propertyNameChooser;
-
-	private final IRegistry<ConfObjectPropertyInfo> operatorPropertyRegistry =
-		new DefaultRegistry<ConfObjectPropertyInfo>();
-
-	private final IRegistry<ConfObjectIndexedPropertyInfo> inputPropertyRegistry =
-		new DefaultRegistry<ConfObjectIndexedPropertyInfo>();
-
-	private final BeanInfo beanInfo;
-
-	private final AdditionalInfoResolver additionalInfoResolver;
-
-	public ConfObjectInfo(final AdditionalInfoResolver additionalInfoResolver, final NameChooser propertyNameChooser,
-			final Class<Obj> operatorClass, final String name) {
-		this.operatorClass = operatorClass;
-		try {
-			this.beanInfo = Introspector.getBeanInfo(this.operatorClass);
-		} catch (final IntrospectionException e) {
-			throw new RuntimeException(e);
-		}
-		this.name = name;
-		this.propertyNameChooser = propertyNameChooser;
-		this.additionalInfoResolver = additionalInfoResolver;
-	}
-
-	public static Object coerce(final EvaluationExpression expression, final Class<?> propertyType) {
-		if (EvaluationExpression.class.isAssignableFrom(propertyType))
-			return expression;
-		final IJsonNode constantExpressionResult = expression.evaluate(MissingNode.getInstance());
-		return JsonToJavaMapper.INSTANCE.map(constantExpressionResult, null, propertyType);
-	}
-
-	private void initProperties() {
-		final PropertyDescriptor[] propertyDescriptors = this.beanInfo.getPropertyDescriptors();
-		for (final PropertyDescriptor propertyDescriptor : propertyDescriptors) {
-			final Name nameAnnotation = (Name) propertyDescriptor.getValue(ConfigurableSopremoType.Info.NAME);
-			String[] names;
-			if (nameAnnotation == null || (names = this.propertyNameChooser.getNames(nameAnnotation)) == null)
-				names = new String[] { propertyDescriptor.getName() };
-
-			if (propertyDescriptor.getValue(ConfigurableSopremoType.Info.INPUT) == Boolean.TRUE)
-				for (final String name : names)
-					this.inputPropertyRegistry.put(name, new ConfObjectIndexedPropertyInfo(this.additionalInfoResolver,
-						name,
-						(IndexedPropertyDescriptor) propertyDescriptor));
-			else
-				for (final String name : names)
-					this.operatorPropertyRegistry.put(name, new ConfObjectPropertyInfo(this.additionalInfoResolver,
-						name,
-						propertyDescriptor));
-		}
-	}
-
-	private final AtomicBoolean needsInitialization = new AtomicBoolean(true);
-
-	protected boolean needsInitialization() {
-		return this.needsInitialization.getAndSet(false);
-	}
-
-	public IRegistry<ConfObjectIndexedPropertyInfo> getInputPropertyRegistry(final ConfigurableSopremoType object) {
-		if (this.needsInitialization())
-			this.initProperties();
-		if (object != null) {
-			final ConfigurableSopremoType[] additionalBeanInfos = object.getAdditionalBeanInfo();
-			if (additionalBeanInfos != null && additionalBeanInfos.length > 0) {
-				final StackedRegistry<ConfObjectIndexedPropertyInfo, IRegistry<ConfObjectIndexedPropertyInfo>> stackedRegistry =
-					new StackedRegistry<ConfObjectIndexedPropertyInfo, IRegistry<ConfObjectIndexedPropertyInfo>>(
-						this.inputPropertyRegistry);
-				for (final ConfigurableSopremoType beanInfo : additionalBeanInfos) {
-					final ConfObjectInfo<?> additionalConfInfo = this.additionalInfoResolver.get(beanInfo);
-					stackedRegistry.push(additionalConfInfo.getInputPropertyRegistry(beanInfo));
-				}
-				return stackedRegistry;
-			}
-		}
-		return this.inputPropertyRegistry;
-	}
-
-	/**
-	 * Returns the operatorClass.
-	 * 
-	 * @return the operatorClass
-	 */
-	public Class<Obj> getOperatorClass() {
-		return this.operatorClass;
-	}
-
-	public String getName() {
-		return this.name;
-	}
-
-	public IRegistry<ConfObjectPropertyInfo> getOperatorPropertyRegistry(final ConfigurableSopremoType object) {
-		if (this.needsInitialization())
-			this.initProperties();
-		if (object != null) {
-			final ConfigurableSopremoType[] additionalBeanInfos = object.getAdditionalBeanInfo();
-			if (additionalBeanInfos != null && additionalBeanInfos.length > 0) {
-				final StackedRegistry<ConfObjectPropertyInfo, IRegistry<ConfObjectPropertyInfo>> stackedRegistry =
-					new StackedRegistry<ConfObjectPropertyInfo, IRegistry<ConfObjectPropertyInfo>>(
-						this.operatorPropertyRegistry);
-				for (final ConfigurableSopremoType beanInfo : additionalBeanInfos) {
-					final ConfObjectInfo<?> additionalConfInfo = this.additionalInfoResolver.get(beanInfo);
-					stackedRegistry.push(additionalConfInfo.getOperatorPropertyRegistry(beanInfo));
-				}
-				return stackedRegistry;
-			}
-		}
-		return this.operatorPropertyRegistry;
-	}
-
-	public Obj newInstance() {
-		return ReflectUtil.newInstance(this.operatorClass);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.ISopremoType#appendAsString(java.lang.Appendable)
-	 */
-	@Override
-	public void appendAsString(final Appendable appendable) throws IOException {
-		appendable.append(this.name);
 	}
 }

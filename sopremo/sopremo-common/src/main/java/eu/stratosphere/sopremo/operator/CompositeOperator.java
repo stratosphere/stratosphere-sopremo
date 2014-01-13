@@ -1,18 +1,17 @@
 package eu.stratosphere.sopremo.operator;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
-import eu.stratosphere.pact.common.plan.PactModule;
-import eu.stratosphere.sopremo.serialization.SopremoRecordLayout;
-
 /**
  * A composite operator may be composed of several {@link ElementaryOperator}s and other CompositeOperators.<br>
  * This class should always be used as a base for new operators which would be translated to more than one PACT,
  * especially if some kind of projection or selection is used.
  */
 public abstract class CompositeOperator<Self extends CompositeOperator<Self>> extends Operator<Self> {
-	private static final Log LOG = LogFactory.getLog(CompositeOperator.class);
+	/**
+	 * Initializes the CompositeOperator with the number of outputs set to 1.
+	 */
+	public CompositeOperator() {
+		super();
+	}
 
 	/**
 	 * Initializes the CompositeOperator with the given number of outputs.
@@ -36,12 +35,7 @@ public abstract class CompositeOperator<Self extends CompositeOperator<Self>> ex
 		super(minInputs, maxInputs, minOutputs, maxOutputs);
 	}
 
-	/**
-	 * Initializes the CompositeOperator with the number of outputs set to 1.
-	 */
-	public CompositeOperator() {
-		super();
-	}
+	public abstract void addImplementation(SopremoModule module);
 
 	/**
 	 * Returns a {@link SopremoModule} that consists entirely of {@link ElementaryOperator}s. The module can be seen as
@@ -66,7 +60,5 @@ public abstract class CompositeOperator<Self extends CompositeOperator<Self>> ex
 		module.validate();
 		return module.asElementary();
 	}
-
-	public abstract void addImplementation(SopremoModule module);
 
 }

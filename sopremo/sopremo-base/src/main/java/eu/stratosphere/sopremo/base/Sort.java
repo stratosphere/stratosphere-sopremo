@@ -43,6 +43,29 @@ public class Sort extends ElementaryOperator<Sort> {
 		this.setInnerGroupOrder(0, new OrderingExpression());
 	}
 
+	public Order getDirection() {
+		return this.getOrderingExpression().getOrder();
+	}
+
+	/**
+	 * Returns the orderingExpression.
+	 * 
+	 * @return the orderingExpression
+	 */
+	public OrderingExpression getOrderingExpression() {
+		return this.getInnerGroupOrder(0).get(0);
+	}
+
+	public EvaluationExpression getSortingExpression() {
+		return this.getOrderingExpression().getPath();
+	}
+
+	@Property
+	@Name(noun = { "direction", "order" })
+	public void setDirection(final Order order) {
+		this.getOrderingExpression().setOrder(order);
+	}
+
 	/**
 	 * Sets the orderingExpression to the specified value.
 	 * 
@@ -56,28 +79,10 @@ public class Sort extends ElementaryOperator<Sort> {
 		this.setInnerGroupOrder(0, orderingExpression);
 	}
 
-	/**
-	 * Returns the orderingExpression.
-	 * 
-	 * @return the orderingExpression
-	 */
-	public OrderingExpression getOrderingExpression() {
-		return this.getInnerGroupOrder(0).get(0);
-	}
-
-	public Sort withOrderingExpression(final OrderingExpression orderingExpression) {
-		this.setOrderingExpression(orderingExpression);
-		return this;
-	}
-
 	@Property
-	@Name(noun = { "direction", "order" })
-	public void setDirection(final Order order) {
-		this.getOrderingExpression().setOrder(order);
-	}
-
-	public Order getDirection() {
-		return this.getOrderingExpression().getOrder();
+	@Name(preposition = "on")
+	public void setSortingExpression(final EvaluationExpression sortingExpression) {
+		this.getOrderingExpression().setPath(sortingExpression);
 	}
 
 	public Sort withDirection(final Order order) {
@@ -85,19 +90,14 @@ public class Sort extends ElementaryOperator<Sort> {
 		return this;
 	}
 
-	public EvaluationExpression getSortingExpression() {
-		return this.getOrderingExpression().getPath();
+	public Sort withOrderingExpression(final OrderingExpression orderingExpression) {
+		this.setOrderingExpression(orderingExpression);
+		return this;
 	}
 
 	public Sort withSortingExpression(final EvaluationExpression sortingExpression) {
 		this.setSortingExpression(sortingExpression);
 		return this;
-	}
-
-	@Property
-	@Name(preposition = "on")
-	public void setSortingExpression(final EvaluationExpression sortingExpression) {
-		this.getOrderingExpression().setPath(sortingExpression);
 	}
 
 	public static class Implementation extends SopremoReduce {

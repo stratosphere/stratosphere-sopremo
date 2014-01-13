@@ -24,7 +24,6 @@ import eu.stratosphere.sopremo.type.IJsonNode;
 
 /**
  * Replaces values in the first source by values in the dictionary given in the second source.
- * 
  */
 @InputCardinality(min = 2, max = 2)
 @Internal
@@ -40,7 +39,7 @@ public class StrictAtomarReplace extends AtomarReplaceBase<StrictAtomarReplace> 
 		 * eu.stratosphere.sopremo.type.IJsonNode, eu.stratosphere.sopremo.pact.JsonCollector)
 		 */
 		@Override
-		protected void match(final IJsonNode value1, final IJsonNode value2, final JsonCollector<IJsonNode> out) {
+		protected void join(final IJsonNode value1, final IJsonNode value2, final JsonCollector<IJsonNode> out) {
 			out.collect(this.replaceExpression.set(value1, this.dictionaryValueExtraction.evaluate(value2)));
 		}
 	}

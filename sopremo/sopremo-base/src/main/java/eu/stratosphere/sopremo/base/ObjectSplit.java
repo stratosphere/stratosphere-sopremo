@@ -20,7 +20,6 @@ import eu.stratosphere.sopremo.type.TextNode;
 /**
  * Splits an object into multiple outgoing tuples.<br>
  * This operator provides a means to emit more than one tuple in contrast to most other base operators.
- * 
  */
 // TODO: needs to be refactored
 @Internal
@@ -36,14 +35,9 @@ public class ObjectSplit extends ElementaryOperator<ObjectSplit> {
 		return this.valueProjection;
 	}
 
-	/**
-	 * (element, index/fieldName, array/object, node) -&gt; value
-	 * 
-	 * @param valueProjection
-	 * @return this
-	 */
-	public ObjectSplit withValueProjection(final EvaluationExpression valueProjection) {
-		this.setValueProjection(valueProjection);
+	@Property
+	public ObjectSplit setObjectProjection(final EvaluationExpression objectPath) {
+		this.objectPath = objectPath;
 		return this;
 	}
 
@@ -57,14 +51,19 @@ public class ObjectSplit extends ElementaryOperator<ObjectSplit> {
 		this.valueProjection = valueProjection;
 	}
 
-	@Property
-	public ObjectSplit setObjectProjection(final EvaluationExpression objectPath) {
-		this.objectPath = objectPath;
+	public ObjectSplit withObjectProjection(final EvaluationExpression objectProjection) {
+		this.setObjectProjection(objectProjection);
 		return this;
 	}
 
-	public ObjectSplit withObjectProjection(final EvaluationExpression objectProjection) {
-		this.setObjectProjection(objectProjection);
+	/**
+	 * (element, index/fieldName, array/object, node) -&gt; value
+	 * 
+	 * @param valueProjection
+	 * @return this
+	 */
+	public ObjectSplit withValueProjection(final EvaluationExpression valueProjection) {
+		this.setValueProjection(valueProjection);
 		return this;
 	}
 

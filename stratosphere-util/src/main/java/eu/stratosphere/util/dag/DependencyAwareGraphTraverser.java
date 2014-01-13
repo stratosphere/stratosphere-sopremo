@@ -8,7 +8,6 @@ import eu.stratosphere.util.dag.GraphLevelPartitioner.Level;
 /**
  * Traverses a directed acyclic graph guaranteeing that all nodes with outgoing edges to a nodes are visited before that
  * node. Additionally, every node is visited exactly once.
- * 
  */
 public class DependencyAwareGraphTraverser extends AbstractGraphTraverser implements GraphTraverser {
 	/**

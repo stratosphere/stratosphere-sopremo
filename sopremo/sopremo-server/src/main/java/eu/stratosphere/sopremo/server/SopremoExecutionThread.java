@@ -65,45 +65,13 @@ public class SopremoExecutionThread implements Runnable {
 		this.processPlan();
 	}
 
-	private void processPlan() {
-		try {
-			LOG.info("Starting job " + this.jobInfo.getJobId());
-			final SopremoPlan plan = this.jobInfo.getInitialRequest().getQuery();
-			final JobExecutionResult runtime = this.executePlan(plan);
-			if (runtime != null) {
-				switch (this.jobInfo.getInitialRequest().getMode()) {
-				case RUN:
-					this.jobInfo.setStatusAndDetail(ExecutionState.FINISHED, "");
-					break;
-				case RUN_WITH_STATISTICS:
-					this.gatherStatistics(plan, runtime);
-					break;
-				}
-				LOG.info(String.format("Finished job %s in %s ms", this.jobInfo.getJobId(), runtime));
-			}
-		} catch (final Throwable ex) {
-			LOG.error("Cannot process plan " + this.jobInfo.getJobId(), ex);
-			this.jobInfo.setStatusAndDetail(ExecutionState.ERROR,
-				"Cannot process plan: " + StringUtils.stringifyException(ex));
-		}
-	}
+	JobGraph getJobGraph(final Plan pactPlan) {
+		final PactCompiler compiler =
+			new PactCompiler(new DataStatistics(), new DefaultCostEstimator(), this.jobManagerAddress);
 
-	/**
-	 * @param plan
-	 */
-	private void gatherStatistics(final SopremoPlan plan, final JobExecutionResult result) {
-		final StringBuilder statistics = new StringBuilder();
-		statistics.append("Executed in ").append(result.getNetRuntime()).append(" ms");
-		for (final Operator<?> op : plan.getContainedOperators())
-			if (op instanceof Sink)
-				try {
-					final String path = ((Sink) op).getOutputPath();
-					final long length = FileSystem.get(new URI(path)).getFileStatus(new Path(path)).getLen();
-					statistics.append("\n").append("Sink ").append(path).append(": ").append(length).append(" B");
-				} catch (final Exception e) {
-					LOG.warn("While gathering statistics", e);
-				}
-		this.jobInfo.setStatusAndDetail(ExecutionState.FINISHED, statistics.toString());
+		final OptimizedPlan optPlan = compiler.compile(pactPlan);
+		final NepheleJobGraphGenerator gen = new NepheleJobGraphGenerator();
+		return gen.compileJobGraph(optPlan);
 	}
 
 	private JobExecutionResult executePlan(final SopremoPlan plan) {
@@ -168,13 +136,45 @@ public class SopremoExecutionThread implements Runnable {
 		}
 	}
 
-	JobGraph getJobGraph(final Plan pactPlan) {
-		final PactCompiler compiler =
-			new PactCompiler(new DataStatistics(), new DefaultCostEstimator(), this.jobManagerAddress);
+	/**
+	 * @param plan
+	 */
+	private void gatherStatistics(final SopremoPlan plan, final JobExecutionResult result) {
+		final StringBuilder statistics = new StringBuilder();
+		statistics.append("Executed in ").append(result.getNetRuntime()).append(" ms");
+		for (final Operator<?> op : plan.getContainedOperators())
+			if (op instanceof Sink)
+				try {
+					final String path = ((Sink) op).getOutputPath();
+					final long length = FileSystem.get(new URI(path)).getFileStatus(new Path(path)).getLen();
+					statistics.append("\n").append("Sink ").append(path).append(": ").append(length).append(" B");
+				} catch (final Exception e) {
+					LOG.warn("While gathering statistics", e);
+				}
+		this.jobInfo.setStatusAndDetail(ExecutionState.FINISHED, statistics.toString());
+	}
 
-		final OptimizedPlan optPlan = compiler.compile(pactPlan);
-		final NepheleJobGraphGenerator gen = new NepheleJobGraphGenerator();
-		return gen.compileJobGraph(optPlan);
+	private void processPlan() {
+		try {
+			LOG.info("Starting job " + this.jobInfo.getJobId());
+			final SopremoPlan plan = this.jobInfo.getInitialRequest().getQuery();
+			final JobExecutionResult runtime = this.executePlan(plan);
+			if (runtime != null) {
+				switch (this.jobInfo.getInitialRequest().getMode()) {
+				case RUN:
+					this.jobInfo.setStatusAndDetail(ExecutionState.FINISHED, "");
+					break;
+				case RUN_WITH_STATISTICS:
+					this.gatherStatistics(plan, runtime);
+					break;
+				}
+				LOG.info(String.format("Finished job %s in %s ms", this.jobInfo.getJobId(), runtime));
+			}
+		} catch (final Throwable ex) {
+			LOG.error("Cannot process plan " + this.jobInfo.getJobId(), ex);
+			this.jobInfo.setStatusAndDetail(ExecutionState.ERROR,
+				"Cannot process plan: " + StringUtils.stringifyException(ex));
+		}
 	}
 
 }

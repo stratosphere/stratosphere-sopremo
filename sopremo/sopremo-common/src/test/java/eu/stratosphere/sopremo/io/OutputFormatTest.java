@@ -24,7 +24,7 @@ import org.junit.Ignore;
 import eu.stratosphere.api.common.io.FormatUtil;
 import eu.stratosphere.api.common.io.OutputFormat;
 import eu.stratosphere.configuration.Configuration;
-import eu.stratosphere.pact.testing.AssertUtil;
+import eu.stratosphere.core.testing.AssertUtil;
 import eu.stratosphere.sopremo.EvaluationContext;
 import eu.stratosphere.sopremo.io.SopremoFormat.SopremoFileOutputFormat;
 import eu.stratosphere.sopremo.pact.SopremoUtil;
@@ -38,6 +38,19 @@ import eu.stratosphere.sopremo.type.IJsonNode;
 @Ignore
 public class OutputFormatTest {
 	public static final SopremoRecordLayout NULL_LAYOUT = SopremoRecordLayout.create();
+
+	public static void writeAndRead(final SopremoFormat format, final IJsonNode... values) throws IOException {
+
+		final File file = File.createTempFile("csvTest.csv", null);
+		file.delete();
+
+		writeToFile(file, format, values);
+		final Collection<IJsonNode> readValues = InputFormatTest.readFromFile(file, format);
+
+		file.delete();
+
+		AssertUtil.assertIteratorEquals(Arrays.asList(values).iterator(), readValues.iterator());
+	}
 
 	public static void writeToFile(final File file, final SopremoFormat format, final IJsonNode... values)
 			throws IOException {
@@ -57,24 +70,5 @@ public class OutputFormatTest {
 			outputFormat.writeRecord(record);
 		}
 		outputFormat.close();
-	}
-
-	/**
-	 * @param file
-	 * @param format
-	 * @param schema2
-	 * @param values
-	 */
-	public static void writeAndRead(final SopremoFormat format, final IJsonNode... values) throws IOException {
-
-		final File file = File.createTempFile("csvTest.csv", null);
-		file.delete();
-
-		writeToFile(file, format, values);
-		final Collection<IJsonNode> readValues = InputFormatTest.readFromFile(file, format);
-
-		file.delete();
-
-		AssertUtil.assertIteratorEquals(Arrays.asList(values).iterator(), readValues.iterator());
 	}
 }

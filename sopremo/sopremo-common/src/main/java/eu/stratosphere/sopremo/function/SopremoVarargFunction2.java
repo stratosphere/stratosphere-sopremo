@@ -26,8 +26,6 @@ public abstract class SopremoVarargFunction2<Arg1 extends IJsonNode, Arg2 extend
 
 	/**
 	 * Initializes SopremoVarargFunction2.
-	 * 
-	 * @param name
 	 */
 	public SopremoVarargFunction2() {
 		super(2);

@@ -47,6 +47,10 @@ public abstract class MeteorParserBase extends QueryWithVariablesParser<JsonStre
 	private final StackedConstantRegistry constantRegistry = new StackedConstantRegistry(
 		NameChooserProvider.getConstantNameChooser());
 
+	static {
+		NameChooserProvider.setFunctionNameChooser(new DefaultNameChooser(1, 0, 2, 3));
+	}
+
 	public MeteorParserBase(final TokenStream input) {
 		super(input);
 		this.init();
@@ -55,6 +59,15 @@ public abstract class MeteorParserBase extends QueryWithVariablesParser<JsonStre
 	public MeteorParserBase(final TokenStream input, final RecognizerSharedState state) {
 		super(input, state);
 		this.init();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.query.AbstractQueryParser#getConstantRegistry()
+	 */
+	@Override
+	public IConstantRegistry getConstantRegistry() {
+		return this.constantRegistry;
 	}
 
 	protected void addConstantScope() {
@@ -67,20 +80,6 @@ public abstract class MeteorParserBase extends QueryWithVariablesParser<JsonStre
 		return expression.toString();
 	}
 
-	@Override
-	protected NameChooserProvider getNameChooserProvider() {
-		return NameChooserProvider;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.query.AbstractQueryParser#getConstantRegistry()
-	 */
-	@Override
-	public IConstantRegistry getConstantRegistry() {
-		return this.constantRegistry;
-	}
-
 	/*
 	 * (non-Javadoc)
 	 * @see eu.stratosphere.sopremo.query.AbstractQueryParser#getDefaultFileFormat()
@@ -88,6 +87,11 @@ public abstract class MeteorParserBase extends QueryWithVariablesParser<JsonStre
 	@Override
 	protected Class<? extends SopremoFormat> getDefaultFileFormat() {
 		return JsonFormat.class;
+	}
+
+	@Override
+	protected NameChooserProvider getNameChooserProvider() {
+		return NameChooserProvider;
 	}
 
 	protected JsonStreamExpression getVariable(final Token name) {
@@ -111,6 +115,10 @@ public abstract class MeteorParserBase extends QueryWithVariablesParser<JsonStre
 		this.getVariableRegistry().getRegistry(depth).put(name.getText(), expression);
 	}
 
+	protected void removeConstantScope() {
+		this.constantRegistry.pop();
+	}
+
 	private void init() {
 		this.getPackageManager().importPackage("base");
 
@@ -122,13 +130,5 @@ public abstract class MeteorParserBase extends QueryWithVariablesParser<JsonStre
 		this.addTypeAlias("bool", BooleanNode.class);
 
 		this.constantRegistry.push(super.getConstantRegistry());
-	}
-
-	static {
-		NameChooserProvider.setFunctionNameChooser(new DefaultNameChooser(1, 0, 2, 3));
-	}
-
-	protected void removeConstantScope() {
-		this.constantRegistry.pop();
 	}
 }

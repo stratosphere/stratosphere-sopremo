@@ -35,11 +35,6 @@ public class StreamNode<T extends IJsonNode> extends AbstractJsonNode implements
 	@SuppressWarnings("rawtypes")
 	private final static Iterator EMPTY_ITERATOR = Collections.EMPTY_SET.iterator();
 
-	@SuppressWarnings("unchecked")
-	public StreamNode(final Iterator<? extends T> nodeIterator) {
-		this.nodeIterator = (Iterator<T>) nodeIterator;
-	}
-
 	/**
 	 * Initializes OneTimeArrayNode.
 	 */
@@ -48,54 +43,9 @@ public class StreamNode<T extends IJsonNode> extends AbstractJsonNode implements
 		this(EMPTY_ITERATOR);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.type.AbstractJsonNode#getType()
-	 */
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-	@Override
-	public Class<IArrayNode<T>> getType() {
-		return (Class) IArrayNode.class;
-	}
-
-	public Iterator<? extends T> getNodeIterator() {
-		return this.nodeIterator;
-	}
-
 	@SuppressWarnings("unchecked")
-	public void setNodeIterator(final Iterator<? extends T> nodeIterator) {
-		if (nodeIterator == null)
-			throw new NullPointerException("nodeIterator must not be null");
-
+	public StreamNode(final Iterator<? extends T> nodeIterator) {
 		this.nodeIterator = (Iterator<T>) nodeIterator;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.type.IArrayNode#clear()
-	 */
-	@SuppressWarnings("unchecked")
-	@Override
-	public void clear() {
-		this.nodeIterator = EMPTY_ITERATOR;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.type.IArrayNode#isEmpty()
-	 */
-	@Override
-	public boolean isEmpty() {
-		return !this.nodeIterator.hasNext();
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Iterable#iterator()
-	 */
-	@Override
-	public Iterator<T> iterator() {
-		return this.nodeIterator;
 	}
 
 	/*
@@ -130,11 +80,12 @@ public class StreamNode<T extends IJsonNode> extends AbstractJsonNode implements
 
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.type.IJsonNode#copyValueFrom(eu.stratosphere.sopremo.type.IJsonNode)
+	 * @see eu.stratosphere.sopremo.type.IArrayNode#clear()
 	 */
+	@SuppressWarnings("unchecked")
 	@Override
-	public void copyValueFrom(final IJsonNode otherNode) {
-		throw new UnsupportedOperationException();
+	public void clear() {
+		this.nodeIterator = EMPTY_ITERATOR;
 	}
 
 	/*
@@ -148,6 +99,29 @@ public class StreamNode<T extends IJsonNode> extends AbstractJsonNode implements
 
 	/*
 	 * (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.type.IJsonNode#copyValueFrom(eu.stratosphere.sopremo.type.IJsonNode)
+	 */
+	@Override
+	public void copyValueFrom(final IJsonNode otherNode) {
+		throw new UnsupportedOperationException();
+	}
+
+	public Iterator<? extends T> getNodeIterator() {
+		return this.nodeIterator;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.type.AbstractJsonNode#getType()
+	 */
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@Override
+	public Class<IArrayNode<T>> getType() {
+		return (Class) IArrayNode.class;
+	}
+
+	/*
+	 * (non-Javadoc)
 	 * @see eu.stratosphere.sopremo.type.AbstractJsonNode#hashCode()
 	 */
 	@Override
@@ -155,18 +129,33 @@ public class StreamNode<T extends IJsonNode> extends AbstractJsonNode implements
 		return 42;
 	}
 
-	public static class StreamNodeSerializer extends Serializer<StreamNode<?>> {
-		/*
-		 * (non-Javadoc)
-		 * @see com.esotericsoftware.kryo.Serializer#write(com.esotericsoftware.kryo.Kryo,
-		 * com.esotericsoftware.kryo.io.Output, java.lang.Object)
-		 */
-		@Override
-		public void write(final Kryo kryo, final Output output, final StreamNode<?> object) {
-			throw new UnsupportedOperationException(
-				"Use CoreFunctions#ALL to transform this stream array into a materialized array");
-		}
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.type.IArrayNode#isEmpty()
+	 */
+	@Override
+	public boolean isEmpty() {
+		return !this.nodeIterator.hasNext();
+	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Iterable#iterator()
+	 */
+	@Override
+	public Iterator<T> iterator() {
+		return this.nodeIterator;
+	}
+
+	@SuppressWarnings("unchecked")
+	public void setNodeIterator(final Iterator<? extends T> nodeIterator) {
+		if (nodeIterator == null)
+			throw new NullPointerException("nodeIterator must not be null");
+
+		this.nodeIterator = (Iterator<T>) nodeIterator;
+	}
+
+	public static class StreamNodeSerializer extends Serializer<StreamNode<?>> {
 		/*
 		 * (non-Javadoc)
 		 * @see com.esotericsoftware.kryo.Serializer#copy(com.esotericsoftware.kryo.Kryo, java.lang.Object)
@@ -184,6 +173,17 @@ public class StreamNode<T extends IJsonNode> extends AbstractJsonNode implements
 		@Override
 		public StreamNode<?> read(final Kryo kryo, final Input input, final Class<StreamNode<?>> type) {
 			throw new UnsupportedOperationException();
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see com.esotericsoftware.kryo.Serializer#write(com.esotericsoftware.kryo.Kryo,
+		 * com.esotericsoftware.kryo.io.Output, java.lang.Object)
+		 */
+		@Override
+		public void write(final Kryo kryo, final Output output, final StreamNode<?> object) {
+			throw new UnsupportedOperationException(
+				"Use CoreFunctions#ALL to transform this stream array into a materialized array");
 		}
 	}
 

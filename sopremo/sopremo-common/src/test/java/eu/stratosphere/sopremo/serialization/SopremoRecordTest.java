@@ -36,37 +36,17 @@ import eu.stratosphere.sopremo.type.JsonUtil;
 /**
  */
 public class SopremoRecordTest extends EqualCloneTest<SopremoRecord> {
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.EqualVerifyTest#createDefaultInstance(int)
-	 */
-	@Override
-	protected SopremoRecord createDefaultInstance(final int index) {
-		final SopremoRecord record = new SopremoRecord();
-		record.setNode(JsonUtil.createArrayNode(index));
-		return record;
-	}
-
 	@Test
-	public void testPrimitiveSerialization() throws IOException {
+	@Ignore
+	public void testArrayKey() throws IOException {
+		final SopremoRecordLayout layout = SopremoRecordLayout.create(new ArrayAccess(1));
 		final SopremoRecord sopremoRecord = new SopremoRecord();
-		sopremoRecord.setNode(new IntNode(42));
+		sopremoRecord.setNode(JsonUtil.createArrayNode(0, 1, 2));
 
 		final SopremoRecord sopremoRecord2 = this.serializeAndDeserialize(sopremoRecord);
-		Assert.assertEquals(sopremoRecord, sopremoRecord2);
-		Assert.assertEquals(sopremoRecord.getNode(), sopremoRecord2.getNode());
-		Assert.assertNotSame(sopremoRecord.getNode(), sopremoRecord2.getNode());
-	}
-
-	@Test
-	public void testObjectSerialization() throws IOException {
-		final SopremoRecord sopremoRecord = new SopremoRecord();
-		sopremoRecord.setNode(JsonUtil.createObjectNode("a", 1, "b", 2));
-
-		final SopremoRecord sopremoRecord2 = this.serializeAndDeserialize(sopremoRecord);
-		Assert.assertEquals(sopremoRecord, sopremoRecord2);
-		Assert.assertEquals(sopremoRecord.getNode(), sopremoRecord2.getNode());
-		Assert.assertNotSame(sopremoRecord.getNode(), sopremoRecord2.getNode());
+		Assert.assertEquals(new IntNode(1),
+			sopremoRecord2.getKey(layout.getKeyIndex(new ArrayAccess(1)), new NodeCache()));
+		Assert.assertSame(null, sopremoRecord2.getNode());
 	}
 
 	@Test
@@ -83,16 +63,36 @@ public class SopremoRecordTest extends EqualCloneTest<SopremoRecord> {
 	}
 
 	@Test
-	@Ignore
-	public void testArrayKey() throws IOException {
-		final SopremoRecordLayout layout = SopremoRecordLayout.create(new ArrayAccess(1));
+	public void testObjectSerialization() throws IOException {
 		final SopremoRecord sopremoRecord = new SopremoRecord();
-		sopremoRecord.setNode(JsonUtil.createArrayNode(0, 1, 2));
+		sopremoRecord.setNode(JsonUtil.createObjectNode("a", 1, "b", 2));
 
 		final SopremoRecord sopremoRecord2 = this.serializeAndDeserialize(sopremoRecord);
-		Assert.assertEquals(new IntNode(1),
-			sopremoRecord2.getKey(layout.getKeyIndex(new ArrayAccess(1)), new NodeCache()));
-		Assert.assertSame(null, sopremoRecord2.getNode());
+		Assert.assertEquals(sopremoRecord, sopremoRecord2);
+		Assert.assertEquals(sopremoRecord.getNode(), sopremoRecord2.getNode());
+		Assert.assertNotSame(sopremoRecord.getNode(), sopremoRecord2.getNode());
+	}
+
+	@Test
+	public void testPrimitiveSerialization() throws IOException {
+		final SopremoRecord sopremoRecord = new SopremoRecord();
+		sopremoRecord.setNode(new IntNode(42));
+
+		final SopremoRecord sopremoRecord2 = this.serializeAndDeserialize(sopremoRecord);
+		Assert.assertEquals(sopremoRecord, sopremoRecord2);
+		Assert.assertEquals(sopremoRecord.getNode(), sopremoRecord2.getNode());
+		Assert.assertNotSame(sopremoRecord.getNode(), sopremoRecord2.getNode());
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.EqualVerifyTest#createDefaultInstance(int)
+	 */
+	@Override
+	protected SopremoRecord createDefaultInstance(final int index) {
+		final SopremoRecord record = new SopremoRecord();
+		record.setNode(JsonUtil.createArrayNode(index));
+		return record;
 	}
 
 	/**

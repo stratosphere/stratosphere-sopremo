@@ -18,7 +18,6 @@ import eu.stratosphere.sopremo.type.IStreamNode;
  * Calculates the set-based intersection of two or more input streams.<br>
  * It is assumed that each value occurs only once in each input stream.<br>
  * A value <i>v</i> is emitted only iff <i>v</i> is contained once in every input stream.
- * 
  */
 @Name(verb = "intersect")
 @InputCardinality(min = 1)
@@ -47,11 +46,6 @@ public class Intersection extends CompositeOperator<Intersection> {
 			this.setKeyExpressions(0, EvaluationExpression.VALUE);
 		}
 
-		public FilterLess withThreshold(final int threshold) {
-			this.threshold = threshold;
-			return this;
-		}
-
 		/**
 		 * Returns the threshold.
 		 * 
@@ -69,6 +63,11 @@ public class Intersection extends CompositeOperator<Intersection> {
 		 */
 		public void setThreshold(final int threshold) {
 			this.threshold = threshold;
+		}
+
+		public FilterLess withThreshold(final int threshold) {
+			this.threshold = threshold;
+			return this;
 		}
 
 		public static class Implementation extends SopremoReduce {

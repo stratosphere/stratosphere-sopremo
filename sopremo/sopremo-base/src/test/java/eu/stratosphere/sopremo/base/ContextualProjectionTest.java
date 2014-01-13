@@ -12,11 +12,25 @@ import eu.stratosphere.sopremo.testing.SopremoOperatorTestBase;
 import eu.stratosphere.sopremo.testing.SopremoTestPlan;
 
 public class ContextualProjectionTest extends SopremoOperatorTestBase<ContextualProjection> {
-	@Override
-	protected ContextualProjection createDefaultInstance(final int index) {
-		final ObjectCreation transformation = new ObjectCreation();
-		transformation.addMapping("field", createPath(String.valueOf(index)));
-		return new ContextualProjection().withResultProjection(transformation);
+	@Test
+	public void shouldAddContext() {
+		final SopremoTestPlan sopremoPlan = new SopremoTestPlan(2, 1);
+
+		sopremoPlan.getOutputOperator(0).setInputs(
+			new ContextualProjection().
+				withInputs(sopremoPlan.getInputOperators(0, 2)));
+		sopremoPlan.getInput(0).
+			addObject("a", 1, "b", 4).
+			addObject("a", 2, "b", 5).
+			addObject("a", -1, "b", 4);
+		sopremoPlan.getInput(1).
+			addValue(42);
+		sopremoPlan.getExpectedOutput(0).
+			addObject("a", 1, "b", 4, "context", 42).
+			addObject("a", 2, "b", 5, "context", 42).
+			addObject("a", -1, "b", 4, "context", 42);
+
+		sopremoPlan.run();
 	}
 
 	/*
@@ -27,6 +41,28 @@ public class ContextualProjectionTest extends SopremoOperatorTestBase<Contextual
 	@Test
 	public void shouldComplyEqualsOperator() {
 		super.shouldComplyEqualsOperator();
+	}
+
+	@Test
+	public void shouldConfigureContextLocation() {
+		final SopremoTestPlan sopremoPlan = new SopremoTestPlan(2, 1);
+
+		sopremoPlan.getOutputOperator(0).setInputs(
+			new ContextualProjection().
+				withContextPath(new ArrayAccess(2)).
+				withInputs(sopremoPlan.getInputOperators(0, 2)));
+		sopremoPlan.getInput(0).
+			addArray(1, 4).
+			addArray(2, 5).
+			addArray(-1, 4);
+		sopremoPlan.getInput(1).
+			addValue(42);
+		sopremoPlan.getExpectedOutput(0).
+			addArray(1, 4, 42).
+			addArray(2, 5, 42).
+			addArray(-1, 4, 42);
+
+		sopremoPlan.run();
 	}
 
 	@Test
@@ -54,46 +90,10 @@ public class ContextualProjectionTest extends SopremoOperatorTestBase<Contextual
 		sopremoPlan.run();
 	}
 
-	@Test
-	public void shouldAddContext() {
-		final SopremoTestPlan sopremoPlan = new SopremoTestPlan(2, 1);
-
-		sopremoPlan.getOutputOperator(0).setInputs(
-			new ContextualProjection().
-				withInputs(sopremoPlan.getInputOperators(0, 2)));
-		sopremoPlan.getInput(0).
-			addObject("a", 1, "b", 4).
-			addObject("a", 2, "b", 5).
-			addObject("a", -1, "b", 4);
-		sopremoPlan.getInput(1).
-			addValue(42);
-		sopremoPlan.getExpectedOutput(0).
-			addObject("a", 1, "b", 4, "context", 42).
-			addObject("a", 2, "b", 5, "context", 42).
-			addObject("a", -1, "b", 4, "context", 42);
-
-		sopremoPlan.run();
-	}
-
-	@Test
-	public void shouldConfigureContextLocation() {
-		final SopremoTestPlan sopremoPlan = new SopremoTestPlan(2, 1);
-
-		sopremoPlan.getOutputOperator(0).setInputs(
-			new ContextualProjection().
-				withContextPath(new ArrayAccess(2)).
-				withInputs(sopremoPlan.getInputOperators(0, 2)));
-		sopremoPlan.getInput(0).
-			addArray(1, 4).
-			addArray(2, 5).
-			addArray(-1, 4);
-		sopremoPlan.getInput(1).
-			addValue(42);
-		sopremoPlan.getExpectedOutput(0).
-			addArray(1, 4, 42).
-			addArray(2, 5, 42).
-			addArray(-1, 4, 42);
-
-		sopremoPlan.run();
+	@Override
+	protected ContextualProjection createDefaultInstance(final int index) {
+		final ObjectCreation transformation = new ObjectCreation();
+		transformation.addMapping("field", createPath(String.valueOf(index)));
+		return new ContextualProjection().withResultProjection(transformation);
 	}
 }

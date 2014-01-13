@@ -9,7 +9,6 @@ import eu.stratosphere.sopremo.pact.SopremoUtil;
 
 /**
  * This node represents a double value.
- * 
  */
 public class DoubleNode extends AbstractNumericNode implements INumericNode {
 
@@ -45,43 +44,30 @@ public class DoubleNode extends AbstractNumericNode implements INumericNode {
 		this.value = v;
 	}
 
-	@Override
-	public Double getJavaValue() {
-		return this.value;
-	}
-
-	/**
-	 * Creates a new instance of DoubleNode. This new instance represents the given value.
-	 * 
-	 * @param v
-	 *        the value that should be represented by the new instance
-	 * @return the newly created instance of DoubleNode
-	 */
-	public static DoubleNode valueOf(final double v) {
-		return new DoubleNode(v);
-	}
-
-	public void setValue(final double value) {
-		this.value = value;
-	}
-
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.type.INumericNode#getGeneralilty()
+	 * @see eu.stratosphere.sopremo.ISopremoType#toString(java.lang.StringBuilder)
 	 */
 	@Override
-	public byte getGeneralilty() {
-		return 64;
+	public void appendAsString(final Appendable appendable) throws IOException {
+		TypeFormat.format(this.value, appendable);
 	}
 
 	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		long temp;
-		temp = Double.doubleToLongBits(this.value);
-		result = prime * result + (int) (temp ^ temp >>> 32);
-		return result;
+	public void clear() {
+		if (SopremoUtil.DEBUG)
+			this.value = 0;
+	}
+
+	@Override
+	public int compareToSameType(final IJsonNode other) {
+		return Double.compare(this.value, ((DoubleNode) other).value);
+	}
+
+	@Override
+	public void copyValueFrom(final IJsonNode otherNode) {
+		checkNumber(otherNode);
+		this.value = ((INumericNode) otherNode).getDoubleValue();
 	}
 
 	@Override
@@ -100,16 +86,6 @@ public class DoubleNode extends AbstractNumericNode implements INumericNode {
 	}
 
 	@Override
-	public int getIntValue() {
-		return (int) this.value;
-	}
-
-	@Override
-	public long getLongValue() {
-		return (long) this.value;
-	}
-
-	@Override
 	public BigInteger getBigIntegerValue() {
 		return BigInteger.valueOf(this.getLongValue());
 	}
@@ -124,9 +100,28 @@ public class DoubleNode extends AbstractNumericNode implements INumericNode {
 		return this.value;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.type.INumericNode#getGeneralilty()
+	 */
 	@Override
-	public boolean isFloatingPointNumber() {
-		return true;
+	public byte getGeneralilty() {
+		return 64;
+	}
+
+	@Override
+	public int getIntValue() {
+		return (int) this.value;
+	}
+
+	@Override
+	public Double getJavaValue() {
+		return this.value;
+	}
+
+	@Override
+	public long getLongValue() {
+		return (long) this.value;
 	}
 
 	@Override
@@ -140,28 +135,32 @@ public class DoubleNode extends AbstractNumericNode implements INumericNode {
 	}
 
 	@Override
-	public int compareToSameType(final IJsonNode other) {
-		return Double.compare(this.value, ((DoubleNode) other).value);
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		long temp;
+		temp = Double.doubleToLongBits(this.value);
+		result = prime * result + (int) (temp ^ temp >>> 32);
+		return result;
 	}
 
 	@Override
-	public void copyValueFrom(final IJsonNode otherNode) {
-		checkNumber(otherNode);
-		this.value = ((INumericNode) otherNode).getDoubleValue();
+	public boolean isFloatingPointNumber() {
+		return true;
 	}
 
-	@Override
-	public void clear() {
-		if (SopremoUtil.DEBUG)
-			this.value = 0;
+	public void setValue(final double value) {
+		this.value = value;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.ISopremoType#toString(java.lang.StringBuilder)
+	/**
+	 * Creates a new instance of DoubleNode. This new instance represents the given value.
+	 * 
+	 * @param v
+	 *        the value that should be represented by the new instance
+	 * @return the newly created instance of DoubleNode
 	 */
-	@Override
-	public void appendAsString(final Appendable appendable) throws IOException {
-		TypeFormat.format(this.value, appendable);
+	public static DoubleNode valueOf(final double v) {
+		return new DoubleNode(v);
 	}
 }

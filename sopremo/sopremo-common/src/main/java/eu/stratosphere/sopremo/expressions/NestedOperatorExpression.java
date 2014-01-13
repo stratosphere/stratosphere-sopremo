@@ -45,11 +45,10 @@ public class NestedOperatorExpression extends UnevaluableExpression {
 	}
 
 	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = super.hashCode();
-		result = prime * result + this.operator.hashCode();
-		return result;
+	public void appendAsString(final Appendable appendable) throws IOException {
+		appendable.append("<");
+		this.operator.appendAsString(appendable);
+		appendable.append(">");
 	}
 
 	@Override
@@ -64,13 +63,6 @@ public class NestedOperatorExpression extends UnevaluableExpression {
 		return this.operator.equals(other.operator);
 	}
 
-	@Override
-	public void appendAsString(final Appendable appendable) throws IOException {
-		appendable.append("<");
-		this.operator.appendAsString(appendable);
-		appendable.append(">");
-	}
-
 	/**
 	 * Returns the operator
 	 * 
@@ -78,5 +70,13 @@ public class NestedOperatorExpression extends UnevaluableExpression {
 	 */
 	public Operator<?> getOperator() {
 		return this.operator;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result + this.operator.hashCode();
+		return result;
 	}
 }

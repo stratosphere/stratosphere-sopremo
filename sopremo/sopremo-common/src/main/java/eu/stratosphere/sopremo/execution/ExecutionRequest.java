@@ -35,13 +35,18 @@ import eu.stratosphere.sopremo.operator.SopremoPlan;
 import eu.stratosphere.sopremo.pact.SopremoUtil;
 
 /**
- * Represents a request to a {@link MeteorExecutor} that encapsulates the query and optional settings.
- * 
+ * Represents a request to a {@link SopremoExecutionProtocol} that encapsulates the query and optional settings.
  */
 public class ExecutionRequest implements KryoSerializable, KryoCopyable<ExecutionRequest>, IOReadableWritable {
 	private SopremoPlan query;
 
 	private ExecutionMode mode = ExecutionMode.RUN;
+
+	/**
+	 * Needed for deserialization.
+	 */
+	public ExecutionRequest() {
+	}
 
 	/**
 	 * Initializes ExecutionRequest with the given query.
@@ -53,10 +58,15 @@ public class ExecutionRequest implements KryoSerializable, KryoCopyable<Executio
 		this.query = query;
 	}
 
-	/**
-	 * Needed for deserialization.
+	/*
+	 * (non-Javadoc)
+	 * @see com.esotericsoftware.kryo.KryoCopyable#copy(com.esotericsoftware.kryo.Kryo)
 	 */
-	public ExecutionRequest() {
+	@Override
+	public ExecutionRequest copy(final Kryo kryo) {
+		final ExecutionRequest er = new ExecutionRequest(this.query);
+		er.setMode(this.mode);
+		return er;
 	}
 
 	public ExecutionMode getMode() {
@@ -70,71 +80,6 @@ public class ExecutionRequest implements KryoSerializable, KryoCopyable<Executio
 	 */
 	public SopremoPlan getQuery() {
 		return this.query;
-	}
-
-	public void setMode(final ExecutionMode mode) {
-		if (mode == null)
-			throw new NullPointerException("mode must not be null");
-
-		this.mode = mode;
-	}
-
-	public enum ExecutionMode {
-		RUN, RUN_WITH_STATISTICS;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see com.esotericsoftware.kryo.KryoSerializable#write(com.esotericsoftware.kryo.Kryo,
-	 * com.esotericsoftware.kryo.io.Output)
-	 */
-	@Override
-	public void write(final Kryo kryo, final Output output) {
-		kryo.writeObject(output, this.mode);
-		kryo.writeObject(output, new ArrayList<String>(this.query.getRequiredPackages()));
-		kryo.writeObject(output, this.query);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see com.esotericsoftware.kryo.KryoSerializable#read(com.esotericsoftware.kryo.Kryo,
-	 * com.esotericsoftware.kryo.io.Input)
-	 */
-	@SuppressWarnings("unchecked")
-	@Override
-	public void read(final Kryo kryo, final Input input) {
-		this.mode = kryo.readObject(input, ExecutionMode.class);
-		final ArrayList<String> requiredPackages = kryo.readObject(input, ArrayList.class);
-
-		final JobID dummId = JobID.generate();
-		final ClassLoader oldClassLoader = kryo.getClassLoader();
-		try {
-			LibraryCacheManager.register(dummId,
-				requiredPackages.toArray(new String[requiredPackages.size()]));
-			kryo.setClassLoader(LibraryCacheManager.getClassLoader(dummId));
-			this.query = kryo.readObject(input, SopremoPlan.class);
-		} catch (final Exception e) {
-			SopremoUtil.LOG.error(e.getMessage());
-			throw new KryoException(e);
-		} finally {
-			kryo.setClassLoader(oldClassLoader);
-			try {
-				LibraryCacheManager.unregister(dummId);
-			} catch (final Throwable e) {
-				SopremoUtil.LOG.error(e.getMessage());
-			}
-		}
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see com.esotericsoftware.kryo.KryoCopyable#copy(com.esotericsoftware.kryo.Kryo)
-	 */
-	@Override
-	public ExecutionRequest copy(final Kryo kryo) {
-		final ExecutionRequest er = new ExecutionRequest(this.query);
-		er.setMode(this.mode);
-		return er;
 	}
 
 	/*
@@ -171,6 +116,44 @@ public class ExecutionRequest implements KryoSerializable, KryoCopyable<Executio
 
 	/*
 	 * (non-Javadoc)
+	 * @see com.esotericsoftware.kryo.KryoSerializable#read(com.esotericsoftware.kryo.Kryo,
+	 * com.esotericsoftware.kryo.io.Input)
+	 */
+	@SuppressWarnings("unchecked")
+	@Override
+	public void read(final Kryo kryo, final Input input) {
+		this.mode = kryo.readObject(input, ExecutionMode.class);
+		final ArrayList<String> requiredPackages = kryo.readObject(input, ArrayList.class);
+
+		final JobID dummId = JobID.generate();
+		final ClassLoader oldClassLoader = kryo.getClassLoader();
+		try {
+			LibraryCacheManager.register(dummId,
+				requiredPackages.toArray(new String[requiredPackages.size()]));
+			kryo.setClassLoader(LibraryCacheManager.getClassLoader(dummId));
+			this.query = kryo.readObject(input, SopremoPlan.class);
+		} catch (final Exception e) {
+			SopremoUtil.LOG.error(e.getMessage());
+			throw new KryoException(e);
+		} finally {
+			kryo.setClassLoader(oldClassLoader);
+			try {
+				LibraryCacheManager.unregister(dummId);
+			} catch (final Throwable e) {
+				SopremoUtil.LOG.error(e.getMessage());
+			}
+		}
+	}
+
+	public void setMode(final ExecutionMode mode) {
+		if (mode == null)
+			throw new NullPointerException("mode must not be null");
+
+		this.mode = mode;
+	}
+
+	/*
+	 * (non-Javadoc)
 	 * @see eu.stratosphere.core.io.IOReadableWritable#write(java.io.DataOutput)
 	 */
 	@Override
@@ -185,6 +168,22 @@ public class ExecutionRequest implements KryoSerializable, KryoCopyable<Executio
 		final byte[] planBuffer = SopremoUtil.serializable(this.query);
 		out.writeInt(planBuffer.length);
 		out.write(planBuffer);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see com.esotericsoftware.kryo.KryoSerializable#write(com.esotericsoftware.kryo.Kryo,
+	 * com.esotericsoftware.kryo.io.Output)
+	 */
+	@Override
+	public void write(final Kryo kryo, final Output output) {
+		kryo.writeObject(output, this.mode);
+		kryo.writeObject(output, new ArrayList<String>(this.query.getRequiredPackages()));
+		kryo.writeObject(output, this.query);
+	}
+
+	public enum ExecutionMode {
+		RUN, RUN_WITH_STATISTICS;
 	}
 
 }

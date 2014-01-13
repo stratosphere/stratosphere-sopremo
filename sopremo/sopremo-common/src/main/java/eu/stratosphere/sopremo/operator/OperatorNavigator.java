@@ -5,7 +5,7 @@ import java.util.List;
 import eu.stratosphere.util.dag.ConnectionNavigator;
 
 /**
- * Provides a mean to traverse the directed acyclic graph of interconnected {@link Operator<?>}s.
+ * Provides a mean to traverse the directed acyclic graph of interconnected {@link Operator}s.
  */
 public final class OperatorNavigator<Op extends Operator<?>> implements ConnectionNavigator<Op> {
 	/**

@@ -70,48 +70,6 @@ public class SopremoServerIT {
 	}
 
 	@Test
-	public void testSuccessfulExecution() throws IOException, InterruptedException {
-		final SopremoPlan plan = this.createPlan("output.json");
-
-		ExecutionResponse response = this.testServer.execute(new ExecutionRequest(plan));
-		response = this.waitForStateToFinish(response, ExecutionState.ENQUEUED);
-		response = this.waitForStateToFinish(response, ExecutionState.RUNNING);
-
-		Assert.assertSame(ExecutionState.FINISHED, response.getState());
-		Assert.assertSame("", response.getDetails());
-
-		this.testServer.checkContentsOf("output.json",
-			JsonUtil.createObjectNode("name", "Vince Wayne", "income", 32500, "mgr", false),
-			JsonUtil.createObjectNode("name", "Jane Dean", "income", 72000, "mgr", true));
-	}
-
-	private ExecutionResponse waitForStateToFinish(final ExecutionResponse response, final ExecutionState status)
-			throws IOException, InterruptedException {
-		return SopremoTestServer.waitForStateToFinish(this.testServer, response, status);
-	}
-
-	@Test
-	public void testMultipleSuccessfulExecutions() throws IOException, InterruptedException {
-		final ExecutionResponse[] responses = new ExecutionResponse[3];
-		for (int index = 0; index < responses.length; index++) {
-			final SopremoPlan plan = this.createPlan("output" + index + ".json");
-			responses[index] = this.testServer.execute(new ExecutionRequest(plan));
-		}
-
-		for (int index = 0; index < responses.length; index++) {
-			responses[index] = this.waitForStateToFinish(responses[index], ExecutionState.ENQUEUED);
-			responses[index] = this.waitForStateToFinish(responses[index], ExecutionState.RUNNING);
-
-			Assert.assertSame(ExecutionState.FINISHED, responses[index].getState());
-			Assert.assertSame("", responses[index].getDetails());
-
-			this.testServer.checkContentsOf("output" + index + ".json",
-				JsonUtil.createObjectNode("name", "Vince Wayne", "income", 32500, "mgr", false),
-				JsonUtil.createObjectNode("name", "Jane Dean", "income", 72000, "mgr", true));
-		}
-	}
-
-	@Test
 	public void testFailIfInvalidPlan() throws IOException, InterruptedException {
 		final SopremoPlan plan = new SopremoPlan();
 		plan.setSinks(new Sink("file:///invalidSink"));
@@ -152,6 +110,43 @@ public class SopremoServerIT {
 		Assert.assertNotSame("", response.getDetails());
 	}
 
+	@Test
+	public void testMultipleSuccessfulExecutions() throws IOException, InterruptedException {
+		final ExecutionResponse[] responses = new ExecutionResponse[3];
+		for (int index = 0; index < responses.length; index++) {
+			final SopremoPlan plan = this.createPlan("output" + index + ".json");
+			responses[index] = this.testServer.execute(new ExecutionRequest(plan));
+		}
+
+		for (int index = 0; index < responses.length; index++) {
+			responses[index] = this.waitForStateToFinish(responses[index], ExecutionState.ENQUEUED);
+			responses[index] = this.waitForStateToFinish(responses[index], ExecutionState.RUNNING);
+
+			Assert.assertSame(ExecutionState.FINISHED, responses[index].getState());
+			Assert.assertSame("", responses[index].getDetails());
+
+			this.testServer.checkContentsOf("output" + index + ".json",
+				JsonUtil.createObjectNode("name", "Vince Wayne", "income", 32500, "mgr", false),
+				JsonUtil.createObjectNode("name", "Jane Dean", "income", 72000, "mgr", true));
+		}
+	}
+
+	@Test
+	public void testSuccessfulExecution() throws IOException, InterruptedException {
+		final SopremoPlan plan = this.createPlan("output.json");
+
+		ExecutionResponse response = this.testServer.execute(new ExecutionRequest(plan));
+		response = this.waitForStateToFinish(response, ExecutionState.ENQUEUED);
+		response = this.waitForStateToFinish(response, ExecutionState.RUNNING);
+
+		Assert.assertSame(ExecutionState.FINISHED, response.getState());
+		Assert.assertSame("", response.getDetails());
+
+		this.testServer.checkContentsOf("output.json",
+			JsonUtil.createObjectNode("name", "Vince Wayne", "income", 32500, "mgr", false),
+			JsonUtil.createObjectNode("name", "Jane Dean", "income", 72000, "mgr", true));
+	}
+
 	private SopremoPlan createPlan(final String outputName) throws IOException {
 		final SopremoPlan plan = new SopremoPlan();
 		final Source input = new Source(this.inputDir.toURI().toString());
@@ -165,6 +160,11 @@ public class SopremoServerIT {
 		final Sink output = new Sink(this.testServer.createFile(outputName).toURI().toString()).withInputs(selection);
 		plan.setSinks(output);
 		return plan;
+	}
+
+	private ExecutionResponse waitForStateToFinish(final ExecutionResponse response, final ExecutionState status)
+			throws IOException, InterruptedException {
+		return SopremoTestServer.waitForStateToFinish(this.testServer, response, status);
 	}
 
 }

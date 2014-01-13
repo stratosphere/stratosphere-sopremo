@@ -9,6 +9,7 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 
+import eu.stratosphere.core.testing.TestPlan;
 import eu.stratosphere.sopremo.type.IJsonNode;
 import eu.stratosphere.sopremo.type.JsonUtil;
 import eu.stratosphere.sopremo.type.ObjectNode;
@@ -42,26 +43,6 @@ public class CsvInputFormatTest extends InputFormatTest {
 	}
 
 	/**
-	 * Tests if line breaks "\n" are handled correctly.
-	 * 
-	 * @throws IOException
-	 */
-	@Test
-	public void shouldParseCsvWithoutTrailingNewline() throws IOException {
-		final File source = new File(this.getResource("CsvInputFormat/trailNewLines.csv"));
-
-		final CsvFormat format = new CsvFormat();
-		format.setFieldDelimiter(",");
-		final Collection<IJsonNode> actual = readFromFile(source, format);
-
-		final List<ObjectNode> expected = Arrays.asList(
-			JsonUtil.createObjectNode("a", "1", "b", "2"),
-			JsonUtil.createObjectNode("a", "3", "b", "4"));
-
-		Assert.assertEquals(expected, actual);
-	}
-
-	/**
 	 * Tests if input containing multibytes is handled properly.
 	 * 
 	 * @throws IOException
@@ -86,6 +67,26 @@ public class CsvInputFormatTest extends InputFormatTest {
 					"2",
 					"b",
 					"€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€"));
+
+		Assert.assertEquals(expected, actual);
+	}
+
+	/**
+	 * Tests if line breaks "\n" are handled correctly.
+	 * 
+	 * @throws IOException
+	 */
+	@Test
+	public void shouldParseCsvWithoutTrailingNewline() throws IOException {
+		final File source = new File(this.getResource("CsvInputFormat/trailNewLines.csv"));
+
+		final CsvFormat format = new CsvFormat();
+		format.setFieldDelimiter(",");
+		final Collection<IJsonNode> actual = readFromFile(source, format);
+
+		final List<ObjectNode> expected = Arrays.asList(
+			JsonUtil.createObjectNode("a", "1", "b", "2"),
+			JsonUtil.createObjectNode("a", "3", "b", "4"));
 
 		Assert.assertEquals(expected, actual);
 	}

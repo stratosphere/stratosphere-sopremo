@@ -22,7 +22,6 @@ import eu.stratosphere.core.io.IOReadableWritable;
 
 /**
  * A response from a {@link SopremoExecutionProtocol} that reflects the state of a job.
- * 
  */
 public class ExecutionResponse implements IOReadableWritable {
 
@@ -31,6 +30,12 @@ public class ExecutionResponse implements IOReadableWritable {
 	private String details;
 
 	private SopremoID jobId;
+
+	/**
+	 * Needed for deserialization.
+	 */
+	public ExecutionResponse() {
+	}
 
 	/**
 	 * Initializes ExecutionResponse with the given job id, state, and response.
@@ -46,12 +51,6 @@ public class ExecutionResponse implements IOReadableWritable {
 		this.jobId = jobId;
 		this.state = state;
 		this.details = response;
-	}
-
-	/**
-	 * Needed for deserialization.
-	 */
-	public ExecutionResponse() {
 	}
 
 	/**
@@ -81,10 +80,6 @@ public class ExecutionResponse implements IOReadableWritable {
 		return this.state;
 	}
 
-	public static enum ExecutionState {
-		SETUP, ENQUEUED, RUNNING, FINISHED, ERROR;
-	}
-
 	/*
 	 * (non-Javadoc)
 	 * @see eu.stratosphere.core.io.IOReadableWritable#read(java.io.DataInput)
@@ -106,6 +101,10 @@ public class ExecutionResponse implements IOReadableWritable {
 		this.jobId.write(out);
 		out.writeInt(this.state.ordinal());
 		out.writeUTF(this.details);
+	}
+
+	public static enum ExecutionState {
+		SETUP, ENQUEUED, RUNNING, FINISHED, ERROR;
 	}
 
 }

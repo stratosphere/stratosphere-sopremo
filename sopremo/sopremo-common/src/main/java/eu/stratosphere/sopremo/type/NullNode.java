@@ -9,7 +9,6 @@ import eu.stratosphere.util.Immutable;
 
 /**
  * This node represents the value 'null'.
- * 
  */
 @Immutable
 @DefaultSerializer(NullNode.NullSerializer.class)
@@ -24,18 +23,28 @@ public class NullNode extends AbstractJsonNode implements IPrimitiveNode {
 	public NullNode() {
 	}
 
-	/**
-	 * Returns the instance of NullNode.
-	 * 
-	 * @return the instance of NullNode
-	 */
-	public static NullNode getInstance() {
-		return Instance;
-	}
-
 	@Override
 	public void appendAsString(final Appendable sb) throws IOException {
 		sb.append("Null");
+	}
+
+	@Override
+	public void clear() {
+	}
+
+	@Override
+	public NullNode clone() {
+		return this;
+	}
+
+	@Override
+	public int compareToSameType(final IJsonNode other) {
+		return 0;
+	}
+
+	@Override
+	public void copyValueFrom(final IJsonNode otherNode) {
+		this.checkForSameType(otherNode);
 	}
 
 	@Override
@@ -50,27 +59,17 @@ public class NullNode extends AbstractJsonNode implements IPrimitiveNode {
 	}
 
 	@Override
-	public NullNode clone() {
-		return this;
-	}
-
-	@Override
-	public void copyValueFrom(final IJsonNode otherNode) {
-		this.checkForSameType(otherNode);
-	}
-
-	@Override
-	public int compareToSameType(final IJsonNode other) {
-		return 0;
-	}
-
-	@Override
 	public int hashCode() {
 		return 37;
 	}
 
-	@Override
-	public void clear() {
+	/**
+	 * Returns the instance of NullNode.
+	 * 
+	 * @return the instance of NullNode
+	 */
+	public static NullNode getInstance() {
+		return Instance;
 	}
 
 	public static class NullSerializer extends SingletonSerializer {

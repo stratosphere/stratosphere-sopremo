@@ -21,6 +21,14 @@ import eu.stratosphere.sopremo.type.INumericNode;
 
 public class FunctionCallTest extends EvaluableExpressionTest<FunctionCall> {
 
+	@Test
+	public void shouldCallFunction() {
+		final IJsonNode result = FunctionUtil.createFunctionCall(
+			FunctionCallTest.class, "sum", new ArrayAccess(0), new ArrayAccess(1)).
+			evaluate(createArrayNode(1, 2));
+		Assert.assertEquals(new DoubleNode(3), result);
+	}
+
 	@Override
 	protected FunctionCall createDefaultInstance(final int index) {
 		return new FunctionCall(new ExpressionFunction(0, new ConstantExpression(index)));
@@ -37,14 +45,6 @@ public class FunctionCallTest extends EvaluableExpressionTest<FunctionCall> {
 			Collections.singleton(EvaluationExpression.VALUE)));
 		equalVerifier.withPrefabValues(SopremoFunction.class, new ExpressionFunction(0, new ConstantExpression("red")),
 			new ExpressionFunction(1, new ConstantExpression("black")));
-	}
-
-	@Test
-	public void shouldCallFunction() {
-		final IJsonNode result = FunctionUtil.createFunctionCall(
-			FunctionCallTest.class, "sum", new ArrayAccess(0), new ArrayAccess(1)).
-			evaluate(createArrayNode(1, 2));
-		Assert.assertEquals(new DoubleNode(3), result);
 	}
 
 	@Name(verb = "sum")

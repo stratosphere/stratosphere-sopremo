@@ -28,6 +28,8 @@ import eu.stratosphere.sopremo.type.TypeCoercer;
 public class CoerceExpression extends PathSegmentExpression {
 	private final Class<IJsonNode> targetType;
 
+	private final transient NodeCache nodeCache = new NodeCache();
+
 	/**
 	 * Initializes a CoerceExpression with the given value and the given type.
 	 * 
@@ -48,24 +50,6 @@ public class CoerceExpression extends PathSegmentExpression {
 		this.targetType = null;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see
-	 * eu.stratosphere.sopremo.expressions.PathSegmentExpression#withInputExpression(eu.stratosphere.sopremo.expressions
-	 * .EvaluationExpression)
-	 */
-	@Override
-	public CoerceExpression withInputExpression(final EvaluationExpression inputExpression) {
-		return (CoerceExpression) super.withInputExpression(inputExpression);
-	}
-
-	private final transient NodeCache nodeCache = new NodeCache();
-
-	@Override
-	protected IJsonNode evaluateSegment(final IJsonNode node) {
-		return TypeCoercer.INSTANCE.coerce(node, this.nodeCache, this.targetType);
-	}
-
 	@Override
 	public void appendAsString(final Appendable appendable) throws IOException {
 		appendable.append('(');
@@ -79,15 +63,6 @@ public class CoerceExpression extends PathSegmentExpression {
 
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.expressions.PathSegmentExpression#segmentHashCode()
-	 */
-	@Override
-	protected int segmentHashCode() {
-		return this.targetType.hashCode();
-	}
-
-	/*
-	 * (non-Javadoc)
 	 * @see
 	 * eu.stratosphere.sopremo.expressions.PathSegmentExpression#equalsSameClass(eu.stratosphere.sopremo.expressions
 	 * .PathSegmentExpression)
@@ -95,5 +70,30 @@ public class CoerceExpression extends PathSegmentExpression {
 	@Override
 	public boolean equalsSameClass(final PathSegmentExpression other) {
 		return this.targetType.equals(((CoerceExpression) other).targetType);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see
+	 * eu.stratosphere.sopremo.expressions.PathSegmentExpression#withInputExpression(eu.stratosphere.sopremo.expressions
+	 * .EvaluationExpression)
+	 */
+	@Override
+	public CoerceExpression withInputExpression(final EvaluationExpression inputExpression) {
+		return (CoerceExpression) super.withInputExpression(inputExpression);
+	}
+
+	@Override
+	protected IJsonNode evaluateSegment(final IJsonNode node) {
+		return TypeCoercer.INSTANCE.coerce(node, this.nodeCache, this.targetType);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.expressions.PathSegmentExpression#segmentHashCode()
+	 */
+	@Override
+	protected int segmentHashCode() {
+		return this.targetType.hashCode();
 	}
 }

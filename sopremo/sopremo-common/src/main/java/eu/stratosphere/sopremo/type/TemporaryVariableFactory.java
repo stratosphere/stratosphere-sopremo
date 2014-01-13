@@ -45,15 +45,15 @@ public class TemporaryVariableFactory {
 		return oldObject == null ? ReflectionUtil.newInstance(type) : oldObject;
 	}
 
+	public void free(final Object object) {
+		this.getValueList(object.getClass()).offer(object);
+	}
+
 	private final Queue<Object> getValueList(final Class<?> type) {
 		final Map<Class<?>, Queue<Object>> classToInstances = this.cachedObjects.get();
 		Queue<Object> objectList = classToInstances.get(type);
 		if (objectList == null)
 			classToInstances.put(type, objectList = new LinkedList<Object>());
 		return objectList;
-	}
-
-	public void free(final Object object) {
-		this.getValueList(object.getClass()).offer(object);
 	}
 }

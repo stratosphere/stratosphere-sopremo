@@ -82,6 +82,109 @@ public class Grouping extends CompositeOperator<Grouping> {
 		module.getOutput(0).setInput(0, output);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.operator.Operator#appendAsString(java.lang.Appendable)
+	 */
+	@Override
+	public void appendAsString(final Appendable appendable) throws IOException {
+		super.appendAsString(appendable);
+		appendable.append(" on ");
+		for (int input = 0; input < this.getNumInputs(); input++) {
+			if (input > 1)
+				appendable.append(", ");
+			this.getGroupingKey(input).appendAsString(appendable);
+		}
+		appendable.append(" to ");
+		this.resultProjection.appendAsString(appendable);
+	}
+
+	@Override
+	public boolean equals(final Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		final Grouping other = (Grouping) obj;
+		return this.resultProjection.equals(other.resultProjection);
+	}
+
+	public EvaluationExpression getDefaultGroupingKey() {
+		return this.defaultGroupingKey;
+	}
+
+	public EvaluationExpression getGroupingKey(final int index) {
+		final EvaluationExpression keyExpression =
+			index < this.keyExpressions.size() ? this.keyExpressions.get(index) : null;
+		if (keyExpression == null)
+			return this.getDefaultGroupingKey();
+		return keyExpression;
+	}
+
+	public EvaluationExpression getGroupingKey(final JsonStream input) {
+		return this.getGroupingKey(this.getSafeInputIndex(input));
+	}
+
+	public EvaluationExpression getResultProjection() {
+		return this.resultProjection;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result + this.resultProjection.hashCode();
+		return result;
+	}
+
+	@Property(hidden = true)
+	public void setDefaultGroupingKey(final EvaluationExpression defaultGroupingKey) {
+		if (defaultGroupingKey == null)
+			throw new NullPointerException("defaultGroupingKey must not be null");
+
+		this.defaultGroupingKey = defaultGroupingKey;
+	}
+
+	@Property(preferred = true, input = true)
+	@Name(preposition = "by")
+	public void setGroupingKey(final int inputIndex, final EvaluationExpression keyExpression) {
+		CollectionUtil.ensureSize(this.keyExpressions, inputIndex + 1);
+		this.keyExpressions.set(inputIndex, keyExpression);
+	}
+
+	public void setGroupingKey(final JsonStream input, final EvaluationExpression keyExpression) {
+		if (keyExpression == null)
+			throw new NullPointerException("keyExpression must not be null");
+
+		this.setGroupingKey(this.getSafeInputIndex(input), keyExpression);
+	}
+
+	@Property(preferred = true)
+	@Name(preposition = "into")
+	public void setResultProjection(final EvaluationExpression resultProjection) {
+		if (resultProjection == null)
+			throw new NullPointerException("resultProjection must not be null");
+
+		this.resultProjection =
+			ExpressionUtil.replaceAggregationWithBatchAggregation(
+				ExpressionUtil.replaceIndexAccessWithAggregation(resultProjection));
+	}
+
+	public Grouping withGroupingKey(final EvaluationExpression groupingKey) {
+		this.setDefaultGroupingKey(groupingKey);
+		return this;
+	}
+
+	public Grouping withGroupingKey(final int inputIndex, final EvaluationExpression groupingKey) {
+		this.setGroupingKey(inputIndex, groupingKey);
+		return this;
+	}
+
+	public Grouping withResultProjection(final EvaluationExpression resultProjection) {
+		this.setResultProjection(resultProjection);
+		return this;
+	}
+
 	private JsonStream createGrouping(final SopremoModule module) {
 		final EvaluationExpression resultProjection = this.resultProjection.clone().remove(new InputSelection(0));
 		final List<AggregationExpression> aggregations = resultProjection.findAll(AggregationExpression.class);
@@ -127,109 +230,6 @@ public class Grouping extends CompositeOperator<Grouping> {
 				});
 		return new Projection().withResultProjection(finalProjection).
 			withInputs(combinableGrouping);
-	}
-
-	@Override
-	public boolean equals(final Object obj) {
-		if (this == obj)
-			return true;
-		if (!super.equals(obj))
-			return false;
-		final Grouping other = (Grouping) obj;
-		return this.resultProjection.equals(other.resultProjection);
-	}
-
-	public EvaluationExpression getResultProjection() {
-		return this.resultProjection;
-	}
-
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = super.hashCode();
-		result = prime * result + this.resultProjection.hashCode();
-		return result;
-	}
-
-	@Property(preferred = true)
-	@Name(preposition = "into")
-	public void setResultProjection(final EvaluationExpression resultProjection) {
-		if (resultProjection == null)
-			throw new NullPointerException("resultProjection must not be null");
-
-		this.resultProjection =
-			ExpressionUtil.replaceAggregationWithBatchAggregation(
-				ExpressionUtil.replaceIndexAccessWithAggregation(resultProjection));
-	}
-
-	public Grouping withResultProjection(final EvaluationExpression resultProjection) {
-		this.setResultProjection(resultProjection);
-		return this;
-	}
-
-	@Property(preferred = true, input = true)
-	@Name(preposition = "by")
-	public void setGroupingKey(final int inputIndex, final EvaluationExpression keyExpression) {
-		CollectionUtil.ensureSize(this.keyExpressions, inputIndex + 1);
-		this.keyExpressions.set(inputIndex, keyExpression);
-	}
-
-	public void setGroupingKey(final JsonStream input, final EvaluationExpression keyExpression) {
-		if (keyExpression == null)
-			throw new NullPointerException("keyExpression must not be null");
-
-		this.setGroupingKey(this.getSafeInputIndex(input), keyExpression);
-	}
-
-	public Grouping withGroupingKey(final int inputIndex, final EvaluationExpression groupingKey) {
-		this.setGroupingKey(inputIndex, groupingKey);
-		return this;
-	}
-
-	public Grouping withGroupingKey(final EvaluationExpression groupingKey) {
-		this.setDefaultGroupingKey(groupingKey);
-		return this;
-	}
-
-	public EvaluationExpression getGroupingKey(final int index) {
-		final EvaluationExpression keyExpression =
-			index < this.keyExpressions.size() ? this.keyExpressions.get(index) : null;
-		if (keyExpression == null)
-			return this.getDefaultGroupingKey();
-		return keyExpression;
-	}
-
-	public EvaluationExpression getGroupingKey(final JsonStream input) {
-		return this.getGroupingKey(this.getSafeInputIndex(input));
-	}
-
-	public EvaluationExpression getDefaultGroupingKey() {
-		return this.defaultGroupingKey;
-	}
-
-	@Property(hidden = true)
-	public void setDefaultGroupingKey(final EvaluationExpression defaultGroupingKey) {
-		if (defaultGroupingKey == null)
-			throw new NullPointerException("defaultGroupingKey must not be null");
-
-		this.defaultGroupingKey = defaultGroupingKey;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.operator.Operator#appendAsString(java.lang.Appendable)
-	 */
-	@Override
-	public void appendAsString(final Appendable appendable) throws IOException {
-		super.appendAsString(appendable);
-		appendable.append(" on ");
-		for (int input = 0; input < this.getNumInputs(); input++) {
-			if (input > 1)
-				appendable.append(", ");
-			this.getGroupingKey(input).appendAsString(appendable);
-		}
-		appendable.append(" to ");
-		this.resultProjection.appendAsString(appendable);
 	}
 
 	@InputCardinality(min = 2, max = 2)

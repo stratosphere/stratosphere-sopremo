@@ -13,13 +13,6 @@ import eu.stratosphere.sopremo.testing.SopremoTestPlan;
 //import eu.stratosphere.sopremo.SopremoTestPlan;
 
 public class ProjectionTest extends SopremoOperatorTestBase<Projection> {
-	@Override
-	protected Projection createDefaultInstance(final int index) {
-		final ObjectCreation transformation = new ObjectCreation();
-		transformation.addMapping("field", createPath(String.valueOf(index)));
-		return new Projection().withResultProjection(transformation);
-	}
-
 	/*
 	 * (non-Javadoc)
 	 * @see eu.stratosphere.sopremo.EqualCloneTest#shouldComplyEqualsOperator()
@@ -74,5 +67,12 @@ public class ProjectionTest extends SopremoOperatorTestBase<Projection> {
 			addObject("sum", 3);
 
 		sopremoPlan.run();
+	}
+
+	@Override
+	protected Projection createDefaultInstance(final int index) {
+		final ObjectCreation transformation = new ObjectCreation();
+		transformation.addMapping("field", createPath(String.valueOf(index)));
+		return new Projection().withResultProjection(transformation);
 	}
 }

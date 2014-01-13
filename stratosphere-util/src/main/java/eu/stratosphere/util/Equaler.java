@@ -17,9 +17,10 @@ package eu.stratosphere.util;
 /**
  * Represents the external definition of {@link Object#equals(Object)}. <code>Equaler</code> is needed when the class of
  * objects does not have an appropriate {@link Object#equals(Object)} definition.
- * 
  */
 public interface Equaler<T> {
+	public static Equaler<Object> JavaEquals = new JavaEquals(), SafeEquals = new SafeEquals();
+
 	/**
 	 * Returns true, if both objects are equal; false, otherwise.<br>
 	 * This method has similar semantic to <code>object1.equals(object2)</code>.
@@ -32,11 +33,8 @@ public interface Equaler<T> {
 	 */
 	public boolean equal(T object1, T object2);
 
-	public static Equaler<Object> JavaEquals = new JavaEquals(), SafeEquals = new SafeEquals();
-
 	/**
 	 * Wraps {@link Object#equals(Object)}.
-	 * 
 	 */
 	public static final class JavaEquals implements Equaler<Object> {
 		/*
@@ -51,7 +49,6 @@ public interface Equaler<T> {
 
 	/**
 	 * Wraps {@link Object#equals(Object)} but honors possible <code>null</code> values.
-	 * 
 	 */
 	public static final class SafeEquals implements Equaler<Object> {
 		/*

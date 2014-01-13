@@ -60,17 +60,26 @@ public class SopremoRecordPairComparator extends TypePairComparator<SopremoRecor
 
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.serialization.TypeComparator#setReference(java.lang.Object)
+	 * @see eu.stratosphere.sopremo.serialization.TypePairComparator#compareToReference(java.lang.Object)
 	 */
 	@Override
-	public void setReference(final SopremoRecord reference) {
-		final IJsonNode node = reference.getNode();
+	public int compareToReference(final SopremoRecord candidate) {
+		final IJsonNode node = candidate.getNode();
 		if (node == null)
-			for (int index = 0; index < this.numKeys; index++)
-				this.keyHolders1[index] = reference.getKey(this.keyFields1[index], this.nodeCache1[index]);
+			for (int index = 0; index < this.numKeys; index++) {
+				final IJsonNode k = candidate.getKey(this.keyFields2[index], this.nodeCache2[index]);
+				final int comparison = k.compareTo(this.keyHolders1[index]);
+				if (comparison != 0)
+					return comparison;
+			}
 		else
-			for (int index = 0; index < this.numKeys; index++)
-				this.keyHolders1[index] = SopremoUtil.copyInto(this.keyExpressions1[index].evaluate(node), this.nodeCache1[index]);
+			for (int index = 0; index < this.numKeys; index++) {
+				final IJsonNode k = this.keyExpressions2[index].evaluate(node);
+				final int comparison = k.compareTo(this.keyHolders1[index]);
+				if (comparison != 0)
+					return comparison;
+			}
+		return 0;
 	}
 
 	/*
@@ -97,25 +106,17 @@ public class SopremoRecordPairComparator extends TypePairComparator<SopremoRecor
 
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.serialization.TypePairComparator#compareToReference(java.lang.Object)
+	 * @see eu.stratosphere.sopremo.serialization.TypeComparator#setReference(java.lang.Object)
 	 */
 	@Override
-	public int compareToReference(final SopremoRecord candidate) {
-		final IJsonNode node = candidate.getNode();
+	public void setReference(final SopremoRecord reference) {
+		final IJsonNode node = reference.getNode();
 		if (node == null)
-			for (int index = 0; index < this.numKeys; index++) {
-				final IJsonNode k = candidate.getKey(this.keyFields2[index], this.nodeCache2[index]);
-				final int comparison = k.compareTo(this.keyHolders1[index]);
-				if (comparison != 0)
-					return comparison;
-			}
+			for (int index = 0; index < this.numKeys; index++)
+				this.keyHolders1[index] = reference.getKey(this.keyFields1[index], this.nodeCache1[index]);
 		else
-			for (int index = 0; index < this.numKeys; index++) {
-				final IJsonNode k = this.keyExpressions2[index].evaluate(node);
-				final int comparison = k.compareTo(this.keyHolders1[index]);
-				if (comparison != 0)
-					return comparison;
-			}
-		return 0;
+			for (int index = 0; index < this.numKeys; index++)
+				this.keyHolders1[index] =
+					SopremoUtil.copyInto(this.keyExpressions1[index].evaluate(node), this.nodeCache1[index]);
 	}
 }

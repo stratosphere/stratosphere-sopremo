@@ -20,7 +20,6 @@ import eu.stratosphere.nephele.rpc.RPCProtocol;
 
 /**
  * A general purpose interface for everything that executes meteor scripts synchronically and asynchronically.
- * 
  */
 public interface SopremoExecutionProtocol extends LibraryTransferProtocol, RPCProtocol {
 
@@ -33,6 +32,8 @@ public interface SopremoExecutionProtocol extends LibraryTransferProtocol, RPCPr
 	 */
 	ExecutionResponse execute(ExecutionRequest request) throws IOException, InterruptedException;
 
+	Object getMetaData(SopremoID jobId, String key) throws IOException, InterruptedException;
+
 	/**
 	 * Queries the state of the given job.
 	 * 
@@ -41,6 +42,4 @@ public interface SopremoExecutionProtocol extends LibraryTransferProtocol, RPCPr
 	 * @return the {@link ExecutionResponse} with the state
 	 */
 	ExecutionResponse getState(SopremoID jobId) throws IOException, InterruptedException;
-
-	Object getMetaData(SopremoID jobId, String key) throws IOException, InterruptedException;
 }

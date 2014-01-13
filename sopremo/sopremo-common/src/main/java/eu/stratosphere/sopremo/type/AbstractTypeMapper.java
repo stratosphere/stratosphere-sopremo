@@ -41,32 +41,6 @@ public abstract class AbstractTypeMapper<M> {
 		super();
 	}
 
-	protected void addMapper(final Type from, final Type target, final M mapper) {
-		Map<Type, M> fromMappers = this.mappers.get(from);
-		if (fromMappers == null)
-			this.mappers.put(from, fromMappers = new IdentityHashMap<Type, M>());
-		fromMappers.put(target, mapper);
-	}
-
-	public Type getDefaultMappingType(final Type javaType) {
-		final Type type = this.defaultTypeMappings.get(javaType);
-		if (type != null)
-			return type;
-
-		return this.findDefaultMappingType(javaType);
-	}
-
-	protected Type findDefaultMappingType(final Type javaType) {
-		if (!(javaType instanceof Class<?>)) {
-			final Class<?> rawType = TypeToken.of(javaType).getRawType();
-			final Type rawJsonType = this.getDefaultMappingType(rawType);
-			this.defaultTypeMappings.put(javaType, rawJsonType);
-			return rawJsonType;
-		}
-
-		return this.findDefaultMappingType((Class<?>) javaType);
-	}
-
 	public Type getDefaultMappingType(final Class<?> fromClass) {
 		final Type type = this.defaultTypeMappings.get(fromClass);
 		if (type != null)
@@ -75,29 +49,12 @@ public abstract class AbstractTypeMapper<M> {
 		return this.findDefaultMappingType(fromClass);
 	}
 
-	protected Type findDefaultMappingType(final Class<?> fromClass) {
-		final Type superClass = findRegisteredSuperclass(this.defaultTypeMappings.keySet(), fromClass);
-		if (superClass != null) {
-			final Type type = this.defaultTypeMappings.get(superClass);
-			this.defaultTypeMappings.put(fromClass, type);
+	public Type getDefaultMappingType(final Type javaType) {
+		final Type type = this.defaultTypeMappings.get(javaType);
+		if (type != null)
 			return type;
-		}
-		return null;
-	}
 
-	protected static Type findRegisteredSuperclass(final Set<? extends Type> map, final Class<?> targetType) {
-		for (final Type type : map)
-			if (TypeToken.of(type).isAssignableFrom(targetType))
-				return type;
-		return null;
-	}
-
-	protected static Type findRegisteredSubclass(final Set<? extends Type> map, final Class<?> targetType) {
-		final TypeToken<?> token = TypeToken.of(targetType);
-		for (final Type type : map)
-			if (token.isAssignableFrom(type))
-				return type;
-		return null;
+		return this.findDefaultMappingType(javaType);
 	}
 
 	public M getMapper(final Class<? extends Object> fromClass, final Type targetType) {
@@ -113,33 +70,36 @@ public abstract class AbstractTypeMapper<M> {
 		return targetMapper;
 	}
 
-	private M findMapperRecursively(final Class<? extends Object> fromClass,
-			final Type targetType, final Class<?> rawTarget) {
-		final M targetMapper = this.findMapper(fromClass, fromClass, targetType, rawTarget);
-		if (targetMapper != null)
-			return targetMapper;
-
-		final Reference<M> foundMapper = new Reference<M>();
-
-		TypeHierarchyBrowser.INSTANCE.visit(fromClass, Mode.CLASS_FIRST,
-			new Visitor<Class<?>>() {
-				@Override
-				public boolean visited(final Class<?> superClass, final int distance) {
-					final M mapper = AbstractTypeMapper.this.findMapper(superClass, fromClass, targetType, rawTarget);
-
-					if (mapper == null)
-						return true;
-					// found a matching coercer; terminate browsing
-					foundMapper.setValue(mapper);
-					return false;
-				}
-			});
-
-		return foundMapper.getValue();
-	}
-
 	protected void addDefaultTypeMapping(final Type from, final Type to) {
 		this.defaultTypeMappings.put(from, to);
+	}
+
+	protected void addMapper(final Type from, final Type target, final M mapper) {
+		Map<Type, M> fromMappers = this.mappers.get(from);
+		if (fromMappers == null)
+			this.mappers.put(from, fromMappers = new IdentityHashMap<Type, M>());
+		fromMappers.put(target, mapper);
+	}
+
+	protected Type findDefaultMappingType(final Class<?> fromClass) {
+		final Type superClass = findRegisteredSuperclass(this.defaultTypeMappings.keySet(), fromClass);
+		if (superClass != null) {
+			final Type type = this.defaultTypeMappings.get(superClass);
+			this.defaultTypeMappings.put(fromClass, type);
+			return type;
+		}
+		return null;
+	}
+
+	protected Type findDefaultMappingType(final Type javaType) {
+		if (!(javaType instanceof Class<?>)) {
+			final Class<?> rawType = TypeToken.of(javaType).getRawType();
+			final Type rawJsonType = this.getDefaultMappingType(rawType);
+			this.defaultTypeMappings.put(javaType, rawJsonType);
+			return rawJsonType;
+		}
+
+		return this.findDefaultMappingType((Class<?>) javaType);
 	}
 
 	protected M findMapper(final Class<?> fromClass, final Class<?> originalFromClass, final Type targetType,
@@ -168,5 +128,45 @@ public abstract class AbstractTypeMapper<M> {
 			}
 		}
 		return targetMapper;
+	}
+
+	private M findMapperRecursively(final Class<? extends Object> fromClass,
+			final Type targetType, final Class<?> rawTarget) {
+		final M targetMapper = this.findMapper(fromClass, fromClass, targetType, rawTarget);
+		if (targetMapper != null)
+			return targetMapper;
+
+		final Reference<M> foundMapper = new Reference<M>();
+
+		TypeHierarchyBrowser.INSTANCE.visit(fromClass, Mode.CLASS_FIRST,
+			new Visitor<Class<?>>() {
+				@Override
+				public boolean visited(final Class<?> superClass, final int distance) {
+					final M mapper = AbstractTypeMapper.this.findMapper(superClass, fromClass, targetType, rawTarget);
+
+					if (mapper == null)
+						return true;
+					// found a matching coercer; terminate browsing
+					foundMapper.setValue(mapper);
+					return false;
+				}
+			});
+
+		return foundMapper.getValue();
+	}
+
+	protected static Type findRegisteredSubclass(final Set<? extends Type> map, final Class<?> targetType) {
+		final TypeToken<?> token = TypeToken.of(targetType);
+		for (final Type type : map)
+			if (token.isAssignableFrom(type))
+				return type;
+		return null;
+	}
+
+	protected static Type findRegisteredSuperclass(final Set<? extends Type> map, final Class<?> targetType) {
+		for (final Type type : map)
+			if (TypeToken.of(type).isAssignableFrom(targetType))
+				return type;
+		return null;
 	}
 }

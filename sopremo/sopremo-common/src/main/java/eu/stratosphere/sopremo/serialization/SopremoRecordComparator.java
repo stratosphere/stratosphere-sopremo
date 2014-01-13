@@ -45,10 +45,6 @@ public final class SopremoRecordComparator extends TypeComparator<SopremoRecord>
 
 	/**
 	 * Initializes SopremoRecordComparator.
-	 * 
-	 * @param layout2
-	 * @param keyExpressionIndices2
-	 * @param ascending2
 	 */
 	public SopremoRecordComparator(final SopremoRecordLayout layout, final int[] keyExpressionIndices,
 			final boolean[] ascending) {
@@ -66,104 +62,6 @@ public final class SopremoRecordComparator extends TypeComparator<SopremoRecord>
 		this.temp1 = new SopremoRecord();
 		this.temp2 = new SopremoRecord();
 		this.ascending = ascending;
-	}
-
-	/**
-	 * Returns the keyExpressions.
-	 * 
-	 * @return the keyExpressions
-	 */
-	public EvaluationExpression[] getKeyExpressions() {
-		return this.keyExpressions;
-	}
-
-	/**
-	 * Returns the layout.
-	 * 
-	 * @return the layout
-	 */
-	public SopremoRecordLayout getLayout() {
-		return this.layout;
-	}
-
-	/**
-	 * Returns the keyExpressionIndices.
-	 * 
-	 * @return the keyExpressionIndices
-	 */
-	public int[] getKeyExpressionIndices() {
-		return this.keyExpressionIndices;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.api.typeutils.TypeComparator#hash(java.lang.Object)
-	 */
-	@Override
-	public int hash(final SopremoRecord record) {
-		final int prime = 37;
-		int hash = prime;
-		final IJsonNode node = record.getNode();
-		if (node == null)
-			for (int index = 0; index < this.keyExpressionIndices.length; index++)
-				hash =
-					prime * hash + record.getKey(this.keyExpressionIndices[index], this.nodeCache2[index]).hashCode();
-		else
-			for (int index = 0; index < this.keyExpressionIndices.length; index++)
-				hash = prime * hash + this.keyExpressions[index].evaluate(node).hashCode();
-		return hash;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.api.typeutils.TypeComparator#setReference(java.lang.Object)
-	 */
-	@Override
-	public void setReference(final SopremoRecord toCompare) {
-		this.reference = toCompare;
-		final IJsonNode node = toCompare.getNode();
-		if (node == null)
-			for (int index = 0; index < this.keyExpressionIndices.length; index++)
-				this.keys[index] = this.reference.getKey(this.keyExpressionIndices[index], this.nodeCache1[index]);
-		else
-			for (int index = 0; index < this.keyExpressionIndices.length; index++)
-				this.keys[index] = SopremoUtil.copyInto(this.keyExpressions[index].evaluate(node), this.nodeCache1[index]);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.api.typeutils.TypeComparator#equalToReference(java.lang.Object)
-	 */
-	@Override
-	public boolean equalToReference(final SopremoRecord candidate) {
-		final IJsonNode node = candidate.getNode();
-		if (node == null) {
-			for (int index = 0; index < this.keyExpressionIndices.length; index++)
-				if (!candidate.getKey(this.keyExpressionIndices[index], this.nodeCache2[index]).equals(this.keys[index]))
-					return false;
-		}
-		else
-			for (int index = 0; index < this.keyExpressionIndices.length; index++)
-				if (!this.keyExpressions[index].evaluate(node).equals(this.keys[index]))
-					return false;
-		return true;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.api.typeutils.TypeComparator#compareToReference(eu.stratosphere.api.typeutils.
-	 * TypeComparator)
-	 */
-	@Override
-	public int compareToReference(final TypeComparator<SopremoRecord> referencedComparator) {
-
-		final SopremoRecordComparator other = (SopremoRecordComparator) referencedComparator;
-		for (int index = 0; index < this.nodeCache1.length; index++) {
-			final int comparison = this.keys[index].compareTo(other.keys[index]);
-			if (comparison != 0)
-				return comparison;
-		}
-		return 0;
 	}
 
 	/*
@@ -189,20 +87,74 @@ public final class SopremoRecordComparator extends TypeComparator<SopremoRecord>
 
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.api.typeutils.TypeComparator#supportsNormalizedKey()
+	 * @see eu.stratosphere.api.typeutils.TypeComparator#compareToReference(eu.stratosphere.api.typeutils.
+	 * TypeComparator)
 	 */
 	@Override
-	public boolean supportsNormalizedKey() {
-		return false;
+	public int compareToReference(final TypeComparator<SopremoRecord> referencedComparator) {
+
+		final SopremoRecordComparator other = (SopremoRecordComparator) referencedComparator;
+		for (int index = 0; index < this.nodeCache1.length; index++) {
+			final int comparison = this.keys[index].compareTo(other.keys[index]);
+			if (comparison != 0)
+				return comparison;
+		}
+		return 0;
 	}
 
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.api.typeutils.TypeComparator#supportsSerializationWithKeyNormalization()
+	 * @see eu.stratosphere.api.typeutils.TypeComparator#duplicate()
 	 */
 	@Override
-	public boolean supportsSerializationWithKeyNormalization() {
-		return false;
+	public TypeComparator<SopremoRecord> duplicate() {
+		return new SopremoRecordComparator(this.layout, this.keyExpressionIndices, this.ascending);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.api.typeutils.TypeComparator#equalToReference(java.lang.Object)
+	 */
+	@Override
+	public boolean equalToReference(final SopremoRecord candidate) {
+		final IJsonNode node = candidate.getNode();
+		if (node == null) {
+			for (int index = 0; index < this.keyExpressionIndices.length; index++)
+				if (!candidate.getKey(this.keyExpressionIndices[index], this.nodeCache2[index]).equals(this.keys[index]))
+					return false;
+		}
+		else
+			for (int index = 0; index < this.keyExpressionIndices.length; index++)
+				if (!this.keyExpressions[index].evaluate(node).equals(this.keys[index]))
+					return false;
+		return true;
+	}
+
+	/**
+	 * Returns the keyExpressionIndices.
+	 * 
+	 * @return the keyExpressionIndices
+	 */
+	public int[] getKeyExpressionIndices() {
+		return this.keyExpressionIndices;
+	}
+
+	/**
+	 * Returns the keyExpressions.
+	 * 
+	 * @return the keyExpressions
+	 */
+	public EvaluationExpression[] getKeyExpressions() {
+		return this.keyExpressions;
+	}
+
+	/**
+	 * Returns the layout.
+	 * 
+	 * @return the layout
+	 */
+	public SopremoRecordLayout getLayout() {
+		return this.layout;
 	}
 
 	/*
@@ -212,6 +164,34 @@ public final class SopremoRecordComparator extends TypeComparator<SopremoRecord>
 	@Override
 	public int getNormalizeKeyLen() {
 		return 0;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.api.typeutils.TypeComparator#hash(java.lang.Object)
+	 */
+	@Override
+	public int hash(final SopremoRecord record) {
+		final int prime = 37;
+		int hash = prime;
+		final IJsonNode node = record.getNode();
+		if (node == null)
+			for (int index = 0; index < this.keyExpressionIndices.length; index++)
+				hash =
+					prime * hash + record.getKey(this.keyExpressionIndices[index], this.nodeCache2[index]).hashCode();
+		else
+			for (int index = 0; index < this.keyExpressionIndices.length; index++)
+				hash = prime * hash + this.keyExpressions[index].evaluate(node).hashCode();
+		return hash;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.api.typeutils.TypeComparator#invertNormalizedKey()
+	 */
+	@Override
+	public boolean invertNormalizedKey() {
+		return false;
 	}
 
 	/*
@@ -235,15 +215,6 @@ public final class SopremoRecordComparator extends TypeComparator<SopremoRecord>
 
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.api.typeutils.TypeComparator#writeWithKeyNormalization(java.lang.Object,
-	 * eu.stratosphere.core.memory.DataOutputView)
-	 */
-	@Override
-	public void writeWithKeyNormalization(final SopremoRecord record, final DataOutputView target) throws IOException {
-	}
-
-	/*
-	 * (non-Javadoc)
 	 * @see eu.stratosphere.api.typeutils.TypeComparator#readWithKeyDenormalization(java.lang.Object,
 	 * eu.stratosphere.core.memory.DataInputView)
 	 */
@@ -253,20 +224,46 @@ public final class SopremoRecordComparator extends TypeComparator<SopremoRecord>
 
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.api.typeutils.TypeComparator#invertNormalizedKey()
+	 * @see eu.stratosphere.api.typeutils.TypeComparator#setReference(java.lang.Object)
 	 */
 	@Override
-	public boolean invertNormalizedKey() {
+	public void setReference(final SopremoRecord toCompare) {
+		this.reference = toCompare;
+		final IJsonNode node = toCompare.getNode();
+		if (node == null)
+			for (int index = 0; index < this.keyExpressionIndices.length; index++)
+				this.keys[index] = this.reference.getKey(this.keyExpressionIndices[index], this.nodeCache1[index]);
+		else
+			for (int index = 0; index < this.keyExpressionIndices.length; index++)
+				this.keys[index] =
+					SopremoUtil.copyInto(this.keyExpressions[index].evaluate(node), this.nodeCache1[index]);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.api.typeutils.TypeComparator#supportsNormalizedKey()
+	 */
+	@Override
+	public boolean supportsNormalizedKey() {
 		return false;
 	}
 
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.api.typeutils.TypeComparator#duplicate()
+	 * @see eu.stratosphere.api.typeutils.TypeComparator#supportsSerializationWithKeyNormalization()
 	 */
 	@Override
-	public TypeComparator<SopremoRecord> duplicate() {
-		return new SopremoRecordComparator(this.layout, this.keyExpressionIndices, this.ascending);
+	public boolean supportsSerializationWithKeyNormalization() {
+		return false;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.api.typeutils.TypeComparator#writeWithKeyNormalization(java.lang.Object,
+	 * eu.stratosphere.core.memory.DataOutputView)
+	 */
+	@Override
+	public void writeWithKeyNormalization(final SopremoRecord record, final DataOutputView target) throws IOException {
 	}
 
 }

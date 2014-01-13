@@ -43,26 +43,11 @@ public abstract class AbstractArrayNode<T extends IJsonNode> extends AbstractJso
 		super();
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
-	public void copyValueFrom(final IJsonNode otherNode) {
-		this.checkForSameType(otherNode);
-		final IArrayNode<T> array = (IArrayNode<T>) otherNode;
-		int index = 0;
-		// try to reuse existing nodes
-		for (final int length = Math.max(this.size(), array.size()); index < length; index++) {
-			final IJsonNode existingNode = this.get(index);
-			final IJsonNode newNode = array.get(index);
-			if (existingNode.getType() == newNode.getType())
-				existingNode.copyValueFrom(newNode);
-			else
-				this.set(index, (T) newNode.clone());
-		}
-
-		for (final int length = array.size(); index < length; index++)
-			this.add((T) array.get(0).clone());
-		for (int length = this.size(); index < length; length--)
-			this.remove(index);
+	public IArrayNode<T> addAll(final Iterable<? extends T> it) {
+		for (final T jsonNode : it)
+			this.add(jsonNode);
+		return this;
 	}
 
 	// /* (non-Javadoc)
@@ -90,24 +75,33 @@ public abstract class AbstractArrayNode<T extends IJsonNode> extends AbstractJso
 	// }
 
 	@Override
-	public IArrayNode<T> addAll(final Iterable<? extends T> it) {
-		for (final T jsonNode : it)
-			this.add(jsonNode);
-		return this;
-	}
-
-	@Override
 	public IArrayNode<T> addAll(final T[] nodes) {
 		this.addAll(Arrays.asList(nodes));
 		return this;
 	}
 
 	@Override
-	public boolean contains(final T node) {
-		for (final IJsonNode element : this)
-			if (node.equals(element))
-				return true;
-		return false;
+	public void appendAsString(final Appendable appendable) throws IOException {
+		AppendUtil.append(appendable, this);
+	}
+
+	public List<T> asList() {
+		return new AbstractList<T>() {
+			@Override
+			public T get(final int index) {
+				return AbstractArrayNode.this.get(index);
+			}
+
+			@Override
+			public Iterator<T> iterator() {
+				return this.iterator();
+			}
+
+			@Override
+			public int size() {
+				return AbstractArrayNode.this.size();
+			}
+		};
 	}
 
 	/*
@@ -118,107 +112,6 @@ public abstract class AbstractArrayNode<T extends IJsonNode> extends AbstractJso
 	@Override
 	public AbstractArrayNode<T> clone() {
 		return (AbstractArrayNode<T>) super.clone();
-	}
-
-	public List<T> asList() {
-		return new AbstractList<T>() {
-			@Override
-			public Iterator<T> iterator() {
-				return this.iterator();
-			}
-
-			@Override
-			public int size() {
-				return AbstractArrayNode.this.size();
-			}
-
-			@Override
-			public T get(final int index) {
-				return AbstractArrayNode.this.get(index);
-			}
-		};
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.type.IJsonNode#getType()
-	 */
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	@Override
-	public Class<IArrayNode<T>> getType() {
-		return (Class) IArrayNode.class;
-	}
-
-	@SuppressWarnings("unchecked")
-	public void setSize(final int len) {
-		for (int i = len, size = this.size(); i < size; i++)
-			this.set(i, (T) MissingNode.getInstance());
-	}
-
-	public static final class ArraySerializer extends ReusingSerializer<AbstractArrayNode<?>> {
-		/*
-		 * (non-Javadoc)
-		 * @see com.esotericsoftware.kryo.Serializer#write(com.esotericsoftware.kryo.Kryo,
-		 * com.esotericsoftware.kryo.io.Output, java.lang.Object)
-		 */
-		@Override
-		public void write(final Kryo kryo, final Output output, final AbstractArrayNode<?> array) {
-			output.writeInt(array.size());
-
-			for (final IJsonNode entry : array)
-				kryo.writeClassAndObject(output, entry);
-		}
-
-		/*
-		 * (non-Javadoc)
-		 * @see com.esotericsoftware.kryo.Serializer#read(com.esotericsoftware.kryo.Kryo,
-		 * com.esotericsoftware.kryo.io.Input, java.lang.Class)
-		 */
-		@Override
-		public AbstractArrayNode<?> read(final Kryo kryo, final Input input, final Class<AbstractArrayNode<?>> type) {
-			final int len = input.readInt();
-
-			@SuppressWarnings("unchecked")
-			final AbstractArrayNode<IJsonNode> array = (AbstractArrayNode<IJsonNode>) kryo.newInstance(type);
-			for (int i = 0; i < len; i++)
-				array.add((IJsonNode) kryo.readClassAndObject(input));
-			return array;
-		}
-
-		/*
-		 * (non-Javadoc)
-		 * @see eu.stratosphere.sopremo.type.ReusingSerializer#read(com.esotericsoftware.kryo.Kryo,
-		 * com.esotericsoftware.kryo.io.Input, java.lang.Object, java.lang.Class)
-		 */
-		@Override
-		public AbstractArrayNode<?> read(final Kryo kryo, final Input input, final AbstractArrayNode<?> oldInstance,
-				final Class<AbstractArrayNode<?>> type) {
-			if (oldInstance == null)
-				return this.read(kryo, input, type);
-
-			final int len = input.readInt();
-			@SuppressWarnings("unchecked")
-			final ArrayNode<IJsonNode> array = (ArrayNode<IJsonNode>) oldInstance;
-
-			for (int i = 0; i < len; i++)
-				array.set(i, SopremoUtil.deserializeInto(kryo, input, array.get(i)));
-
-			array.setSize(len);
-			return array;
-		}
-	}
-
-	@Override
-	public T[] toArray(final ArrayCache<T> arrayCache) {
-		final T[] result = arrayCache.getArray(this.size());
-		this.fillArray(result);
-		return result;
-	}
-
-	protected void fillArray(final IJsonNode[] result) {
-		int i = 0;
-		for (final IJsonNode node : this)
-			result[i++] = node;
 	}
 
 	@Override
@@ -242,12 +135,44 @@ public abstract class AbstractArrayNode<T extends IJsonNode> extends AbstractJso
 	}
 
 	@Override
-	public int hashCode() {
-		final int prime = 41;
-		int hashCode = prime;
-		for (final IJsonNode node : this)
-			hashCode = (hashCode + node.hashCode()) * prime;
-		return prime;
+	public boolean contains(final T node) {
+		for (final IJsonNode element : this)
+			if (node.equals(element))
+				return true;
+		return false;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see com.esotericsoftware.kryo.KryoCopyable#copy(com.esotericsoftware.kryo.Kryo)
+	 */
+	@Override
+	public AbstractArrayNode<T> copy(final Kryo kryo) {
+		final ArrayNode<T> node = new ArrayNode<T>();
+		node.copyValueFrom(this);
+		return node;
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public void copyValueFrom(final IJsonNode otherNode) {
+		this.checkForSameType(otherNode);
+		final IArrayNode<T> array = (IArrayNode<T>) otherNode;
+		int index = 0;
+		// try to reuse existing nodes
+		for (final int length = Math.max(this.size(), array.size()); index < length; index++) {
+			final IJsonNode existingNode = this.get(index);
+			final IJsonNode newNode = array.get(index);
+			if (existingNode.getType() == newNode.getType())
+				existingNode.copyValueFrom(newNode);
+			else
+				this.set(index, (T) newNode.clone());
+		}
+
+		for (final int length = array.size(); index < length; index++)
+			this.add((T) array.get(0).clone());
+		for (int length = this.size(); index < length; length--)
+			this.remove(index);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -267,19 +192,94 @@ public abstract class AbstractArrayNode<T extends IJsonNode> extends AbstractJso
 		return thisIter.hasNext() == thatIter.hasNext();
 	}
 
-	@Override
-	public void appendAsString(final Appendable appendable) throws IOException {
-		AppendUtil.append(appendable, this);
-	}
-
 	/*
 	 * (non-Javadoc)
-	 * @see com.esotericsoftware.kryo.KryoCopyable#copy(com.esotericsoftware.kryo.Kryo)
+	 * @see eu.stratosphere.sopremo.type.IJsonNode#getType()
 	 */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
-	public AbstractArrayNode<T> copy(final Kryo kryo) {
-		final ArrayNode<T> node = new ArrayNode<T>();
-		node.copyValueFrom(this);
-		return node;
+	public Class<IArrayNode<T>> getType() {
+		return (Class) IArrayNode.class;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 41;
+		int hashCode = prime;
+		for (final IJsonNode node : this)
+			hashCode = (hashCode + node.hashCode()) * prime;
+		return prime;
+	}
+
+	@SuppressWarnings("unchecked")
+	public void setSize(final int len) {
+		for (int i = len, size = this.size(); i < size; i++)
+			this.set(i, (T) MissingNode.getInstance());
+	}
+
+	@Override
+	public T[] toArray(final ArrayCache<T> arrayCache) {
+		final T[] result = arrayCache.getArray(this.size());
+		this.fillArray(result);
+		return result;
+	}
+
+	protected void fillArray(final IJsonNode[] result) {
+		int i = 0;
+		for (final IJsonNode node : this)
+			result[i++] = node;
+	}
+
+	public static final class ArraySerializer extends ReusingSerializer<AbstractArrayNode<?>> {
+		/*
+		 * (non-Javadoc)
+		 * @see eu.stratosphere.sopremo.type.ReusingSerializer#read(com.esotericsoftware.kryo.Kryo,
+		 * com.esotericsoftware.kryo.io.Input, java.lang.Object, java.lang.Class)
+		 */
+		@Override
+		public AbstractArrayNode<?> read(final Kryo kryo, final Input input, final AbstractArrayNode<?> oldInstance,
+				final Class<AbstractArrayNode<?>> type) {
+			if (oldInstance == null)
+				return this.read(kryo, input, type);
+
+			final int len = input.readInt();
+			@SuppressWarnings("unchecked")
+			final ArrayNode<IJsonNode> array = (ArrayNode<IJsonNode>) oldInstance;
+
+			for (int i = 0; i < len; i++)
+				array.set(i, SopremoUtil.deserializeInto(kryo, input, array.get(i)));
+
+			array.setSize(len);
+			return array;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see com.esotericsoftware.kryo.Serializer#read(com.esotericsoftware.kryo.Kryo,
+		 * com.esotericsoftware.kryo.io.Input, java.lang.Class)
+		 */
+		@Override
+		public AbstractArrayNode<?> read(final Kryo kryo, final Input input, final Class<AbstractArrayNode<?>> type) {
+			final int len = input.readInt();
+
+			@SuppressWarnings("unchecked")
+			final AbstractArrayNode<IJsonNode> array = (AbstractArrayNode<IJsonNode>) kryo.newInstance(type);
+			for (int i = 0; i < len; i++)
+				array.add((IJsonNode) kryo.readClassAndObject(input));
+			return array;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see com.esotericsoftware.kryo.Serializer#write(com.esotericsoftware.kryo.Kryo,
+		 * com.esotericsoftware.kryo.io.Output, java.lang.Object)
+		 */
+		@Override
+		public void write(final Kryo kryo, final Output output, final AbstractArrayNode<?> array) {
+			output.writeInt(array.size());
+
+			for (final IJsonNode entry : array)
+				kryo.writeClassAndObject(output, entry);
+		}
 	}
 }

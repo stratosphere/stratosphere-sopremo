@@ -39,6 +39,47 @@ public class TypeHierarchyBrowserTest {
 		}
 	};
 
+	private final Class<?> startClass;
+
+	private final Mode mode;
+
+	private final int maxDepth;
+
+	private final List<? extends Map.Entry<Class<?>, Integer>> expectedClasses;
+
+	private final Visitor<Class<?>> visitor;
+
+	public TypeHierarchyBrowserTest(final Class<?> startClass, final Mode mode, final int maxDepth,
+			final Visitor<Class<?>> visitor,
+			final ExpectedValues expectedClasses) {
+		this.startClass = startClass;
+		this.mode = mode;
+		this.maxDepth = maxDepth;
+		this.expectedClasses = expectedClasses.getValues();
+		this.visitor = visitor != null ? visitor : DEFAULT_VISITOR;
+	}
+
+	@Test
+	public void test() {
+		final List<SimpleEntry<Class<?>, Integer>> actual = new ArrayList<SimpleEntry<Class<?>, Integer>>();
+		TypeHierarchyBrowser.INSTANCE.visit(this.startClass, this.mode, new Visitor<Class<?>>() {
+			@Override
+			public boolean visited(final Class<?> node, final int distance) {
+				actual.add(new SimpleEntry<Class<?>, Integer>(node, distance));
+				return TypeHierarchyBrowserTest.this.visitor.visited(node, distance);
+			}
+		}, this.maxDepth);
+
+		if (this.mode == Mode.ALL)
+			Assert.assertEquals(String.format("Failed to browser %s (%s) to %d", this.startClass, this.mode,
+				this.maxDepth),
+				new HashSet<Map.Entry<Class<?>, Integer>>(this.expectedClasses),
+				new HashSet<Map.Entry<Class<?>, Integer>>(actual));
+		else
+			Assert.assertEquals(String.format("Failed to browser %s (%s) to %d", this.startClass, this.mode,
+				this.maxDepth), this.expectedClasses, actual);
+	}
+
 	@Parameters
 	public static List<Object[]> combinations() {
 		final ArrayList<Object[]> cases = new ArrayList<Object[]>();
@@ -141,6 +182,27 @@ public class TypeHierarchyBrowserTest {
 		return cases;
 	}
 
+	private static class A {
+	}
+
+	private static class AI implements I {
+	}
+
+	private static class B extends A {
+	}
+
+	private static class BI extends A implements I {
+	}
+
+	private static class C extends B {
+	}
+
+	private static class CI extends B implements J {
+	}
+
+	private static class DI extends CI implements I {
+	}
+
 	private static class ExpectedValues {
 		private final List<AbstractMap.SimpleEntry<Class<?>, Integer>> values =
 			new ArrayList<AbstractMap.SimpleEntry<Class<?>, Integer>>();
@@ -160,71 +222,9 @@ public class TypeHierarchyBrowserTest {
 		}
 	}
 
-	private final Class<?> startClass;
-
-	private final Mode mode;
-
-	private final int maxDepth;
-
-	private final List<? extends Map.Entry<Class<?>, Integer>> expectedClasses;
-
-	private final Visitor<Class<?>> visitor;
-
-	public TypeHierarchyBrowserTest(final Class<?> startClass, final Mode mode, final int maxDepth,
-			final Visitor<Class<?>> visitor,
-			final ExpectedValues expectedClasses) {
-		this.startClass = startClass;
-		this.mode = mode;
-		this.maxDepth = maxDepth;
-		this.expectedClasses = expectedClasses.getValues();
-		this.visitor = visitor != null ? visitor : DEFAULT_VISITOR;
-	}
-
-	@Test
-	public void test() {
-		final List<SimpleEntry<Class<?>, Integer>> actual = new ArrayList<SimpleEntry<Class<?>, Integer>>();
-		TypeHierarchyBrowser.INSTANCE.visit(this.startClass, this.mode, new Visitor<Class<?>>() {
-			@Override
-			public boolean visited(final Class<?> node, final int distance) {
-				actual.add(new SimpleEntry<Class<?>, Integer>(node, distance));
-				return TypeHierarchyBrowserTest.this.visitor.visited(node, distance);
-			}
-		}, this.maxDepth);
-
-		if (this.mode == Mode.ALL)
-			Assert.assertEquals(String.format("Failed to browser %s (%s) to %d", this.startClass, this.mode,
-				this.maxDepth),
-				new HashSet<Map.Entry<Class<?>, Integer>>(this.expectedClasses),
-				new HashSet<Map.Entry<Class<?>, Integer>>(actual));
-		else
-			Assert.assertEquals(String.format("Failed to browser %s (%s) to %d", this.startClass, this.mode,
-				this.maxDepth), this.expectedClasses, actual);
-	}
-
-	private static class A {
-	}
-
-	private static class B extends A {
-	}
-
-	private static class C extends B {
-	}
-
 	private static interface I {
 	}
 
 	private static interface J extends I {
-	}
-
-	private static class AI implements I {
-	}
-
-	private static class BI extends A implements I {
-	}
-
-	private static class CI extends B implements J {
-	}
-
-	private static class DI extends CI implements I {
 	}
 }

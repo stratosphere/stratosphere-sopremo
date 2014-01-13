@@ -14,7 +14,7 @@
  **********************************************************************************************************************/
 package eu.stratosphere.sopremo.testing;
 
-import eu.stratosphere.pact.testing.KeyExtractor;
+import eu.stratosphere.core.testing.KeyExtractor;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
 import eu.stratosphere.sopremo.serialization.SopremoRecord;
 
@@ -29,22 +29,22 @@ public class SopremoKeyExtractor implements KeyExtractor<SopremoRecord> {
 
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.pact.testing.KeyExtractor#getKeySize()
-	 */
-	@Override
-	public int getKeySize() {
-		return this.expressions.length;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.pact.testing.KeyExtractor#fill(java.lang.Comparable<?>[],
+	 * @see eu.stratosphere.core.testing.KeyExtractor#fill(java.lang.Comparable<?>[],
 	 * eu.stratosphere.nephele.types.Record)
 	 */
 	@Override
 	public void fill(final Comparable<?>[] keys, final SopremoRecord record) {
 		for (int index = 0; index < keys.length; index++)
 			keys[index] = this.expressions[index].evaluate(record.getNode());
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.core.testing.KeyExtractor#getKeySize()
+	 */
+	@Override
+	public int getNumKeys() {
+		return this.expressions.length;
 	}
 
 }

@@ -32,6 +32,33 @@ public class DynamicMethod<ReturnType> extends DynamicInvokable<Method, Object, 
 				: member.getReturnType();
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.util.reflect.DynamicInvokable#copy(com.esotericsoftware.kryo.Kryo)
+	 */
+	@Override
+	public DynamicMethod<ReturnType> copy(final Kryo kryo) {
+		final DynamicMethod<ReturnType> copy = (DynamicMethod<ReturnType>) super.copy(kryo);
+		copy.returnType = this.returnType;
+		return copy;
+	}
+
+	@Override
+	public boolean equals(final Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (this.getClass() != obj.getClass())
+			return false;
+		final DynamicMethod<?> other = (DynamicMethod<?>) obj;
+		return this.returnType.equals(other.returnType);
+	}
+
+	public Method getMethod(final Signature signature) {
+		return super.getMember(signature);
+	}
+
 	@SuppressWarnings("unchecked")
 	@Override
 	public Class<ReturnType> getReturnType() {
@@ -39,21 +66,11 @@ public class DynamicMethod<ReturnType> extends DynamicInvokable<Method, Object, 
 	}
 
 	@Override
-	protected Class<?>[] getParameterTypes(final Method method) {
-		return method.getParameterTypes();
-	}
-
-	@Override
-	protected boolean isVarargs(final Method method) {
-		return method.isVarArgs();
-	}
-
-	@SuppressWarnings("unchecked")
-	@Override
-	protected ReturnType invokeDirectly(final Method method, final Object context, final Object[] params)
-			throws IllegalAccessException,
-			InvocationTargetException {
-		return (ReturnType) method.invoke(context, params);
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result + this.returnType.hashCode();
+		return result;
 	}
 
 	/*
@@ -69,6 +86,15 @@ public class DynamicMethod<ReturnType> extends DynamicInvokable<Method, Object, 
 
 	/*
 	 * (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return this.getName();
+	}
+
+	/*
+	 * (non-Javadoc)
 	 * @see eu.stratosphere.util.reflect.DynamicInvokable#write(com.esotericsoftware.kryo.Kryo,
 	 * com.esotericsoftware.kryo.io.Output)
 	 */
@@ -78,15 +104,29 @@ public class DynamicMethod<ReturnType> extends DynamicInvokable<Method, Object, 
 		kryo.writeObject(output, this.returnType);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.util.reflect.DynamicInvokable#copy(com.esotericsoftware.kryo.Kryo)
-	 */
 	@Override
-	public DynamicMethod<ReturnType> copy(final Kryo kryo) {
-		final DynamicMethod<ReturnType> copy = (DynamicMethod<ReturnType>) super.copy(kryo);
-		copy.returnType = this.returnType;
-		return copy;
+	protected Method findMember(final String name, final java.lang.Class<Object> clazz,
+			final java.lang.Class<?>[] parameterTypes)
+			throws NoSuchMethodException {
+		return clazz.getDeclaredMethod(name, parameterTypes);
+	}
+
+	@Override
+	protected Class<?>[] getParameterTypes(final Method method) {
+		return method.getParameterTypes();
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	protected ReturnType invokeDirectly(final Method method, final Object context, final Object[] params)
+			throws IllegalAccessException,
+			InvocationTargetException {
+		return (ReturnType) method.invoke(context, params);
+	}
+
+	@Override
+	protected boolean isVarargs(final Method method) {
+		return method.isVarArgs();
 	}
 
 	/*
@@ -98,51 +138,11 @@ public class DynamicMethod<ReturnType> extends DynamicInvokable<Method, Object, 
 		return (member.getModifiers() & Modifier.STATIC) == 0;
 	}
 
-	public Method getMethod(final Signature signature) {
-		return super.getMember(signature);
-	}
-
-	@Override
-	protected Method findMember(final String name, final java.lang.Class<Object> clazz,
-			final java.lang.Class<?>[] parameterTypes)
-			throws NoSuchMethodException {
-		return clazz.getDeclaredMethod(name, parameterTypes);
-	}
-
 	public static DynamicMethod<?> valueOf(final Class<?> clazz, final String name) {
 		final DynamicMethod<?> method = new DynamicMethod<Object>(name);
 		for (final Method m : clazz.getDeclaredMethods())
 			if (m.getName().equals(name))
 				method.addSignature(m);
 		return method;
-	}
-
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = super.hashCode();
-		result = prime * result + this.returnType.hashCode();
-		return result;
-	}
-
-	@Override
-	public boolean equals(final Object obj) {
-		if (this == obj)
-			return true;
-		if (!super.equals(obj))
-			return false;
-		if (this.getClass() != obj.getClass())
-			return false;
-		final DynamicMethod<?> other = (DynamicMethod<?>) obj;
-		return this.returnType.equals(other.returnType);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#toString()
-	 */
-	@Override
-	public String toString() {
-		return this.getName();
 	}
 }

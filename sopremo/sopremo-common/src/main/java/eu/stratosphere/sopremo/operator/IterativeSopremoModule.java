@@ -27,7 +27,7 @@ import com.google.common.collect.Multimaps;
 
 import eu.stratosphere.api.common.operators.BulkIteration;
 import eu.stratosphere.api.common.operators.DeltaIteration;
-import eu.stratosphere.api.common.operators.util.ContractUtil;
+import eu.stratosphere.api.common.operators.util.OperatorUtil;
 import eu.stratosphere.pact.common.plan.PactModule;
 import eu.stratosphere.sopremo.EvaluationContext;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
@@ -40,7 +40,7 @@ import eu.stratosphere.util.dag.OneTimeTraverser;
 
 /**
  * Provides a direct translation of the Core API to Sopremo. Iterative operators may include an arbitrary number of pre-
- * and postprocessing operators - they will automatically be detected and moved outside of the {@link CoreIteration}.
+ * and postprocessing operators - they will automatically be detected and moved outside of the core iteration.
  */
 public class IterativeSopremoModule extends SopremoModule {
 
@@ -51,7 +51,7 @@ public class IterativeSopremoModule extends SopremoModule {
 	 */
 	private int maxNumberOfIterations = -1;
 
-	private NopOperator workingSet = new NopOperator().withName("workingSet"),
+	private final NopOperator workingSet = new NopOperator().withName("workingSet"),
 			solutionSet = new NopOperator().withName("solutionSet");
 
 	private List<? extends EvaluationExpression> solutionSetKeyExpressions;
@@ -62,7 +62,7 @@ public class IterativeSopremoModule extends SopremoModule {
 	 * @param numberOfInputs
 	 * @param numberOfOutputs
 	 */
-	public IterativeSopremoModule(int numberOfInputs, int numberOfOutputs) {
+	public IterativeSopremoModule(final int numberOfInputs, final int numberOfOutputs) {
 		super(numberOfInputs, numberOfOutputs);
 	}
 
@@ -75,11 +75,11 @@ public class IterativeSopremoModule extends SopremoModule {
 	/**
 	 * @param module
 	 */
-	public void embedInto(SopremoModule module) {
+	public void embedInto(final SopremoModule module) {
 		final Set<Operator<?>> stepOutputs = this.getStepOutputs();
 
 		final Set<Operator<?>> step = this.getStepOperators(stepOutputs);
-		List<JsonStream> moduleInputs = new IdentityList<>(this.getIncomingEdges(step));
+		final List<JsonStream> moduleInputs = new IdentityList<>(this.getIncomingEdges(step));
 		final CoreIteration core = CoreIteration.valueOf(this, moduleInputs);
 
 		core.setInputs(moduleInputs);
@@ -102,7 +102,6 @@ public class IterativeSopremoModule extends SopremoModule {
 	}
 
 	/**
-	 * @return
 	 */
 	public JsonStream getSolutionSet() {
 		return this.solutionSet;
@@ -118,20 +117,19 @@ public class IterativeSopremoModule extends SopremoModule {
 	}
 
 	/**
-	 * @return
 	 */
 	public JsonStream getWorkingSet() {
 		return this.workingSet;
 	}
 
-	public void setInitialSolutionSet(JsonStream initialSolutionSet) {
+	public void setInitialSolutionSet(final JsonStream initialSolutionSet) {
 		if (initialSolutionSet == null)
 			throw new NullPointerException("initialSolutionSet must not be null");
 
 		this.solutionSet.setInput(0, initialSolutionSet);
 	}
 
-	public void setInitialWorkingset(JsonStream initialWorkingset) {
+	public void setInitialWorkingset(final JsonStream initialWorkingset) {
 		if (initialWorkingset == null)
 			throw new NullPointerException("initialWorkingset must not be null");
 
@@ -144,21 +142,21 @@ public class IterativeSopremoModule extends SopremoModule {
 	 * @param maxNumberOfIterations
 	 *        the maxNumberOfIterations to set
 	 */
-	public void setMaxNumberOfIterations(int maxNumberOfIterations) {
+	public void setMaxNumberOfIterations(final int maxNumberOfIterations) {
 		if (maxNumberOfIterations < 1)
 			throw new NullPointerException("maxNumberOfIterations must >= 1");
 
 		this.maxNumberOfIterations = maxNumberOfIterations;
 	}
 
-	public void setNextWorkset(JsonStream nextWorkset) {
+	public void setNextWorkset(final JsonStream nextWorkset) {
 		if (nextWorkset == null)
 			throw new NullPointerException("nextWorkset must not be null");
 
 		this.nextWorkset = nextWorkset;
 	}
 
-	public void setSolutionSetDelta(JsonStream solutionSetDelta) {
+	public void setSolutionSetDelta(final JsonStream solutionSetDelta) {
 		if (solutionSetDelta == null)
 			throw new NullPointerException("solutionSetDelta must not be null");
 
@@ -171,7 +169,7 @@ public class IterativeSopremoModule extends SopremoModule {
 	 * @param terminationCriterion
 	 *        the terminationCriterion to set
 	 */
-	public void setTerminationCriterion(JsonStream terminationCriterion) {
+	public void setTerminationCriterion(final JsonStream terminationCriterion) {
 		if (terminationCriterion == null)
 			throw new NullPointerException("terminationCriterion must not be null");
 
@@ -216,7 +214,7 @@ public class IterativeSopremoModule extends SopremoModule {
 	 * @param solutionSetKeyExpressions
 	 *        the solutionSetKeyExpressions to set
 	 */
-	void setSolutionSetKeyExpressions(List<? extends EvaluationExpression> solutionSetKeyExpressions) {
+	void setSolutionSetKeyExpressions(final List<? extends EvaluationExpression> solutionSetKeyExpressions) {
 		if (solutionSetKeyExpressions == null)
 			throw new NullPointerException("solutionSetKeyExpressions must not be null");
 
@@ -224,9 +222,9 @@ public class IterativeSopremoModule extends SopremoModule {
 	}
 
 	private Set<JsonStream> getIncomingEdges(final Set<Operator<?>> partition) {
-		Set<JsonStream> incomingEdges = new IdentitySet<JsonStream>();
-		for (Operator<?> op : partition)
-			for (JsonStream input : op.getInputs())
+		final Set<JsonStream> incomingEdges = new IdentitySet<JsonStream>();
+		for (final Operator<?> op : partition)
+			for (final JsonStream input : op.getInputs())
 				if (!partition.contains(input.getSource().getOperator()))
 					incomingEdges.add(input);
 		return incomingEdges;
@@ -259,8 +257,8 @@ public class IterativeSopremoModule extends SopremoModule {
 		OneTimeTraverser.INSTANCE.traverse(stepOutputs,
 			OperatorNavigator.INSTANCE, new GraphTraverseListener<Operator<?>>() {
 				@Override
-				public void nodeTraversed(Operator<?> node) {
-					for (JsonStream input : node.getInputs()) {
+				public void nodeTraversed(final Operator<?> node) {
+					for (final JsonStream input : node.getInputs()) {
 						successors.put(input.getSource().getOperator(), node);
 						successors.putAll(input.getSource().getOperator(), successors.get(node));
 					}
@@ -269,21 +267,22 @@ public class IterativeSopremoModule extends SopremoModule {
 		return successors;
 	}
 
-	private static void replace(Iterable<? extends eu.stratosphere.api.common.operators.Operator> nodes,
-			eu.stratosphere.api.common.operators.Operator toReplace,
-			eu.stratosphere.api.common.operators.Operator replaceWith) {
-		for (eu.stratosphere.api.common.operators.Operator operator : nodes) {
-			final List<List<eu.stratosphere.api.common.operators.Operator>> inputs = ContractUtil.getInputs(operator);
-			for (List<eu.stratosphere.api.common.operators.Operator> unionedInputs : inputs)
+	private static void replace(final Iterable<? extends eu.stratosphere.api.common.operators.Operator> nodes,
+			final eu.stratosphere.api.common.operators.Operator toReplace,
+			final eu.stratosphere.api.common.operators.Operator replaceWith) {
+		for (final eu.stratosphere.api.common.operators.Operator operator : nodes) {
+			final List<List<eu.stratosphere.api.common.operators.Operator>> inputs = OperatorUtil.getInputs(operator);
+			for (final List<eu.stratosphere.api.common.operators.Operator> unionedInputs : inputs)
 				for (int index = 0; index < unionedInputs.size(); index++)
 					if (unionedInputs.get(index) == toReplace)
 						unionedInputs.set(index, replaceWith);
-			ContractUtil.setInputs(operator, inputs);
+			OperatorUtil.setInputs(operator, inputs);
 		}
 	}
 
-	private static void replace(Iterable<? extends Operator<?>> nodes, JsonStream toReplace, JsonStream replaceWith) {
-		for (Operator<?> operator : nodes)
+	private static void replace(final Iterable<? extends Operator<?>> nodes, final JsonStream toReplace,
+			final JsonStream replaceWith) {
+		for (final Operator<?> operator : nodes)
 			for (int index = 0, size = operator.getNumInputs(); index < size; index++)
 				if (operator.getInput(index) == toReplace)
 					operator.setInput(index, replaceWith);
@@ -307,12 +306,10 @@ public class IterativeSopremoModule extends SopremoModule {
 
 		/**
 		 * Initializes CoreIteration.
-		 * 
-		 * @param iterativeSopremoModule
-		 * @param step
 		 */
-		public CoreIteration(IterativeSopremoModule module, List<JsonStream> moduleInputs, ElementarySopremoModule stepSopremoModule,
-				List<JsonStream> stepInputs) {
+		public CoreIteration(final IterativeSopremoModule module, final List<JsonStream> moduleInputs,
+				final ElementarySopremoModule stepSopremoModule,
+				final List<JsonStream> stepInputs) {
 			this.module = module;
 			this.moduleInputs = moduleInputs;
 			this.stepSopremoModule = stepSopremoModule;
@@ -326,8 +323,8 @@ public class IterativeSopremoModule extends SopremoModule {
 		 * eu.stratosphere.sopremo.serialization.SopremoRecordLayout)
 		 */
 		@Override
-		public PactModule asPactModule(EvaluationContext context, SopremoRecordLayout layout) {
-			PactModule iterationModule = new PactModule(this.getNumInputs(), this.getNumOutputs());
+		public PactModule asPactModule(final EvaluationContext context, final SopremoRecordLayout layout) {
+			final PactModule iterationModule = new PactModule(this.getNumInputs(), this.getNumOutputs());
 			final PactModule stepModule = this.stepSopremoModule.asPactModule(context, layout);
 
 			if (this.module.nextWorkset == null) {
@@ -345,7 +342,7 @@ public class IterativeSopremoModule extends SopremoModule {
 					bulkIteration.getPartialSolution());
 
 				for (int index = 2; index < this.stepInputs.size(); index++) {
-					int moduleIndex = this.moduleInputs.indexOf(this.stepInputs.get(index));
+					final int moduleIndex = this.moduleInputs.indexOf(this.stepInputs.get(index));
 					replace(stepModule.getReachableNodes(),
 						stepModule.getInput(this.getInputIndex(stepModule, this.stepSopremoModule.getInput(index))),
 						iterationModule.getInput(moduleIndex));
@@ -363,10 +360,11 @@ public class IterativeSopremoModule extends SopremoModule {
 					stepModule.getInput(this.getInputIndex(stepModule, this.stepSopremoModule.getInput(0))),
 					deltaIteration.getSolutionSet());
 				replace(stepModule.getReachableNodes(),
-					stepModule.getInput(this.getInputIndex(stepModule, this.stepSopremoModule.getInput(1))), deltaIteration.getWorkset());
+					stepModule.getInput(this.getInputIndex(stepModule, this.stepSopremoModule.getInput(1))),
+					deltaIteration.getWorkset());
 
 				for (int index = 2; index < this.stepInputs.size(); index++) {
-					int moduleIndex = this.moduleInputs.indexOf(this.stepInputs.get(index));
+					final int moduleIndex = this.moduleInputs.indexOf(this.stepInputs.get(index));
 					replace(stepModule.getReachableNodes(),
 						stepModule.getInput(this.getInputIndex(stepModule, this.stepSopremoModule.getInput(index))),
 						iterationModule.getInput(moduleIndex));
@@ -385,21 +383,21 @@ public class IterativeSopremoModule extends SopremoModule {
 		 */
 		@Override
 		public Set<EvaluationExpression> getAllKeyExpressions() {
-			Set<EvaluationExpression> keyExpressions = new HashSet<>(this.module.solutionSetKeyExpressions);
+			final Set<EvaluationExpression> keyExpressions = new HashSet<>(this.module.solutionSetKeyExpressions);
 			keyExpressions.addAll(this.stepSopremoModule.getSchema().getKeyExpressions());
 			return keyExpressions;
 		}
 
-		private int getInputIndex(PactModule pactModule, Source sopremoSource) {
+		private int getInputIndex(final PactModule pactModule, final Source sopremoSource) {
 			for (int index = 0; index < pactModule.getNumInputs(); index++)
 				if (pactModule.getInput(index).getName().equals(sopremoSource.getName()))
 					return index;
 			throw new IllegalStateException();
 		}
 
-		public static CoreIteration valueOf(IterativeSopremoModule module,
-				List<JsonStream> moduleInputs) {
-			List<JsonStream> stepInputs = new IdentityList<>(moduleInputs);
+		public static CoreIteration valueOf(final IterativeSopremoModule module,
+				final List<JsonStream> moduleInputs) {
+			final List<JsonStream> stepInputs = new IdentityList<>(moduleInputs);
 			stepInputs.remove(module.solutionSet.getInput(0));
 			stepInputs.remove(module.workingSet.getInput(0));
 
@@ -416,7 +414,8 @@ public class IterativeSopremoModule extends SopremoModule {
 			return new CoreIteration(module, moduleInputs, stepSopremoModule, stepInputs);
 		}
 
-		private static SopremoModule getBulkStep(IterativeSopremoModule module, Collection<JsonStream> stepInputs) {
+		private static SopremoModule getBulkStep(final IterativeSopremoModule module,
+				final Collection<JsonStream> stepInputs) {
 			SopremoModule stepModule;
 			if (module.terminationCriterion != null) {
 				stepModule = new SopremoModule(stepInputs.size(), 2);
@@ -431,8 +430,9 @@ public class IterativeSopremoModule extends SopremoModule {
 			return stepModule;
 		}
 
-		private static SopremoModule getDeltaStep(IterativeSopremoModule module, Collection<JsonStream> stepInputs) {
-			SopremoModule stepModule = new SopremoModule(stepInputs.size(), 2);
+		private static SopremoModule getDeltaStep(final IterativeSopremoModule module,
+				final Collection<JsonStream> stepInputs) {
+			final SopremoModule stepModule = new SopremoModule(stepInputs.size(), 2);
 			stepModule.getOutput(0).setInput(0, module.solutionSetDelta);
 			stepModule.getOutput(1).setInput(0, module.nextWorkset);
 			final Iterator<JsonStream> iterator = stepInputs.iterator();

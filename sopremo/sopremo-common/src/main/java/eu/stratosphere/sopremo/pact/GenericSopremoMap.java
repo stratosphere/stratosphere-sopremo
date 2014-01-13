@@ -27,29 +27,9 @@ public abstract class GenericSopremoMap<In extends IJsonNode, Out extends IJsonN
 	private TypedObjectNode typedInputNode;
 
 	@Override
-	public void open(final Configuration parameters) {
-		SopremoEnvironment.getInstance().setConfiguration(parameters);
-		this.context = SopremoEnvironment.getInstance().getEvaluationContext();
-		this.collector = new JsonCollector<>(this.context);
-		this.typedInputNode =
-			SopremoUtil.getTypedNodes(TypeToken.of(this.getClass()).getSupertype(GenericSopremoMap.class))[0];
-		SopremoUtil.configureWithTransferredState(this, GenericSopremoMap.class, parameters);
-	}
-
-	@Override
 	public final EvaluationContext getContext() {
 		return this.context;
 	}
-
-	/**
-	 * This method must be implemented to provide a user implementation of a map.
-	 * 
-	 * @param value
-	 *        the {IJsonNode} to be mapped
-	 * @param out
-	 *        a collector that collects all output nodes
-	 */
-	protected abstract void map(In value, JsonCollector<Out> out);
 
 	/*
 	 * (non-Javadoc)
@@ -73,5 +53,25 @@ public abstract class GenericSopremoMap<In extends IJsonNode, Out extends IJsonN
 				"Error occurred @ %s with %s: %s", this.getContext().getOperatorDescription(), input, e));
 			throw e;
 		}
-	};
+	}
+
+	@Override
+	public void open(final Configuration parameters) {
+		SopremoEnvironment.getInstance().setConfiguration(parameters);
+		this.context = SopremoEnvironment.getInstance().getEvaluationContext();
+		this.collector = new JsonCollector<>(this.context);
+		this.typedInputNode =
+			SopremoUtil.getTypedNodes(TypeToken.of(this.getClass()).getSupertype(GenericSopremoMap.class))[0];
+		SopremoUtil.configureWithTransferredState(this, GenericSopremoMap.class, parameters);
+	}
+
+	/**
+	 * This method must be implemented to provide a user implementation of a map.
+	 * 
+	 * @param value
+	 *        the {IJsonNode} to be mapped
+	 * @param out
+	 *        a collector that collects all output nodes
+	 */
+	protected abstract void map(In value, JsonCollector<Out> out);;
 }

@@ -19,7 +19,6 @@ import it.unimi.dsi.fastutil.objects.ObjectArrays;
 
 /**
  * A list implementation that does not release removed elements but allows them to be reused.
- * 
  */
 public class CachingList<T> extends ObjectArrayList<T> {
 	/**
@@ -28,6 +27,24 @@ public class CachingList<T> extends ObjectArrayList<T> {
 	private static final long serialVersionUID = 7946169971753399385L;
 
 	private int usedElements;
+
+	/**
+	 * Initializes CachingList.
+	 */
+	public CachingList() {
+	}
+
+	/**
+	 * Creates a new array list using a given array.
+	 * <P>
+	 * This constructor is only meant to be used by the wrapping methods.
+	 * 
+	 * @param a
+	 *        the array that will be used to back this array list.
+	 */
+	protected CachingList(final T a[], final boolean dummy) {
+		super(a, dummy);
+	}
 
 	@Override
 	public void add(final int index, final T element) {
@@ -54,53 +71,6 @@ public class CachingList<T> extends ObjectArrayList<T> {
 		return true;
 	}
 
-	/**
-	 * Wraps a given array into an array list of given size.
-	 * 
-	 * @param a
-	 *        an array to wrap.
-	 * @param length
-	 *        the length of the resulting array list.
-	 * @return a new array list of the given size, wrapping the given array.
-	 */
-	public static <K> CachingList<K> wrap(final K a[], final int length) {
-		if (length > a.length)
-			throw new IllegalArgumentException("The specified length (" + length +
-				") is greater than the array size (" + a.length + ")");
-		final CachingList<K> l = new CachingList<K>(a, false);
-		l.size = length;
-		return l;
-	}
-
-	/**
-	 * Initializes CachingList.
-	 */
-	public CachingList() {
-	}
-
-	/**
-	 * Creates a new array list using a given array.
-	 * <P>
-	 * This constructor is only meant to be used by the wrapping methods.
-	 * 
-	 * @param a
-	 *        the array that will be used to back this array list.
-	 */
-	protected CachingList(final T a[], final boolean dummy) {
-		super(a, dummy);
-	}
-
-	/**
-	 * Wraps a given array into an array list.
-	 * 
-	 * @param a
-	 *        an array to wrap.
-	 * @return a new array list wrapping the given array.
-	 */
-	public static <K> CachingList<K> wrap(final K a[]) {
-		return wrap(a, a.length);
-	}
-
 	/*
 	 * (non-Javadoc)
 	 * @see java.util.AbstractList#clear()
@@ -108,21 +78,6 @@ public class CachingList<T> extends ObjectArrayList<T> {
 	@Override
 	public void clear() {
 		this.usedElements = 0;
-	}
-
-	@Override
-	public T remove(final int index) {
-		this.checkRange(index, this.usedElements);
-
-		final T oldObject = super.remove(index);
-		super.add(oldObject);
-		this.usedElements--;
-		return oldObject;
-	}
-
-	private void checkRange(final int index, final int size) {
-		if (index >= size)
-			throw new IndexOutOfBoundsException("Index: " + index + ", Size: " + size);
 	}
 
 	/*
@@ -136,6 +91,22 @@ public class CachingList<T> extends ObjectArrayList<T> {
 		return super.get(index);
 	}
 
+	public T getUnusedElement() {
+		if (super.size() == this.usedElements)
+			return null;
+		return super.get(this.usedElements);
+	}
+
+	@Override
+	public T remove(final int index) {
+		this.checkRange(index, this.usedElements);
+
+		final T oldObject = super.remove(index);
+		super.add(oldObject);
+		this.usedElements--;
+		return oldObject;
+	}
+
 	/**
 	 * Reactivates the last element if such an element exists.<br />
 	 * Do not call {@link #add(Object)} in the successful case.
@@ -146,12 +117,6 @@ public class CachingList<T> extends ObjectArrayList<T> {
 		if (super.size() == this.usedElements)
 			return null;
 		return super.get(this.usedElements++);
-	}
-
-	public T getUnusedElement() {
-		if (super.size() == this.usedElements)
-			return null;
-		return super.get(this.usedElements);
 	}
 
 	/*
@@ -190,5 +155,39 @@ public class CachingList<T> extends ObjectArrayList<T> {
 			this.size = size;
 		}
 		this.usedElements = size;
+	}
+
+	private void checkRange(final int index, final int size) {
+		if (index >= size)
+			throw new IndexOutOfBoundsException("Index: " + index + ", Size: " + size);
+	}
+
+	/**
+	 * Wraps a given array into an array list.
+	 * 
+	 * @param a
+	 *        an array to wrap.
+	 * @return a new array list wrapping the given array.
+	 */
+	public static <K> CachingList<K> wrap(final K a[]) {
+		return wrap(a, a.length);
+	}
+
+	/**
+	 * Wraps a given array into an array list of given size.
+	 * 
+	 * @param a
+	 *        an array to wrap.
+	 * @param length
+	 *        the length of the resulting array list.
+	 * @return a new array list of the given size, wrapping the given array.
+	 */
+	public static <K> CachingList<K> wrap(final K a[], final int length) {
+		if (length > a.length)
+			throw new IllegalArgumentException("The specified length (" + length +
+				") is greater than the array size (" + a.length + ")");
+		final CachingList<K> l = new CachingList<K>(a, false);
+		l.size = length;
+		return l;
 	}
 }

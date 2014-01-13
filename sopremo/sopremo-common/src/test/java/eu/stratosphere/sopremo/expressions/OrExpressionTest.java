@@ -15,6 +15,24 @@ import eu.stratosphere.sopremo.type.IJsonNode;
 
 public class OrExpressionTest extends BooleanExpressionTest<OrExpression> {
 
+	@Test
+	public void shouldBeFalseIfNoExprIsTrue() {
+		final IJsonNode result =
+			new OrExpression(FALSE, BooleanExpression.ensureBooleanExpression(EvaluationExpression.VALUE), FALSE).
+				evaluate(BooleanNode.FALSE);
+
+		Assert.assertEquals(BooleanNode.FALSE, result);
+	}
+
+	@Test
+	public void shouldBeTrueIfOneExprIsTrue() {
+		final IJsonNode result =
+			new OrExpression(FALSE, BooleanExpression.ensureBooleanExpression(EvaluationExpression.VALUE), FALSE).
+				evaluate(BooleanNode.TRUE);
+
+		Assert.assertEquals(BooleanNode.TRUE, result);
+	}
+
 	@Override
 	protected OrExpression createDefaultInstance(final int index) {
 		final BooleanExpression[] params = new BooleanExpression[index + 1];
@@ -31,24 +49,6 @@ public class OrExpressionTest extends BooleanExpressionTest<OrExpression> {
 		super.initVerifier(equalVerifier);
 		equalVerifier.withPrefabValues(List.class, new ArrayList<Object>(), new ArrayList<EvaluationExpression>(
 			Collections.singleton(TRUE)));
-	}
-
-	@Test
-	public void shouldBeTrueIfOneExprIsTrue() {
-		final IJsonNode result =
-			new OrExpression(FALSE, BooleanExpression.ensureBooleanExpression(EvaluationExpression.VALUE), FALSE).
-				evaluate(BooleanNode.TRUE);
-
-		Assert.assertEquals(BooleanNode.TRUE, result);
-	}
-
-	@Test
-	public void shouldBeFalseIfNoExprIsTrue() {
-		final IJsonNode result =
-			new OrExpression(FALSE, BooleanExpression.ensureBooleanExpression(EvaluationExpression.VALUE), FALSE).
-				evaluate(BooleanNode.FALSE);
-
-		Assert.assertEquals(BooleanNode.FALSE, result);
 	}
 
 }

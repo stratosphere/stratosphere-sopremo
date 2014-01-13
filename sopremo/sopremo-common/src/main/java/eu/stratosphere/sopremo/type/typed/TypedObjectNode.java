@@ -19,14 +19,28 @@ import eu.stratosphere.sopremo.type.ObjectNode;
  * Exceptions are: - public TypedObjectNode {@link TypedObjectNode#clone()} -
  * public IObjectNode {@link TypedObjectNode#put(String fieldName, IJsonNode value)} - public
  * IJsonNode {@link TypedObjectNode#get(String fieldName)}
- * 
  */
 
 public abstract class TypedObjectNode implements ITypedObjectNode {
 	protected IObjectNode backingObject;
 
+	protected static final JavaToJsonMapper JavaToJsonMapperInstance = JavaToJsonMapper.INSTANCE;
+
+	protected static final JsonToJavaMapper JsonToJavaMapperInstance = JsonToJavaMapper.INSTANCE;
+
 	protected TypedObjectNode() {
 		this.backingObject = new ObjectNode();
+	}
+
+	@Override
+	public void appendAsString(final Appendable appendable) throws IOException {
+		this.backingObject.appendAsString(appendable);
+
+	}
+
+	@Override
+	public void clear() {
+		this.backingObject.clear();
 	}
 
 	@Override
@@ -44,21 +58,6 @@ public abstract class TypedObjectNode implements ITypedObjectNode {
 	}
 
 	@Override
-	public void clear() {
-		this.backingObject.clear();
-	}
-
-	@Override
-	public Class<IObjectNode> getType() {
-		return IObjectNode.class;
-	}
-
-	@Override
-	public void copyValueFrom(final IJsonNode otherNode) {
-		this.backingObject.copyValueFrom(otherNode);
-	}
-
-	@Override
 	public int compareTo(final IJsonNode other) {
 		return this.backingObject.compareTo(other);
 	}
@@ -69,23 +68,17 @@ public abstract class TypedObjectNode implements ITypedObjectNode {
 	}
 
 	@Override
-	public void appendAsString(final Appendable appendable) throws IOException {
-		this.backingObject.appendAsString(appendable);
-
-	}
-
-	@Override
-	public IObjectNode put(final String fieldName, final IJsonNode value) {
-		return this.backingObject.put(fieldName, value);
-	}
-
-	public IObjectNode putOrNull(final String fieldName, final IJsonNode value) {
-		return this.backingObject.put(fieldName, value == null ? NullNode.getInstance() : value);
+	public void copyValueFrom(final IJsonNode otherNode) {
+		this.backingObject.copyValueFrom(otherNode);
 	}
 
 	@Override
 	public final <T extends IJsonNode> T get(final String fieldName) {
 		return this.backingObject.get(fieldName);
+	}
+
+	public IObjectNode getBackingNode() {
+		return this.backingObject;
 	}
 
 	@SuppressWarnings("cast")
@@ -96,6 +89,11 @@ public abstract class TypedObjectNode implements ITypedObjectNode {
 		return (T) result;
 	}
 
+	@Override
+	public Class<IObjectNode> getType() {
+		return IObjectNode.class;
+	}
+
 	public final <T extends ITypedObjectNode> T getTyped(final String fieldName, final T object) {
 		final IJsonNode result = this.get(fieldName);
 		if (result == MissingNode.getInstance() || result == NullNode.getInstance())
@@ -104,22 +102,14 @@ public abstract class TypedObjectNode implements ITypedObjectNode {
 		return object;
 	}
 
-	public final void putTyped(final String fieldName, final ITypedObjectNode value) {
-		this.backingObject.put(fieldName,
-			value == null ? NullNode.getInstance() : ((TypedObjectNode) value).getBackingNode());
-	}
-
-	protected static final JavaToJsonMapper JavaToJsonMapperInstance = JavaToJsonMapper.INSTANCE;
-
-	protected static final JsonToJavaMapper JsonToJavaMapperInstance = JsonToJavaMapper.INSTANCE;
-
-	protected final <T extends ITypedObjectNode> T createWrappingObject(final Class<T> aDesiredClass) {
-		return TypedObjectNodeFactory.getInstance().getTypedObjectForInterface(aDesiredClass);
+	@Override
+	public Iterator<Entry<String, IJsonNode>> iterator() {
+		return this.backingObject.iterator();
 	}
 
 	@Override
-	public void remove(final String fieldName) {
-		this.backingObject.remove(fieldName);
+	public IObjectNode put(final String fieldName, final IJsonNode value) {
+		return this.backingObject.put(fieldName, value);
 	}
 
 	@Override
@@ -127,9 +117,22 @@ public abstract class TypedObjectNode implements ITypedObjectNode {
 		return this.backingObject.putAll(jsonNode);
 	}
 
+	public IObjectNode putOrNull(final String fieldName, final IJsonNode value) {
+		return this.backingObject.put(fieldName, value == null ? NullNode.getInstance() : value);
+	}
+
+	public final void putTyped(final String fieldName, final ITypedObjectNode value) {
+		this.backingObject.put(fieldName,
+			value == null ? NullNode.getInstance() : ((TypedObjectNode) value).getBackingNode());
+	}
+
 	@Override
-	public Iterator<Entry<String, IJsonNode>> iterator() {
-		return this.backingObject.iterator();
+	public void remove(final String fieldName) {
+		this.backingObject.remove(fieldName);
+	}
+
+	public void setBackingNode(final IObjectNode backingNode) {
+		this.backingObject = backingNode;
 	}
 
 	@Override
@@ -137,16 +140,12 @@ public abstract class TypedObjectNode implements ITypedObjectNode {
 		return this.backingObject.size();
 	}
 
-	public IObjectNode getBackingNode() {
-		return this.backingObject;
-	}
-
-	public void setBackingNode(final IObjectNode backingNode) {
-		this.backingObject = backingNode;
-	}
-
 	public TypedObjectNode withBackingNode(final IObjectNode backingNode) {
 		this.backingObject = backingNode;
 		return this;
+	}
+
+	protected final <T extends ITypedObjectNode> T createWrappingObject(final Class<T> aDesiredClass) {
+		return TypedObjectNodeFactory.getInstance().getTypedObjectForInterface(aDesiredClass);
 	}
 }

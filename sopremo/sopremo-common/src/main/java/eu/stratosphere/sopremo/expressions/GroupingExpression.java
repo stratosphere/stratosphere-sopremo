@@ -32,6 +32,14 @@ import eu.stratosphere.sopremo.type.IJsonNode;
 public class GroupingExpression extends EvaluationExpression {
 	private EvaluationExpression groupingExpression;
 
+	private final transient IArrayNode<IJsonNode> result = new ArrayNode<IJsonNode>();
+
+	private ExpressionCache<EvaluationExpression> resultExpressions =
+		new ExpressionCache<EvaluationExpression>(null);
+
+	private final transient FastMap<IJsonNode, CachingArrayNode<IJsonNode>> groups =
+		new FastMap<IJsonNode, CachingArrayNode<IJsonNode>>();
+
 	/**
 	 * Initializes a GroupingExpression with the given expressions.
 	 * 
@@ -51,10 +59,22 @@ public class GroupingExpression extends EvaluationExpression {
 	GroupingExpression() {
 	}
 
-	private final transient IArrayNode<IJsonNode> result = new ArrayNode<IJsonNode>();
+	@Override
+	public void appendAsString(final Appendable appendable) throws IOException {
+		appendable.append("g(");
+		this.groupingExpression.appendAsString(appendable);
+		appendable.append(") -> ");
+		this.getResultExpression().appendAsString(appendable);
+	}
 
-	private ExpressionCache<EvaluationExpression> resultExpressions =
-		new ExpressionCache<EvaluationExpression>(null);
+	@Override
+	public boolean equals(final Object obj) {
+		if (!super.equals(obj))
+			return false;
+		final GroupingExpression other = (GroupingExpression) obj;
+		return this.groupingExpression.equals(other.groupingExpression)
+			&& this.getResultExpression().equals(other.resultExpressions.getTemplate());
+	}
 
 	@Override
 	public IJsonNode evaluate(final IJsonNode node) {
@@ -80,10 +100,13 @@ public class GroupingExpression extends EvaluationExpression {
 		return this.result;
 	}
 
-	private void emptyGroups() {
-		for (FastMap.Entry<IJsonNode, CachingArrayNode<IJsonNode>> e = this.groups.head(), end = this.groups.tail(); (e =
-			e.getNext()) != end;)
-			e.getValue().clear();
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result + this.groupingExpression.hashCode();
+		result = prime * result + this.getResultExpression().hashCode();
+		return result;
 	}
 
 	/*
@@ -95,6 +118,13 @@ public class GroupingExpression extends EvaluationExpression {
 		return new NamedChildIterator("groupingExpression", "second") {
 
 			@Override
+			protected EvaluationExpression get(final int index) {
+				if (index == 0)
+					return GroupingExpression.this.groupingExpression;
+				return GroupingExpression.this.resultExpressions.getTemplate();
+			}
+
+			@Override
 			protected void set(final int index, final EvaluationExpression childExpression) {
 				if (index == 0)
 					GroupingExpression.this.groupingExpression = childExpression;
@@ -102,18 +132,14 @@ public class GroupingExpression extends EvaluationExpression {
 					GroupingExpression.this.resultExpressions =
 						new ExpressionCache<EvaluationExpression>(childExpression);
 			}
-
-			@Override
-			protected EvaluationExpression get(final int index) {
-				if (index == 0)
-					return GroupingExpression.this.groupingExpression;
-				return GroupingExpression.this.resultExpressions.getTemplate();
-			}
 		};
 	}
 
-	private final transient FastMap<IJsonNode, CachingArrayNode<IJsonNode>> groups =
-		new FastMap<IJsonNode, CachingArrayNode<IJsonNode>>();
+	private void emptyGroups() {
+		for (FastMap.Entry<IJsonNode, CachingArrayNode<IJsonNode>> e = this.groups.head(), end = this.groups.tail(); (e =
+			e.getNext()) != end;)
+			e.getValue().clear();
+	}
 
 	private void fillGroups(final IArrayNode<?> array) {
 		for (final IJsonNode node : array) {
@@ -126,32 +152,6 @@ public class GroupingExpression extends EvaluationExpression {
 				group = entry.getValue();
 			group.addClone(node);
 		}
-	}
-
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = super.hashCode();
-		result = prime * result + this.groupingExpression.hashCode();
-		result = prime * result + this.getResultExpression().hashCode();
-		return result;
-	}
-
-	@Override
-	public boolean equals(final Object obj) {
-		if (!super.equals(obj))
-			return false;
-		final GroupingExpression other = (GroupingExpression) obj;
-		return this.groupingExpression.equals(other.groupingExpression)
-			&& this.getResultExpression().equals(other.resultExpressions.getTemplate());
-	}
-
-	@Override
-	public void appendAsString(final Appendable appendable) throws IOException {
-		appendable.append("g(");
-		this.groupingExpression.appendAsString(appendable);
-		appendable.append(") -> ");
-		this.getResultExpression().appendAsString(appendable);
 	}
 
 	private EvaluationExpression getResultExpression() {

@@ -32,6 +32,10 @@ import eu.stratosphere.sopremo.type.PullingStreamNode;
 public class ArrayProjection extends PathSegmentExpression {
 	private EvaluationExpression projection;
 
+	private final transient IArrayNode<IJsonNode> materializedResult = new ArrayNode<IJsonNode>();
+
+	private final transient PullingStreamNode<?> virtualResult = new PullingStreamNode<IJsonNode>();
+
 	/**
 	 * Initializes ArrayProjection.
 	 */
@@ -46,47 +50,13 @@ public class ArrayProjection extends PathSegmentExpression {
 		this(EvaluationExpression.VALUE);
 	}
 
-	/**
-	 * Returns the projection.
-	 * 
-	 * @return the projection
-	 */
-	public EvaluationExpression getProjection() {
-		return this.projection;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see
-	 * eu.stratosphere.sopremo.expressions.PathSegmentExpression#withInputExpression(eu.stratosphere.sopremo.expressions
-	 * .EvaluationExpression)
-	 */
 	@Override
-	public ArrayProjection withInputExpression(final EvaluationExpression inputExpression) {
-		return (ArrayProjection) super.withInputExpression(inputExpression);
-	}
-
-	private final transient IArrayNode<IJsonNode> materializedResult = new ArrayNode<IJsonNode>();
-
-	private final transient PullingStreamNode<?> virtualResult = new PullingStreamNode<IJsonNode>();
-
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.expressions.PathSegmentExpression#iterator()
-	 */
-	@Override
-	public ChildIterator iterator() {
-		return new ConcatenatingChildIterator(super.iterator(), new NamedChildIterator("projection") {
-			@Override
-			protected void set(final int index, final EvaluationExpression childExpression) {
-				ArrayProjection.this.projection = childExpression;
-			}
-
-			@Override
-			protected EvaluationExpression get(final int index) {
-				return ArrayProjection.this.projection;
-			}
-		});
+	public void appendAsString(final Appendable appendable) throws IOException {
+		appendable.append("proj(x in ");
+		this.getInputExpression().appendAsString(appendable);
+		appendable.append(", ");
+		this.projection.appendAsString(appendable);
+		appendable.append(")");
 	}
 
 	/*
@@ -100,14 +70,69 @@ public class ArrayProjection extends PathSegmentExpression {
 		return this.projection.equals(((ArrayProjection) other).projection);
 	}
 
+	/**
+	 * Returns the projection.
+	 * 
+	 * @return the projection
+	 */
+	public EvaluationExpression getProjection() {
+		return this.projection;
+	}
+
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.expressions.PathSegmentExpression#segmentHashCode()
+	 * @see eu.stratosphere.sopremo.expressions.PathSegmentExpression#iterator()
 	 */
 	@Override
-	protected int segmentHashCode() {
-		return this.projection.hashCode();
+	public ChildIterator iterator() {
+		return new ConcatenatingChildIterator(super.iterator(), new NamedChildIterator("projection") {
+			@Override
+			protected EvaluationExpression get(final int index) {
+				return ArrayProjection.this.projection;
+			}
+
+			@Override
+			protected void set(final int index, final EvaluationExpression childExpression) {
+				ArrayProjection.this.projection = childExpression;
+			}
+		});
 	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.expressions.EvaluationExpression#simplify()
+	 */
+	@Override
+	public EvaluationExpression simplify() {
+		if (this.getInputExpression() instanceof ArrayProjection) {
+			final ArrayProjection arrayProjection = (ArrayProjection) this.getInputExpression();
+			return new ArrayProjection(new ChainedSegmentExpression(arrayProjection.getProjection(),
+				this.getProjection())).withInputExpression(
+				arrayProjection.getInputExpression()).simplify();
+		}
+		return super.simplify();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see
+	 * eu.stratosphere.sopremo.expressions.PathSegmentExpression#withInputExpression(eu.stratosphere.sopremo.expressions
+	 * .EvaluationExpression)
+	 */
+	@Override
+	public ArrayProjection withInputExpression(final EvaluationExpression inputExpression) {
+		return (ArrayProjection) super.withInputExpression(inputExpression);
+	}
+
+	// @Override
+	// public IJsonNode set(final IJsonNode node, final IJsonNode value) {
+	// final EvaluationExpression inputExpression = this.getInputExpression();
+	// @SuppressWarnings("unchecked")
+	// final IArrayNode<IJsonNode> arrayNode = (ArrayNode<IJsonNode>) node;
+	// for (int index = 0, size = arrayNode.size(); index < size; index++)
+	// arrayNode.set(index, ((PathSegmentExpression) inputExpression).set(arrayNode.get(index), value));
+	// return arrayNode;
+	// }
 
 	/*
 	 * (non-Javadoc)
@@ -130,37 +155,12 @@ public class ArrayProjection extends PathSegmentExpression {
 		return this.materializedResult;
 	}
 
-	// @Override
-	// public IJsonNode set(final IJsonNode node, final IJsonNode value) {
-	// final EvaluationExpression inputExpression = this.getInputExpression();
-	// @SuppressWarnings("unchecked")
-	// final IArrayNode<IJsonNode> arrayNode = (ArrayNode<IJsonNode>) node;
-	// for (int index = 0, size = arrayNode.size(); index < size; index++)
-	// arrayNode.set(index, ((PathSegmentExpression) inputExpression).set(arrayNode.get(index), value));
-	// return arrayNode;
-	// }
-
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.expressions.EvaluationExpression#simplify()
+	 * @see eu.stratosphere.sopremo.expressions.PathSegmentExpression#segmentHashCode()
 	 */
 	@Override
-	public EvaluationExpression simplify() {
-		if (this.getInputExpression() instanceof ArrayProjection) {
-			final ArrayProjection arrayProjection = (ArrayProjection) this.getInputExpression();
-			return new ArrayProjection(new ChainedSegmentExpression(arrayProjection.getProjection(),
-				this.getProjection())).withInputExpression(
-				arrayProjection.getInputExpression()).simplify();
-		}
-		return super.simplify();
-	}
-
-	@Override
-	public void appendAsString(final Appendable appendable) throws IOException {
-		appendable.append("proj(x in ");
-		this.getInputExpression().appendAsString(appendable);
-		appendable.append(", ");
-		this.projection.appendAsString(appendable);
-		appendable.append(")");
+	protected int segmentHashCode() {
+		return this.projection.hashCode();
 	}
 }

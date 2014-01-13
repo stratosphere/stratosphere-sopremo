@@ -8,7 +8,6 @@ import eu.stratosphere.sopremo.pact.SopremoUtil;
 
 /**
  * This node represents a {@link BigDecimal}.
- * 
  */
 public class DecimalNode extends AbstractNumericNode implements INumericNode {
 
@@ -35,7 +34,7 @@ public class DecimalNode extends AbstractNumericNode implements INumericNode {
 	/**
 	 * Initializes a DecimalNode which represents the given textual representation of a {@link BigDecimal}.
 	 * 
-	 * @param v
+	 * @param textual
 	 *        the value that should be represented by this node
 	 */
 	public DecimalNode(final String textual) {
@@ -44,41 +43,29 @@ public class DecimalNode extends AbstractNumericNode implements INumericNode {
 
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.type.INumericNode#getGeneralilty()
+	 * @see eu.stratosphere.sopremo.ISopremoType#toString(java.lang.StringBuilder)
 	 */
 	@Override
-	public byte getGeneralilty() {
-		return 80;
-	}
-
-	/**
-	 * Creates a new DecimalNode which represents the given {@link BigDecimal}.
-	 * 
-	 * @param v
-	 *        the value that should be represented by this node
-	 * @return the new DecimalNode
-	 */
-	public static DecimalNode valueOf(final BigDecimal v) {
-		if (v == null)
-			throw new NullPointerException();
-		return new DecimalNode(v);
-	}
-
-	public void setValue(final BigDecimal value) {
-		this.value = value;
+	public void appendAsString(final Appendable appendable) throws IOException {
+		// TextFormat.getInstance(BigDecimal.class).format(this.value, appendable);
+		appendable.append(this.value.toPlainString());
 	}
 
 	@Override
-	public BigDecimal getJavaValue() {
-		return this.value;
+	public void clear() {
+		if (SopremoUtil.DEBUG)
+			this.value = BigDecimal.ZERO;
 	}
 
 	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + this.value.hashCode();
-		return result;
+	public int compareToSameType(final IJsonNode other) {
+		return this.value.compareTo(((DecimalNode) other).value);
+	}
+
+	@Override
+	public void copyValueFrom(final IJsonNode otherNode) {
+		checkNumber(otherNode);
+		this.value = ((INumericNode) otherNode).getDecimalValue();
 	}
 
 	@Override
@@ -97,16 +84,6 @@ public class DecimalNode extends AbstractNumericNode implements INumericNode {
 	}
 
 	@Override
-	public int getIntValue() {
-		return this.value.intValue();
-	}
-
-	@Override
-	public long getLongValue() {
-		return this.value.longValue();
-	}
-
-	@Override
 	public BigInteger getBigIntegerValue() {
 		return this.value.toBigInteger();
 	}
@@ -121,9 +98,28 @@ public class DecimalNode extends AbstractNumericNode implements INumericNode {
 		return this.value.doubleValue();
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.type.INumericNode#getGeneralilty()
+	 */
 	@Override
-	public boolean isFloatingPointNumber() {
-		return true;
+	public byte getGeneralilty() {
+		return 80;
+	}
+
+	@Override
+	public int getIntValue() {
+		return this.value.intValue();
+	}
+
+	@Override
+	public BigDecimal getJavaValue() {
+		return this.value;
+	}
+
+	@Override
+	public long getLongValue() {
+		return this.value.longValue();
 	}
 
 	@Override
@@ -137,29 +133,32 @@ public class DecimalNode extends AbstractNumericNode implements INumericNode {
 	}
 
 	@Override
-	public int compareToSameType(final IJsonNode other) {
-		return this.value.compareTo(((DecimalNode) other).value);
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + this.value.hashCode();
+		return result;
 	}
 
 	@Override
-	public void copyValueFrom(final IJsonNode otherNode) {
-		checkNumber(otherNode);
-		this.value = ((INumericNode) otherNode).getDecimalValue();
+	public boolean isFloatingPointNumber() {
+		return true;
 	}
 
-	@Override
-	public void clear() {
-		if (SopremoUtil.DEBUG)
-			this.value = BigDecimal.ZERO;
+	public void setValue(final BigDecimal value) {
+		this.value = value;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.ISopremoType#toString(java.lang.StringBuilder)
+	/**
+	 * Creates a new DecimalNode which represents the given {@link BigDecimal}.
+	 * 
+	 * @param v
+	 *        the value that should be represented by this node
+	 * @return the new DecimalNode
 	 */
-	@Override
-	public void appendAsString(final Appendable appendable) throws IOException {
-		// TextFormat.getInstance(BigDecimal.class).format(this.value, appendable);
-		appendable.append(this.value.toPlainString());
+	public static DecimalNode valueOf(final BigDecimal v) {
+		if (v == null)
+			throw new NullPointerException();
+		return new DecimalNode(v);
 	}
 }

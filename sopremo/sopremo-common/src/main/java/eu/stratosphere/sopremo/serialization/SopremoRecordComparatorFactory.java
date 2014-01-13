@@ -31,6 +31,12 @@ public class SopremoRecordComparatorFactory implements TypeComparatorFactory<Sop
 
 	private boolean[] ascending;
 
+	/**
+	 * Initializes SopremoRecordComparatorFactory.
+	 */
+	public SopremoRecordComparatorFactory() {
+	}
+
 	public SopremoRecordComparatorFactory(final SopremoRecordLayout layout, final int[] keyExpressions,
 			final boolean[] ascending) {
 		this.layout = layout;
@@ -38,20 +44,13 @@ public class SopremoRecordComparatorFactory implements TypeComparatorFactory<Sop
 		this.ascending = ascending;
 	}
 
-	/**
-	 * Initializes SopremoRecordComparatorFactory.
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.api.typeutils.TypeComparatorFactory#createComparator()
 	 */
-	public SopremoRecordComparatorFactory() {
-	}
-
 	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + Arrays.hashCode(this.ascending);
-		result = prime * result + Arrays.hashCode(this.keyExpressions);
-		result = prime * result + this.layout.hashCode();
-		return result;
+	public TypeComparator<SopremoRecord> createComparator() {
+		return new SopremoRecordComparator(this.layout, this.keyExpressions, this.ascending);
 	}
 
 	@Override
@@ -68,16 +67,14 @@ public class SopremoRecordComparatorFactory implements TypeComparatorFactory<Sop
 			this.layout.equals(other.layout);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.api.typeutils.TypeComparatorFactory#writeParametersToConfig(eu.stratosphere.nephele.
-	 * configuration.Configuration)
-	 */
 	@Override
-	public void writeParametersToConfig(final Configuration config) {
-		SopremoUtil.setObject(config, SopremoRecordLayout.LAYOUT_KEY, this.layout);
-		SopremoUtil.setObject(config, KEYS, this.keyExpressions);
-		SopremoUtil.setObject(config, DIRECTION, this.ascending);
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + Arrays.hashCode(this.ascending);
+		result = prime * result + Arrays.hashCode(this.keyExpressions);
+		result = prime * result + this.layout.hashCode();
+		return result;
 	}
 
 	/*
@@ -95,11 +92,14 @@ public class SopremoRecordComparatorFactory implements TypeComparatorFactory<Sop
 
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.api.typeutils.TypeComparatorFactory#createComparator()
+	 * @see eu.stratosphere.api.typeutils.TypeComparatorFactory#writeParametersToConfig(eu.stratosphere.nephele.
+	 * configuration.Configuration)
 	 */
 	@Override
-	public TypeComparator<SopremoRecord> createComparator() {
-		return new SopremoRecordComparator(this.layout, this.keyExpressions, this.ascending);
+	public void writeParametersToConfig(final Configuration config) {
+		SopremoUtil.setObject(config, SopremoRecordLayout.LAYOUT_KEY, this.layout);
+		SopremoUtil.setObject(config, KEYS, this.keyExpressions);
+		SopremoUtil.setObject(config, DIRECTION, this.ascending);
 	}
 
 }

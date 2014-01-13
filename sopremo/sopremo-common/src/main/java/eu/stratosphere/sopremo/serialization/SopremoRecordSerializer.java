@@ -40,20 +40,17 @@ public class SopremoRecordSerializer extends TypeSerializer<SopremoRecord> {
 
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.serialization.TypeAccessors#createInstance()
+	 * @see eu.stratosphere.sopremo.serialization.TypeAccessorsV2#copy(eu.stratosphere.core.memory.
+	 * DataInputViewV2, eu.stratosphere.core.memory.DataOutputViewV2)
 	 */
 	@Override
-	public SopremoRecord createInstance() {
-		return new SopremoRecord();
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.serialization.TypeAccessors#createCopy(java.lang.Object)
-	 */
-	@Override
-	public SopremoRecord createCopy(final SopremoRecord from) {
-		return from.copy();
+	public void copy(final DataInputView source, final DataOutputView target) throws IOException {
+		final int numKeys = this.layout.getNumKeys();
+		for (int index = 0; index < numKeys; index++)
+			target.writeInt(source.readInt());
+		final int size = source.readInt();
+		target.writeInt(size);
+		target.write(source, size);
 	}
 
 	/*
@@ -67,24 +64,23 @@ public class SopremoRecordSerializer extends TypeSerializer<SopremoRecord> {
 
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.serialization.TypeAccessorsV2#getLength()
+	 * @see eu.stratosphere.sopremo.serialization.TypeAccessors#createCopy(java.lang.Object)
 	 */
 	@Override
-	public int getLength() {
-		return -1;
+	public SopremoRecord createCopy(final SopremoRecord from) {
+		return from.copy();
 	}
-
-	// --------------------------------------------------------------------------------------------
 
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.serialization.TypeAccessorsV2#serialize(java.lang.Object,
-	 * eu.stratosphere.core.memory.DataOutputViewV2)
+	 * @see eu.stratosphere.sopremo.serialization.TypeAccessors#createInstance()
 	 */
 	@Override
-	public void serialize(final SopremoRecord record, final DataOutputView target) throws IOException {
-		record.write(target, this.layout);
+	public SopremoRecord createInstance() {
+		return new SopremoRecord();
 	}
+
+	// --------------------------------------------------------------------------------------------
 
 	/*
 	 * (non-Javadoc)
@@ -99,16 +95,20 @@ public class SopremoRecordSerializer extends TypeSerializer<SopremoRecord> {
 
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.serialization.TypeAccessorsV2#copy(eu.stratosphere.core.memory.
-	 * DataInputViewV2, eu.stratosphere.core.memory.DataOutputViewV2)
+	 * @see eu.stratosphere.sopremo.serialization.TypeAccessorsV2#getLength()
 	 */
 	@Override
-	public void copy(final DataInputView source, final DataOutputView target) throws IOException {
-		final int numKeys = this.layout.getNumKeys();
-		for (int index = 0; index < numKeys; index++)
-			target.writeInt(source.readInt());
-		final int size = source.readInt();
-		target.writeInt(size);
-		target.write(source, size);
+	public int getLength() {
+		return -1;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.serialization.TypeAccessorsV2#serialize(java.lang.Object,
+	 * eu.stratosphere.core.memory.DataOutputViewV2)
+	 */
+	@Override
+	public void serialize(final SopremoRecord record, final DataOutputView target) throws IOException {
+		record.write(target, this.layout);
 	}
 }

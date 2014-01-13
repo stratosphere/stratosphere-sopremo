@@ -19,19 +19,15 @@ import eu.stratosphere.sopremo.type.IJsonNode;
  * element.
  * <li>Finally, the aggregator is retrieved with {@link Aggregation#getFinalAggregate()}.
  * </ol>
- * 
  */
 public abstract class Aggregation extends AbstractSopremoType implements ISopremoType {
 
 	public abstract void aggregate(IJsonNode element);
 
-	/**
-	 * Creates an {@link AggregationExpression} for this function
-	 * 
-	 * @return the AggregationExpression
-	 */
-	public AggregationExpression asExpression() {
-		return new AggregationExpression(this);
+	@Override
+	public void appendAsString(final Appendable appendable) throws IOException {
+		appendable.append(BuiltinUtil.getNames(this,
+			SopremoEnvironment.getInstance().getEvaluationContext().getNameChooserProvider().getFunctionNameChooser())[0]);
 	}
 
 	//
@@ -43,9 +39,13 @@ public abstract class Aggregation extends AbstractSopremoType implements ISoprem
 	// return new AggregationExpression(this, preprocessing);
 	// }
 
-	@Override
-	public int hashCode() {
-		return 1;
+	/**
+	 * Creates an {@link AggregationExpression} for this function
+	 * 
+	 * @return the AggregationExpression
+	 */
+	public AggregationExpression asExpression() {
+		return new AggregationExpression(this);
 	}
 
 	/*
@@ -70,11 +70,10 @@ public abstract class Aggregation extends AbstractSopremoType implements ISoprem
 
 	public abstract IJsonNode getFinalAggregate();
 
-	public abstract void initialize();
-
 	@Override
-	public void appendAsString(final Appendable appendable) throws IOException {
-		appendable.append(BuiltinUtil.getNames(this,
-			SopremoEnvironment.getInstance().getEvaluationContext().getNameChooserProvider().getFunctionNameChooser())[0]);
+	public int hashCode() {
+		return 1;
 	}
+
+	public abstract void initialize();
 }

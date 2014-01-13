@@ -30,32 +30,48 @@ import eu.stratosphere.sopremo.type.typed.TypedObjectNodeFactory;
 /**
  */
 public class TypedSopremoPlanTest {
-	public enum TestAnnotationTag {
-		PERSON, PROTEIN;
+	@Test
+	public void testAnnotation() {
+		final SopremoTestPlan plan = new SopremoTestPlan(new TestAnnotationOperator());
+
+		plan.getInput(0).
+			addObject("text", "lorum").
+			addObject("text", "ipsum", "annotations", JsonUtil.asArray(this.getExpectedAnnotation(0)));
+		plan.getExpectedOutput(0).
+			addObject("text", "lorum", "annotations", JsonUtil.asArray(this.getExpectedAnnotation(0))).
+			addObject("text", "ipsum", "annotations",
+				JsonUtil.asArray(this.getExpectedAnnotation(0), this.getExpectedAnnotation(1)));
+
+		plan.run();
 	}
 
-	public static interface TestAnnotation extends ITypedObjectNode {
-		public Integer getStart();
-
-		public void setStart(Integer start);
-
-		public Integer getEnd();
-
-		public void setEnd(Integer end);
-
-		public TestAnnotationTag getTag();
-
-		public void setTag(TestAnnotationTag end);
+	protected ObjectNode getExpectedAnnotation(final int num) {
+		return JsonUtil.createObjectNode("start", num * 10, "end", num * 10 + 5, "tag",
+			TestAnnotationTag.values()[num % TestAnnotationTag.values().length].toString());
 	}
 
 	public static interface TestAnnotatedText extends ITypedObjectNode {
-		public String getText();
-
-		public void setText(String text);
-
 		public IArrayNode<TestAnnotation> getAnnotations();
 
+		public String getText();
+
 		public void setAnnotations(IArrayNode<TestAnnotation> annotations);
+
+		public void setText(String text);
+	}
+
+	public static interface TestAnnotation extends ITypedObjectNode {
+		public Integer getEnd();
+
+		public Integer getStart();
+
+		public TestAnnotationTag getTag();
+
+		public void setEnd(Integer end);
+
+		public void setStart(Integer start);
+
+		public void setTag(TestAnnotationTag end);
 	}
 
 	@InputCardinality(1)
@@ -85,23 +101,7 @@ public class TypedSopremoPlanTest {
 		}
 	}
 
-	@Test
-	public void testAnnotation() {
-		final SopremoTestPlan plan = new SopremoTestPlan(new TestAnnotationOperator());
-
-		plan.getInput(0).
-			addObject("text", "lorum").
-			addObject("text", "ipsum", "annotations", JsonUtil.asArray(this.getExpectedAnnotation(0)));
-		plan.getExpectedOutput(0).
-			addObject("text", "lorum", "annotations", JsonUtil.asArray(this.getExpectedAnnotation(0))).
-			addObject("text", "ipsum", "annotations",
-				JsonUtil.asArray(this.getExpectedAnnotation(0), this.getExpectedAnnotation(1)));
-
-		plan.run();
-	}
-
-	protected ObjectNode getExpectedAnnotation(final int num) {
-		return JsonUtil.createObjectNode("start", num * 10, "end", num * 10 + 5, "tag",
-			TestAnnotationTag.values()[num % TestAnnotationTag.values().length].toString());
+	public enum TestAnnotationTag {
+		PERSON, PROTEIN;
 	}
 }

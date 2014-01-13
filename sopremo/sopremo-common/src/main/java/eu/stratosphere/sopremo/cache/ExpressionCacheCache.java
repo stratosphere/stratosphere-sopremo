@@ -31,6 +31,11 @@ public class ExpressionCacheCache<E extends EvaluationExpression> implements ISo
 			};
 		};
 
+	@Override
+	public ExpressionCacheCache<E> clone() {
+		return new ExpressionCacheCache<E>();
+	}
+
 	public ExpressionCache<E> get(final E expression) {
 		final ExpressionCache<E> cache = this.caches.get().get(expression);
 		if (cache != null)
@@ -38,10 +43,5 @@ public class ExpressionCacheCache<E extends EvaluationExpression> implements ISo
 		final ExpressionCache<E> newCache = new ExpressionCache<E>(expression);
 		this.caches.get().put(expression, newCache);
 		return newCache;
-	}
-
-	@Override
-	public ExpressionCacheCache<E> clone() {
-		return new ExpressionCacheCache<E>();
 	}
 }

@@ -60,6 +60,13 @@ public class ComparativeExpression extends BinaryBooleanExpression {
 	}
 
 	@Override
+	public void appendAsString(final Appendable appendable) throws IOException {
+		this.expr1.appendAsString(appendable);
+		appendable.append(' ').append(this.binaryOperator.sign).append(' ');
+		this.expr2.appendAsString(appendable);
+	}
+
+	@Override
 	public boolean equals(final Object obj) {
 		if (!super.equals(obj))
 			return false;
@@ -77,31 +84,6 @@ public class ComparativeExpression extends BinaryBooleanExpression {
 		// // we can ignore 'target' because no new Object is created
 		return BooleanNode.valueOf(this.binaryOperator.evaluate(this.expr1.evaluate(node),
 			this.expr2.evaluate(node)));
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.expressions.ExpressionParent#iterator()
-	 */
-	@Override
-	public ChildIterator iterator() {
-		return new NamedChildIterator("expr1", "expr2") {
-
-			@Override
-			protected void set(final int index, final EvaluationExpression childExpression) {
-				if (index == 0)
-					ComparativeExpression.this.expr1 = childExpression;
-				else
-					ComparativeExpression.this.expr2 = childExpression;
-			}
-
-			@Override
-			protected EvaluationExpression get(final int index) {
-				if (index == 0)
-					return ComparativeExpression.this.expr1;
-				return ComparativeExpression.this.expr2;
-			}
-		};
 	}
 
 	/**
@@ -143,11 +125,29 @@ public class ComparativeExpression extends BinaryBooleanExpression {
 		return result;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.expressions.ExpressionParent#iterator()
+	 */
 	@Override
-	public void appendAsString(final Appendable appendable) throws IOException {
-		this.expr1.appendAsString(appendable);
-		appendable.append(' ').append(this.binaryOperator.sign).append(' ');
-		this.expr2.appendAsString(appendable);
+	public ChildIterator iterator() {
+		return new NamedChildIterator("expr1", "expr2") {
+
+			@Override
+			protected EvaluationExpression get(final int index) {
+				if (index == 0)
+					return ComparativeExpression.this.expr1;
+				return ComparativeExpression.this.expr2;
+			}
+
+			@Override
+			protected void set(final int index, final EvaluationExpression childExpression) {
+				if (index == 0)
+					ComparativeExpression.this.expr1 = childExpression;
+				else
+					ComparativeExpression.this.expr2 = childExpression;
+			}
+		};
 	}
 
 	/**

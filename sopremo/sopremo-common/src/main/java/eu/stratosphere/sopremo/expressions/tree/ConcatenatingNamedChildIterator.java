@@ -38,13 +38,6 @@ public class ConcatenatingNamedChildIterator extends NamedChildIterator {
 			this.startIndexes[index] = this.startIndexes[index - 1] + iterators[index - 1].getSize();
 	}
 
-	private static String[] concatenateNames(final NamedChildIterator[] iterators) {
-		final ObjectList<String> names = new ObjectArrayList<String>();
-		for (final NamedChildIterator namedChildIterator : iterators)
-			names.addElements(names.size(), namedChildIterator.getChildNames());
-		return names.toArray(new String[names.size()]);
-	}
-
 	/*
 	 * (non-Javadoc)
 	 * @see eu.stratosphere.sopremo.expressions.tree.NamedChildIterator#hasNext()
@@ -64,13 +57,6 @@ public class ConcatenatingNamedChildIterator extends NamedChildIterator {
 		return this.iterators[iteratorIndex].get(index - this.startIndexes[iteratorIndex]);
 	}
 
-	private int getIteratorIndex(final int index) {
-		int iteratorIndex = Arrays.binarySearch(this.startIndexes, index);
-		if (iteratorIndex < 0)
-			iteratorIndex = -iteratorIndex - 2;
-		return iteratorIndex;
-	}
-
 	/*
 	 * (non-Javadoc)
 	 * @see eu.stratosphere.sopremo.expressions.tree.NamedChildIterator#set(int,
@@ -80,6 +66,20 @@ public class ConcatenatingNamedChildIterator extends NamedChildIterator {
 	protected void set(final int index, final EvaluationExpression childExpression) {
 		final int iteratorIndex = this.getIteratorIndex(index);
 		this.iterators[iteratorIndex].set(index - this.startIndexes[iteratorIndex], childExpression);
+	}
+
+	private int getIteratorIndex(final int index) {
+		int iteratorIndex = Arrays.binarySearch(this.startIndexes, index);
+		if (iteratorIndex < 0)
+			iteratorIndex = -iteratorIndex - 2;
+		return iteratorIndex;
+	}
+
+	private static String[] concatenateNames(final NamedChildIterator[] iterators) {
+		final ObjectList<String> names = new ObjectArrayList<String>();
+		for (final NamedChildIterator namedChildIterator : iterators)
+			names.addElements(names.size(), namedChildIterator.getChildNames());
+		return names.toArray(new String[names.size()]);
 	}
 
 }

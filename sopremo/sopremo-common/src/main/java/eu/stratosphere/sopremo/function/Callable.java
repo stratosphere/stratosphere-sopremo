@@ -38,6 +38,19 @@ public abstract class Callable<Result, InputType> extends AbstractSopremoType im
 
 	public abstract Result call(InputType params);
 
+	@Override
+	public boolean equals(final Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (this.getClass() != obj.getClass())
+			return false;
+		final Callable<?, ?> other = (Callable<?, ?>) obj;
+		return this.maximumNumberOfParameters == other.maximumNumberOfParameters &&
+			this.minimumNumberOfParameters == other.minimumNumberOfParameters;
+	}
+
 	/**
 	 * Returns the maximumNumberOfParameters.
 	 * 
@@ -63,18 +76,5 @@ public abstract class Callable<Result, InputType> extends AbstractSopremoType im
 		result = prime * result + this.maximumNumberOfParameters;
 		result = prime * result + this.minimumNumberOfParameters;
 		return result;
-	}
-
-	@Override
-	public boolean equals(final Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (this.getClass() != obj.getClass())
-			return false;
-		final Callable<?, ?> other = (Callable<?, ?>) obj;
-		return this.maximumNumberOfParameters == other.maximumNumberOfParameters &&
-			this.minimumNumberOfParameters == other.minimumNumberOfParameters;
 	}
 }

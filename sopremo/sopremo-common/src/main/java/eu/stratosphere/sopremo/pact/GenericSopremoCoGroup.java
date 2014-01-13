@@ -37,46 +37,6 @@ public abstract class GenericSopremoCoGroup<LeftElem extends IJsonNode, RightEle
 
 	private final StreamNode<RightElem> rightArray = new StreamNode<RightElem>();
 
-	/**
-	 * This method must be overridden by CoGoup UDFs that want to make use of the combining feature
-	 * on their first input. In addition, the extending class must be annotated as CombinableFirst.
-	 * <p>
-	 * The use of the combiner is typically a pre-reduction of the data.
-	 * 
-	 * @param records
-	 *        The records to be combined.
-	 * @param out
-	 *        The collector to write the result to.
-	 * @throws Exception
-	 *         Implementations may forward exceptions, which are caught by the runtime. When the
-	 *         runtime catches an exception, it aborts the combine task and lets the fail-over logic
-	 *         decide whether to retry the combiner execution.
-	 */
-	@Override
-	public void combineFirst(final Iterator<SopremoRecord> records, final Collector<SopremoRecord> out) {
-		throw new UnsupportedOperationException();
-	}
-
-	/**
-	 * This method must be overridden by CoGoup UDFs that want to make use of the combining feature
-	 * on their second input. In addition, the extending class must be annotated as CombinableSecond.
-	 * <p>
-	 * The use of the combiner is typically a pre-reduction of the data.
-	 * 
-	 * @param records
-	 *        The records to be combined.
-	 * @param out
-	 *        The collector to write the result to.
-	 * @throws Exception
-	 *         Implementations may forward exceptions, which are caught by the runtime. When the
-	 *         runtime catches an exception, it aborts the combine task and lets the fail-over logic
-	 *         decide whether to retry the combiner execution.
-	 */
-	@Override
-	public void combineSecond(final Iterator<SopremoRecord> records, final Collector<SopremoRecord> out) {
-		throw new UnsupportedOperationException();
-	}
-
 	/*
 	 * (non-Javadoc)
 	 * @see eu.stratosphere.api.record.functions.CoGroupFunction#coGroup(java.util.Iterator, java.util.Iterator,
@@ -106,6 +66,43 @@ public abstract class GenericSopremoCoGroup<LeftElem extends IJsonNode, RightEle
 		}
 	}
 
+	/**
+	 * This method must be overridden by CoGoup UDFs that want to make use of the combining feature
+	 * on their first input. In addition, the extending class must be annotated as CombinableFirst.
+	 * <p>
+	 * The use of the combiner is typically a pre-reduction of the data.
+	 * 
+	 * @param records
+	 *        The records to be combined.
+	 * @param out
+	 *        The collector to write the result to.
+	 */
+	@Override
+	public void combineFirst(final Iterator<SopremoRecord> records, final Collector<SopremoRecord> out) {
+		throw new UnsupportedOperationException();
+	}
+
+	/**
+	 * This method must be overridden by CoGoup UDFs that want to make use of the combining feature
+	 * on their second input. In addition, the extending class must be annotated as CombinableSecond.
+	 * <p>
+	 * The use of the combiner is typically a pre-reduction of the data.
+	 * 
+	 * @param records
+	 *        The records to be combined.
+	 * @param out
+	 *        The collector to write the result to.
+	 */
+	@Override
+	public void combineSecond(final Iterator<SopremoRecord> records, final Collector<SopremoRecord> out) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public final EvaluationContext getContext() {
+		return this.context;
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * @see eu.stratosphere.api.record.functions.Function#open(eu.stratosphere.configuration.Configuration)
@@ -131,17 +128,12 @@ public abstract class GenericSopremoCoGroup<LeftElem extends IJsonNode, RightEle
 	 * This method must be implemented to provide a user implementation of a CoGroup.
 	 * 
 	 * @param values1
-	 *        an {@link OneTimeArrayNode} that holds all elements of the first input which were paired with the key
+	 *        an {@link IStreamNode} that holds all elements of the first input which were paired with the key
 	 * @param values2
-	 *        an {@link OneTimeArrayNode} that holds all elements of the second input which were paired with the key
+	 *        an {@link IStreamNode} that holds all elements of the second input which were paired with the key
 	 * @param out
 	 *        a collector that collects all output pairs
 	 */
 	protected abstract void coGroup(IStreamNode<LeftElem> values1, IStreamNode<RightElem> values2,
 			JsonCollector<Out> out);
-
-	@Override
-	public final EvaluationContext getContext() {
-		return this.context;
-	}
 }

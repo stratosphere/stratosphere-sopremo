@@ -31,6 +31,36 @@ public class ConcatenatingChildIterator implements ChildIterator {
 
 	/*
 	 * (non-Javadoc)
+	 * @see java.util.ListIterator#add(java.lang.Object)
+	 */
+	@Override
+	public void add(final EvaluationExpression e) {
+		this.checkValidState();
+		this.iterators[this.currentIterator].add(e);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.expressions.tree.ChildIterator#canChildrenBeRemoved()
+	 */
+	@Override
+	public boolean canChildBeRemoved() {
+		this.checkValidState();
+		return this.iterators[this.currentIterator].canChildBeRemoved();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.expressions.tree.ChildIterator#getChildName()
+	 */
+	@Override
+	public String getChildName() {
+		this.checkValidState();
+		return this.iterators[this.currentIterator].getChildName();
+	}
+
+	/*
+	 * (non-Javadoc)
 	 * @see java.util.ListIterator#hasNext()
 	 */
 	@Override
@@ -41,6 +71,20 @@ public class ConcatenatingChildIterator implements ChildIterator {
 			this.currentIterator++;
 		}
 		return false;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see java.util.ListIterator#hasPrevious()
+	 */
+	@Override
+	public boolean hasPrevious() {
+		while (this.currentIterator > 0) {
+			if (this.iterators[this.currentIterator].hasPrevious())
+				return true;
+			this.currentIterator--;
+		}
+		return this.iterators[this.currentIterator].hasPrevious();
 	}
 
 	/*
@@ -61,16 +105,11 @@ public class ConcatenatingChildIterator implements ChildIterator {
 
 	/*
 	 * (non-Javadoc)
-	 * @see java.util.ListIterator#hasPrevious()
+	 * @see java.util.ListIterator#nextIndex()
 	 */
 	@Override
-	public boolean hasPrevious() {
-		while (this.currentIterator > 0) {
-			if (this.iterators[this.currentIterator].hasPrevious())
-				return true;
-			this.currentIterator--;
-		}
-		return this.iterators[this.currentIterator].hasPrevious();
+	public int nextIndex() {
+		return this.index + 1;
 	}
 
 	/*
@@ -91,15 +130,6 @@ public class ConcatenatingChildIterator implements ChildIterator {
 			return this.iterators[this.currentIterator].previous();
 		}
 		throw new NoSuchElementException();
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see java.util.ListIterator#nextIndex()
-	 */
-	@Override
-	public int nextIndex() {
-		return this.index + 1;
 	}
 
 	/*
@@ -129,36 +159,6 @@ public class ConcatenatingChildIterator implements ChildIterator {
 	public void set(final EvaluationExpression e) {
 		this.checkValidState();
 		this.iterators[this.currentIterator].set(e);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see java.util.ListIterator#add(java.lang.Object)
-	 */
-	@Override
-	public void add(final EvaluationExpression e) {
-		this.checkValidState();
-		this.iterators[this.currentIterator].add(e);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.expressions.tree.ChildIterator#canChildrenBeRemoved()
-	 */
-	@Override
-	public boolean canChildBeRemoved() {
-		this.checkValidState();
-		return this.iterators[this.currentIterator].canChildBeRemoved();
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.expressions.tree.ChildIterator#getChildName()
-	 */
-	@Override
-	public String getChildName() {
-		this.checkValidState();
-		return this.iterators[this.currentIterator].getChildName();
 	}
 
 	/**

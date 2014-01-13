@@ -17,22 +17,6 @@ import eu.stratosphere.sopremo.type.IntNode;
 
 public class ArrayCreationTest extends EvaluableExpressionTest<ArrayCreation> {
 
-	@Override
-	protected ArrayCreation createDefaultInstance(final int index) {
-		return new ArrayCreation(new ConstantExpression(IntNode.valueOf(index)));
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.expressions.OrExpressionTest#initVerifier(nl.jqno.equalsverifier.EqualsVerifier)
-	 */
-	@Override
-	protected void initVerifier(final EqualsVerifier<ArrayCreation> equalVerifier) {
-		super.initVerifier(equalVerifier);
-		equalVerifier.withPrefabValues(List.class, new ArrayList<Object>(), new ArrayList<EvaluationExpression>(
-			Collections.singleton(EvaluationExpression.VALUE)));
-	}
-
 	@Test
 	public void shouldCreateArrayWithListAsParam() {
 		final List<EvaluationExpression> list = new ArrayList<EvaluationExpression>();
@@ -53,5 +37,21 @@ public class ArrayCreationTest extends EvaluableExpressionTest<ArrayCreation> {
 		Assert.assertEquals(new ArrayNode<IJsonNode>(IntNode.valueOf(42)), result1);
 		Assert.assertSame(result1, result2);
 		Assert.assertEquals(new ArrayNode<IJsonNode>(IntNode.valueOf(42)), result2);
+	}
+
+	@Override
+	protected ArrayCreation createDefaultInstance(final int index) {
+		return new ArrayCreation(new ConstantExpression(IntNode.valueOf(index)));
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.expressions.OrExpressionTest#initVerifier(nl.jqno.equalsverifier.EqualsVerifier)
+	 */
+	@Override
+	protected void initVerifier(final EqualsVerifier<ArrayCreation> equalVerifier) {
+		super.initVerifier(equalVerifier);
+		equalVerifier.withPrefabValues(List.class, new ArrayList<Object>(), new ArrayList<EvaluationExpression>(
+			Collections.singleton(EvaluationExpression.VALUE)));
 	}
 }

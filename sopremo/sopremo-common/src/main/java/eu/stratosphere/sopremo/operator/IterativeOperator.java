@@ -25,43 +25,29 @@ import eu.stratosphere.sopremo.expressions.EvaluationExpression;
  */
 @OutputCardinality(1)
 public abstract class IterativeOperator<Self extends IterativeOperator<Self>> extends CompositeOperator<Self> {
-	public abstract void addImplementation(IterativeSopremoModule iterativeSopremoModule);
-
 	private List<? extends EvaluationExpression> solutionSetKeyExpressions =
 		new ArrayList<EvaluationExpression>();
-	
+
 	private int maximumNumberOfIterations = 1;
 
-	/**
-	 * Sets the solutionSetKeyExpressions to the specified value.
-	 * 
-	 * @param solutionSetKeyExpressions
-	 *        the solutionSetKeyExpressions to set
+	public abstract void addImplementation(IterativeSopremoModule iterativeSopremoModule);
+
+	/*
+	 * (non-Javadoc)
+	 * @see
+	 * eu.stratosphere.sopremo.operator.CompositeOperator#addImplementation(eu.stratosphere.sopremo.operator.SopremoModule
+	 * , eu.stratosphere.sopremo.EvaluationContext)
 	 */
-	protected void setSolutionSetKeyExpressions(List<? extends EvaluationExpression> solutionSetKeyExpressions) {
-		if (solutionSetKeyExpressions == null)
-			throw new NullPointerException("solutionSetKeyExpressions must not be null");
-
-		this.solutionSetKeyExpressions = solutionSetKeyExpressions;
+	@Override
+	public void addImplementation(final SopremoModule module) {
+		final IterativeSopremoModule iterativeModule =
+			new IterativeSopremoModule(module.getNumInputs(), module.getNumOutputs());
+		this.addImplementation(iterativeModule);
+		iterativeModule.setSolutionSetKeyExpressions(this.solutionSetKeyExpressions);
+		iterativeModule.setMaxNumberOfIterations(this.maximumNumberOfIterations);
+		iterativeModule.embedInto(module);
 	}
 
-	/**
-	 * Sets the solutionSetKeyExpressions to the specified value.
-	 * 
-	 * @param solutionSetKeyExpressions
-	 *        the solutionSetKeyExpressions to set
-	 */
-	protected void setSolutionSetKeyExpressions(EvaluationExpression... solutionSetKeyExpressions) {
-		if (solutionSetKeyExpressions == null)
-			throw new NullPointerException("solutionSetKeyExpressions must not be null");
-
-		this.solutionSetKeyExpressions = Lists.newArrayList(solutionSetKeyExpressions);
-	}
-
-	protected List<? extends EvaluationExpression> getSolutionSetKeyExpressions() {
-		return this.solutionSetKeyExpressions;
-	}
-	
 	/**
 	 * Returns the maximumNumberOfIterations.
 	 * 
@@ -70,32 +56,47 @@ public abstract class IterativeOperator<Self extends IterativeOperator<Self>> ex
 	public int getMaximumNumberOfIterations() {
 		return this.maximumNumberOfIterations;
 	}
-	
+
 	/**
 	 * Sets the maximumNumberOfIterations to the specified value.
-	 *
-	 * @param maximumNumberOfIterations the maximumNumberOfIterations to set
+	 * 
+	 * @param maximumNumberOfIterations
+	 *        the maximumNumberOfIterations to set
 	 */
-	public void setMaximumNumberOfIterations(int maximumNumberOfIterations) {
+	public void setMaximumNumberOfIterations(final int maximumNumberOfIterations) {
 		if (maximumNumberOfIterations < 1)
 			throw new NullPointerException("maximumNumberOfIterations must be > 0");
 
 		this.maximumNumberOfIterations = maximumNumberOfIterations;
 	}
-	
-	/*
-	 * (non-Javadoc)
-	 * @see
-	 * eu.stratosphere.sopremo.operator.CompositeOperator#addImplementation(eu.stratosphere.sopremo.operator.SopremoModule
-	 * , eu.stratosphere.sopremo.EvaluationContext)
+
+	protected List<? extends EvaluationExpression> getSolutionSetKeyExpressions() {
+		return this.solutionSetKeyExpressions;
+	}
+
+	/**
+	 * Sets the solutionSetKeyExpressions to the specified value.
+	 * 
+	 * @param solutionSetKeyExpressions
+	 *        the solutionSetKeyExpressions to set
 	 */
-	@Override
-	public void addImplementation(SopremoModule module) {
-		final IterativeSopremoModule iterativeModule =
-			new IterativeSopremoModule(module.getNumInputs(), module.getNumOutputs());
-		addImplementation(iterativeModule);
-		iterativeModule.setSolutionSetKeyExpressions(this.solutionSetKeyExpressions);
-		iterativeModule.setMaxNumberOfIterations(this.maximumNumberOfIterations);
-		iterativeModule.embedInto(module);
+	protected void setSolutionSetKeyExpressions(final EvaluationExpression... solutionSetKeyExpressions) {
+		if (solutionSetKeyExpressions == null)
+			throw new NullPointerException("solutionSetKeyExpressions must not be null");
+
+		this.solutionSetKeyExpressions = Lists.newArrayList(solutionSetKeyExpressions);
+	}
+
+	/**
+	 * Sets the solutionSetKeyExpressions to the specified value.
+	 * 
+	 * @param solutionSetKeyExpressions
+	 *        the solutionSetKeyExpressions to set
+	 */
+	protected void setSolutionSetKeyExpressions(final List<? extends EvaluationExpression> solutionSetKeyExpressions) {
+		if (solutionSetKeyExpressions == null)
+			throw new NullPointerException("solutionSetKeyExpressions must not be null");
+
+		this.solutionSetKeyExpressions = solutionSetKeyExpressions;
 	}
 }

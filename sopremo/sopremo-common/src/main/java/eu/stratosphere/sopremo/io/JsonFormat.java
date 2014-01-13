@@ -38,6 +38,15 @@ import eu.stratosphere.sopremo.type.IJsonNode;
 @Name(noun = "json")
 public class JsonFormat extends SopremoFormat {
 
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.io.SopremoFormat#getPreferredFilenameExtensions()
+	 */
+	@Override
+	protected String[] getPreferredFilenameExtensions() {
+		return new String[] { "json" };
+	}
+
 	public static class JsonInputFormat extends SopremoFileInputFormat {
 
 		/**
@@ -51,43 +60,6 @@ public class JsonFormat extends SopremoFormat {
 		public void close() throws IOException {
 			super.close();
 			this.parser.close();
-		}
-
-		/*
-		 * (non-Javadoc)
-		 * @see
-		 * eu.stratosphere.sopremo.io.SopremoFormat.SopremoFileInputFormat#open(eu.stratosphere.core.fs.FSDataInputStream
-		 * , eu.stratosphere.core.fs.FileInputSplit)
-		 */
-		@Override
-		protected void open(final FSDataInputStream stream, final FileInputSplit split) {
-			// we currently have no method to handle multiple splits
-			if (split.getStart() != 0) {
-				this.endReached();
-				return;
-			}
-
-			try {
-				this.parser = new JsonParser(new InputStreamReader(stream, this.getEncoding()));
-				this.parser.setWrappingArraySkipping(true);
-
-				if (this.parser.checkEnd())
-					this.endReached();
-			} catch (final UnsupportedEncodingException e) {
-				// cannot happen as encoding is validated in SopremoFormat
-			}
-		}
-
-		/*
-		 * (non-Javadoc)
-		 * @see eu.stratosphere.sopremo.pact.SopremoInputFormat#nextValue()
-		 */
-		@Override
-		public IJsonNode nextValue() throws IOException {
-			final IJsonNode value = this.parser.readValueAsTree();
-			if (this.parser.checkEnd())
-				this.endReached();
-			return value;
 		}
 
 		/*
@@ -120,10 +92,6 @@ public class JsonFormat extends SopremoFormat {
 				this.getHosts(blocks)) };
 		}
 
-		protected String[] getHosts(final BlockLocation[] blocks) throws IOException {
-			return blocks.length > 0 ? blocks[0].getHosts() : new String[0];
-		}
-
 		/*
 		 * (non-Javadoc)
 		 * @see eu.stratosphere.api.io .InputFormat#getStatistics()
@@ -132,11 +100,51 @@ public class JsonFormat extends SopremoFormat {
 		public FileBaseStatistics getStatistics(final BaseStatistics cachedStatistics) {
 			return null;
 		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see eu.stratosphere.sopremo.pact.SopremoInputFormat#nextValue()
+		 */
+		@Override
+		public IJsonNode nextValue() throws IOException {
+			final IJsonNode value = this.parser.readValueAsTree();
+			if (this.parser.checkEnd())
+				this.endReached();
+			return value;
+		}
+
+		protected String[] getHosts(final BlockLocation[] blocks) throws IOException {
+			return blocks.length > 0 ? blocks[0].getHosts() : new String[0];
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see
+		 * eu.stratosphere.sopremo.io.SopremoFormat.SopremoFileInputFormat#open(eu.stratosphere.core.fs.FSDataInputStream
+		 * , eu.stratosphere.core.fs.FileInputSplit)
+		 */
+		@Override
+		protected void open(final FSDataInputStream stream, final FileInputSplit split) {
+			// we currently have no method to handle multiple splits
+			if (split.getStart() != 0) {
+				this.endReached();
+				return;
+			}
+
+			try {
+				this.parser = new JsonParser(new InputStreamReader(stream, this.getEncoding()));
+				this.parser.setWrappingArraySkipping(true);
+
+				if (this.parser.checkEnd())
+					this.endReached();
+			} catch (final UnsupportedEncodingException e) {
+				// cannot happen as encoding is validated in SopremoFormat
+			}
+		}
 	}
 
 	/**
 	 * Writes json files with {@link JsonGenerator}.
-	 * 
 	 */
 	public static class JsonOutputFormat extends SopremoFileOutputFormat {
 
@@ -156,17 +164,6 @@ public class JsonFormat extends SopremoFormat {
 
 		/*
 		 * (non-Javadoc)
-		 * @see eu.stratosphere.sopremo.io.SopremoFormat.SopremoFileOutputFormat#open(eu.stratosphere.core.fs.
-		 * FSDataOutputStream, int)
-		 */
-		@Override
-		protected void open(final FSDataOutputStream stream, final int taskNumber) throws IOException {
-			this.generator = new JsonGenerator(new OutputStreamWriter(stream, this.getEncoding()));
-			this.generator.writeStartArray();
-		}
-
-		/*
-		 * (non-Javadoc)
 		 * @see
 		 * eu.stratosphere.sopremo.io.SopremoFormat.SopremoFileOutputFormat#writeValue(eu.stratosphere.sopremo.type.
 		 * IJsonNode)
@@ -175,14 +172,16 @@ public class JsonFormat extends SopremoFormat {
 		public void writeValue(final IJsonNode value) throws IOException {
 			this.generator.writeTree(value);
 		}
-	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.io.SopremoFormat#getPreferredFilenameExtensions()
-	 */
-	@Override
-	protected String[] getPreferredFilenameExtensions() {
-		return new String[] { "json" };
+		/*
+		 * (non-Javadoc)
+		 * @see eu.stratosphere.sopremo.io.SopremoFormat.SopremoFileOutputFormat#open(eu.stratosphere.core.fs.
+		 * FSDataOutputStream, int)
+		 */
+		@Override
+		protected void open(final FSDataOutputStream stream, final int taskNumber) throws IOException {
+			this.generator = new JsonGenerator(new OutputStreamWriter(stream, this.getEncoding()));
+			this.generator.writeStartArray();
+		}
 	}
 }

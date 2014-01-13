@@ -13,12 +13,12 @@ public class JsonParseException extends IOException {
 		super();
 	}
 
-	public JsonParseException(final String message, final Throwable cause) {
-		super(message, cause);
-	}
-
 	public JsonParseException(final String message) {
 		super(message);
+	}
+
+	public JsonParseException(final String message, final Throwable cause) {
+		super(message, cause);
 	}
 
 	public JsonParseException(final Throwable cause) {

@@ -22,26 +22,21 @@ public class JsonGeneratorTest {
 
 	private static ArrayNode<IJsonNode> arr;
 
-	@BeforeClass
-	public static void setUpClass() {
-		obj = new ObjectNode();
-		final ArrayNode<IJsonNode> friends = new ArrayNode<IJsonNode>();
-
-		friends.add(new ObjectNode().put("name", TextNode.valueOf("testfriend 1")).put("age", IntNode.valueOf(20))
-			.put("male", BooleanNode.TRUE));
-		friends.add(new ObjectNode().put("name", TextNode.valueOf("testfriend 2")).put("age", IntNode.valueOf(30))
-			.put("male", BooleanNode.FALSE));
-		friends.add(new ObjectNode().put("name", TextNode.valueOf("testfriend \" 2")).put("age", IntNode.valueOf(40))
-			.put("male", NullNode.getInstance()));
-		friends.add(NullNode.getInstance());
-
-		obj.put("name", TextNode.valueOf("Person 1")).put("age", IntNode.valueOf(25)).put("male", BooleanNode.TRUE)
-			.put("friends", friends);
-
-		arr = new ArrayNode<IJsonNode>();
-		arr.add(obj);
-		arr.add(NullNode.getInstance());
-		arr.add(obj);
+	@Test
+	public void shouldGenerateGivenFile() {
+		try {
+			final JsonParser parser = new JsonParser(
+				JsonGeneratorTest.class.getResource("test.json"));
+			final File file = File.createTempFile("test", "json");
+			final JsonGenerator gen = new JsonGenerator(file);
+			gen.writeStartArray();
+			while (!parser.checkEnd())
+				gen.writeTree(parser.readValueAsTree());
+			gen.writeEndArray();
+			gen.close();
+		} catch (final IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	@Test
@@ -62,23 +57,6 @@ public class JsonGeneratorTest {
 	}
 
 	@Test
-	public void shouldGenerateGivenFile() {
-		try {
-			final JsonParser parser = new JsonParser(
-				JsonGeneratorTest.class.getResource("test.json"));
-			final File file = File.createTempFile("test", "json");
-			final JsonGenerator gen = new JsonGenerator(file);
-			gen.writeStartArray();
-			while (!parser.checkEnd())
-				gen.writeTree(parser.readValueAsTree());
-			gen.writeEndArray();
-			gen.close();
-		} catch (final IOException e) {
-			e.printStackTrace();
-		}
-	}
-
-	@Test
 	public void testObjectNodeSerialization() {
 		try {
 			final File file = File.createTempFile("test", "json");
@@ -90,5 +68,27 @@ public class JsonGeneratorTest {
 		} catch (final IOException e) {
 			e.printStackTrace();
 		}
+	}
+
+	@BeforeClass
+	public static void setUpClass() {
+		obj = new ObjectNode();
+		final ArrayNode<IJsonNode> friends = new ArrayNode<IJsonNode>();
+
+		friends.add(new ObjectNode().put("name", TextNode.valueOf("testfriend 1")).put("age", IntNode.valueOf(20))
+			.put("male", BooleanNode.TRUE));
+		friends.add(new ObjectNode().put("name", TextNode.valueOf("testfriend 2")).put("age", IntNode.valueOf(30))
+			.put("male", BooleanNode.FALSE));
+		friends.add(new ObjectNode().put("name", TextNode.valueOf("testfriend \" 2")).put("age", IntNode.valueOf(40))
+			.put("male", NullNode.getInstance()));
+		friends.add(NullNode.getInstance());
+
+		obj.put("name", TextNode.valueOf("Person 1")).put("age", IntNode.valueOf(25)).put("male", BooleanNode.TRUE)
+			.put("friends", friends);
+
+		arr = new ArrayNode<IJsonNode>();
+		arr.add(obj);
+		arr.add(NullNode.getInstance());
+		arr.add(obj);
 	}
 }

@@ -15,7 +15,6 @@ import eu.stratosphere.sopremo.serialization.SopremoRecordLayout;
 
 /**
  * Unifies the input json streams in a bag semantic.
- * 
  */
 // efficient implementation using pact union all mechanism
 @Name(verb = "union all")

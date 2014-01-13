@@ -27,11 +27,19 @@ import eu.stratosphere.sopremo.type.IJsonNode;
 
 /**
  * Creates an array of the given expressions.
- * 
  */
 @OptimizerHints(scope = Scope.ANY)
 public class ArrayCreation extends EvaluationExpression {
 	private final List<EvaluationExpression> elements;
+
+	private final IArrayNode<IJsonNode> result = new ArrayNode<IJsonNode>();
+
+	/**
+	 * Initializes ArrayCreation.
+	 */
+	public ArrayCreation() {
+		this.elements = new ArrayList<EvaluationExpression>();
+	}
 
 	/**
 	 * Initializes ArrayCreation to create an array of the given expressions.
@@ -53,24 +61,16 @@ public class ArrayCreation extends EvaluationExpression {
 		this.elements = new ArrayList<EvaluationExpression>(elements);
 	}
 
-	/**
-	 * Initializes ArrayCreation.
-	 */
-	public ArrayCreation() {
-		this.elements = new ArrayList<EvaluationExpression>();
-	}
-
 	public ArrayCreation add(final EvaluationExpression expression) {
 		this.elements.add(expression);
 		return this;
 	}
 
-	public int size() {
-		return this.elements.size();
-	}
-
-	public EvaluationExpression get(final int index) {
-		return this.elements.get(index);
+	@Override
+	public void appendAsString(final Appendable appendable) throws IOException {
+		appendable.append('[');
+		this.append(appendable, this.elements, ", ");
+		appendable.append(']');
 	}
 
 	@Override
@@ -81,17 +81,6 @@ public class ArrayCreation extends EvaluationExpression {
 		return this.elements.equals(other.elements);
 	}
 
-	private final IArrayNode<IJsonNode> result = new ArrayNode<IJsonNode>();
-
-	/**
-	 * Returns the elements.
-	 * 
-	 * @return the elements
-	 */
-	public List<EvaluationExpression> getElements() {
-		return this.elements;
-	}
-
 	@Override
 	public IJsonNode evaluate(final IJsonNode node) {
 		this.result.clear();
@@ -100,6 +89,19 @@ public class ArrayCreation extends EvaluationExpression {
 			this.result.add(this.elements.get(index).evaluate(node));
 
 		return this.result;
+	}
+
+	public EvaluationExpression get(final int index) {
+		return this.elements.get(index);
+	}
+
+	/**
+	 * Returns the elements.
+	 * 
+	 * @return the elements
+	 */
+	public List<EvaluationExpression> getElements() {
+		return this.elements;
 	}
 
 	@Override
@@ -116,10 +118,7 @@ public class ArrayCreation extends EvaluationExpression {
 		return new ListChildIterator(this.elements.listIterator());
 	}
 
-	@Override
-	public void appendAsString(final Appendable appendable) throws IOException {
-		appendable.append('[');
-		this.append(appendable, this.elements, ", ");
-		appendable.append(']');
+	public int size() {
+		return this.elements.size();
 	}
 }

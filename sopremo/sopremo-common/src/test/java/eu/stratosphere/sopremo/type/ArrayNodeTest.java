@@ -16,16 +16,12 @@ public class ArrayNodeTest extends ArrayNodeBaseTest<ArrayNode<IJsonNode>> {
 			this.node.add(i, IntNode.valueOf(i));
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.EqualVerifyTest#createDefaultInstance(int)
-	 */
-	@Override
-	protected ArrayNode<IJsonNode> createDefaultInstance(int index) {
-		final ArrayNode<IJsonNode> node = new ArrayNode<IJsonNode>();
-		while (index-- > 0)
-			node.add(new IntNode(index));
-		return node;
+	@Test
+	public void shouldCreateNewArrayNodeFromIterator() {
+		final Iterator<IJsonNode> it = this.node.iterator();
+		final ArrayNode<IJsonNode> newArray = ArrayNode.valueOf(it);
+
+		Assert.assertEquals(this.node, newArray);
 	}
 
 	@Test
@@ -40,11 +36,15 @@ public class ArrayNodeTest extends ArrayNodeBaseTest<ArrayNode<IJsonNode>> {
 		Assert.assertEquals(result, this.node.subArray(startIndex, startIndex + numberOfNodesInSubarray));
 	}
 
-	@Test
-	public void shouldCreateNewArrayNodeFromIterator() {
-		final Iterator<IJsonNode> it = this.node.iterator();
-		final ArrayNode<IJsonNode> newArray = ArrayNode.valueOf(it);
-
-		Assert.assertEquals(this.node, newArray);
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.EqualVerifyTest#createDefaultInstance(int)
+	 */
+	@Override
+	protected ArrayNode<IJsonNode> createDefaultInstance(int index) {
+		final ArrayNode<IJsonNode> node = new ArrayNode<IJsonNode>();
+		while (index-- > 0)
+			node.add(new IntNode(index));
+		return node;
 	}
 }

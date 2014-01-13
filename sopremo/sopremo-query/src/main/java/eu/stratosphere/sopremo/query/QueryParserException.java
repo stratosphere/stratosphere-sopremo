@@ -14,15 +14,21 @@ public class QueryParserException extends RuntimeException {
 
 	private Token invalidToken;
 
-	/**
-	 * Initializes SimpleException.
-	 */
 	public QueryParserException() {
 		super();
 	}
 
 	/**
-	 * Initializes SimpleException.
+	 * Initializes QueryParserException.
+	 * 
+	 * @param message
+	 */
+	public QueryParserException(final String message) {
+		super(message);
+	}
+
+	/**
+	 * Initializes QueryParserException.
 	 * 
 	 * @param message
 	 * @param cause
@@ -37,46 +43,32 @@ public class QueryParserException extends RuntimeException {
 		}
 	}
 
-	/**
-	 * Initializes SimpleException.
-	 * 
-	 * @param message
-	 */
-	public QueryParserException(final String message) {
-		super(message);
+	public int getCharIndex() {
+		return this.charIndex;
 	}
 
-	/**
-	 * Initializes SimpleException.
-	 * 
-	 * @param cause
-	 */
-	public QueryParserException(final String message, final Token invalidToken) {
-		super(message);
-
-		this.invalidToken = invalidToken;
-		this.line = invalidToken.getLine();
-		this.charIndex = invalidToken.getCharPositionInLine();
+	public Token getInvalidToken() {
+		return this.invalidToken;
 	}
 
 	public int getLine() {
 		return this.line;
 	}
 
-	public void setLine(final int line) {
-		this.line = line;
+	@Override
+	public String getMessage() {
+		if (this.getInvalidToken() == null)
+			return super.getMessage();
+		return String.format("%s: %s @ (%d, %d)", super.getMessage(), this.getInvalidToken().getText(), this.getLine(),
+			this.getCharIndex());
 	}
 
-	public int getCharIndex() {
-		return this.charIndex;
+	public String getRawMessage() {
+		return super.getMessage();
 	}
 
 	public void setCharIndex(final int charIndex) {
 		this.charIndex = charIndex;
-	}
-
-	public Token getInvalidToken() {
-		return this.invalidToken;
 	}
 
 	public void setInvalidToken(final Token token) {
@@ -86,15 +78,7 @@ public class QueryParserException extends RuntimeException {
 		this.invalidToken = token;
 	}
 
-	public String getRawMessage() {
-		return super.getMessage();
-	}
-
-	@Override
-	public String getMessage() {
-		if (this.getInvalidToken() == null)
-			return super.getMessage();
-		return String.format("%s: %s @ (%d, %d)", super.getMessage(), this.getInvalidToken().getText(), this.getLine(),
-			this.getCharIndex());
+	public void setLine(final int line) {
+		this.line = line;
 	}
 }

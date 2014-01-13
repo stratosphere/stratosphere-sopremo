@@ -26,12 +26,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.minlog.Log;
 
-
 /**
  * The network thread is responsible for (reliably) transmitting a sequence of datagram packets to a receiver.
  * <p>
  * This class is thread-safe.
- * 
  */
 final class NetworkThread extends Thread {
 
@@ -49,20 +47,6 @@ final class NetworkThread extends Thread {
 	 * The maximum number of outstanding (i.e. unacknowledged) packets.
 	 */
 	private static final int MAXIMUM_NUMBER_OF_OUTSTANDING_PACKETS = 100;
-
-	/**
-	 * Auxiliary class to store the last acknowledged packet of an outstanding transmission.
-	 * <p>
-	 * This class is not thread-safe.
-	 * 
-	 */
-	private static final class OutstandingTransmission {
-
-		/**
-		 * The last acknowledged packet of an outstanding transmission.
-		 */
-		private int lastAckedPacket = -1;
-	}
 
 	/**
 	 * Reference to the RPC service.
@@ -249,16 +233,15 @@ final class NetworkThread extends Thread {
 	}
 
 	/**
-	 * Shuts down the network thread.
-	 * 
-	 * @throws InterruptedException
-	 *         thrown if the calling thread is interrupted while waiting for the network thread to shut down
+	 * Cleans up stale state information as a result of packet loss.
 	 */
-	void shutdown() throws InterruptedException {
-		this.shutdownRequested = true;
-		this.socket.close();
-		interrupted();
-		this.join();
+	void cleanUpStaleState() {
+
+		final long now = System.currentTimeMillis();
+		final Iterator<MultiPacketInputStream> it = this.incompleteInputStreams.values().iterator();
+		while (it.hasNext())
+			if (it.next().getCreationTime() + RPCService.CLEANUP_INTERVAL < now)
+				it.remove();
 	}
 
 	/**
@@ -381,14 +364,28 @@ final class NetworkThread extends Thread {
 	}
 
 	/**
-	 * Cleans up stale state information as a result of packet loss.
+	 * Shuts down the network thread.
+	 * 
+	 * @throws InterruptedException
+	 *         thrown if the calling thread is interrupted while waiting for the network thread to shut down
 	 */
-	void cleanUpStaleState() {
+	void shutdown() throws InterruptedException {
+		this.shutdownRequested = true;
+		this.socket.close();
+		interrupted();
+		this.join();
+	}
 
-		final long now = System.currentTimeMillis();
-		final Iterator<MultiPacketInputStream> it = this.incompleteInputStreams.values().iterator();
-		while (it.hasNext())
-			if (it.next().getCreationTime() + RPCService.CLEANUP_INTERVAL < now)
-				it.remove();
+	/**
+	 * Auxiliary class to store the last acknowledged packet of an outstanding transmission.
+	 * <p>
+	 * This class is not thread-safe.
+	 */
+	private static final class OutstandingTransmission {
+
+		/**
+		 * The last acknowledged packet of an outstanding transmission.
+		 */
+		private int lastAckedPacket = -1;
 	}
 }

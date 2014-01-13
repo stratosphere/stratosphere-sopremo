@@ -17,7 +17,6 @@ import eu.stratosphere.sopremo.serialization.SopremoRecordLayout;
 
 /**
  * Encapsulate a complete query in Sopremo and translates it to a Pact {@link Plan}.
- * 
  */
 public class SopremoPlan extends AbstractSopremoType implements Serializable {
 
@@ -35,72 +34,8 @@ public class SopremoPlan extends AbstractSopremoType implements Serializable {
 		this.module = new SopremoModule(0, 0);
 	}
 
-	/**
-	 * Converts the Sopremo module to a Pact {@link Plan}.
-	 * 
-	 * @return the converted Pact plan
-	 */
-	public Plan asPactPlan() {
-		final Collection<GenericDataSink> sinks = this.checkForSinks(this.assemblePact());
-		return new PlanWithSopremoPostPass(this.layout, sinks);
-	}
-
-	/**
-	 * Returns the requiredPackages.
-	 * 
-	 * @return the requiredPackages
-	 */
-	public List<String> getRequiredPackages() {
-		return this.requiredPackages;
-	}
-
-	public ITypeRegistry getTypeRegistry() {
-		return this.context.getTypeRegistry();
-	}
-
-	/**
-	 * Sets the requiredPackages to the specified value.
-	 * 
-	 * @param requiredPackages
-	 *        the requiredPackages to set
-	 */
-	public void setRequiredPackages(final List<String> packageNames) {
-		if (packageNames == null)
-			throw new NullPointerException("requiredPackages must not be null");
-
-		this.requiredPackages = packageNames;
-	}
-
 	public void addRequiredPackage(final String packageName) {
 		this.requiredPackages.add(packageName);
-	}
-
-	/**
-	 * Checks if all contracts are {@link GenericDataSink}s.
-	 */
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-	private Collection<GenericDataSink> checkForSinks(final Collection<eu.stratosphere.api.common.operators.Operator> contracts) {
-		for (final eu.stratosphere.api.common.operators.Operator contract : contracts)
-			if (!GenericDataSink.class.isInstance(contract))
-				throw new IllegalStateException("Operator without connected sink detected " + contract);
-		return (Collection) contracts;
-	}
-
-	public void setSinks(final Sink... sinks) {
-		this.setSinks(Arrays.asList(sinks));
-	}
-
-	public void setSinks(final List<Sink> sinks) {
-		for (final Sink sink : sinks)
-			this.module.addInternalOutput(sink);
-	}
-
-	public List<Sink> getSinks() {
-		return this.module.getInternalOutputNodes();
-	}
-
-	public SopremoRecordLayout getLayout() {
-		return this.layout;
 	}
 
 	/*
@@ -113,9 +48,19 @@ public class SopremoPlan extends AbstractSopremoType implements Serializable {
 	}
 
 	/**
+	 * Converts the Sopremo module to a Pact {@link Plan}.
+	 * 
+	 * @return the converted Pact plan
+	 */
+	public Plan asPactPlan() {
+		final Collection<GenericDataSink> sinks = this.checkForSinks(this.assemblePact());
+		return new PlanWithSopremoPostPass(this.layout, sinks);
+	}
+
+	/**
 	 * Assembles the Pacts of the contained Sopremo operators and returns a list
-	 * of all Pact sinks. These sinks may either be directly a {@link FileDataSinkOperator} or an unconnected
-	 * {@link Operator}.
+	 * of all Pact sinks. These sinks may either be directly a {@link GenericDataSink} or an unconnected
+	 * {@link eu.stratosphere.api.common.operators.Operator}.
 	 * 
 	 * @return a list of Pact sinks
 	 */
@@ -123,6 +68,27 @@ public class SopremoPlan extends AbstractSopremoType implements Serializable {
 		final ElementarySopremoModule elementaryModule = this.module.asElementary();
 		this.layout = SopremoRecordLayout.create(elementaryModule.getSchema().getKeyExpressions());
 		return elementaryModule.assemblePact(this.context, this.layout);
+	}
+
+	@Override
+	public boolean equals(final Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (this.getClass() != obj.getClass())
+			return false;
+		final SopremoPlan other = (SopremoPlan) obj;
+		return this.module.equals(other.module);
+	}
+
+	/**
+	 * Returns the evaluation context of this plan.
+	 * 
+	 * @return the evaluation context
+	 */
+	public EvaluationContext getCompilationContext() {
+		return this.context;
 	}
 
 	/**
@@ -135,13 +101,37 @@ public class SopremoPlan extends AbstractSopremoType implements Serializable {
 		return this.module.getReachableNodes();
 	}
 
+	public SopremoRecordLayout getLayout() {
+		return this.layout;
+	}
+
 	/**
-	 * Returns the evaluation context of this plan.
+	 * Returns the requiredPackages.
 	 * 
-	 * @return the evaluation context
+	 * @return the requiredPackages
 	 */
-	public EvaluationContext getCompilationContext() {
-		return this.context;
+	public List<String> getRequiredPackages() {
+		return this.requiredPackages;
+	}
+
+	public List<Sink> getSinks() {
+		return this.module.getInternalOutputNodes();
+	}
+
+	public ITypeRegistry getTypeRegistry() {
+		return this.context.getTypeRegistry();
+	}
+
+	public List<Operator<?>> getUnmatchingOperators(final SopremoPlan other) {
+		return this.module.getUnmatchingNodes(other.module);
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + this.module.hashCode();
+		return result;
 	}
 
 	/**
@@ -157,27 +147,37 @@ public class SopremoPlan extends AbstractSopremoType implements Serializable {
 		this.context = context;
 	}
 
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + this.module.hashCode();
-		return result;
+	/**
+	 * Sets the requiredPackages to the specified value.
+	 * 
+	 * @param packageNames
+	 *        the packageNames to set
+	 */
+	public void setRequiredPackages(final List<String> packageNames) {
+		if (packageNames == null)
+			throw new NullPointerException("requiredPackages must not be null");
+
+		this.requiredPackages = packageNames;
 	}
 
-	@Override
-	public boolean equals(final Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (this.getClass() != obj.getClass())
-			return false;
-		final SopremoPlan other = (SopremoPlan) obj;
-		return this.module.equals(other.module);
+	public void setSinks(final List<Sink> sinks) {
+		for (final Sink sink : sinks)
+			this.module.addInternalOutput(sink);
 	}
 
-	public List<Operator<?>> getUnmatchingOperators(final SopremoPlan other) {
-		return this.module.getUnmatchingNodes(other.module);
+	public void setSinks(final Sink... sinks) {
+		this.setSinks(Arrays.asList(sinks));
+	}
+
+	/**
+	 * Checks if all contracts are {@link GenericDataSink}s.
+	 */
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	private Collection<GenericDataSink> checkForSinks(
+			final Collection<eu.stratosphere.api.common.operators.Operator> contracts) {
+		for (final eu.stratosphere.api.common.operators.Operator contract : contracts)
+			if (!GenericDataSink.class.isInstance(contract))
+				throw new IllegalStateException("Operator without connected sink detected " + contract);
+		return (Collection) contracts;
 	}
 }

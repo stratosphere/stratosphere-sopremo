@@ -26,21 +26,8 @@ import com.esotericsoftware.kryo.io.Output;
  * arguments. Therefore, the default kryo deserializer cannot instantiate objects of it.
  * <p>
  * This class is not thread-safe.
- * 
  */
 final class StackTraceElementSerializer extends Serializer<StackTraceElement> {
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public void write(final Kryo kryo, final Output output, final StackTraceElement object) {
-
-		output.writeString(object.getClassName());
-		output.writeString(object.getMethodName());
-		output.writeString(object.getFileName());
-		output.writeInt(object.getLineNumber());
-	}
 
 	/**
 	 * {@inheritDoc}
@@ -54,5 +41,17 @@ final class StackTraceElementSerializer extends Serializer<StackTraceElement> {
 		final int lineNumber = input.readInt();
 
 		return new StackTraceElement(declaringClass, methodName, fileName, lineNumber);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public void write(final Kryo kryo, final Output output, final StackTraceElement object) {
+
+		output.writeString(object.getClassName());
+		output.writeString(object.getMethodName());
+		output.writeString(object.getFileName());
+		output.writeInt(object.getLineNumber());
 	}
 }

@@ -28,17 +28,17 @@ public class CachingNodeFactory extends DefaultNodeFactory {
 		register(IObjectNode.class, ObjectNode.class);
 
 	/**
+	 * Initializes CachingNodeFactory.
+	 */
+	private CachingNodeFactory() {
+	}
+
+	/**
 	 * Returns the instance.
 	 * 
 	 * @return the instance
 	 */
 	public static CachingNodeFactory getInstance() {
 		return Instance;
-	}
-
-	/**
-	 * Initializes CachingNodeFactory.
-	 */
-	private CachingNodeFactory() {
 	}
 }

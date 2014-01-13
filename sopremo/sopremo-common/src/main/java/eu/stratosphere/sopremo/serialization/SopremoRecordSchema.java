@@ -31,13 +31,35 @@ import eu.stratosphere.sopremo.type.IJsonNode;
 public class SopremoRecordSchema extends AbstractSchema<Class<? extends IJsonNode>> {
 	private final IntSet usedKeys = new IntAVLTreeSet();
 
+	public void add(final int pos) {
+		this.usedKeys.add(pos);
+	}
+
 	/*
 	 * (non-Javadoc)
-	 * @see java.lang.Object#toString()
+	 * @see eu.stratosphere.compiler.postpass.AbstractSchema#addType(int, java.lang.Object)
 	 */
 	@Override
-	public String toString() {
-		return this.usedKeys.toString();
+	public void addType(final int pos, final Class<? extends IJsonNode> type) throws ConflictingFieldTypeInfoException {
+		this.usedKeys.add(pos);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.compiler.postpass.AbstractSchema#getType(int)
+	 */
+	@Override
+	public Class<? extends IJsonNode> getType(final int field) {
+		return null;
+	}
+
+	/**
+	 * Returns the usedKeys.
+	 * 
+	 * @return the usedKeys
+	 */
+	public IntSet getUsedKeys() {
+		return this.usedKeys;
 	}
 
 	/*
@@ -76,33 +98,11 @@ public class SopremoRecordSchema extends AbstractSchema<Class<? extends IJsonNod
 
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.compiler.postpass.AbstractSchema#addType(int, java.lang.Object)
+	 * @see java.lang.Object#toString()
 	 */
 	@Override
-	public void addType(final int pos, final Class<? extends IJsonNode> type) throws ConflictingFieldTypeInfoException {
-		this.usedKeys.add(pos);
-	}
-
-	public void add(final int pos) {
-		this.usedKeys.add(pos);
-	}
-	
-	/**
-	 * Returns the usedKeys.
-	 * 
-	 * @return the usedKeys
-	 */
-	public IntSet getUsedKeys() {
-		return this.usedKeys;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.compiler.postpass.AbstractSchema#getType(int)
-	 */
-	@Override
-	public Class<? extends IJsonNode> getType(final int field) {
-		return null;
+	public String toString() {
+		return this.usedKeys.toString();
 	}
 
 }

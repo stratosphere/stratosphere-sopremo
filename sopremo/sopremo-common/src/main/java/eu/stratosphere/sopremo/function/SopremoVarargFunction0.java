@@ -18,17 +18,15 @@ import eu.stratosphere.sopremo.type.IArrayNode;
 import eu.stratosphere.sopremo.type.IJsonNode;
 
 /**
- * @author Arvid Heise
  */
 public abstract class SopremoVarargFunction0 extends SopremoVarargFunction {
 	/**
 	 * Initializes SopremoVarargFunction0.
-	 * 
-	 * @param name
 	 */
 	public SopremoVarargFunction0() {
 		super(0);
 	}
 
+	@Override
 	public abstract IJsonNode call(IArrayNode<IJsonNode> varargs);
 }

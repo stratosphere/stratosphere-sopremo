@@ -39,6 +39,8 @@ public class FunctionCall extends EvaluationExpression {
 
 	private final List<EvaluationExpression> paramExprs;
 
+	private transient final IArrayNode<IJsonNode> params = new ArrayNode<IJsonNode>();
+
 	/**
 	 * Initializes a MethodCall with the given function name and expressions
 	 * which evaluate to the method parameters.
@@ -80,11 +82,39 @@ public class FunctionCall extends EvaluationExpression {
 	}
 
 	@Override
+	public void appendAsString(final Appendable appendable) throws IOException {
+		this.function.appendAsString(appendable);
+		appendable.append('(');
+		this.append(appendable, this.paramExprs, ", ");
+		appendable.append(')');
+	}
+
+	@Override
 	public boolean equals(final Object obj) {
 		if (!super.equals(obj))
 			return false;
 		final FunctionCall other = (FunctionCall) obj;
 		return this.function.equals(other.function) && this.paramExprs.equals(other.paramExprs);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see
+	 * eu.stratosphere.sopremo.expressions.EvaluationExpression#evaluate(eu.
+	 * stratosphere.sopremo.type.IJsonNode)
+	 */
+	@Override
+	public IJsonNode evaluate(final IJsonNode node) {
+		final List<EvaluationExpression> paramExprs = this.paramExprs;
+		this.params.clear();
+		for (int index = 0; index < paramExprs.size(); index++)
+			this.params.add(paramExprs.get(index).evaluate(node));
+
+		try {
+			return this.function.call(this.params);
+		} catch (final Exception e) {
+			throw new EvaluationException(e);
+		}
 	}
 
 	/**
@@ -113,28 +143,6 @@ public class FunctionCall extends EvaluationExpression {
 		return hash;
 	}
 
-	private transient final IArrayNode<IJsonNode> params = new ArrayNode<IJsonNode>();
-
-	/*
-	 * (non-Javadoc)
-	 * @see
-	 * eu.stratosphere.sopremo.expressions.EvaluationExpression#evaluate(eu.
-	 * stratosphere.sopremo.type.IJsonNode)
-	 */
-	@Override
-	public IJsonNode evaluate(final IJsonNode node) {
-		final List<EvaluationExpression> paramExprs = this.paramExprs;
-		this.params.clear();
-		for (int index = 0; index < paramExprs.size(); index++)
-			this.params.add(paramExprs.get(index).evaluate(node));
-
-		try {
-			return this.function.call(this.params);
-		} catch (final Exception e) {
-			throw new EvaluationException(e);
-		}
-	}
-
 	/*
 	 * (non-Javadoc)
 	 * @see eu.stratosphere.sopremo.expressions.ExpressionParent#iterator()
@@ -146,23 +154,15 @@ public class FunctionCall extends EvaluationExpression {
 			paramNames[index] = String.format("Param %d", index);
 		return new ConcatenatingChildIterator(super.iterator(), new NamedChildIterator(paramNames) {
 			@Override
-			protected void set(final int index, final EvaluationExpression childExpression) {
-				FunctionCall.this.paramExprs.set(index, childExpression);
-			}
-
-			@Override
 			protected EvaluationExpression get(final int index) {
 				return FunctionCall.this.paramExprs.get(index);
 			}
-		});
-	}
 
-	@Override
-	public void appendAsString(final Appendable appendable) throws IOException {
-		this.function.appendAsString(appendable);
-		appendable.append('(');
-		this.append(appendable, this.paramExprs, ", ");
-		appendable.append(')');
+			@Override
+			protected void set(final int index, final EvaluationExpression childExpression) {
+				FunctionCall.this.paramExprs.set(index, childExpression);
+			}
+		});
 	}
 
 }

@@ -27,10 +27,6 @@ public class GeneratorInputSplit extends GenericInputSplit {
 	/** Last index to read. (exclusive) */
 	int end;
 
-	/** Empty constructor for serialization. */
-	public GeneratorInputSplit() {
-	}
-
 	private static final String INPUT_SPLIT_CONFIG_KEY_PREFIX = "inputsplit.assigner.";
 
 	static {
@@ -38,6 +34,10 @@ public class GeneratorInputSplit extends GenericInputSplit {
 		final Configuration assignerConfig = new Configuration();
 		assignerConfig.setClass(assignerKey, DefaultInputSplitAssigner.class);
 		GlobalConfiguration.includeConfiguration(assignerConfig);
+	}
+
+	/** Empty constructor for serialization. */
+	public GeneratorInputSplit() {
 	}
 
 	public GeneratorInputSplit(final int num, final int start, final int end) {

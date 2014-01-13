@@ -23,18 +23,9 @@ import eu.stratosphere.types.Key;
 
 /**
  * Some convenience methods for dealing with the PACT-Builder pattern.
- * 
  */
 public class PactBuilderUtil
 {
-	public static void addKeys(final ReduceOperator.Builder builder, final Class<? extends Key>[] keyClasses,
-			final int[] keyIndices) {
-		Preconditions.checkArgument(keyClasses.length == keyIndices.length,
-			"Lenght of keyClasses and keyIndices must match.");
-		for (int i = 0; i < keyClasses.length; ++i)
-			builder.keyField(keyClasses[i], keyIndices[i]);
-	}
-
 	public static void addKeys(final CoGroupOperator.Builder builder, final Class<? extends Key>[] keyClasses,
 			final int[] keyIndices1,
 			final int[] keyIndices2) {
@@ -44,6 +35,23 @@ public class PactBuilderUtil
 			builder.keyField(keyClasses[i], keyIndices1[i], keyIndices2[i]);
 	}
 
+	public static void addKeys(final JoinOperator.Builder builder, final Class<? extends Key>[] keyClasses,
+			final int[] keyIndices1,
+			final int[] keyIndices2) {
+		Preconditions.checkArgument(keyClasses.length == keyIndices1.length && keyClasses.length == keyIndices2.length,
+			"Lenght of keyClasses and keyIndices must match.");
+		for (int i = 0; i < keyClasses.length; ++i)
+			builder.keyField(keyClasses[i], keyIndices1[i], keyIndices2[i]);
+	}
+
+	public static void addKeys(final ReduceOperator.Builder builder, final Class<? extends Key>[] keyClasses,
+			final int[] keyIndices) {
+		Preconditions.checkArgument(keyClasses.length == keyIndices.length,
+			"Lenght of keyClasses and keyIndices must match.");
+		for (int i = 0; i < keyClasses.length; ++i)
+			builder.keyField(keyClasses[i], keyIndices[i]);
+	}
+
 	public static void addKeysExceptFirst(final CoGroupOperator.Builder builder,
 			final Class<? extends Key>[] keyClasses,
 			final int[] keyIndices1,
@@ -51,15 +59,6 @@ public class PactBuilderUtil
 		Preconditions.checkArgument(keyClasses.length == keyIndices1.length && keyClasses.length == keyIndices2.length,
 			"Lenght of keyClasses and keyIndices must match.");
 		for (int i = 1; i < keyClasses.length; ++i)
-			builder.keyField(keyClasses[i], keyIndices1[i], keyIndices2[i]);
-	}
-
-	public static void addKeys(final JoinOperator.Builder builder, final Class<? extends Key>[] keyClasses,
-			final int[] keyIndices1,
-			final int[] keyIndices2) {
-		Preconditions.checkArgument(keyClasses.length == keyIndices1.length && keyClasses.length == keyIndices2.length,
-			"Lenght of keyClasses and keyIndices must match.");
-		for (int i = 0; i < keyClasses.length; ++i)
 			builder.keyField(keyClasses[i], keyIndices1[i], keyIndices2[i]);
 	}
 

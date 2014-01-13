@@ -23,19 +23,6 @@ import eu.stratosphere.sopremo.operator.ConfigurableSopremoType;
 public interface AdditionalInfoResolver {
 	public <T extends ConfigurableSopremoType> ConfObjectInfo<T> get(T object);
 
-	public static class None implements AdditionalInfoResolver {
-		/*
-		 * (non-Javadoc)
-		 * @see
-		 * eu.stratosphere.sopremo.query.AdditionalInfoResolver#get(eu.stratosphere.sopremo.operator.ConfigurableSopremoType
-		 * )
-		 */
-		@Override
-		public <T extends ConfigurableSopremoType> ConfObjectInfo<T> get(final T object) {
-			return null;
-		}
-	}
-
 	public static class Format implements AdditionalInfoResolver {
 		private final IConfObjectRegistry<?> formatRegistry;
 
@@ -52,6 +39,19 @@ public interface AdditionalInfoResolver {
 		@Override
 		public <T extends ConfigurableSopremoType> ConfObjectInfo<T> get(final T object) {
 			return (ConfObjectInfo<T>) this.formatRegistry.get(object.getClass());
+		}
+	}
+
+	public static class None implements AdditionalInfoResolver {
+		/*
+		 * (non-Javadoc)
+		 * @see
+		 * eu.stratosphere.sopremo.query.AdditionalInfoResolver#get(eu.stratosphere.sopremo.operator.ConfigurableSopremoType
+		 * )
+		 */
+		@Override
+		public <T extends ConfigurableSopremoType> ConfObjectInfo<T> get(final T object) {
+			return null;
 		}
 	}
 

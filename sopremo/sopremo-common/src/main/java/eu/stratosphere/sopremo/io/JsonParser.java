@@ -34,6 +34,200 @@ import eu.stratosphere.sopremo.type.TextNode;
 
 public class JsonParser {
 
+	private final BufferedReader reader;
+
+	private boolean reachedEnd;
+
+	private int currentCounter;
+
+	private boolean skipWrappingArray;
+
+	private static char ELEMENT_SEPARATOR = ',';
+
+	private static char ARRAY_START = '[';
+
+	private static int STEP_SIZE = 1;
+
+	private static String JSON_URL = "www.json.org";
+
+	private static String ERROR_BASE = "Couldn't parse the given input: \n";
+
+	private static String ERROR_INVALID_JSON = ERROR_BASE +
+		"Invalid json format at position %s (visit " + JSON_URL
+		+ " for a detailed specification).\nCurrent Token: %s.\nExpected \"%s\", but was \"%s\".";
+
+	private static String ERROR_IO = ERROR_BASE + "Couldn't access input or mark the input for reset at position %s";
+
+	public JsonParser(final FSDataInputStream stream) {
+		this(new InputStreamReader(stream, Charset.forName("utf-8")));
+	}
+
+	public JsonParser(final InputStream stream) {
+		this(new InputStreamReader(stream, Charset.forName("utf-8")));
+	}
+
+	/*
+	 * Constructors
+	 */
+	public JsonParser(final Reader inputStreamReader) {
+		this.reader = new BufferedReader(inputStreamReader);
+		this.initialize();
+	}
+
+	public JsonParser(final String value) {
+		this(new BufferedReader(new StringReader(value)));
+	}
+
+	public JsonParser(final URL url) throws IOException {
+		this(new BufferedReader(new InputStreamReader(url.openStream())));
+	}
+
+	/**
+	 * Checks if the whole input is already parsed.
+	 * 
+	 * @return either the whole input is already parsed or not
+	 */
+	public boolean checkEnd() {
+		return this.reachedEnd;
+	}
+
+	/**
+	 * Closes the stream to the input of this parser.
+	 * 
+	 * @throws IOException
+	 */
+	public void close() throws IOException {
+		this.reader.close();
+	}
+
+	/**
+	 * Returns the number of characters already parsed.
+	 * 
+	 * @return the number of characters
+	 */
+	public int getNumberOfParsedChars() {
+		return this.currentCounter - 1;
+	}
+
+	/*
+	 * Provided functionality
+	 */
+	/**
+	 * Parses the next possible element contained in the input and creates a corresponding {@link IJsonNode}. To specify
+	 * multiple elements in one input they must be separated with ','. After reaching the end of the input, each
+	 * subsequent call to this method will return a {@link MissingNode}.
+	 * 
+	 * @return the parsed element as an {@link IJsonNode}
+	 * @throws JsonParseException
+	 *         Should something went wrong during the parsing process, this exception will be thrown. To find out the
+	 *         reason of failure consult {@link JsonParseException#getMessage()}.
+	 */
+	public IJsonNode readValueAsTree() throws JsonParseException {
+		final boolean firstCall = this.currentCounter == 0;
+		if (this.checkEnd() && !this.skipWrappingArray)
+			return MissingNode.getInstance();
+		int currentChar = this.readIgnoreWhitespace();
+		if (this.checkForEOF(currentChar))
+			return this.getRoot().createJsonNode((char) currentChar, this);
+		if (firstCall && this.skipWrappingArray && (char) currentChar == ARRAY_START)
+			currentChar = this.readIgnoreWhitespace();
+		final IJsonNode result = this.parseElement(currentChar);
+		this.finishCurrentParsingStep();
+		return result;
+	}
+
+	public void setWrappingArraySkipping(final boolean skipWrappingArray) {
+		this.skipWrappingArray = skipWrappingArray;
+	}
+
+	private boolean checkForEOF(final int currentChar) {
+		if (currentChar == -1) {
+			this.reachedEnd = true;
+			return true;
+		}
+		return false;
+	}
+
+	private void finishCurrentParsingStep() throws JsonParseException {
+		int currentChar;
+		currentChar = this.readIgnoreWhitespace();
+		if (currentChar == -1)
+			this.reachedEnd = true;
+		else if ((char) currentChar != JsonParser.ELEMENT_SEPARATOR)
+			if (this.skipWrappingArray)
+				this.reachedEnd = true;
+			else
+				throw this.getParseException(this.getRoot().getName(), String.valueOf(ELEMENT_SEPARATOR) + " or eof",
+					String.valueOf((char) currentChar));
+	}
+
+	private JsonParseException getIOException() {
+		return new JsonParseException(String.format(JsonParser.ERROR_IO, this.getNumberOfParsedChars()));
+	}
+
+	private JsonParseException getParseException(final String currentToken, final String expectedValue,
+			final String currentValue) {
+		return new JsonParseException(String.format(JsonParser.ERROR_INVALID_JSON, this.getNumberOfParsedChars() + 1,
+			currentToken, expectedValue, currentValue));
+	}
+
+	private STATE getRoot() {
+		return STATE.ROOT;
+	}
+
+	private void initialize() {
+		STATE.initializeTransitions();
+		this.currentCounter = 0;
+		this.reachedEnd = false;
+	}
+
+	/*
+	 * private
+	 */
+	private void markReader() throws JsonParseException {
+		try {
+			this.reader.mark(JsonParser.STEP_SIZE);
+		} catch (final IOException e) {
+			throw this.getIOException();
+		}
+	}
+
+	private IJsonNode parseElement(final int currentChar) throws JsonParseException {
+		final STATE nextState = this.getRoot().nextState(
+			(char) currentChar);
+		if (nextState == null)
+			throw this.getParseException(this.getRoot().getName(), "one of ['{', '[', 't', 'f', 'n', 0-9, '\"', '-']",
+				String.valueOf((char) currentChar));
+		return nextState.createJsonNode((char) currentChar, this);
+	}
+
+	private int read() throws JsonParseException {
+		int character;
+		try {
+			character = this.reader.read();
+		} catch (final IOException e) {
+			throw this.getIOException();
+		}
+		this.currentCounter++;
+		return character;
+	}
+
+	private int readIgnoreWhitespace() throws JsonParseException {
+		int nextChar = this.read();
+		while (Character.isWhitespace((char) nextChar) && nextChar != -1)
+			nextChar = this.read();
+		return nextChar;
+	}
+
+	private void resetReader() throws JsonParseException {
+		try {
+			this.reader.reset();
+		} catch (final IOException e) {
+			throw this.getIOException();
+		}
+		this.currentCounter = this.currentCounter - JsonParser.STEP_SIZE;
+	}
+
 	private enum STATE {
 		OBJECT {
 			private final char charToFinishObject = '}';
@@ -220,6 +414,11 @@ public class JsonParser {
 				return TextNode.valueOf(buffer.toString());
 			}
 
+			@Override
+			protected String getName() {
+				return "string value";
+			}
+
 			private char unescape(final JsonParser parser) throws JsonParseException {
 				final char escapeChar = (char) parser.read();
 				switch (escapeChar) {
@@ -249,11 +448,6 @@ public class JsonParser {
 						"a valid escape sequence \\(\" | \\ | / | b | f | n | r | t | uXXXX)",
 						String.valueOf("\\" + escapeChar));
 				}
-			}
-
-			@Override
-			protected String getName() {
-				return "string value";
 			}
 		},
 		BOOLEAN {
@@ -395,12 +589,19 @@ public class JsonParser {
 		}
 
 		/**
-		 * Initializes the transitions between the different states.
+		 * Creates an {@link IJsonNode} that corresponds with this state.
+		 * 
+		 * @param startChar
+		 *        the character that is responsible for entering this state.
+		 * @param parser
+		 *        the {@link JsonParser} that holds the input data
+		 * @return the created {@link IJsonNode}
+		 * @throws JsonParseException
+		 *         Should something went wrong during the parsing process, this exception will be thrown. To find out
+		 *         the reason of failure consult {@link JsonParseException#getMessage()}.
 		 */
-		public static void initializeTransitions() {
-			for (final STATE state : STATE.values())
-				state.initialize();
-		}
+		public abstract IJsonNode createJsonNode(char startChar,
+				JsonParser parser) throws JsonParseException;
 
 		/**
 		 * Determines the transition that is associated with the given character and returns the resulting state or
@@ -416,6 +617,19 @@ public class JsonParser {
 			return null;
 		}
 
+		protected abstract String getName();
+
+		protected void initialize() {
+		}
+
+		/**
+		 * Initializes the transitions between the different states.
+		 */
+		public static void initializeTransitions() {
+			for (final STATE state : STATE.values())
+				state.initialize();
+		}
+
 		private static boolean compareWithReaderContent(final char[] expected,
 				final JsonParser parser, final STATE currentState) throws JsonParseException {
 			for (final char c : expected) {
@@ -426,219 +640,5 @@ public class JsonParser {
 			}
 			return true;
 		}
-
-		/**
-		 * Creates an {@link IJsonNode} that corresponds with this state.
-		 * 
-		 * @param startChar
-		 *        the character that is responsible for entering this state.
-		 * @param parser
-		 *        the {@link JsonParser} that holds the input data
-		 * @return the created {@link IJsonNode}
-		 * @throws JsonParseException
-		 *         Should something went wrong during the parsing process, this exception will be thrown. To find out
-		 *         the reason of failure consult {@link JsonParseException#getErrorMessage()}.
-		 */
-		public abstract IJsonNode createJsonNode(char startChar,
-				JsonParser parser) throws JsonParseException;
-
-		protected abstract String getName();
-
-		protected void initialize() {
-		}
-	}
-
-	private final BufferedReader reader;
-
-	private boolean reachedEnd;
-
-	private int currentCounter;
-
-	private boolean skipWrappingArray;
-
-	private static char ELEMENT_SEPARATOR = ',';
-
-	private static char ARRAY_START = '[';
-
-	private static int STEP_SIZE = 1;
-
-	private static String JSON_URL = "www.json.org";
-
-	private static String ERROR_BASE = "Couldn't parse the given input: \n";
-
-	private static String ERROR_INVALID_JSON = ERROR_BASE +
-		"Invalid json format at position %s (visit " + JSON_URL
-		+ " for a detailed specification).\nCurrent Token: %s.\nExpected \"%s\", but was \"%s\".";
-
-	private static String ERROR_IO = ERROR_BASE + "Couldn't access input or mark the input for reset at position %s";
-
-	/*
-	 * Constructors
-	 */
-	public JsonParser(final Reader inputStreamReader) {
-		this.reader = new BufferedReader(inputStreamReader);
-		this.initialize();
-	}
-
-	public JsonParser(final FSDataInputStream stream) {
-		this(new InputStreamReader(stream, Charset.forName("utf-8")));
-	}
-
-	public JsonParser(final InputStream stream) {
-		this(new InputStreamReader(stream, Charset.forName("utf-8")));
-	}
-
-	public JsonParser(final URL url) throws IOException {
-		this(new BufferedReader(new InputStreamReader(url.openStream())));
-	}
-
-	public JsonParser(final String value) {
-		this(new BufferedReader(new StringReader(value)));
-	}
-
-	/*
-	 * Provided functionality
-	 */
-	/**
-	 * Parses the next possible element contained in the input and creates a corresponding {@link IJsonNode}. To specify
-	 * multiple elements in one input they must be separated with ','. After reaching the end of the input, each
-	 * subsequent call to this method will return a {@link MissingNode}.
-	 * 
-	 * @return the parsed element as an {@link IJsonNode}
-	 * @throws JsonParseException
-	 *         Should something went wrong during the parsing process, this exception will be thrown. To find out the
-	 *         reason of failure consult {@link JsonParseException#getErrorMessage()}.
-	 */
-	public IJsonNode readValueAsTree() throws JsonParseException {
-		final boolean firstCall = this.currentCounter == 0;
-		if (this.checkEnd() && !this.skipWrappingArray)
-			return MissingNode.getInstance();
-		int currentChar = this.readIgnoreWhitespace();
-		if (this.checkForEOF(currentChar))
-			return this.getRoot().createJsonNode((char) currentChar, this);
-		if (firstCall && this.skipWrappingArray && (char) currentChar == ARRAY_START)
-			currentChar = this.readIgnoreWhitespace();
-		final IJsonNode result = this.parseElement(currentChar);
-		this.finishCurrentParsingStep();
-		return result;
-	}
-
-	/**
-	 * Checks if the whole input is already parsed.
-	 * 
-	 * @return either the whole input is already parsed or not
-	 */
-	public boolean checkEnd() {
-		return this.reachedEnd;
-	}
-
-	/**
-	 * Returns the number of characters already parsed.
-	 * 
-	 * @return the number of characters
-	 */
-	public int getNumberOfParsedChars() {
-		return this.currentCounter - 1;
-	}
-
-	/**
-	 * Closes the stream to the input of this parser.
-	 * 
-	 * @throws IOException
-	 */
-	public void close() throws IOException {
-		this.reader.close();
-	}
-
-	/*
-	 * private
-	 */
-	private void markReader() throws JsonParseException {
-		try {
-			this.reader.mark(JsonParser.STEP_SIZE);
-		} catch (final IOException e) {
-			throw this.getIOException();
-		}
-	}
-
-	private void resetReader() throws JsonParseException {
-		try {
-			this.reader.reset();
-		} catch (final IOException e) {
-			throw this.getIOException();
-		}
-		this.currentCounter = this.currentCounter - JsonParser.STEP_SIZE;
-	}
-
-	private void initialize() {
-		STATE.initializeTransitions();
-		this.currentCounter = 0;
-		this.reachedEnd = false;
-	}
-
-	private IJsonNode parseElement(final int currentChar) throws JsonParseException {
-		final STATE nextState = this.getRoot().nextState(
-			(char) currentChar);
-		if (nextState == null)
-			throw this.getParseException(this.getRoot().getName(), "one of ['{', '[', 't', 'f', 'n', 0-9, '\"', '-']",
-				String.valueOf((char) currentChar));
-		return nextState.createJsonNode((char) currentChar, this);
-	}
-
-	private boolean checkForEOF(final int currentChar) {
-		if (currentChar == -1) {
-			this.reachedEnd = true;
-			return true;
-		}
-		return false;
-	}
-
-	private void finishCurrentParsingStep() throws JsonParseException {
-		int currentChar;
-		currentChar = this.readIgnoreWhitespace();
-		if (currentChar == -1)
-			this.reachedEnd = true;
-		else if ((char) currentChar != JsonParser.ELEMENT_SEPARATOR)
-			if (this.skipWrappingArray)
-				this.reachedEnd = true;
-			else
-				throw this.getParseException(this.getRoot().getName(), String.valueOf(ELEMENT_SEPARATOR) + " or eof",
-					String.valueOf((char) currentChar));
-	}
-
-	private int readIgnoreWhitespace() throws JsonParseException {
-		int nextChar = this.read();
-		while (Character.isWhitespace((char) nextChar) && nextChar != -1)
-			nextChar = this.read();
-		return nextChar;
-	}
-
-	private int read() throws JsonParseException {
-		int character;
-		try {
-			character = this.reader.read();
-		} catch (final IOException e) {
-			throw this.getIOException();
-		}
-		this.currentCounter++;
-		return character;
-	}
-
-	private STATE getRoot() {
-		return STATE.ROOT;
-	}
-
-	private JsonParseException getParseException(final String currentToken, final String expectedValue,
-			final String currentValue) {
-		return new JsonParseException(String.format(JsonParser.ERROR_INVALID_JSON, this.getNumberOfParsedChars() + 1,
-			currentToken, expectedValue, currentValue));
-	}
-
-	private JsonParseException getIOException() {
-		return new JsonParseException(String.format(JsonParser.ERROR_IO, this.getNumberOfParsedChars()));
-	}
-
-	public void setWrappingArraySkipping(final boolean skipWrappingArray) {
-		this.skipWrappingArray = skipWrappingArray;
 	}
 }

@@ -63,27 +63,6 @@ public class MethodTest extends MeteorParseTest {
 	}
 
 	@Test
-	public void testMethodCallWithAppendedPathSegment() {
-		final SopremoPlan actualPlan = this.parseScript(
-			"$input = read from 'file://input.json';\n" +
-				"$result = transform $input into { result: $input.all().count() };\n" +
-				"write $result to 'file://output.json'; ");
-
-		final SopremoPlan expectedPlan = new SopremoPlan();
-		final Source input = new Source("file://input.json");
-		final Projection projection = new Projection().
-			withInputs(input).
-			withResultProjection(new ObjectCreation(
-				new ObjectCreation.FieldAssignment("result",
-					createFunctionCall(CoreFunctions.COUNT,
-						createFunctionCall(CoreFunctions.ALL, new InputSelection(0))))));
-		final Sink sink = new Sink("file://output.json").withInputs(projection);
-		expectedPlan.setSinks(sink);
-
-		assertPlanEquals(expectedPlan, actualPlan);
-	}
-
-	@Test
 	public void testMethodCallInPath() {
 		final SopremoPlan actualPlan = this.parseScript(
 			"$input = read from 'file://input.json';\n" +
@@ -107,34 +86,24 @@ public class MethodTest extends MeteorParseTest {
 	}
 
 	@Test
-	public void testSafeMethodCall() {
+	public void testMethodCallWithAppendedPathSegment() {
 		final SopremoPlan actualPlan = this.parseScript(
 			"$input = read from 'file://input.json';\n" +
-				"$result = transform $input into $input.addresses?.count();\n" +
+				"$result = transform $input into { result: $input.all().count() };\n" +
 				"write $result to 'file://output.json'; ");
 
 		final SopremoPlan expectedPlan = new SopremoPlan();
 		final Source input = new Source("file://input.json");
-		final Projection projection =
-			new Projection().
-				withInputs(input).
-				withResultProjection(
-					new TernaryExpression(
-						new NotNullOrMissingBooleanExpression().withInputExpression(new ObjectAccess("addresses")),
-						createFunctionCall(CoreFunctions.COUNT, new ObjectAccess("addresses")),
-						new ObjectAccess("addresses")));
+		final Projection projection = new Projection().
+			withInputs(input).
+			withResultProjection(new ObjectCreation(
+				new ObjectCreation.FieldAssignment("result",
+					createFunctionCall(CoreFunctions.COUNT,
+						createFunctionCall(CoreFunctions.ALL, new InputSelection(0))))));
 		final Sink sink = new Sink("file://output.json").withInputs(projection);
 		expectedPlan.setSinks(sink);
 
 		assertPlanEquals(expectedPlan, actualPlan);
-
-		Assert.assertEquals(IntNode.valueOf(3),
-			projection.getResultProjection().evaluate(
-				JsonUtil.createObjectNode("addresses", JsonUtil.createArrayNode(1, 2, 3))));
-		Assert.assertEquals(NullNode.getInstance(),
-			projection.getResultProjection().evaluate(JsonUtil.createObjectNode("addresses", null)));
-		Assert.assertEquals(MissingNode.getInstance(),
-			projection.getResultProjection().evaluate(JsonUtil.createObjectNode()));
 	}
 
 	@Test
@@ -192,6 +161,37 @@ public class MethodTest extends MeteorParseTest {
 		expectedPlan.setSinks(sink);
 
 		assertPlanEquals(expectedPlan, actualPlan);
+	}
+
+	@Test
+	public void testSafeMethodCall() {
+		final SopremoPlan actualPlan = this.parseScript(
+			"$input = read from 'file://input.json';\n" +
+				"$result = transform $input into $input.addresses?.count();\n" +
+				"write $result to 'file://output.json'; ");
+
+		final SopremoPlan expectedPlan = new SopremoPlan();
+		final Source input = new Source("file://input.json");
+		final Projection projection =
+			new Projection().
+				withInputs(input).
+				withResultProjection(
+					new TernaryExpression(
+						new NotNullOrMissingBooleanExpression().withInputExpression(new ObjectAccess("addresses")),
+						createFunctionCall(CoreFunctions.COUNT, new ObjectAccess("addresses")),
+						new ObjectAccess("addresses")));
+		final Sink sink = new Sink("file://output.json").withInputs(projection);
+		expectedPlan.setSinks(sink);
+
+		assertPlanEquals(expectedPlan, actualPlan);
+
+		Assert.assertEquals(IntNode.valueOf(3),
+			projection.getResultProjection().evaluate(
+				JsonUtil.createObjectNode("addresses", JsonUtil.createArrayNode(1, 2, 3))));
+		Assert.assertEquals(NullNode.getInstance(),
+			projection.getResultProjection().evaluate(JsonUtil.createObjectNode("addresses", null)));
+		Assert.assertEquals(MissingNode.getInstance(),
+			projection.getResultProjection().evaluate(JsonUtil.createObjectNode()));
 	}
 
 }

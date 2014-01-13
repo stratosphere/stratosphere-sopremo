@@ -21,7 +21,7 @@ import eu.stratosphere.sopremo.packages.EvaluationScope;
 /**
  */
 public interface ParsingScope extends EvaluationScope {
-	public IConfObjectRegistry<Operator<?>> getOperatorRegistry();
-
 	public IConfObjectRegistry<SopremoFormat> getFileFormatRegistry();
+
+	public IConfObjectRegistry<Operator<?>> getOperatorRegistry();
 }

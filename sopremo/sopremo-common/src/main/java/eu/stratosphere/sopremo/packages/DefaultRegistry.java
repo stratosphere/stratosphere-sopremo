@@ -25,14 +25,9 @@ import eu.stratosphere.sopremo.ISopremoType;
 
 /**
  * Default implementation of {@link IRegistry}.
- * 
  */
 public class DefaultRegistry<T extends ISopremoType> extends AbstractRegistry<T> implements IRegistry<T> {
 	private final Map<String, T> elements = new HashMap<String, T>();
-
-	public DefaultRegistry(final NameChooser nameChooser) {
-		super(nameChooser);
-	}
 
 	/**
 	 * Initializes DefaultRegistry.
@@ -40,19 +35,8 @@ public class DefaultRegistry<T extends ISopremoType> extends AbstractRegistry<T>
 	public DefaultRegistry() {
 	}
 
-	@Override
-	public T get(final String name) {
-		return this.elements.get(name);
-	}
-
-	@Override
-	public void put(final String name, final T element) {
-		this.elements.put(name, element);
-	}
-
-	@Override
-	public Set<String> keySet() {
-		return Collections.unmodifiableSet(this.elements.keySet());
+	public DefaultRegistry(final NameChooser nameChooser) {
+		super(nameChooser);
 	}
 
 	/*
@@ -76,14 +60,6 @@ public class DefaultRegistry<T extends ISopremoType> extends AbstractRegistry<T>
 	}
 
 	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = super.hashCode();
-		result = prime * result + this.elements.hashCode();
-		return result;
-	}
-
-	@Override
 	public boolean equals(final Object obj) {
 		if (this == obj)
 			return true;
@@ -93,5 +69,28 @@ public class DefaultRegistry<T extends ISopremoType> extends AbstractRegistry<T>
 			return false;
 		final DefaultRegistry<?> other = (DefaultRegistry<?>) obj;
 		return this.elements.equals(other.elements);
+	}
+
+	@Override
+	public T get(final String name) {
+		return this.elements.get(name);
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result + this.elements.hashCode();
+		return result;
+	}
+
+	@Override
+	public Set<String> keySet() {
+		return Collections.unmodifiableSet(this.elements.keySet());
+	}
+
+	@Override
+	public void put(final String name, final T element) {
+		this.elements.put(name, element);
 	}
 }

@@ -36,6 +36,7 @@ import eu.stratosphere.sopremo.expressions.InputSelection;
 import eu.stratosphere.sopremo.expressions.ObjectAccess;
 
 /**
+ * Allows to quickly find the values corresponding to key expressions during serialization.
  */
 public class ExpressionIndex extends AbstractSopremoType {
 
@@ -50,13 +51,13 @@ public class ExpressionIndex extends AbstractSopremoType {
 
 	private final int keyIndex;
 
-	/**
-	 * Returns the expression.
-	 * 
-	 * @return the expression
-	 */
-	public EvaluationExpression getExpression() {
-		return this.expression;
+	private final static Set<Class<?>> SupportedClasses = new HashSet<Class<?>>();
+
+	static {
+		SupportedClasses.add(EvaluationExpression.VALUE.getClass());
+		SupportedClasses.add(ArrayAccess.class);
+		SupportedClasses.add(ObjectAccess.class);
+		SupportedClasses.add(InputSelection.class);
 	}
 
 	/**
@@ -71,40 +72,6 @@ public class ExpressionIndex extends AbstractSopremoType {
 		this.objectAccesses.defaultReturnValue(EMPTY_INDEX);
 		this.arrayAccesses.defaultReturnValue(EMPTY_INDEX);
 		this.keyIndex = keyIndex;
-	}
-
-	/**
-	 * @param fieldName
-	 * @return
-	 */
-	public ExpressionIndex subIndex(final String fieldName) {
-		return this.objectAccesses.get(fieldName);
-	}
-
-	/**
-	 * Returns the keyIndex.
-	 * 
-	 * @return the keyIndex
-	 */
-	public int getKeyIndex() {
-		return this.keyIndex;
-	}
-
-	/**
-	 * @param index
-	 * @return
-	 */
-	public ExpressionIndex get(final int index) {
-		return this.arrayAccesses.get(index);
-	}
-
-	private final static Set<Class<?>> SupportedClasses = new HashSet<Class<?>>();
-
-	static {
-		SupportedClasses.add(EvaluationExpression.VALUE.getClass());
-		SupportedClasses.add(ArrayAccess.class);
-		SupportedClasses.add(ObjectAccess.class);
-		SupportedClasses.add(InputSelection.class);
 	}
 
 	public boolean add(final EvaluationExpression expression, final int keyIndex) {
@@ -122,6 +89,60 @@ public class ExpressionIndex extends AbstractSopremoType {
 
 		this.add(expressionChain, expression, keyIndex);
 		return true;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.ISopremoType#appendAsString(java.lang.Appendable)
+	 */
+	@Override
+	public void appendAsString(final Appendable builder) throws IOException {
+		builder.append("ExpressionIndex ");
+		if (this.expression != null)
+			this.expression.appendAsString(builder);
+		if (!this.objectAccesses.isEmpty()) {
+			builder.append(", objectAccesses=");
+			this.append(builder, this.objectAccesses.values(), ", ");
+		}
+		if (!this.arrayAccesses.isEmpty()) {
+			builder.append(", arrayAccesses=");
+			this.append(builder, this.arrayAccesses.values(), ", ");
+		}
+		builder.append(", keyIndex=");
+		TypeFormat.format(this.keyIndex, builder);
+		builder.append("]");
+	}
+
+	/**
+	 * @param index
+	 */
+	public ExpressionIndex get(final int index) {
+		return this.arrayAccesses.get(index);
+	}
+
+	/**
+	 * Returns the expression.
+	 * 
+	 * @return the expression
+	 */
+	public EvaluationExpression getExpression() {
+		return this.expression;
+	}
+
+	/**
+	 * Returns the keyIndex.
+	 * 
+	 * @return the keyIndex
+	 */
+	public int getKeyIndex() {
+		return this.keyIndex;
+	}
+
+	/**
+	 * @param fieldName
+	 */
+	public ExpressionIndex subIndex(final String fieldName) {
+		return this.objectAccesses.get(fieldName);
 	}
 
 	private void add(final Deque<EvaluationExpression> expressionChain, final EvaluationExpression expression,
@@ -153,28 +174,6 @@ public class ExpressionIndex extends AbstractSopremoType {
 			subIndex.add(expressionChain, expression, keyIndex);
 		} else if (currentExpression == EvaluationExpression.VALUE)
 			this.add(expressionChain, currentExpression, keyIndex);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.ISopremoType#appendAsString(java.lang.Appendable)
-	 */
-	@Override
-	public void appendAsString(final Appendable builder) throws IOException {
-		builder.append("ExpressionIndex ");
-		if (this.expression != null)
-			this.expression.appendAsString(builder);
-		if (!this.objectAccesses.isEmpty()) {
-			builder.append(", objectAccesses=");
-			this.append(builder, this.objectAccesses.values(), ", ");
-		}
-		if (!this.arrayAccesses.isEmpty()) {
-			builder.append(", arrayAccesses=");
-			this.append(builder, this.arrayAccesses.values(), ", ");
-		}
-		builder.append(", keyIndex=");
-		TypeFormat.format(this.keyIndex, builder);
-		builder.append("]");
 	}
 
 }

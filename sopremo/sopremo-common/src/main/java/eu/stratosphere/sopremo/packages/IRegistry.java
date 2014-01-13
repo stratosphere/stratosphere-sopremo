@@ -22,18 +22,25 @@ public interface IRegistry<T> extends ISopremoType /* , Map<String, T> */{
 	 *        the name of the element
 	 * @return the elements or {@code null}
 	 */
-	public T get(String name);
+	public T get(Name name);
 
 	/**
-	 * Registers a new element with the given name.<br>
-	 * If there is already an element with the given name, this method may throw an {@link IllegalArgumentException}.
+	 * Returns the elements which is registered with the given name or {@code null}.
 	 * 
 	 * @param name
 	 *        the name of the element
-	 * @param element
-	 *        the element itself
+	 * @return the elements or {@code null}
 	 */
-	public void put(String name, T element);
+	public T get(String name);
+
+	public NameChooser getNameChooser();
+
+	/**
+	 * Returns the set of all names.
+	 * 
+	 * @return the set of all names
+	 */
+	public Set<String> keySet();
 
 	/**
 	 * Registers a new element with the given name.<br>
@@ -47,20 +54,13 @@ public interface IRegistry<T> extends ISopremoType /* , Map<String, T> */{
 	public void put(Name name, T element);
 
 	/**
-	 * Returns the elements which is registered with the given name or {@code null}.
+	 * Registers a new element with the given name.<br>
+	 * If there is already an element with the given name, this method may throw an {@link IllegalArgumentException}.
 	 * 
 	 * @param name
 	 *        the name of the element
-	 * @return the elements or {@code null}
+	 * @param element
+	 *        the element itself
 	 */
-	public T get(Name name);
-
-	/**
-	 * Returns the set of all names.
-	 * 
-	 * @return the set of all names
-	 */
-	public Set<String> keySet();
-
-	public NameChooser getNameChooser();
+	public void put(String name, T element);
 }

@@ -49,7 +49,6 @@ import eu.stratosphere.sopremo.type.TextNode;
 
 /**
  * Core functions.
- * 
  */
 public class CoreFunctions implements BuiltinProvider {
 	@Name(verb = "concat", noun = "concatenation")
@@ -186,19 +185,19 @@ public class CoreFunctions implements BuiltinProvider {
 		}
 	};
 
-	/**
-	 * Adds the specified node to the array at the given index
-	 * 
-	 * @param array
-	 *        the array that should be extended
-	 * @param index
-	 *        the position of the insert
-	 * @param node
-	 *        the node to add
-	 * @return array with the added node
-	 */
 	@Name(verb = "add")
 	public static final SopremoFunction ADD = new SopremoFunction3<IArrayNode<IJsonNode>, IntNode, IJsonNode>() {
+		/**
+		 * Adds the specified node to the array at the given index
+		 * 
+		 * @param array
+		 *        the array that should be extended
+		 * @param index
+		 *        the position of the insert
+		 * @param node
+		 *        the node to add
+		 * @return array with the added node
+		 */
 		@Override
 		protected IJsonNode call(final IArrayNode<IJsonNode> array,
 				final IntNode index, final IJsonNode node) {
@@ -460,21 +459,6 @@ public class CoreFunctions implements BuiltinProvider {
 		}
 	};
 
-	@Name(verb = "setWorkingDirectory")
-	public static MissingNode setWorkingDirectory(final TextNode node) {
-		String path = node.toString();
-		if (!path.startsWith("hdfs://"))
-			path = new File(path).toURI().toString();
-		SopremoEnvironment.getInstance().getEvaluationContext().setWorkingPath(new Path(path));
-		return MissingNode.getInstance();
-	}
-
-	public static int resolveIndex(final int index, final int size) {
-		if (index < 0)
-			return size + index;
-		return index;
-	}
-
 	@Name(noun = { "indexOf", "strpos" })
 	public static final SopremoFunction STRPOS = new SopremoFunction2<TextNode, TextNode>() {
 		private final transient IntNode result = new IntNode();
@@ -485,4 +469,19 @@ public class CoreFunctions implements BuiltinProvider {
 			return this.result;
 		}
 	};
+
+	public static int resolveIndex(final int index, final int size) {
+		if (index < 0)
+			return size + index;
+		return index;
+	}
+
+	@Name(verb = "setWorkingDirectory")
+	public static MissingNode setWorkingDirectory(final TextNode node) {
+		String path = node.toString();
+		if (!path.startsWith("hdfs://"))
+			path = new File(path).toURI().toString();
+		SopremoEnvironment.getInstance().getEvaluationContext().setWorkingPath(new Path(path));
+		return MissingNode.getInstance();
+	}
 }

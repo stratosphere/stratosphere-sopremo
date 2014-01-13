@@ -50,16 +50,24 @@ public class MeteorParseTest {
 		ProjectJars.put(this.projectName, this.projectJar = build(this.projectName));
 	}
 
-	private static File build(final String projectName) {
+	public SopremoPlan parseScript(final File script) {
+		// printBeamerSlide(script);
+		SopremoPlan plan = null;
 		try {
-			final String projectPath = new File(".").getCanonicalPath();
-			final File projectJar = MavenUtil.buildJarForProject(projectPath, projectName + "_testing");
-			projectJar.deleteOnExit();
-			return projectJar;
-		} catch (final IOException e) {
-			Assert.fail(e.getMessage());
-			return null;
+			final QueryParser queryParser = new QueryParser().withInputDirectory(script.getParentFile());
+			this.initParser(queryParser);
+			plan = queryParser.tryParse(this.loadScriptFromFile(script));
+		} catch (final QueryParserException e) {
+			final AssertionError error =
+				new AssertionError(String.format("could not parse script: %s", e.getMessage()));
+			error.initCause(e);
+			throw error;
 		}
+
+		Assert.assertNotNull("could not parse script", plan);
+
+		// System.out.println(plan);
+		return plan;
 	}
 
 	public SopremoPlan parseScript(final String script) {
@@ -82,24 +90,9 @@ public class MeteorParseTest {
 		return plan;
 	}
 
-	public SopremoPlan parseScript(final File script) {
-		// printBeamerSlide(script);
-		SopremoPlan plan = null;
-		try {
-			final QueryParser queryParser = new QueryParser().withInputDirectory(script.getParentFile());
-			this.initParser(queryParser);
-			plan = queryParser.tryParse(this.loadScriptFromFile(script));
-		} catch (final QueryParserException e) {
-			final AssertionError error =
-				new AssertionError(String.format("could not parse script: %s", e.getMessage()));
-			error.initCause(e);
-			throw error;
-		}
-
-		Assert.assertNotNull("could not parse script", plan);
-
-		// System.out.println(plan);
-		return plan;
+	protected void initParser(final QueryParser queryParser) {
+		queryParser.getPackageManager().importPackageFrom(this.projectName.substring("sopremo-".length()),
+			this.projectJar);
 	}
 
 	private String loadScriptFromFile(final File scriptFile) {
@@ -117,12 +110,19 @@ public class MeteorParseTest {
 
 	}
 
-	protected void initParser(final QueryParser queryParser) {
-		queryParser.getPackageManager().importPackageFrom(this.projectName.substring("sopremo-".length()),
-			this.projectJar);
-	}
-
 	public static void assertPlanEquals(final SopremoPlan expectedPlan, final SopremoPlan actualPlan) {
 		SopremoTestUtil.assertPlanEquals(expectedPlan, actualPlan);
+	}
+
+	private static File build(final String projectName) {
+		try {
+			final String projectPath = new File(".").getCanonicalPath();
+			final File projectJar = MavenUtil.buildJarForProject(projectPath, projectName + "_testing");
+			projectJar.deleteOnExit();
+			return projectJar;
+		} catch (final IOException e) {
+			Assert.fail(e.getMessage());
+			return null;
+		}
 	}
 }

@@ -33,52 +33,14 @@ public class DefaultTypeRegistry extends AbstractRegistry<Class<? extends IJsonN
 	/**
 	 * Initializes DefaultTypeRegistry.
 	 */
-	public DefaultTypeRegistry(final NameChooser typeNameChooser) {
-		super(typeNameChooser);
+	public DefaultTypeRegistry() {
 	}
 
 	/**
 	 * Initializes DefaultTypeRegistry.
 	 */
-	public DefaultTypeRegistry() {
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.packages.IRegistry#get(java.lang.String)
-	 */
-	@Override
-	public Class<? extends IJsonNode> get(final String name) {
-		return this.elements.get(name);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.packages.IRegistry#put(java.lang.String,
-	 * java.lang.Object)
-	 */
-	@Override
-	public void put(final String name, final Class<? extends IJsonNode> element) {
-		this.elements.put(name, element);
-		this.typeList.add(element);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.packages.ITypeRegistry#put(java.lang.Class)
-	 */
-	@Override
-	public void put(final Class<? extends IJsonNode> type) {
-		this.put(type.getName(), type);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.packages.IRegistry#keySet()
-	 */
-	@Override
-	public Set<String> keySet() {
-		return this.elements.keySet();
+	public DefaultTypeRegistry(final NameChooser typeNameChooser) {
+		super(typeNameChooser);
 	}
 
 	/*
@@ -100,6 +62,27 @@ public class DefaultTypeRegistry extends AbstractRegistry<Class<? extends IJsonN
 		appendable.append("}");
 	}
 
+	@Override
+	public boolean equals(final Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (this.getClass() != obj.getClass())
+			return false;
+		final DefaultTypeRegistry other = (DefaultTypeRegistry) obj;
+		return this.elements.equals(other.elements) && this.typeList.equals(other.typeList);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.packages.IRegistry#get(java.lang.String)
+	 */
+	@Override
+	public Class<? extends IJsonNode> get(final String name) {
+		return this.elements.get(name);
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * @see eu.stratosphere.sopremo.packages.ITypeRegistry#getTypes()
@@ -118,16 +101,33 @@ public class DefaultTypeRegistry extends AbstractRegistry<Class<? extends IJsonN
 		return result;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.packages.IRegistry#keySet()
+	 */
 	@Override
-	public boolean equals(final Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (this.getClass() != obj.getClass())
-			return false;
-		final DefaultTypeRegistry other = (DefaultTypeRegistry) obj;
-		return this.elements.equals(other.elements) && this.typeList.equals(other.typeList);
+	public Set<String> keySet() {
+		return this.elements.keySet();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.packages.ITypeRegistry#put(java.lang.Class)
+	 */
+	@Override
+	public void put(final Class<? extends IJsonNode> type) {
+		this.put(type.getName(), type);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.packages.IRegistry#put(java.lang.String,
+	 * java.lang.Object)
+	 */
+	@Override
+	public void put(final String name, final Class<? extends IJsonNode> element) {
+		this.elements.put(name, element);
+		this.typeList.add(element);
 	}
 
 }

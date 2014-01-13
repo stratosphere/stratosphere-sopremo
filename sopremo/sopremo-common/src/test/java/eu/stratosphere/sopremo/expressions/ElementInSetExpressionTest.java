@@ -12,13 +12,6 @@ import eu.stratosphere.sopremo.type.IntNode;
 
 public class ElementInSetExpressionTest extends EvaluableExpressionTest<ElementInSetExpression> {
 
-	@Override
-	protected ElementInSetExpression createDefaultInstance(final int index) {
-
-		return new ElementInSetExpression(new ConstantExpression(IntNode.valueOf(index)), Quantor.EXISTS_IN,
-			new ArrayCreation(new ConstantExpression(IntNode.valueOf(index))));
-	}
-
 	@Test
 	public void shouldFindElementInSet() {
 		final IJsonNode result = new ElementInSetExpression(new InputSelection(0), Quantor.EXISTS_IN,
@@ -30,20 +23,20 @@ public class ElementInSetExpressionTest extends EvaluableExpressionTest<ElementI
 	}
 
 	@Test
-	public void shouldNotFindElementInSet() {
-		final IJsonNode result = new ElementInSetExpression(new InputSelection(0), Quantor.EXISTS_IN,
+	public void shouldFindNonexistingElementInSet() {
+		final IJsonNode result = new ElementInSetExpression(new InputSelection(0), Quantor.EXISTS_NOT_IN,
 			new InputSelection(1)).evaluate(
-			createArrayNode(IntNode.valueOf(0),
+			createArrayNode(IntNode.valueOf(2),
 				createArrayNode(IntNode.valueOf(1), IntNode.valueOf(2), IntNode.valueOf(3))));
 
 		Assert.assertEquals(BooleanNode.FALSE, result);
 	}
 
 	@Test
-	public void shouldFindNonexistingElementInSet() {
-		final IJsonNode result = new ElementInSetExpression(new InputSelection(0), Quantor.EXISTS_NOT_IN,
+	public void shouldNotFindElementInSet() {
+		final IJsonNode result = new ElementInSetExpression(new InputSelection(0), Quantor.EXISTS_IN,
 			new InputSelection(1)).evaluate(
-			createArrayNode(IntNode.valueOf(2),
+			createArrayNode(IntNode.valueOf(0),
 				createArrayNode(IntNode.valueOf(1), IntNode.valueOf(2), IntNode.valueOf(3))));
 
 		Assert.assertEquals(BooleanNode.FALSE, result);
@@ -65,5 +58,12 @@ public class ElementInSetExpressionTest extends EvaluableExpressionTest<ElementI
 			new InputSelection(1)).evaluate(createArrayNode(IntNode.valueOf(2), createArrayNode()));
 
 		Assert.assertEquals(BooleanNode.FALSE, result);
+	}
+
+	@Override
+	protected ElementInSetExpression createDefaultInstance(final int index) {
+
+		return new ElementInSetExpression(new ConstantExpression(IntNode.valueOf(index)), Quantor.EXISTS_IN,
+			new ArrayCreation(new ConstantExpression(IntNode.valueOf(index))));
 	}
 }

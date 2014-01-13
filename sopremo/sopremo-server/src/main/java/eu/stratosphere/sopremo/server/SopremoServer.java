@@ -39,7 +39,6 @@ import eu.stratosphere.nephele.execution.librarycache.LibraryCacheProfileRequest
 import eu.stratosphere.nephele.execution.librarycache.LibraryCacheProfileResponse;
 import eu.stratosphere.nephele.execution.librarycache.LibraryCacheUpdate;
 import eu.stratosphere.nephele.rpc.RPCService;
-import eu.stratosphere.util.StringUtils;
 import eu.stratosphere.sopremo.execution.ExecutionRequest;
 import eu.stratosphere.sopremo.execution.ExecutionResponse;
 import eu.stratosphere.sopremo.execution.ExecutionResponse.ExecutionState;
@@ -47,6 +46,7 @@ import eu.stratosphere.sopremo.execution.LibraryTransferAgent;
 import eu.stratosphere.sopremo.execution.SopremoConstants;
 import eu.stratosphere.sopremo.execution.SopremoExecutionProtocol;
 import eu.stratosphere.sopremo.execution.SopremoID;
+import eu.stratosphere.util.StringUtils;
 
 /**
  */
@@ -127,6 +127,11 @@ public class SopremoServer implements SopremoExecutionProtocol, Closeable {
 	public LibraryCacheProfileResponse getLibraryCacheProfile(final LibraryCacheProfileRequest request)
 			throws IOException {
 		return this.libraryTransferAgent.getLibraryCacheProfile(request);
+	}
+
+	@Override
+	public Object getMetaData(final SopremoID jobId, final String key) {
+		return this.jobInfo.get(jobId).getMetaData(key);
 	}
 
 	public InetSocketAddress getServerAddress() {
@@ -261,11 +266,6 @@ public class SopremoServer implements SopremoExecutionProtocol, Closeable {
 		// Do nothing here
 
 		sopremoServer.close();
-	}
-
-	@Override
-	public Object getMetaData(final SopremoID jobId, final String key) {
-		return this.jobInfo.get(jobId).getMetaData(key);
 	}
 
 }

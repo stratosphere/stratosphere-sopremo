@@ -62,35 +62,20 @@ public class ElementInSetExpression extends BinaryBooleanExpression {
 	}
 
 	@Override
-	public BooleanNode evaluate(final IJsonNode node) {
-		// we can ignore 'target' because no new Object is created
-		return this.quantor.evaluate(this.elementExpr.evaluate(node),
-			ElementInSetExpression.asIterator(this.setExpr.evaluate(node)));
+	public void appendAsString(final Appendable appendable) throws IOException {
+		this.elementExpr.appendAsString(appendable);
+		appendable.append(this.quantor == Quantor.EXISTS_NOT_IN ? " \u2209 " : " \u2208 ");
+		this.setExpr.appendAsString(appendable);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.expressions.ExpressionParent#iterator()
-	 */
 	@Override
-	public ChildIterator iterator() {
-		return new NamedChildIterator("elementExpr", "setExpr") {
-
-			@Override
-			protected void set(final int index, final EvaluationExpression childExpression) {
-				if (index == 0)
-					ElementInSetExpression.this.elementExpr = childExpression;
-				else
-					ElementInSetExpression.this.setExpr = childExpression;
-			}
-
-			@Override
-			protected EvaluationExpression get(final int index) {
-				if (index == 0)
-					return ElementInSetExpression.this.elementExpr;
-				return ElementInSetExpression.this.setExpr;
-			}
-		};
+	public boolean equals(final Object obj) {
+		if (!super.equals(obj))
+			return false;
+		final ElementInSetExpression other = (ElementInSetExpression) obj;
+		return this.quantor == other.quantor
+			&& this.elementExpr.equals(other.elementExpr)
+			&& this.setExpr.equals(other.setExpr);
 	}
 
 	// @Override
@@ -111,6 +96,13 @@ public class ElementInSetExpression extends BinaryBooleanExpression {
 	// return super.evaluate(input);
 	// }
 
+	@Override
+	public BooleanNode evaluate(final IJsonNode node) {
+		// we can ignore 'target' because no new Object is created
+		return this.quantor.evaluate(this.elementExpr.evaluate(node),
+			ElementInSetExpression.asIterator(this.setExpr.evaluate(node)));
+	}
+
 	/**
 	 * Returns the element expression.
 	 * 
@@ -127,6 +119,15 @@ public class ElementInSetExpression extends BinaryBooleanExpression {
 	@Override
 	public EvaluationExpression getExpr1() {
 		return this.elementExpr;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.expressions.BinaryBooleanExpression#getExpr2()
+	 */
+	@Override
+	public EvaluationExpression getExpr2() {
+		return this.setExpr;
 	}
 
 	/**
@@ -147,27 +148,46 @@ public class ElementInSetExpression extends BinaryBooleanExpression {
 		return this.setExpr;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.expressions.BinaryBooleanExpression#getExpr2()
-	 */
-	@Override
-	public EvaluationExpression getExpr2() {
-		return this.setExpr;
-	}
-
-	@Override
-	public void appendAsString(final Appendable appendable) throws IOException {
-		this.elementExpr.appendAsString(appendable);
-		appendable.append(this.quantor == Quantor.EXISTS_NOT_IN ? " \u2209 " : " \u2208 ");
-		this.setExpr.appendAsString(appendable);
-	}
-
 	//
 	// @Override
 	// public IJsonNode evaluate(IJsonNode... nodes) {
 	// return quantor.evaluate(this.elementExpr.evaluate(nodes), this.asIterator(this.setExpr.evaluate(nodes)));
 	// }
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result + this.elementExpr.hashCode();
+		result = prime * result + this.quantor.hashCode();
+		result = prime * result + this.setExpr.hashCode();
+		return result;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.expressions.ExpressionParent#iterator()
+	 */
+	@Override
+	public ChildIterator iterator() {
+		return new NamedChildIterator("elementExpr", "setExpr") {
+
+			@Override
+			protected EvaluationExpression get(final int index) {
+				if (index == 0)
+					return ElementInSetExpression.this.elementExpr;
+				return ElementInSetExpression.this.setExpr;
+			}
+
+			@Override
+			protected void set(final int index, final EvaluationExpression childExpression) {
+				if (index == 0)
+					ElementInSetExpression.this.elementExpr = childExpression;
+				else
+					ElementInSetExpression.this.setExpr = childExpression;
+			}
+		};
+	}
 
 	@SuppressWarnings("unchecked")
 	static Iterator<IJsonNode> asIterator(final IJsonNode evaluate) {
@@ -193,26 +213,6 @@ public class ElementInSetExpression extends BinaryBooleanExpression {
 					return BooleanNode.TRUE;
 			return BooleanNode.FALSE;
 		}
-	}
-
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = super.hashCode();
-		result = prime * result + this.elementExpr.hashCode();
-		result = prime * result + this.quantor.hashCode();
-		result = prime * result + this.setExpr.hashCode();
-		return result;
-	}
-
-	@Override
-	public boolean equals(final Object obj) {
-		if (!super.equals(obj))
-			return false;
-		final ElementInSetExpression other = (ElementInSetExpression) obj;
-		return this.quantor == other.quantor
-			&& this.elementExpr.equals(other.elementExpr)
-			&& this.setExpr.equals(other.setExpr);
 	}
 
 }

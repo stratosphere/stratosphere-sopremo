@@ -28,6 +28,14 @@ public class CachingArrayNode<T extends IJsonNode> extends ArrayNode<T> {
 	/**
 	 * Initializes CachingArrayNode.
 	 */
+	@SuppressWarnings("unchecked")
+	public CachingArrayNode() {
+		this((Class<T>) IJsonNode.class);
+	}
+
+	/**
+	 * Initializes CachingArrayNode.
+	 */
 	public CachingArrayNode(final CachingList<T> objectArrayList) {
 		super(objectArrayList);
 	}
@@ -35,22 +43,6 @@ public class CachingArrayNode<T extends IJsonNode> extends ArrayNode<T> {
 	@SuppressWarnings("unchecked")
 	public CachingArrayNode(final Class<T> elemType) {
 		this(CachingList.wrap((T[]) Array.newInstance(elemType, 0)));
-	}
-
-	/**
-	 * Initializes CachingArrayNode.
-	 */
-	@SuppressWarnings("unchecked")
-	public CachingArrayNode() {
-		this((Class<T>) IJsonNode.class);
-	}
-
-	public T reuseUnusedNode() {
-		return ((CachingList<T>) this.getChildren()).reuseUnusedElement();
-	}
-
-	public T getUnusedNode() {
-		return ((CachingList<T>) this.getChildren()).getUnusedElement();
 	}
 
 	@SuppressWarnings("unchecked")
@@ -77,10 +69,23 @@ public class CachingArrayNode<T extends IJsonNode> extends ArrayNode<T> {
 		super.clear();
 	}
 
-	@SuppressWarnings("unchecked")
+	/*
+	 * (non-Javadoc)
+	 * @see com.esotericsoftware.kryo.KryoCopyable#copy(com.esotericsoftware.kryo.Kryo)
+	 */
 	@Override
-	public void setSize(final int size) {
-		((CachingList<T>) this.getChildren()).size(size, (T) MissingNode.getInstance());
+	public AbstractArrayNode<T> copy(final Kryo kryo) {
+		final CachingArrayNode<T> node = new CachingArrayNode<T>();
+		node.copyValueFrom(this);
+		return node;
+	}
+
+	public T getUnusedNode() {
+		return ((CachingList<T>) this.getChildren()).getUnusedElement();
+	}
+
+	public T reuseUnusedNode() {
+		return ((CachingList<T>) this.getChildren()).reuseUnusedElement();
 	}
 
 	/*
@@ -94,14 +99,9 @@ public class CachingArrayNode<T extends IJsonNode> extends ArrayNode<T> {
 		this.setSize(nodes.length);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see com.esotericsoftware.kryo.KryoCopyable#copy(com.esotericsoftware.kryo.Kryo)
-	 */
+	@SuppressWarnings("unchecked")
 	@Override
-	public AbstractArrayNode<T> copy(final Kryo kryo) {
-		final CachingArrayNode<T> node = new CachingArrayNode<T>();
-		node.copyValueFrom(this);
-		return node;
+	public void setSize(final int size) {
+		((CachingList<T>) this.getChildren()).size(size, (T) MissingNode.getInstance());
 	}
 }

@@ -32,6 +32,13 @@ public class OrExpression extends BooleanExpression {
 	private final List<BooleanExpression> expressions;
 
 	/**
+	 * Initializes OrExpression.
+	 */
+	public OrExpression() {
+		this(new ArrayList<BooleanExpression>());
+	}
+
+	/**
 	 * Initializes an OrExpression with the given {@link EvaluationExpression}s.
 	 * 
 	 * @param expressions
@@ -51,11 +58,9 @@ public class OrExpression extends BooleanExpression {
 		this.expressions = new ArrayList<BooleanExpression>(expressions);
 	}
 
-	/**
-	 * Initializes OrExpression.
-	 */
-	public OrExpression() {
-		this(new ArrayList<BooleanExpression>());
+	@Override
+	public void appendAsString(final Appendable appendable) throws IOException {
+		this.append(appendable, this.expressions, " OR ");
 	}
 
 	@Override
@@ -73,6 +78,23 @@ public class OrExpression extends BooleanExpression {
 			if (booleanExpression.evaluate(node) == BooleanNode.TRUE)
 				return BooleanNode.TRUE;
 		return BooleanNode.FALSE;
+	}
+
+	/**
+	 * Returns the expressions.
+	 * 
+	 * @return the expressions
+	 */
+	public List<BooleanExpression> getExpressions() {
+		return this.expressions;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 41;
+		int result = super.hashCode();
+		result = prime * result + this.expressions.hashCode();
+		return result;
 	}
 
 	/*
@@ -93,28 +115,6 @@ public class OrExpression extends BooleanExpression {
 				return BooleanExpression.ensureBooleanExpression(childExpression);
 			}
 		};
-	}
-
-	/**
-	 * Returns the expressions.
-	 * 
-	 * @return the expressions
-	 */
-	public List<BooleanExpression> getExpressions() {
-		return this.expressions;
-	}
-
-	@Override
-	public int hashCode() {
-		final int prime = 41;
-		int result = super.hashCode();
-		result = prime * result + this.expressions.hashCode();
-		return result;
-	}
-
-	@Override
-	public void appendAsString(final Appendable appendable) throws IOException {
-		this.append(appendable, this.expressions, " OR ");
 	}
 
 	/**

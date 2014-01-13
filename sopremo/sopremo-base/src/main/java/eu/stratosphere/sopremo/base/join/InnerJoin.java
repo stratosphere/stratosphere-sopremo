@@ -13,7 +13,7 @@ public class InnerJoin extends TwoSourceJoinBase<InnerJoin> {
 		private final IArrayNode<IJsonNode> result = new ArrayNode<IJsonNode>();
 
 		@Override
-		protected void match(final IJsonNode value1, final IJsonNode value2, final JsonCollector<IJsonNode> out) {
+		protected void join(final IJsonNode value1, final IJsonNode value2, final JsonCollector<IJsonNode> out) {
 			this.result.set(0, value1);
 			this.result.set(1, value2);
 			out.collect(this.result);

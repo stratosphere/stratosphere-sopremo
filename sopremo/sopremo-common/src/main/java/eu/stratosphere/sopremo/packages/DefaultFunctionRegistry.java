@@ -40,46 +40,14 @@ import eu.stratosphere.util.reflect.ReflectUtil;
 public class DefaultFunctionRegistry extends DefaultRegistry<Callable<?, ?>> implements IFunctionRegistry {
 	private final Map<String, Callable<?, ?>> methods = new HashMap<String, Callable<?, ?>>();
 
-	public DefaultFunctionRegistry(final NameChooser nameChooser) {
-		super(nameChooser);
-	}
-
 	/**
 	 * Initializes DefaultFunctionRegistry.
 	 */
 	public DefaultFunctionRegistry() {
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see
-	 * eu.stratosphere.sopremo.packages.AbstractMethodRegistry#findMethod(java
-	 * .lang.String)
-	 */
-	@Override
-	public Callable<?, ?> get(final String name) {
-		return this.methods.get(name);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see
-	 * eu.stratosphere.sopremo.packages.AbstractMethodRegistry#registerMethod
-	 * (java.lang.String, eu.stratosphere.sopremo.function.MeteorMethod)
-	 */
-	@Override
-	public void put(final String name, final Callable<?, ?> method) {
-		this.methods.put(name, method);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see
-	 * eu.stratosphere.sopremo.packages.IMethodRegistry#getRegisteredMethods()
-	 */
-	@Override
-	public Set<String> keySet() {
-		return Collections.unmodifiableSet(this.methods.keySet());
+	public DefaultFunctionRegistry(final NameChooser nameChooser) {
+		super(nameChooser);
 	}
 
 	/*
@@ -102,47 +70,45 @@ public class DefaultFunctionRegistry extends DefaultRegistry<Callable<?, ?>> imp
 		appendable.append("}");
 	}
 
-	private static boolean isCompatibleSignature(final Method method) {
-		final Class<?> returnType = method.getReturnType();
-		if (!IJsonNode.class.isAssignableFrom(returnType))
+	@Override
+	public boolean equals(final Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
 			return false;
-
-		final Class<?>[] parameterTypes = method.getParameterTypes();
-		// check if the individual parameters match
-		for (int index = 0; index < parameterTypes.length; index++)
-			if (!IJsonNode.class.isAssignableFrom(parameterTypes[index])
-				&&
-				!(index == parameterTypes.length - 1 && method.isVarArgs() && IJsonNode.class.isAssignableFrom(parameterTypes[index].getComponentType())))
-				return false;
-		return true;
+		if (this.getClass() != obj.getClass())
+			return false;
+		final DefaultFunctionRegistry other = (DefaultFunctionRegistry) obj;
+		return this.methods.equals(other.methods);
 	}
 
 	/*
 	 * (non-Javadoc)
 	 * @see
-	 * eu.stratosphere.sopremo.packages.IFunctionRegistry#put(java.lang.String,
-	 * java.lang.Class, java.lang.String)
+	 * eu.stratosphere.sopremo.packages.AbstractMethodRegistry#findMethod(java
+	 * .lang.String)
 	 */
 	@Override
-	public void put(final String registeredName, final Class<?> clazz, final String staticMethodName) {
-		final List<Method> functions =
-			this.getCompatibleMethods(ReflectUtil.getMethods(clazz, staticMethodName, Modifier.STATIC | Modifier.PUBLIC));
-
-		if (functions.isEmpty())
-			throw new IllegalArgumentException(
-				String.format("Method %s not found in class %s", staticMethodName, clazz));
-
-		Callable<?, ?> javaMethod = this.get(registeredName);
-		if (javaMethod == null || !(javaMethod instanceof JavaMethod))
-			this.put(registeredName, javaMethod = this.createJavaMethod(registeredName, functions.get(0)));
-		for (final Method method : functions)
-			((JavaMethod) javaMethod).addSignature(method);
+	public Callable<?, ?> get(final String name) {
+		return this.methods.get(name);
 	}
 
-	protected JavaMethod createJavaMethod(final String registeredName, final Method implementation) {
-		final JavaMethod javaMethod = new JavaMethod(registeredName);
-		javaMethod.addSignature(implementation);
-		return javaMethod;
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + this.methods.hashCode();
+		return result;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see
+	 * eu.stratosphere.sopremo.packages.IMethodRegistry#getRegisteredMethods()
+	 */
+	@Override
+	public Set<String> keySet() {
+		return Collections.unmodifiableSet(this.methods.keySet());
 	}
 
 	@Override
@@ -206,6 +172,45 @@ public class DefaultFunctionRegistry extends DefaultRegistry<Callable<?, ?>> imp
 		}
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see
+	 * eu.stratosphere.sopremo.packages.AbstractMethodRegistry#registerMethod
+	 * (java.lang.String, eu.stratosphere.sopremo.function.MeteorMethod)
+	 */
+	@Override
+	public void put(final String name, final Callable<?, ?> method) {
+		this.methods.put(name, method);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see
+	 * eu.stratosphere.sopremo.packages.IFunctionRegistry#put(java.lang.String,
+	 * java.lang.Class, java.lang.String)
+	 */
+	@Override
+	public void put(final String registeredName, final Class<?> clazz, final String staticMethodName) {
+		final List<Method> functions =
+			this.getCompatibleMethods(ReflectUtil.getMethods(clazz, staticMethodName, Modifier.STATIC | Modifier.PUBLIC));
+
+		if (functions.isEmpty())
+			throw new IllegalArgumentException(
+				String.format("Method %s not found in class %s", staticMethodName, clazz));
+
+		Callable<?, ?> javaMethod = this.get(registeredName);
+		if (javaMethod == null || !(javaMethod instanceof JavaMethod))
+			this.put(registeredName, javaMethod = this.createJavaMethod(registeredName, functions.get(0)));
+		for (final Method method : functions)
+			((JavaMethod) javaMethod).addSignature(method);
+	}
+
+	protected JavaMethod createJavaMethod(final String registeredName, final Method implementation) {
+		final JavaMethod javaMethod = new JavaMethod(registeredName);
+		javaMethod.addSignature(implementation);
+		return javaMethod;
+	}
+
 	private List<Method> getCompatibleMethods(final List<Method> methods) {
 		final List<Method> functions = new ArrayList<Method>();
 		for (final Method method : methods) {
@@ -219,23 +224,18 @@ public class DefaultFunctionRegistry extends DefaultRegistry<Callable<?, ?>> imp
 		return functions;
 	}
 
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + this.methods.hashCode();
-		return result;
-	}
+	private static boolean isCompatibleSignature(final Method method) {
+		final Class<?> returnType = method.getReturnType();
+		if (!IJsonNode.class.isAssignableFrom(returnType))
+			return false;
 
-	@Override
-	public boolean equals(final Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (this.getClass() != obj.getClass())
-			return false;
-		final DefaultFunctionRegistry other = (DefaultFunctionRegistry) obj;
-		return this.methods.equals(other.methods);
+		final Class<?>[] parameterTypes = method.getParameterTypes();
+		// check if the individual parameters match
+		for (int index = 0; index < parameterTypes.length; index++)
+			if (!IJsonNode.class.isAssignableFrom(parameterTypes[index])
+				&&
+				!(index == parameterTypes.length - 1 && method.isVarArgs() && IJsonNode.class.isAssignableFrom(parameterTypes[index].getComponentType())))
+				return false;
+		return true;
 	}
 }

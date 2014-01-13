@@ -31,19 +31,6 @@ public final class SopremoReduceOperator extends ReduceOperatorBase {
 	}
 
 	/**
-	 * Sets the innerGroupOrder to the specified value.
-	 * 
-	 * @param innerGroupOrder
-	 *        the innerGroupOrder to set
-	 */
-	public void setInnerGroupOrder(final Ordering secondarySort) {
-		if (secondarySort == null)
-			throw new NullPointerException("innerGroupOrder must not be null");
-
-		this.innerGroupOrder = secondarySort;
-	}
-
-	/**
 	 * Returns the innerGroupOrder.
 	 * 
 	 * @return the innerGroupOrder
@@ -55,5 +42,18 @@ public final class SopremoReduceOperator extends ReduceOperatorBase {
 	@Override
 	public boolean isCombinable() {
 		return this.operator.isCombinable();
+	}
+
+	/**
+	 * Sets the innerGroupOrder to the specified value.
+	 * 
+	 * @param innerGroupOrder
+	 *        the innerGroupOrder to set
+	 */
+	public void setInnerGroupOrder(final Ordering innerGroupOrder) {
+		if (innerGroupOrder == null)
+			throw new NullPointerException("innerGroupOrder must not be null");
+
+		this.innerGroupOrder = innerGroupOrder;
 	}
 }

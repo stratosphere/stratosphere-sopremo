@@ -18,14 +18,14 @@ package eu.stratosphere.util;
  */
 public class CharSequenceUtil {
 
-	public static boolean equalsIgnoreCase(final CharSequence seq1, final CharSequence seq2) {
+	public static boolean equal(final CharSequence seq1, final CharSequence seq2) {
 		final int len1 = seq1.length();
 		if (len1 != seq2.length())
 			return false;
 		return uncheckedRegionMatches(seq1, 0, seq2, 0, len1, true);
 	}
 
-	public static boolean equal(final CharSequence seq1, final CharSequence seq2) {
+	public static boolean equalsIgnoreCase(final CharSequence seq1, final CharSequence seq2) {
 		final int len1 = seq1.length();
 		if (len1 != seq2.length())
 			return false;

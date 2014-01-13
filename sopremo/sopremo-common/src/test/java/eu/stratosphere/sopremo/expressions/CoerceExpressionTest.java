@@ -16,18 +16,6 @@ import eu.stratosphere.sopremo.type.TextNode;
 
 public class CoerceExpressionTest extends EvaluableExpressionTest<CoerceExpression> {
 
-	@Override
-	protected CoerceExpression createDefaultInstance(final int index) {
-		switch (index) {
-		case 0:
-			return new CoerceExpression(LongNode.class);
-		case 1:
-			return new CoerceExpression(IntNode.class);
-		default:
-			return new CoerceExpression(DoubleNode.class);
-		}
-	}
-
 	@Test
 	public void shouldChangeTypeOfIntToText() {
 		final IJsonNode result = new CoerceExpression(TextNode.class).evaluate(IntNode.valueOf(42));
@@ -53,5 +41,17 @@ public class CoerceExpressionTest extends EvaluableExpressionTest<CoerceExpressi
 	@Test(expected = CoercionException.class)
 	public void shouldThrowExceptionWhenChangingTextToInt() {
 		new CoerceExpression(IntNode.class).evaluate(TextNode.valueOf("testname"));
+	}
+
+	@Override
+	protected CoerceExpression createDefaultInstance(final int index) {
+		switch (index) {
+		case 0:
+			return new CoerceExpression(LongNode.class);
+		case 1:
+			return new CoerceExpression(IntNode.class);
+		default:
+			return new CoerceExpression(DoubleNode.class);
+		}
 	}
 }

@@ -21,6 +21,11 @@ public class StackedFunctionRegistry extends StackedRegistry<Callable<?, ?>, IFu
 	}
 
 	@Override
+	public void put(final Class<?> javaFunctions) {
+		this.getTopRegistry().put(javaFunctions);
+	}
+
+	@Override
 	public void put(final Method method) {
 		this.getTopRegistry().put(method);
 	}
@@ -32,10 +37,5 @@ public class StackedFunctionRegistry extends StackedRegistry<Callable<?, ?>, IFu
 	@Override
 	public void put(final String registeredName, final Class<?> clazz, final String staticMethodName) {
 		this.getTopRegistry().put(registeredName, clazz, staticMethodName);
-	}
-
-	@Override
-	public void put(final Class<?> javaFunctions) {
-		this.getTopRegistry().put(javaFunctions);
 	}
 }

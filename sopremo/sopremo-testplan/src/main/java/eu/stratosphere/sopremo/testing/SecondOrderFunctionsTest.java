@@ -38,14 +38,6 @@ import eu.stratosphere.sopremo.type.JsonUtil;
  */
 public class SecondOrderFunctionsTest {
 	@Test
-	public void shouldMapElements() {
-		final FunctionNode pointer = new FunctionNode();
-		pointer.setFunction(MathFunctions.SQR);
-
-		assertReturn(JsonUtil.createArrayNode(1, 4, 9), SecondOrderFunctions.MAP, new int[] { 1, 2, 3 }, pointer);
-	}
-
-	@Test
 	public void shouldFilterElements() {
 		final FunctionNode pointer = new FunctionNode();
 		pointer.setFunction(new ExpressionFunction(1,
@@ -74,5 +66,13 @@ public class SecondOrderFunctionsTest {
 
 		final ContiguousSet<Integer> input = Ranges.closed(0, 10).asSet(DiscreteDomains.integers());
 		assertReturn(55, SecondOrderFunctions.FOLD, input, 0, pointer);
+	}
+
+	@Test
+	public void shouldMapElements() {
+		final FunctionNode pointer = new FunctionNode();
+		pointer.setFunction(MathFunctions.SQR);
+
+		assertReturn(JsonUtil.createArrayNode(1, 4, 9), SecondOrderFunctions.MAP, new int[] { 1, 2, 3 }, pointer);
 	}
 }

@@ -25,6 +25,17 @@ public class NotNullOrMissingBooleanExpression extends PathSegmentExpression {
 	/*
 	 * (non-Javadoc)
 	 * @see
+	 * eu.stratosphere.sopremo.expressions.PathSegmentExpression#equalsSameClass(eu.stratosphere.sopremo.expressions
+	 * .PathSegmentExpression)
+	 */
+	@Override
+	protected boolean equalsSameClass(final PathSegmentExpression other) {
+		return true;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see
 	 * eu.stratosphere.sopremo.expressions.PathSegmentExpression#evaluateSegment(eu.stratosphere.sopremo.type.IJsonNode)
 	 */
 	@Override
@@ -40,17 +51,6 @@ public class NotNullOrMissingBooleanExpression extends PathSegmentExpression {
 	@Override
 	protected int segmentHashCode() {
 		return 0;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see
-	 * eu.stratosphere.sopremo.expressions.PathSegmentExpression#equalsSameClass(eu.stratosphere.sopremo.expressions
-	 * .PathSegmentExpression)
-	 */
-	@Override
-	protected boolean equalsSameClass(final PathSegmentExpression other) {
-		return true;
 	}
 
 }

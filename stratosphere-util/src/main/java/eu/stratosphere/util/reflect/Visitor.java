@@ -16,7 +16,6 @@ package eu.stratosphere.util.reflect;
 
 /**
  * A general purpose interface for the visitor pattern in tree strucures.
- * 
  */
 public interface Visitor<T> {
 	/**

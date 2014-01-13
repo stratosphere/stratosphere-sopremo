@@ -5,11 +5,10 @@ import java.util.Arrays;
 
 /**
  * General signature of a method that handles exactly the specified argument types.
- * 
  */
 public class Signature implements Serializable {
 	/**
-	 * Constant that is returned by {@link #getDistance(MethodSignature)} if the given actual signature is incompatible
+	 * Constant that is returned by {@link #getDistance(Signature)} if the given actual signature is incompatible
 	 * with the declared signature.
 	 */
 	public static final int INCOMPATIBLE = -1;
@@ -36,6 +35,10 @@ public class Signature implements Serializable {
 	 */
 	Signature() {
 		this(new Class[0]);
+	}
+
+	public Object[] adjustParameters(final Object[] params) {
+		return params;
 	}
 
 	@Override
@@ -96,14 +99,6 @@ public class Signature implements Serializable {
 
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.SopremoType#toString(java.lang.StringBuilder)
-	 */
-	public void toString(final StringBuilder builder) {
-		builder.append("(").append(Arrays.toString(this.parameterTypes)).append(")");
-	}
-
-	/*
-	 * (non-Javadoc)
 	 * @see java.lang.Object#toString()
 	 */
 	@Override
@@ -113,7 +108,11 @@ public class Signature implements Serializable {
 		return builder.toString();
 	}
 
-	public Object[] adjustParameters(final Object[] params) {
-		return params;
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.SopremoType#toString(java.lang.StringBuilder)
+	 */
+	public void toString(final StringBuilder builder) {
+		builder.append("(").append(Arrays.toString(this.parameterTypes)).append(")");
 	}
 }

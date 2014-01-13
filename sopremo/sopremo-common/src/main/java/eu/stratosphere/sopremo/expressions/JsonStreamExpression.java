@@ -23,10 +23,25 @@ import eu.stratosphere.sopremo.operator.JsonStream;
 import eu.stratosphere.sopremo.operator.Operator;
 import eu.stratosphere.sopremo.operator.Operator.Output;
 
+/**
+ * Tag expression for nested operators.
+ */
 public class JsonStreamExpression extends UnevaluableExpression {
 	private final JsonStream stream;
 
 	private final int inputIndex;
+
+	private transient WeakReference<JsonStreamExpression> equalStream;
+
+	/**
+	 * Initializes a JsonStreamExpression with the given index.
+	 * 
+	 * @param inputIndex
+	 *        the index
+	 */
+	public JsonStreamExpression(final int inputIndex) {
+		this(null, inputIndex);
+	}
 
 	/**
 	 * Initializes a JsonStreamExpression with the given {@link JsonStream}.
@@ -53,42 +68,12 @@ public class JsonStreamExpression extends UnevaluableExpression {
 	}
 
 	/**
-	 * Initializes a JsonStreamExpression with the given index.
-	 * 
-	 * @param stream
-	 *        the stream that should be used
-	 * @param inputIndex
-	 *        the index
-	 */
-	public JsonStreamExpression(final int inputIndex) {
-		this(null, inputIndex);
-	}
-
-	/**
 	 * Initializes JsonStreamExpression.
 	 */
 	JsonStreamExpression() {
 		super("JsonStream placeholder");
 		this.stream = null;
 		this.inputIndex = 0;
-	}
-
-	/**
-	 * Returns the inputIndex.
-	 * 
-	 * @return the inputIndex
-	 */
-	public int getInputIndex() {
-		return this.inputIndex;
-	}
-
-	/**
-	 * Returns the JsonStream
-	 * 
-	 * @return the stream
-	 */
-	public JsonStream getStream() {
-		return this.stream;
 	}
 
 	/*
@@ -104,37 +89,6 @@ public class JsonStreamExpression extends UnevaluableExpression {
 		else if (this.stream != null)
 			TypeFormat.format(this.stream.getSource().getIndex(), appendable);
 	}
-
-	/**
-	 * Creates an {@link InputSelection} based on this expressions stream an index.
-	 * 
-	 * @param operator
-	 * @return the created InputSelection
-	 */
-	public EvaluationExpression toInputSelection(final Operator<?> operator) {
-		InputSelection inputSelection;
-		if (this.inputIndex != -1)
-			inputSelection = new InputSelection(this.inputIndex);
-		else if (operator.getSource() == this.stream.getSource())
-			inputSelection = new InputSelection(0);
-		else {
-			final int index = operator.getInputs().indexOf(this.stream.getSource());
-			if (index == -1)
-				return this;
-			inputSelection = new InputSelection(index);
-		}
-		return inputSelection;
-	}
-
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = super.hashCode();
-		result = prime * result + this.stream.getSource().hashCode();
-		return result;
-	}
-
-	private transient WeakReference<JsonStreamExpression> equalStream;
 
 	@Override
 	public boolean equals(final Object obj) {
@@ -159,6 +113,15 @@ public class JsonStreamExpression extends UnevaluableExpression {
 	}
 
 	/**
+	 * Returns the inputIndex.
+	 * 
+	 * @return the inputIndex
+	 */
+	public int getInputIndex() {
+		return this.inputIndex;
+	}
+
+	/**
 	 * Returns the input index of the stream. If the inputIndex is set, it is directly return. Else the stream will be
 	 * looked up in the provided list of inputs.
 	 * 
@@ -170,6 +133,44 @@ public class JsonStreamExpression extends UnevaluableExpression {
 		if (this.inputIndex != -1)
 			return this.inputIndex;
 		return inputs.indexOf(this.stream);
+	}
+
+	/**
+	 * Returns the JsonStream
+	 * 
+	 * @return the stream
+	 */
+	public JsonStream getStream() {
+		return this.stream;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result + this.stream.getSource().hashCode();
+		return result;
+	}
+
+	/**
+	 * Creates an {@link InputSelection} based on this expressions stream an index.
+	 * 
+	 * @param operator
+	 * @return the created InputSelection
+	 */
+	public EvaluationExpression toInputSelection(final Operator<?> operator) {
+		InputSelection inputSelection;
+		if (this.inputIndex != -1)
+			inputSelection = new InputSelection(this.inputIndex);
+		else if (operator.getSource() == this.stream.getSource())
+			inputSelection = new InputSelection(0);
+		else {
+			final int index = operator.getInputs().indexOf(this.stream.getSource());
+			if (index == -1)
+				return this;
+			inputSelection = new InputSelection(index);
+		}
+		return inputSelection;
 	}
 
 }

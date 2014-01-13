@@ -22,16 +22,6 @@ import eu.stratosphere.api.common.typeutils.TypePairComparatorFactory;
 public class SopremoRecordPairComparatorFactory implements TypePairComparatorFactory<SopremoRecord, SopremoRecord> {
 	private static final SopremoRecordPairComparatorFactory INSTANCE = new SopremoRecordPairComparatorFactory();
 
-	/**
-	 * Gets an instance of the comparator factory. The instance is shared, since the factory is a
-	 * stateless class.
-	 * 
-	 * @return An instance of the comparator factory.
-	 */
-	public static final SopremoRecordPairComparatorFactory get() {
-		return INSTANCE;
-	}
-
 	/*
 	 * (non-Javadoc)
 	 * @see
@@ -67,5 +57,15 @@ public class SopremoRecordPairComparatorFactory implements TypePairComparatorFac
 
 		return new SopremoRecordPairComparator(prc2.getKeyExpressionIndices(), prc2.getKeyExpressions(),
 			prc1.getKeyExpressionIndices(), prc1.getKeyExpressions());
+	}
+
+	/**
+	 * Gets an instance of the comparator factory. The instance is shared, since the factory is a
+	 * stateless class.
+	 * 
+	 * @return An instance of the comparator factory.
+	 */
+	public static final SopremoRecordPairComparatorFactory get() {
+		return INSTANCE;
 	}
 }

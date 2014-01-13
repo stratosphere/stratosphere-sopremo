@@ -11,6 +11,13 @@ import eu.stratosphere.sopremo.type.IntNode;
 
 public class ConstantExpressionTest extends EvaluableExpressionTest<ConstantExpression> {
 
+	@Test
+	public void shouldCastNumericNodeCorrectly() {
+		final Object result = new ConstantExpression(IntNode.valueOf(42)).getConstant();
+
+		Assert.assertEquals(IntNode.valueOf(42), result);
+	}
+
 	@Override
 	protected ConstantExpression createDefaultInstance(final int index) {
 		return new ConstantExpression(IntNode.valueOf(index));
@@ -21,12 +28,5 @@ public class ConstantExpressionTest extends EvaluableExpressionTest<ConstantExpr
 		super.initVerifier(equalVerifier);
 		equalVerifier.withPrefabValues(IJsonNode.class, IntNode.valueOf(23), IntNode.valueOf(42));
 		equalVerifier.suppress(Warning.TRANSIENT_FIELDS);
-	}
-
-	@Test
-	public void shouldCastNumericNodeCorrectly() {
-		final Object result = new ConstantExpression(IntNode.valueOf(42)).getConstant();
-
-		Assert.assertEquals(IntNode.valueOf(42), result);
 	}
 }

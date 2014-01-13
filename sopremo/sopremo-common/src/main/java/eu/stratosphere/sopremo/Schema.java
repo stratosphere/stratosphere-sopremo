@@ -24,19 +24,13 @@ import java.util.List;
 import javolution.text.TextFormat;
 import eu.stratosphere.sopremo.expressions.ArrayAccess;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
+import eu.stratosphere.sopremo.operator.SopremoPlan;
 
 /**
+ * The schema of a {@link SopremoPlan} is the distinct set of its decomposed key expressions.
  */
 public class Schema extends AbstractSopremoType {
 	private final List<EvaluationExpression> keyExpressions = new ArrayList<EvaluationExpression>();
-
-	public Schema(final List<EvaluationExpression> keyExpressions) {
-		for (final EvaluationExpression keyExpression : keyExpressions)
-			if (keyExpression instanceof ArrayAccess && ((ArrayAccess) keyExpression).isFixedSize())
-				this.keyExpressions.addAll(((ArrayAccess) keyExpression).decompose());
-			else
-				this.keyExpressions.add(keyExpression);
-	}
 
 	/**
 	 * Initializes Schema.
@@ -44,13 +38,12 @@ public class Schema extends AbstractSopremoType {
 	public Schema() {
 	}
 
-	/**
-	 * Returns the keyExpressions.
-	 * 
-	 * @return the keyExpressions
-	 */
-	public List<EvaluationExpression> getKeyExpressions() {
-		return this.keyExpressions;
+	public Schema(final List<EvaluationExpression> keyExpressions) {
+		for (final EvaluationExpression keyExpression : keyExpressions)
+			if (keyExpression instanceof ArrayAccess && ((ArrayAccess) keyExpression).isFixedSize())
+				this.keyExpressions.addAll(((ArrayAccess) keyExpression).decompose());
+			else
+				this.keyExpressions.add(keyExpression);
 	}
 
 	/*
@@ -63,8 +56,16 @@ public class Schema extends AbstractSopremoType {
 	}
 
 	/**
-	 * @param expression
-	 * @return
+	 * Returns the keyExpressions.
+	 * 
+	 * @return the keyExpressions
+	 */
+	public List<EvaluationExpression> getKeyExpressions() {
+		return this.keyExpressions;
+	}
+
+	/**
+	 * Returns all indices that corresponds to the (decomposable) expression.
 	 */
 	public IntCollection indicesOf(final EvaluationExpression expression) {
 		final IntArrayList indices = new IntArrayList();

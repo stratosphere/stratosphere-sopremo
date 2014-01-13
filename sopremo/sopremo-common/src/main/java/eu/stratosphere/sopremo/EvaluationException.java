@@ -2,7 +2,6 @@ package eu.stratosphere.sopremo;
 
 /**
  * SopremoEnvironment exception that is thrown when an error during evaluation occurred.
- * 
  */
 public class EvaluationException extends RuntimeException {
 	/**

@@ -15,42 +15,7 @@ public class FullOuterJoin extends TwoSourceJoinBase<FullOuterJoin> {
 	public static class Implementation extends SopremoCoGroup {
 		protected final IArrayNode<IJsonNode> result = new ArrayNode<IJsonNode>();
 
-		protected void leftOuterJoin(final IArrayNode<IJsonNode> result, final IStreamNode<IJsonNode> values2,
-				final JsonCollector<IJsonNode> out) {
-			result.set(1, MissingNode.getInstance());
-			for (final IJsonNode value : values2) {
-				result.set(0, value);
-				out.collect(result);
-			}
-		}
-
-		protected void rightOuterJoin(final IArrayNode<IJsonNode> result, final IStreamNode<IJsonNode> values2,
-				final JsonCollector<IJsonNode> out) {
-			result.set(0, MissingNode.getInstance());
-			for (final IJsonNode value : values2) {
-				result.set(1, value);
-				out.collect(result);
-			}
-		}
-
 		private transient CachingArrayNode<IJsonNode> firstSourceNodes = new CachingArrayNode<IJsonNode>();
-
-		protected void cogroupJoin(final IArrayNode<IJsonNode> result, final IStreamNode<IJsonNode> values1,
-				final IStreamNode<IJsonNode> values2, final JsonCollector<IJsonNode> out) {
-			this.firstSourceNodes.setSize(0);
-			// TODO: use resettable iterator to avoid OOME
-			// TODO: can we estimate if first or second source is smaller?
-			for (final IJsonNode value : values1)
-				this.firstSourceNodes.addClone(value);
-
-			for (final IJsonNode secondSourceNode : values2) {
-				result.set(1, secondSourceNode);
-				for (final IJsonNode firstSourceNode : this.firstSourceNodes) {
-					result.set(0, firstSourceNode);
-					out.collect(result);
-				}
-			}
-		}
 
 		@Override
 		protected void coGroup(final IStreamNode<IJsonNode> values1, final IStreamNode<IJsonNode> values2,
@@ -70,6 +35,41 @@ public class FullOuterJoin extends TwoSourceJoinBase<FullOuterJoin> {
 			}
 
 			this.cogroupJoin(this.result, values1, values2, out);
+		}
+
+		protected void cogroupJoin(final IArrayNode<IJsonNode> result, final IStreamNode<IJsonNode> values1,
+				final IStreamNode<IJsonNode> values2, final JsonCollector<IJsonNode> out) {
+			this.firstSourceNodes.setSize(0);
+			// TODO: use resettable iterator to avoid OOME
+			// TODO: can we estimate if first or second source is smaller?
+			for (final IJsonNode value : values1)
+				this.firstSourceNodes.addClone(value);
+
+			for (final IJsonNode secondSourceNode : values2) {
+				result.set(1, secondSourceNode);
+				for (final IJsonNode firstSourceNode : this.firstSourceNodes) {
+					result.set(0, firstSourceNode);
+					out.collect(result);
+				}
+			}
+		}
+
+		protected void leftOuterJoin(final IArrayNode<IJsonNode> result, final IStreamNode<IJsonNode> values2,
+				final JsonCollector<IJsonNode> out) {
+			result.set(1, MissingNode.getInstance());
+			for (final IJsonNode value : values2) {
+				result.set(0, value);
+				out.collect(result);
+			}
+		}
+
+		protected void rightOuterJoin(final IArrayNode<IJsonNode> result, final IStreamNode<IJsonNode> values2,
+				final JsonCollector<IJsonNode> out) {
+			result.set(0, MissingNode.getInstance());
+			for (final IJsonNode value : values2) {
+				result.set(1, value);
+				out.collect(result);
+			}
 		}
 	}
 }

@@ -98,35 +98,6 @@ public class SopremoTestServer implements Closeable, SopremoExecutionProtocol {
 			this.tempDir += File.separator;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see
-	 * eu.stratosphere.sopremo.execution.LibraryTransferProtocol#getLibraryCacheProfile(eu.stratosphere.nephele.execution
-	 * .librarycache.LibraryCacheProfileRequest)
-	 */
-	@Override
-	public LibraryCacheProfileResponse getLibraryCacheProfile(final LibraryCacheProfileRequest request)
-			throws IOException {
-		final LibraryCacheProfileResponse response = new LibraryCacheProfileResponse(request);
-		final String[] requiredLibraries = request.getRequiredLibraries();
-
-		// since the test server is executed locally, all libraries are available
-		for (int i = 0; i < requiredLibraries.length; i++)
-			response.setCached(i, true);
-
-		return response;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see
-	 * eu.stratosphere.sopremo.execution.LibraryTransferProtocol#updateLibraryCache(eu.stratosphere.nephele.execution
-	 * .librarycache.LibraryCacheUpdate)
-	 */
-	@Override
-	public void updateLibraryCache(final LibraryCacheUpdate update) throws IOException {
-	}
-
 	public void checkContentsOf(final String fileName, final IJsonNode... expected) throws IOException {
 		final List<IJsonNode> remainingValues = new ArrayList<IJsonNode>(Arrays.asList(expected));
 
@@ -187,25 +158,6 @@ public class SopremoTestServer implements Closeable, SopremoExecutionProtocol {
 		return this.createFile(this.getTempName(fileName), this.getJsonString(nodes));
 	}
 
-	public File getOutputFile(final String fileName) {
-		this.filesToCleanup.add(this.getTempName(fileName));
-		final File file = new File(this.getTempName(fileName));
-		file.delete();
-		return file;
-	}
-
-	private File createFile(final String fileName, final String fileContent) throws IOException {
-		final File f = new File(fileName);
-		if (this.filesToCleanup.contains(fileContent))
-			throw new IllegalArgumentException("file already exists");
-
-		final FileWriter fw = new FileWriter(f);
-		fw.write(fileContent);
-		fw.close();
-
-		return f;
-	}
-
 	public boolean delete(final String path, final boolean recursive) throws IOException {
 		final File file = new File(this.getTempName(path));
 		if (recursive && file.isDirectory())
@@ -219,6 +171,37 @@ public class SopremoTestServer implements Closeable, SopremoExecutionProtocol {
 		return this.executor.execute(request);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see
+	 * eu.stratosphere.sopremo.execution.LibraryTransferProtocol#getLibraryCacheProfile(eu.stratosphere.nephele.execution
+	 * .librarycache.LibraryCacheProfileRequest)
+	 */
+	@Override
+	public LibraryCacheProfileResponse getLibraryCacheProfile(final LibraryCacheProfileRequest request)
+			throws IOException {
+		final LibraryCacheProfileResponse response = new LibraryCacheProfileResponse(request);
+		final String[] requiredLibraries = request.getRequiredLibraries();
+
+		// since the test server is executed locally, all libraries are available
+		for (int i = 0; i < requiredLibraries.length; i++)
+			response.setCached(i, true);
+
+		return response;
+	}
+
+	@Override
+	public Object getMetaData(final SopremoID jobId, final String key) throws IOException, InterruptedException {
+		return this.executor.getMetaData(jobId, key);
+	}
+
+	public File getOutputFile(final String fileName) {
+		this.filesToCleanup.add(this.getTempName(fileName));
+		final File file = new File(this.getTempName(fileName));
+		file.delete();
+		return file;
+	}
+
 	public InetSocketAddress getServerAddress() {
 		return this.server.getServerAddress();
 	}
@@ -226,6 +209,28 @@ public class SopremoTestServer implements Closeable, SopremoExecutionProtocol {
 	@Override
 	public ExecutionResponse getState(final SopremoID jobId) throws IOException, InterruptedException {
 		return this.executor.getState(jobId);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see
+	 * eu.stratosphere.sopremo.execution.LibraryTransferProtocol#updateLibraryCache(eu.stratosphere.nephele.execution
+	 * .librarycache.LibraryCacheUpdate)
+	 */
+	@Override
+	public void updateLibraryCache(final LibraryCacheUpdate update) throws IOException {
+	}
+
+	private File createFile(final String fileName, final String fileContent) throws IOException {
+		final File f = new File(fileName);
+		if (this.filesToCleanup.contains(fileContent))
+			throw new IllegalArgumentException("file already exists");
+
+		final FileWriter fw = new FileWriter(f);
+		fw.write(fileContent);
+		fw.close();
+
+		return f;
 	}
 
 	private void fail(final Exception e, final String message) throws AssertionFailedError {
@@ -258,11 +263,6 @@ public class SopremoTestServer implements Closeable, SopremoExecutionProtocol {
 			response = server.getState(response.getJobId());
 		}
 		return response;
-	}
-
-	@Override
-	public Object getMetaData(final SopremoID jobId, final String key) throws IOException, InterruptedException {
-		return this.executor.getMetaData(jobId, key);
 	}
 
 }

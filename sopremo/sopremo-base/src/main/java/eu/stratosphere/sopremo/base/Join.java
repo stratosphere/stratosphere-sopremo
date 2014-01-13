@@ -100,7 +100,7 @@ public class Join extends CompositeOperator<Join> {
 			final int numInputs = this.getNumInputs();
 			final JsonStream[] inputs = new JsonStream[numInputs];
 			for (int index = 0; index < numInputs; index++)
-				inputs[index] = OperatorUtil.positionEncode(module.getInput(index), index, numInputs);
+				inputs[index] = SopremoOperatorUtil.positionEncode(module.getInput(index), index, numInputs);
 
 			// rewire individual joins
 			// the input of each join is either the module input or the result of a previous join
@@ -157,83 +157,6 @@ public class Join extends CompositeOperator<Join> {
 			module.getOutput(0).setInput(0,
 				new Projection().withInputs(lastOperator).withResultProjection(resultProjection));
 		}
-	}
-
-	/**
-	 * Finds the minimal spanning tree over a graph of Join predicates based on the Kruskal's algorithm.
-	 * 
-	 * @param someBinaryConditions
-	 * @return the minimal spanning tree over the input graph of expressions
-	 */
-	private List<BinaryBooleanExpression> findMinimalSpanningTree(
-			final List<BinaryBooleanExpression> someBinaryConditions) {
-
-		final List<BinaryBooleanExpression> minimalSpanningTree = new ArrayList<BinaryBooleanExpression>();
-
-		final BitSet remainingVertices = new BitSet();
-		remainingVertices.set(0, this.getNumInputs());
-		final LinkedList<Object2IntMap.Entry<BinaryBooleanExpression>> edgesWithWeight =
-			this.weightEdges(someBinaryConditions);
-		this.sortEdgesByWeight(edgesWithWeight);
-
-		while (!edgesWithWeight.isEmpty()) {
-			final BinaryBooleanExpression currentEdge = edgesWithWeight.removeFirst().getKey();
-			if (!this.currentEdgeProducesCycleInMST(currentEdge, remainingVertices))
-				minimalSpanningTree.add(currentEdge);
-		}
-		return minimalSpanningTree;
-	}
-
-	private void sortEdgesByWeight(final List<Object2IntMap.Entry<BinaryBooleanExpression>> edgesWithWeight) {
-		Collections.sort(edgesWithWeight, new Comparator<Object2IntMap.Entry<BinaryBooleanExpression>>() {
-			/*
-			 * (non-Javadoc)
-			 * @see java.util.Comparator#compare(java.lang.Object, java.lang.Object)
-			 */
-			@Override
-			public int compare(final Entry<BinaryBooleanExpression> o1, final Entry<BinaryBooleanExpression> o2) {
-				return o1.getIntValue() - o2.getIntValue();
-			}
-		});
-	}
-
-	private boolean currentEdgeProducesCycleInMST(final BinaryBooleanExpression currentEdge,
-			final BitSet remainingVertices) {
-		final int vertex1 = currentEdge.getExpr1().findFirst(InputSelection.class).getIndex();
-		final int vertex2 = currentEdge.getExpr2().findFirst(InputSelection.class).getIndex();
-
-		// an edge does not produce a cycle if it points to at least one remaining vertex
-		if (remainingVertices.get(vertex1)) {
-			remainingVertices.clear(vertex1);
-			if (remainingVertices.get(vertex2))
-				remainingVertices.clear(vertex2);
-			return false;
-		} else if (remainingVertices.get(vertex2)) {
-			remainingVertices.clear(vertex2);
-			return false;
-		}
-
-		// both nodes were already used -> cycle
-		return true;
-	}
-
-	private LinkedList<Object2IntMap.Entry<BinaryBooleanExpression>> weightEdges(
-			final List<BinaryBooleanExpression> someBinaryConditions) {
-		final LinkedList<Object2IntMap.Entry<BinaryBooleanExpression>> edgesWithWeight =
-			new LinkedList<Object2IntMap.Entry<BinaryBooleanExpression>>();
-		for (final BinaryBooleanExpression expression : someBinaryConditions) {
-			// TODO better weighting schema required
-			int weight;
-			if (expression instanceof ElementInSetExpression)
-				weight = 5;
-			else if (((ComparativeExpression) expression).getBinaryOperator().equals(BinaryOperator.EQUAL))
-				weight = 1;
-			else
-				weight = 10;
-
-			edgesWithWeight.add(new AbstractObject2IntMap.BasicEntry<BinaryBooleanExpression>(expression, weight));
-		}
-		return edgesWithWeight;
 	}
 
 	@Override
@@ -374,6 +297,51 @@ public class Join extends CompositeOperator<Join> {
 			throw new IllegalArgumentException("Cannot handle expression " + joinCondition);
 	}
 
+	private boolean currentEdgeProducesCycleInMST(final BinaryBooleanExpression currentEdge,
+			final BitSet remainingVertices) {
+		final int vertex1 = currentEdge.getExpr1().findFirst(InputSelection.class).getIndex();
+		final int vertex2 = currentEdge.getExpr2().findFirst(InputSelection.class).getIndex();
+
+		// an edge does not produce a cycle if it points to at least one remaining vertex
+		if (remainingVertices.get(vertex1)) {
+			remainingVertices.clear(vertex1);
+			if (remainingVertices.get(vertex2))
+				remainingVertices.clear(vertex2);
+			return false;
+		} else if (remainingVertices.get(vertex2)) {
+			remainingVertices.clear(vertex2);
+			return false;
+		}
+
+		// both nodes were already used -> cycle
+		return true;
+	}
+
+	/**
+	 * Finds the minimal spanning tree over a graph of Join predicates based on the Kruskal's algorithm.
+	 * 
+	 * @param someBinaryConditions
+	 * @return the minimal spanning tree over the input graph of expressions
+	 */
+	private List<BinaryBooleanExpression> findMinimalSpanningTree(
+			final List<BinaryBooleanExpression> someBinaryConditions) {
+
+		final List<BinaryBooleanExpression> minimalSpanningTree = new ArrayList<BinaryBooleanExpression>();
+
+		final BitSet remainingVertices = new BitSet();
+		remainingVertices.set(0, this.getNumInputs());
+		final LinkedList<Object2IntMap.Entry<BinaryBooleanExpression>> edgesWithWeight =
+			this.weightEdges(someBinaryConditions);
+		this.sortEdgesByWeight(edgesWithWeight);
+
+		while (!edgesWithWeight.isEmpty()) {
+			final BinaryBooleanExpression currentEdge = edgesWithWeight.removeFirst().getKey();
+			if (!this.currentEdgeProducesCycleInMST(currentEdge, remainingVertices))
+				minimalSpanningTree.add(currentEdge);
+		}
+		return minimalSpanningTree;
+	}
+
 	private List<TwoSourceJoin> getInitialJoinOrder(final SopremoModule module,
 			final List<BinaryBooleanExpression> minimalSpanningTree) {
 		final List<TwoSourceJoin> joins = new ArrayList<TwoSourceJoin>();
@@ -423,6 +391,38 @@ public class Join extends CompositeOperator<Join> {
 		return new TwoSourceJoin().withOuterJoinIndices(outerJoinIndices.toIntArray()).
 			withInputs(module.getInput(firstIndex), module.getInput(secondIndex)).
 			withCondition(adjustedExpression);
+	}
+
+	private void sortEdgesByWeight(final List<Object2IntMap.Entry<BinaryBooleanExpression>> edgesWithWeight) {
+		Collections.sort(edgesWithWeight, new Comparator<Object2IntMap.Entry<BinaryBooleanExpression>>() {
+			/*
+			 * (non-Javadoc)
+			 * @see java.util.Comparator#compare(java.lang.Object, java.lang.Object)
+			 */
+			@Override
+			public int compare(final Entry<BinaryBooleanExpression> o1, final Entry<BinaryBooleanExpression> o2) {
+				return o1.getIntValue() - o2.getIntValue();
+			}
+		});
+	}
+
+	private LinkedList<Object2IntMap.Entry<BinaryBooleanExpression>> weightEdges(
+			final List<BinaryBooleanExpression> someBinaryConditions) {
+		final LinkedList<Object2IntMap.Entry<BinaryBooleanExpression>> edgesWithWeight =
+			new LinkedList<Object2IntMap.Entry<BinaryBooleanExpression>>();
+		for (final BinaryBooleanExpression expression : someBinaryConditions) {
+			// TODO better weighting schema required
+			int weight;
+			if (expression instanceof ElementInSetExpression)
+				weight = 5;
+			else if (((ComparativeExpression) expression).getBinaryOperator().equals(BinaryOperator.EQUAL))
+				weight = 1;
+			else
+				weight = 10;
+
+			edgesWithWeight.add(new AbstractObject2IntMap.BasicEntry<BinaryBooleanExpression>(expression, weight));
+		}
+		return edgesWithWeight;
 	}
 
 }

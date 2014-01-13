@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import org.junit.Test;
 
+import eu.stratosphere.core.testing.TestPlan;
 import eu.stratosphere.sopremo.testing.SopremoTestPlan;
 
 public class CsvInputFormatTest {
@@ -14,88 +15,9 @@ public class CsvInputFormatTest {
 	 * @throws IOException
 	 */
 	@Test
-	public void shouldParseCsv() throws IOException {
-		final Source read =
-			new Source(new CsvFormat(), this.getResource("CsvInputFormat/restaurant_short.csv"));
-
-		final SopremoTestPlan testPlan = new SopremoTestPlan(read); // write
-
-		testPlan.getExpectedOutput(0).
-			addObject("id", "1", "name", "arnie morton's of chicago",
-				"addr", "435 s. la cienega blv.", "city", "los angeles",
-				"phone", "310/246-1501", "type", "american", "class", "'0'").
-			addObject("id", "2", "name", "\"arnie morton's of chicago\"",
-				"addr", "435 s. la cienega blv.", "city", "los,angeles",
-				"phone", "310/246-1501", "type", "american", "class", "'0'").
-			addObject("id", "3", "name", "arnie morton's of chicago",
-				"addr", "435 s. la cienega blv.", "city", "los\nangeles", "phone", "310/246-1501",
-				"type", "american", "class", "'0'");
-
-		testPlan.run();
-	}
-
-	/**
-	 * Tests if a {@link TestPlan} can be executed.
-	 * 
-	 * @throws IOException
-	 */
-	@Test
 	public void shouldHandleMultipleSplits() throws IOException {
 		final Source read =
 			new Source(new CsvFormat(), this.getResource("CsvInputFormat/restaurant_short.csv"));
-		read.setDegreeOfParallelism(2);
-
-		final SopremoTestPlan testPlan = new SopremoTestPlan(read);
-
-		testPlan.getExpectedOutput(0).
-			addObject("id", "1", "name", "arnie morton's of chicago",
-				"addr", "435 s. la cienega blv.", "city", "los angeles",
-				"phone", "310/246-1501", "type", "american", "class", "'0'").
-			addObject("id", "2", "name", "\"arnie morton's of chicago\"",
-				"addr", "435 s. la cienega blv.", "city", "los,angeles",
-				"phone", "310/246-1501", "type", "american", "class", "'0'").
-			addObject("id", "3", "name", "arnie morton's of chicago",
-				"addr", "435 s. la cienega blv.", "city", "los\nangeles", "phone", "310/246-1501",
-				"type", "american", "class", "'0'");
-
-		testPlan.run();
-	}
-
-	/**
-	 * Tests if a {@link TestPlan} can be executed.
-	 * 
-	 * @throws IOException
-	 */
-	@Test
-	public void shouldParseCsvWithoutNewline() throws IOException {
-		final Source read =
-			new Source(new CsvFormat(), this.getResource("CsvInputFormat/restaurant_short_wo_newline.csv"));
-
-		final SopremoTestPlan testPlan = new SopremoTestPlan(read); // write
-
-		testPlan.getExpectedOutput(0).
-			addObject("id", "1", "name", "arnie morton's of chicago",
-				"addr", "435 s. la cienega blv.", "city", "los angeles",
-				"phone", "310/246-1501", "type", "american", "class", "'0'").
-			addObject("id", "2", "name", "\"arnie morton's of chicago\"",
-				"addr", "435 s. la cienega blv.", "city", "los,angeles",
-				"phone", "310/246-1501", "type", "american", "class", "'0'").
-			addObject("id", "3", "name", "arnie morton's of chicago",
-				"addr", "435 s. la cienega blv.", "city", "los\nangeles", "phone", "310/246-1501",
-				"type", "american", "class", "'0'");
-
-		testPlan.run();
-	}
-
-	/**
-	 * Tests if a {@link TestPlan} can be executed.
-	 * 
-	 * @throws IOException
-	 */
-	@Test
-	public void shouldHandleMultipleSplitsWithoutNewline() throws IOException {
-		final Source read =
-			new Source(new CsvFormat(), this.getResource("CsvInputFormat/restaurant_short_wo_newline.csv"));
 		read.setDegreeOfParallelism(2);
 
 		final SopremoTestPlan testPlan = new SopremoTestPlan(read);
@@ -140,6 +62,85 @@ public class CsvInputFormatTest {
 			addObject("dna", "T031111222312212012001112220000111020300131021102223002132033200122333020103").
 			addObject("dna", "T322232132003300222112132200200202220222111201202212201120112001122123302010").
 			addObject("dna", "T321303333333001313300300030330000333030210122232122003211133303302022233200");
+
+		testPlan.run();
+	}
+
+	/**
+	 * Tests if a {@link TestPlan} can be executed.
+	 * 
+	 * @throws IOException
+	 */
+	@Test
+	public void shouldHandleMultipleSplitsWithoutNewline() throws IOException {
+		final Source read =
+			new Source(new CsvFormat(), this.getResource("CsvInputFormat/restaurant_short_wo_newline.csv"));
+		read.setDegreeOfParallelism(2);
+
+		final SopremoTestPlan testPlan = new SopremoTestPlan(read);
+
+		testPlan.getExpectedOutput(0).
+			addObject("id", "1", "name", "arnie morton's of chicago",
+				"addr", "435 s. la cienega blv.", "city", "los angeles",
+				"phone", "310/246-1501", "type", "american", "class", "'0'").
+			addObject("id", "2", "name", "\"arnie morton's of chicago\"",
+				"addr", "435 s. la cienega blv.", "city", "los,angeles",
+				"phone", "310/246-1501", "type", "american", "class", "'0'").
+			addObject("id", "3", "name", "arnie morton's of chicago",
+				"addr", "435 s. la cienega blv.", "city", "los\nangeles", "phone", "310/246-1501",
+				"type", "american", "class", "'0'");
+
+		testPlan.run();
+	}
+
+	/**
+	 * Tests if a {@link TestPlan} can be executed.
+	 * 
+	 * @throws IOException
+	 */
+	@Test
+	public void shouldParseCsv() throws IOException {
+		final Source read =
+			new Source(new CsvFormat(), this.getResource("CsvInputFormat/restaurant_short.csv"));
+
+		final SopremoTestPlan testPlan = new SopremoTestPlan(read); // write
+
+		testPlan.getExpectedOutput(0).
+			addObject("id", "1", "name", "arnie morton's of chicago",
+				"addr", "435 s. la cienega blv.", "city", "los angeles",
+				"phone", "310/246-1501", "type", "american", "class", "'0'").
+			addObject("id", "2", "name", "\"arnie morton's of chicago\"",
+				"addr", "435 s. la cienega blv.", "city", "los,angeles",
+				"phone", "310/246-1501", "type", "american", "class", "'0'").
+			addObject("id", "3", "name", "arnie morton's of chicago",
+				"addr", "435 s. la cienega blv.", "city", "los\nangeles", "phone", "310/246-1501",
+				"type", "american", "class", "'0'");
+
+		testPlan.run();
+	}
+
+	/**
+	 * Tests if a {@link TestPlan} can be executed.
+	 * 
+	 * @throws IOException
+	 */
+	@Test
+	public void shouldParseCsvWithoutNewline() throws IOException {
+		final Source read =
+			new Source(new CsvFormat(), this.getResource("CsvInputFormat/restaurant_short_wo_newline.csv"));
+
+		final SopremoTestPlan testPlan = new SopremoTestPlan(read); // write
+
+		testPlan.getExpectedOutput(0).
+			addObject("id", "1", "name", "arnie morton's of chicago",
+				"addr", "435 s. la cienega blv.", "city", "los angeles",
+				"phone", "310/246-1501", "type", "american", "class", "'0'").
+			addObject("id", "2", "name", "\"arnie morton's of chicago\"",
+				"addr", "435 s. la cienega blv.", "city", "los,angeles",
+				"phone", "310/246-1501", "type", "american", "class", "'0'").
+			addObject("id", "3", "name", "arnie morton's of chicago",
+				"addr", "435 s. la cienega blv.", "city", "los\nangeles", "phone", "310/246-1501",
+				"type", "american", "class", "'0'");
 
 		testPlan.run();
 	}

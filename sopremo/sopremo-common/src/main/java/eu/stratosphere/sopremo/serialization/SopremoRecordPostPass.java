@@ -44,6 +44,41 @@ public class SopremoRecordPostPass extends GenericFlatTypePostPass<Class<? exten
 
 	private SopremoRecordLayout layout;
 
+	{
+		this.setPropagateParentSchemaDown(false);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see
+	 * eu.stratosphere.compiler.postpass.GenericRecordPostPass#postPass(eu.stratosphere.compiler.dag.candidate
+	 * .OptimizedPlan)
+	 */
+	@Override
+	public void postPass(final OptimizedPlan plan) {
+		this.layout = ((PlanWithSopremoPostPass) plan.getOriginalPactPlan()).getLayout();
+
+		super.postPass(plan);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see
+	 * eu.stratosphere.compiler.postpass.GenericRecordPostPass#createComparator(eu.stratosphere.util
+	 * .FieldList, boolean[], eu.stratosphere.compiler.postpass.AbstractSchema)
+	 */
+	@Override
+	protected TypeComparatorFactory<?> createComparator(final FieldList fields, final boolean[] directions,
+			final SopremoRecordSchema schema) {
+		// final int[] usedKeys = schema.getUsedKeys().toIntArray();
+		// final int[] sortFields = fields.toArray();
+		//
+		// for (int index = 0; index < sortFields.length; index++)
+		// sortFields[index] = Arrays.binarySearch(usedKeys, sortFields[index]);
+		// return new SopremoRecordComparatorFactory(this.layout.project(usedKeys), sortFields, directions);
+		return new SopremoRecordComparatorFactory(this.layout, fields.toArray(), directions);
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * @see eu.stratosphere.compiler.postpass.GenericRecordPostPass#createEmptySchema()
@@ -53,42 +88,31 @@ public class SopremoRecordPostPass extends GenericFlatTypePostPass<Class<? exten
 		return new SopremoRecordSchema();
 	}
 
-	private void addOrderingToSchema(final Ordering o, final SopremoRecordSchema schema) {
-		for (int i = 0; i < o.getNumberOfFields(); i++)
-			schema.add(o.getFieldNumber(i));
+	/*
+	 * (non-Javadoc)
+	 * @see
+	 * eu.stratosphere.compiler.postpass.GenericRecordPostPass#createPairComparator(eu.stratosphere.pact.common
+	 * .util.FieldList, eu.stratosphere.util.FieldList, boolean[],
+	 * eu.stratosphere.compiler.postpass.AbstractSchema, eu.stratosphere.compiler.postpass.AbstractSchema)
+	 */
+	@Override
+	protected TypePairComparatorFactory<?, ?> createPairComparator(final FieldList fields1, final FieldList fields2,
+			final boolean[] sortDirections,
+			final SopremoRecordSchema schema1, final SopremoRecordSchema schema2) throws MissingFieldTypeInfoException {
+		return new SopremoRecordPairComparatorFactory();
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see
+	 * eu.stratosphere.compiler.postpass.GenericRecordPostPass#createSerializer(eu.stratosphere.compiler.postpass
+	 * .AbstractSchema)
+	 */
 	@Override
-	protected void getSinkSchema(final SinkPlanNode sinkPlanNode, final SopremoRecordSchema schema)
-			throws CompilerPostPassException {
-		final GenericDataSink sink = sinkPlanNode.getSinkNode().getPactContract();
-		final Ordering partitioning = sink.getPartitionOrdering();
-		final Ordering sorting = sink.getLocalOrder();
-
-		if (partitioning != null)
-			this.addOrderingToSchema(partitioning, schema);
-		if (sorting != null)
-			this.addOrderingToSchema(sorting, schema);
-	}
-
-	@Override
-	protected void getSingleInputNodeSchema(final SingleInputPlanNode node, final SopremoRecordSchema schema)
-			throws CompilerPostPassException, ConflictingFieldTypeInfoException
-	{
-		// check that we got the right types
-		final SingleInputOperator<?> contract = node.getSingleInputNode().getPactContract();
-
-		// add the information to the schema
-		final int[] localPositions = contract.getKeyColumns(0);
-		for (int i = 0; i < localPositions.length; i++)
-			schema.add(localPositions[i]);
-
-		// this is a temporary fix, we should solve this more generic
-		if (contract instanceof SopremoReduceOperator) {
-			final Ordering groupOrder = ((SopremoReduceOperator) contract).getInnerGroupOrder();
-			if (groupOrder != null)
-				this.addOrderingToSchema(groupOrder, schema);
-		}
+	protected TypeSerializerFactory<?> createSerializer(final SopremoRecordSchema schema)
+			throws MissingFieldTypeInfoException {
+		return new SopremoRecordSerializerFactory(this.layout);
+		// return new SopremoRecordSerializerFactory(this.layout.project(schema.getUsedKeys().toIntArray()));
 	}
 
 	@Override
@@ -122,52 +146,37 @@ public class SopremoRecordPostPass extends GenericFlatTypePostPass<Class<? exten
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see
-	 * eu.stratosphere.compiler.postpass.GenericRecordPostPass#createSerializer(eu.stratosphere.compiler.postpass
-	 * .AbstractSchema)
-	 */
 	@Override
-	protected TypeSerializerFactory<?> createSerializer(final SopremoRecordSchema schema)
-			throws MissingFieldTypeInfoException {
-		return new SopremoRecordSerializerFactory(this.layout);
-//		return new SopremoRecordSerializerFactory(this.layout.project(schema.getUsedKeys().toIntArray()));
-	}
-
+	protected void getSingleInputNodeSchema(final SingleInputPlanNode node, final SopremoRecordSchema schema)
+			throws CompilerPostPassException, ConflictingFieldTypeInfoException
 	{
-		this.setPropagateParentSchemaDown(false);
+		// check that we got the right types
+		final SingleInputOperator<?> contract = node.getSingleInputNode().getPactContract();
+
+		// add the information to the schema
+		final int[] localPositions = contract.getKeyColumns(0);
+		for (int i = 0; i < localPositions.length; i++)
+			schema.add(localPositions[i]);
+
+		// this is a temporary fix, we should solve this more generic
+		if (contract instanceof SopremoReduceOperator) {
+			final Ordering groupOrder = ((SopremoReduceOperator) contract).getInnerGroupOrder();
+			if (groupOrder != null)
+				this.addOrderingToSchema(groupOrder, schema);
+		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see
-	 * eu.stratosphere.compiler.postpass.GenericRecordPostPass#postPass(eu.stratosphere.compiler.dag.candidate
-	 * .OptimizedPlan)
-	 */
 	@Override
-	public void postPass(final OptimizedPlan plan) {
-		this.layout = ((PlanWithSopremoPostPass) plan.getOriginalPactPlan()).getLayout();
+	protected void getSinkSchema(final SinkPlanNode sinkPlanNode, final SopremoRecordSchema schema)
+			throws CompilerPostPassException {
+		final GenericDataSink sink = sinkPlanNode.getSinkNode().getPactContract();
+		final Ordering partitioning = sink.getPartitionOrdering();
+		final Ordering sorting = sink.getLocalOrder();
 
-		super.postPass(plan);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see
-	 * eu.stratosphere.compiler.postpass.GenericRecordPostPass#createComparator(eu.stratosphere.util
-	 * .FieldList, boolean[], eu.stratosphere.compiler.postpass.AbstractSchema)
-	 */
-	@Override
-	protected TypeComparatorFactory<?> createComparator(final FieldList fields, final boolean[] directions,
-			final SopremoRecordSchema schema) {
-//		final int[] usedKeys = schema.getUsedKeys().toIntArray();
-//		final int[] sortFields = fields.toArray();
-//
-//		for (int index = 0; index < sortFields.length; index++)
-//			sortFields[index] = Arrays.binarySearch(usedKeys, sortFields[index]);
-//		return new SopremoRecordComparatorFactory(this.layout.project(usedKeys), sortFields, directions);
-		return new SopremoRecordComparatorFactory(this.layout, fields.toArray(), directions);
+		if (partitioning != null)
+			this.addOrderingToSchema(partitioning, schema);
+		if (sorting != null)
+			this.addOrderingToSchema(sorting, schema);
 	}
 
 	/*
@@ -194,12 +203,9 @@ public class SopremoRecordPostPass extends GenericFlatTypePostPass<Class<? exten
 		super.traverse(node, parentSchema, createUtilities);
 	}
 
-	private void setOrdering(final Channel input, final Ordering localOrder) {
-		if (localOrder != null) {
-			input.getLocalProperties().setOrdering(localOrder);
-			input.setLocalStrategy(input.getLocalStrategy(), new FieldList(localOrder.getFieldPositions()),
-				localOrder.getFieldSortDirections());
-		}
+	private void addOrderingToSchema(final Ordering o, final SopremoRecordSchema schema) {
+		for (int i = 0; i < o.getNumberOfFields(); i++)
+			schema.add(o.getFieldNumber(i));
 	}
 
 	//
@@ -210,18 +216,12 @@ public class SopremoRecordPostPass extends GenericFlatTypePostPass<Class<? exten
 	// return layout;
 	// }
 
-	/*
-	 * (non-Javadoc)
-	 * @see
-	 * eu.stratosphere.compiler.postpass.GenericRecordPostPass#createPairComparator(eu.stratosphere.pact.common
-	 * .util.FieldList, eu.stratosphere.util.FieldList, boolean[],
-	 * eu.stratosphere.compiler.postpass.AbstractSchema, eu.stratosphere.compiler.postpass.AbstractSchema)
-	 */
-	@Override
-	protected TypePairComparatorFactory<?, ?> createPairComparator(final FieldList fields1, final FieldList fields2,
-			final boolean[] sortDirections,
-			final SopremoRecordSchema schema1, final SopremoRecordSchema schema2) throws MissingFieldTypeInfoException {
-		return new SopremoRecordPairComparatorFactory();
+	private void setOrdering(final Channel input, final Ordering localOrder) {
+		if (localOrder != null) {
+			input.getLocalProperties().setOrdering(localOrder);
+			input.setLocalStrategy(input.getLocalStrategy(), new FieldList(localOrder.getFieldPositions()),
+				localOrder.getFieldSortDirections());
+		}
 	}
 
 }

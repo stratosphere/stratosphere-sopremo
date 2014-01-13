@@ -48,39 +48,6 @@ public class SopremoRecordLayout extends AbstractSopremoType {
 	 */
 	public static final int VALUE_INDEX = Integer.MAX_VALUE;
 
-	public static class KryoSerializer extends Serializer<SopremoRecordLayout> {
-
-		/*
-		 * (non-Javadoc)
-		 * @see com.esotericsoftware.kryo.Serializer#write(com.esotericsoftware.kryo.Kryo,
-		 * com.esotericsoftware.kryo.io.Output, java.lang.Object)
-		 */
-		@Override
-		public void write(final Kryo kryo, final Output output, final SopremoRecordLayout object) {
-			kryo.writeObject(output, object.getKeyExpressions());
-		}
-
-		/*
-		 * (non-Javadoc)
-		 * @see com.esotericsoftware.kryo.Serializer#copy(com.esotericsoftware.kryo.Kryo, java.lang.Object)
-		 */
-		@Override
-		public SopremoRecordLayout copy(final Kryo kryo, final SopremoRecordLayout original) {
-			return original;
-		}
-
-		/*
-		 * (non-Javadoc)
-		 * @see com.esotericsoftware.kryo.Serializer#read(com.esotericsoftware.kryo.Kryo,
-		 * com.esotericsoftware.kryo.io.Input, java.lang.Class)
-		 */
-		@SuppressWarnings("unchecked")
-		@Override
-		public SopremoRecordLayout read(final Kryo kryo, final Input input, final Class<SopremoRecordLayout> type) {
-			return SopremoRecordLayout.create(kryo.readObject(input, ArrayList.class));
-		}
-	}
-
 	public final static String LAYOUT_KEY = "sopremo.layout";
 
 	public final static SopremoRecordLayout EMPTY = SopremoRecordLayout.create();
@@ -98,36 +65,17 @@ public class SopremoRecordLayout extends AbstractSopremoType {
 
 	private final transient ExpressionIndex expressionIndex;
 
-	public IntCollection indicesOf(final EvaluationExpression expression) {
-		final IntArrayList indices = new IntArrayList();
-		if (expression == EvaluationExpression.VALUE)
-			indices.add(VALUE_INDEX);
-		else if (expression instanceof ArrayAccess && ((ArrayAccess) expression).isFixedSize())
-			for (final ArrayAccess arrayAccess : ((ArrayAccess) expression).decompose())
-				indices.add(this.indexedDirectDataExpression.getInt(arrayAccess));
-		else {
-			int index = this.indexedDirectDataExpression.getInt(expression);
-			if (index == -1)
-				index = this.getNumDirectDataKeys() + this.indexedCalculatedKeyExpressions.getInt(expression);
-			indices.add(index);
-		}
-		return indices;
-	}
+	/**
+	 * Initializes SopremoRecordLayout.
+	 */
+	public SopremoRecordLayout(final ExpressionIndex expressionIndex,
+			final EvaluationExpression[] directDataExpression,
+			final EvaluationExpression[] calculatedKeyExpressions) {
+		this.expressionIndex = expressionIndex;
+		this.directDataExpression = directDataExpression;
+		this.calculatedKeyExpressions = calculatedKeyExpressions;
 
-	public SopremoRecordLayout project(final int... keyIndices) {
-		final List<EvaluationExpression> keyExpressions = this.getKeyExpressions();
-		final List<EvaluationExpression> projectedExpressions = new ArrayList<>();
-		for (int index = 0; index < keyIndices.length; index++)
-			projectedExpressions.add(keyExpressions.get(keyIndices[index]));
-		return create(projectedExpressions);
-	}
-
-	public SopremoRecordLayout project(final BitSet keyIndices) {
-		final List<EvaluationExpression> keyExpressions = this.getKeyExpressions();
-		final List<EvaluationExpression> projectedExpressions = new ArrayList<>();
-		for (int index = keyIndices.nextSetBit(0); index != -1; index = keyIndices.nextSetBit(index + 1))
-			projectedExpressions.add(keyExpressions.get(index));
-		return create(projectedExpressions);
+		this.index(directDataExpression, calculatedKeyExpressions);
 	}
 
 	/*
@@ -141,15 +89,6 @@ public class SopremoRecordLayout extends AbstractSopremoType {
 	}
 
 	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + Arrays.hashCode(this.calculatedKeyExpressions);
-		result = prime * result + Arrays.hashCode(this.directDataExpression);
-		return result;
-	}
-
-	@Override
 	public boolean equals(final Object obj) {
 		if (this == obj)
 			return true;
@@ -160,15 +99,6 @@ public class SopremoRecordLayout extends AbstractSopremoType {
 		final SopremoRecordLayout other = (SopremoRecordLayout) obj;
 		return Arrays.equals(this.directDataExpression, other.directDataExpression) &&
 			Arrays.equals(this.calculatedKeyExpressions, other.calculatedKeyExpressions);
-	}
-
-	/**
-	 * Returns the expressionIndex.
-	 * 
-	 * @return the expressionIndex
-	 */
-	public ExpressionIndex getExpressionIndex() {
-		return this.expressionIndex;
 	}
 
 	/**
@@ -189,6 +119,41 @@ public class SopremoRecordLayout extends AbstractSopremoType {
 		return this.directDataExpression;
 	}
 
+	public EvaluationExpression getExpression(final int expressionIndex) {
+		if (expressionIndex == SopremoRecordLayout.VALUE_INDEX)
+			return EvaluationExpression.VALUE;
+		final int numDirectDataKeys = this.getNumDirectDataKeys();
+		if (expressionIndex < numDirectDataKeys)
+			return this.directDataExpression[expressionIndex];
+		return this.calculatedKeyExpressions[expressionIndex - numDirectDataKeys];
+	}
+
+	/**
+	 * Returns the expressionIndex.
+	 * 
+	 * @return the expressionIndex
+	 */
+	public ExpressionIndex getExpressionIndex() {
+		return this.expressionIndex;
+	}
+
+	public int[] getIndices(final EvaluationExpression... keyExpressions) {
+		final int[] indices = new int[keyExpressions.length];
+		for (int index = 0; index < indices.length; index++)
+			indices[index] = this.getKeyIndex(keyExpressions[index]);
+		return indices;
+	}
+
+	/**
+	 * Returns the keyExpressions.
+	 * 
+	 * @return the keyExpressions
+	 */
+	public List<EvaluationExpression> getKeyExpressions() {
+		return Lists.newArrayList(Iterables.concat(Arrays.asList(this.directDataExpression),
+			Arrays.asList(this.calculatedKeyExpressions)));
+	}
+
 	public int getKeyIndex(final EvaluationExpression expression) {
 		if (expression == EvaluationExpression.VALUE)
 			return -1;
@@ -203,31 +168,53 @@ public class SopremoRecordLayout extends AbstractSopremoType {
 		return offset;
 	}
 
-	/**
-	 * Returns the keyExpressions.
-	 * 
-	 * @return the keyExpressions
-	 */
-	public List<EvaluationExpression> getKeyExpressions() {
-		return Lists.newArrayList(Iterables.concat(Arrays.asList(this.directDataExpression),
-			Arrays.asList(this.calculatedKeyExpressions)));
+	public int getNumDirectDataKeys() {
+		return this.directDataExpression.length;
 	}
 
-	/**
-	 * Initializes SopremoRecordLayout.
-	 * 
-	 * @param expressionIndex2
-	 * @param array
-	 * @param array2
-	 */
-	public SopremoRecordLayout(final ExpressionIndex expressionIndex,
-			final EvaluationExpression[] directDataExpression,
-			final EvaluationExpression[] calculatedKeyExpressions) {
-		this.expressionIndex = expressionIndex;
-		this.directDataExpression = directDataExpression;
-		this.calculatedKeyExpressions = calculatedKeyExpressions;
+	public int getNumKeys() {
+		return this.directDataExpression.length + this.calculatedKeyExpressions.length;
+	}
 
-		this.index(directDataExpression, calculatedKeyExpressions);
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + Arrays.hashCode(this.calculatedKeyExpressions);
+		result = prime * result + Arrays.hashCode(this.directDataExpression);
+		return result;
+	}
+
+	public IntCollection indicesOf(final EvaluationExpression expression) {
+		final IntArrayList indices = new IntArrayList();
+		if (expression == EvaluationExpression.VALUE)
+			indices.add(VALUE_INDEX);
+		else if (expression instanceof ArrayAccess && ((ArrayAccess) expression).isFixedSize())
+			for (final ArrayAccess arrayAccess : ((ArrayAccess) expression).decompose())
+				indices.add(this.indexedDirectDataExpression.getInt(arrayAccess));
+		else {
+			int index = this.indexedDirectDataExpression.getInt(expression);
+			if (index == -1)
+				index = this.getNumDirectDataKeys() + this.indexedCalculatedKeyExpressions.getInt(expression);
+			indices.add(index);
+		}
+		return indices;
+	}
+
+	public SopremoRecordLayout project(final BitSet keyIndices) {
+		final List<EvaluationExpression> keyExpressions = this.getKeyExpressions();
+		final List<EvaluationExpression> projectedExpressions = new ArrayList<>();
+		for (int index = keyIndices.nextSetBit(0); index != -1; index = keyIndices.nextSetBit(index + 1))
+			projectedExpressions.add(keyExpressions.get(index));
+		return create(projectedExpressions);
+	}
+
+	public SopremoRecordLayout project(final int... keyIndices) {
+		final List<EvaluationExpression> keyExpressions = this.getKeyExpressions();
+		final List<EvaluationExpression> projectedExpressions = new ArrayList<>();
+		for (int index = 0; index < keyIndices.length; index++)
+			projectedExpressions.add(keyExpressions.get(keyIndices[index]));
+		return create(projectedExpressions);
 	}
 
 	private void index(final EvaluationExpression[] directDataExpression,
@@ -239,6 +226,14 @@ public class SopremoRecordLayout extends AbstractSopremoType {
 			this.indexedDirectDataExpression.put(directDataExpression[index], index);
 		for (int index = 0; index < calculatedKeyExpressions.length; index++)
 			this.indexedCalculatedKeyExpressions.put(calculatedKeyExpressions[index], index);
+	}
+
+	public static SopremoRecordLayout create(final EvaluationExpression keyExpressions) {
+		return create(Arrays.asList(keyExpressions));
+	}
+
+	public static SopremoRecordLayout create(final EvaluationExpression... keyExpressions) {
+		return create(Arrays.asList(keyExpressions));
 	}
 
 	public static SopremoRecordLayout create(final Iterable<EvaluationExpression> keyExpressions) {
@@ -260,47 +255,37 @@ public class SopremoRecordLayout extends AbstractSopremoType {
 			calculatedKeyExpressions.toArray(new EvaluationExpression[calculatedKeyExpressions.size()]));
 	}
 
-	public static SopremoRecordLayout create(final EvaluationExpression keyExpressions) {
-		return create(Arrays.asList(keyExpressions));
-	}
+	public static class KryoSerializer extends Serializer<SopremoRecordLayout> {
 
-	public static SopremoRecordLayout create(final EvaluationExpression... keyExpressions) {
-		return create(Arrays.asList(keyExpressions));
-	}
+		/*
+		 * (non-Javadoc)
+		 * @see com.esotericsoftware.kryo.Serializer#copy(com.esotericsoftware.kryo.Kryo, java.lang.Object)
+		 */
+		@Override
+		public SopremoRecordLayout copy(final Kryo kryo, final SopremoRecordLayout original) {
+			return original;
+		}
 
-	/**
-	 * @return
-	 */
-	public int getNumKeys() {
-		return this.directDataExpression.length + this.calculatedKeyExpressions.length;
-	}
+		/*
+		 * (non-Javadoc)
+		 * @see com.esotericsoftware.kryo.Serializer#read(com.esotericsoftware.kryo.Kryo,
+		 * com.esotericsoftware.kryo.io.Input, java.lang.Class)
+		 */
+		@SuppressWarnings("unchecked")
+		@Override
+		public SopremoRecordLayout read(final Kryo kryo, final Input input, final Class<SopremoRecordLayout> type) {
+			return SopremoRecordLayout.create(kryo.readObject(input, ArrayList.class));
+		}
 
-	public int getNumDirectDataKeys() {
-		return this.directDataExpression.length;
-	}
-
-	/**
-	 * @param keyExpressions
-	 * @return
-	 */
-	public int[] getIndices(final EvaluationExpression... keyExpressions) {
-		final int[] indices = new int[keyExpressions.length];
-		for (int index = 0; index < indices.length; index++)
-			indices[index] = this.getKeyIndex(keyExpressions[index]);
-		return indices;
-	}
-
-	/**
-	 * @param expressionIndex2
-	 * @return
-	 */
-	public EvaluationExpression getExpression(final int expressionIndex) {
-		if (expressionIndex == SopremoRecordLayout.VALUE_INDEX)
-			return EvaluationExpression.VALUE;
-		final int numDirectDataKeys = this.getNumDirectDataKeys();
-		if (expressionIndex < numDirectDataKeys)
-			return this.directDataExpression[expressionIndex];
-		return this.calculatedKeyExpressions[expressionIndex - numDirectDataKeys];
+		/*
+		 * (non-Javadoc)
+		 * @see com.esotericsoftware.kryo.Serializer#write(com.esotericsoftware.kryo.Kryo,
+		 * com.esotericsoftware.kryo.io.Output, java.lang.Object)
+		 */
+		@Override
+		public void write(final Kryo kryo, final Output output, final SopremoRecordLayout object) {
+			kryo.writeObject(output, object.getKeyExpressions());
+		}
 	}
 
 }

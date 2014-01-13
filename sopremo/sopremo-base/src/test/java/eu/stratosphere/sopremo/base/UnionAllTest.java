@@ -6,15 +6,6 @@ import eu.stratosphere.sopremo.testing.SopremoOperatorTestBase;
 import eu.stratosphere.sopremo.testing.SopremoTestPlan;
 
 public class UnionAllTest extends SopremoOperatorTestBase<UnionAll> {
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.EqualVerifyTest#createDefaultInstance(int)
-	 */
-	@Override
-	protected UnionAll createDefaultInstance(final int index) {
-		return new UnionAll();
-	}
-
 	@Test
 	public void shouldPerformThreeWayBagUnion() {
 		final SopremoTestPlan sopremoPlan = new SopremoTestPlan(3, 1);
@@ -113,6 +104,15 @@ public class UnionAllTest extends SopremoOperatorTestBase<UnionAll> {
 			addValue(2);
 
 		sopremoPlan.run();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.EqualVerifyTest#createDefaultInstance(int)
+	 */
+	@Override
+	protected UnionAll createDefaultInstance(final int index) {
+		return new UnionAll();
 	}
 
 }

@@ -32,6 +32,13 @@ public class AndExpression extends BooleanExpression {
 	private final List<BooleanExpression> expressions;
 
 	/**
+	 * Initializes AndExpression.
+	 */
+	public AndExpression() {
+		this(new ArrayList<BooleanExpression>());
+	}
+
+	/**
 	 * Initializes an AndExpression with the given {@link EvaluationExpression}s.
 	 * 
 	 * @param expressions
@@ -51,16 +58,16 @@ public class AndExpression extends BooleanExpression {
 		this.expressions = new ArrayList<BooleanExpression>(expressions);
 	}
 
-	/**
-	 * Initializes AndExpression.
-	 */
-	public AndExpression() {
-		this(new ArrayList<BooleanExpression>());
-	}
-
 	public AndExpression addExpression(final BooleanExpression expression) {
 		this.expressions.add(expression);
 		return this;
+	}
+
+	@Override
+	public void appendAsString(final Appendable appendable) throws IOException {
+		appendable.append("(");
+		this.append(appendable, this.expressions, " AND ");
+		appendable.append(")");
 	}
 
 	@Override
@@ -96,13 +103,6 @@ public class AndExpression extends BooleanExpression {
 		int result = super.hashCode();
 		result = prime * result + this.expressions.hashCode();
 		return result;
-	}
-
-	@Override
-	public void appendAsString(final Appendable appendable) throws IOException {
-		appendable.append("(");
-		this.append(appendable, this.expressions, " AND ");
-		appendable.append(")");
 	}
 
 	/*

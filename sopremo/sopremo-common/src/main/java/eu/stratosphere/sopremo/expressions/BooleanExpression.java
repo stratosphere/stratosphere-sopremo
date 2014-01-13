@@ -49,8 +49,8 @@ public abstract class BooleanExpression extends EvaluationExpression implements 
 	/**
 	 * Wraps the given list of {@link EvaluationExpression} as a list of {@link BooleanExpression}.
 	 * 
-	 * @param expression
-	 *        the expression that should be wrapped
+	 * @param expressions
+	 *        the expressions that should be wrapped
 	 * @return the wrapped expression
 	 */
 	public static List<BooleanExpression> ensureBooleanExpressions(

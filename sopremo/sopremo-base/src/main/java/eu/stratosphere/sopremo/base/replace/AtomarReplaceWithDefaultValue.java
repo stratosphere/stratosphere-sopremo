@@ -32,6 +32,10 @@ import eu.stratosphere.sopremo.type.IStreamNode;
 public class AtomarReplaceWithDefaultValue extends AtomarReplaceBase<AtomarReplaceWithDefaultValue> {
 	private EvaluationExpression defaultExpression = EvaluationExpression.VALUE;
 
+	public EvaluationExpression getDefaultExpression() {
+		return this.defaultExpression;
+	}
+
 	@Property
 	public void setDefaultExpression(final EvaluationExpression defaultExpression) {
 		if (defaultExpression == null)
@@ -43,10 +47,6 @@ public class AtomarReplaceWithDefaultValue extends AtomarReplaceBase<AtomarRepla
 	public AtomarReplaceWithDefaultValue withDefaultExpression(final EvaluationExpression prop) {
 		this.setDefaultExpression(prop);
 		return this;
-	}
-
-	public EvaluationExpression getDefaultExpression() {
-		return this.defaultExpression;
 	}
 
 	public static class Implementation extends SopremoCoGroup {

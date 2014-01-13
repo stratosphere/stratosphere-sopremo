@@ -20,21 +20,6 @@ public class DefaultNameChooser extends AbstractSopremoType implements NameChoos
 		this(new int[] { 0, 1, 2, 3 });
 	}
 
-	@Override
-	public String[] getNames(final Name nameAnnotation) {
-		return this.choose(nameAnnotation.noun(), nameAnnotation.verb(), nameAnnotation.adjective(),
-			nameAnnotation.preposition());
-	}
-
-	public String[] choose(final String[] nouns, final String[] verbs, final String[] adjectives,
-			final String[] prepositions) {
-		final String[][] names = { nouns, verbs, adjectives, prepositions };
-		for (final int pos : this.preferredOrder)
-			if (names[pos] != null && names[pos].length > 0)
-				return names[pos];
-		return null;
-	}
-
 	/*
 	 * (non-Javadoc)
 	 * @see eu.stratosphere.util.IAppending#appendAsString(java.lang.Appendable)
@@ -44,12 +29,13 @@ public class DefaultNameChooser extends AbstractSopremoType implements NameChoos
 		appendable.append(Arrays.toString(this.preferredOrder));
 	}
 
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + Arrays.hashCode(this.preferredOrder);
-		return result;
+	public String[] choose(final String[] nouns, final String[] verbs, final String[] adjectives,
+			final String[] prepositions) {
+		final String[][] names = { nouns, verbs, adjectives, prepositions };
+		for (final int pos : this.preferredOrder)
+			if (names[pos] != null && names[pos].length > 0)
+				return names[pos];
+		return null;
 	}
 
 	@Override
@@ -64,5 +50,19 @@ public class DefaultNameChooser extends AbstractSopremoType implements NameChoos
 		if (!Arrays.equals(this.preferredOrder, other.preferredOrder))
 			return false;
 		return true;
+	}
+
+	@Override
+	public String[] getNames(final Name nameAnnotation) {
+		return this.choose(nameAnnotation.noun(), nameAnnotation.verb(), nameAnnotation.adjective(),
+			nameAnnotation.preposition());
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + Arrays.hashCode(this.preferredOrder);
+		return result;
 	}
 }

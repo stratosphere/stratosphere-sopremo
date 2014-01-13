@@ -18,19 +18,9 @@ import java.io.IOException;
 import java.util.Iterator;
 
 /**
- * Provides basic implementations of the required methods of {@link SopremoType}
- * 
+ * Provides basic implementations of the required methods of {@link ISopremoType}.
  */
 public abstract class AbstractSopremoType implements ISopremoType {
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#toString()
-	 */
-	@Override
-	public String toString() {
-		return toString(this);
-	}
-
 	/*
 	 * (non-Javadoc)
 	 * @see java.lang.Object#clone()
@@ -38,17 +28,28 @@ public abstract class AbstractSopremoType implements ISopremoType {
 	@Override
 	public AbstractSopremoType clone() {
 		return SopremoEnvironment.getInstance().getEvaluationContext().getKryo().copy(this);
-		// kryo 2.20 makes fancy stuff such as caching of clones - we need more control
-		// if (this instanceof KryoCopyable<?>)
-		// return ((KryoCopyable<AbstractSopremoType>) this).copy(CloneHelper);
-		// final Serializer<AbstractSopremoType> serializer = CloneHelper.getSerializer(getClass());
-		// return serializer.copy(CloneHelper, this);
 	}
 
-	protected void checkCopyType(final AbstractSopremoType copy) {
-		if (copy.getClass() != this.getClass())
-			throw new AssertionError(String.format("Create copy returned wrong type. Expected %s but was %s",
-				this.getClass(), copy.getClass()));
+	@SuppressWarnings("unchecked")
+	public final <T extends AbstractSopremoType> T copy() {
+		return (T) this.clone();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#clone()
+	 */
+	public AbstractSopremoType shallowClone() {
+		return SopremoEnvironment.getInstance().getEvaluationContext().getKryo().copyShallow(this);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return toString(this);
 	}
 
 	protected void append(final Appendable appendable, final Iterable<? extends ISopremoType> children,
@@ -66,21 +67,14 @@ public abstract class AbstractSopremoType implements ISopremoType {
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#clone()
-	 */
-	public AbstractSopremoType shallowClone() {
-		return SopremoEnvironment.getInstance().getEvaluationContext().getKryo().copyShallow(this);
-	}
-
-	@SuppressWarnings("unchecked")
-	public final <T extends AbstractSopremoType> T copy() {
-		return (T) this.clone();
+	protected void checkCopyType(final AbstractSopremoType copy) {
+		if (copy.getClass() != this.getClass())
+			throw new AssertionError(String.format("Create copy returned wrong type. Expected %s but was %s",
+				this.getClass(), copy.getClass()));
 	}
 
 	/**
-	 * Returns a string representation of the given {@link SopremoType}.
+	 * Returns a string representation of the given {@link ISopremoType}.
 	 * 
 	 * @param type
 	 *        the SopremoType that should be used

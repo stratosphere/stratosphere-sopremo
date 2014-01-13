@@ -11,13 +11,13 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.TYPE, ElementType.METHOD, ElementType.FIELD })
 public @interface Name {
-	String[] noun() default {};
-
-	String[] verb() default {};
-
 	String[] adjective() default {};
 
+	String[] noun() default {};
+
 	String[] preposition() default {};
+
+	String[] verb() default {};
 
 	/**
 	 * Enumeration that specifies the type of the name.</br> <li>{@link NameType#NOUN} <li>{@link NameType#VERB} <li>

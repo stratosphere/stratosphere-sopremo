@@ -20,42 +20,29 @@ import java.util.SortedSet;
 
 /**
  * Interface for all object type nodes.
- * 
  */
 public interface IObjectNode extends IJsonNode, Iterable<Entry<String, IJsonNode>> {
 
-	/**
-	 * Binds the given {@link IJsonNode} to the given String within this node. Overwrites the value if this String is
-	 * already binded.
-	 * 
-	 * @param fieldName
-	 *        the String where the value should be binded to
-	 * @param value
-	 *        the {@link IJsonNode} that should be binded
-	 * @return this node
+	@Override
+	public abstract void clear();
+
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.type.IJsonNode#clone()
 	 */
-	public abstract IObjectNode put(final String fieldName, final IJsonNode value);
+	@Override
+	public IObjectNode clone();
 
 	/**
-	 * Returns the {@link IJsonNode} which is binded to the given String or {@link MissingNode} if no binding is found.
+	 * Returns the {@link IJsonNode} which is bound to the given String or {@link MissingNode} if no binding is found.
 	 * 
 	 * @param fieldName
-	 *        the String where the binded {@link IJsonNode} should be returned for
-	 * @return the binded node
+	 *        the String where the bound {@link IJsonNode} should be returned for
+	 * @return the bound node
 	 */
 	public abstract <T extends IJsonNode> T get(final String fieldName);
 
-	/**
-	 * Removes the binding for the given String
-	 * 
-	 * @param fieldName
-	 *        the String where the binding should be removed for
-	 * @return the {@link IJsonNode} which was binded to this String
-	 */
-	public abstract void remove(final String fieldName);
-
-	@Override
-	public abstract void clear();
+	public abstract SortedSet<String> getFieldNames();
 
 	//
 	// /**
@@ -64,6 +51,26 @@ public interface IObjectNode extends IJsonNode, Iterable<Entry<String, IJsonNode
 	// * @return the set of bindings
 	// */
 	// public abstract Set<Entry<String, IJsonNode>> getEntries();
+
+	/**
+	 * Returns an Iterator over all Bindings within this node sorted by the key.
+	 * 
+	 * @return iterator over all bindings
+	 */
+	@Override
+	public abstract Iterator<Entry<String, IJsonNode>> iterator();
+
+	/**
+	 * Binds the given {@link IJsonNode} to the given String within this node. Overwrites the value if this String is
+	 * already bound.
+	 * 
+	 * @param fieldName
+	 *        the String where the value should be bound to
+	 * @param value
+	 *        the {@link IJsonNode} that should be bound
+	 * @return this node
+	 */
+	public abstract IObjectNode put(final String fieldName, final IJsonNode value);
 
 	/**
 	 * Creates bindings in this node for all bindings within the given {@link IObjectNode}. Already existing bindings
@@ -76,14 +83,12 @@ public interface IObjectNode extends IJsonNode, Iterable<Entry<String, IJsonNode
 	public abstract IObjectNode putAll(final IObjectNode jsonNode);
 
 	/**
-	 * Returns an Iterator over all Bindings within this node sorted by the key.
+	 * Removes the binding for the given String
 	 * 
-	 * @return iterator over all bindings
+	 * @param fieldName
+	 *        the String where the binding should be removed for
 	 */
-	@Override
-	public abstract Iterator<Entry<String, IJsonNode>> iterator();
-
-	public abstract SortedSet<String> getFieldNames();
+	public abstract void remove(final String fieldName);
 
 	/**
 	 * Returns the number of bindings contained in this node.
@@ -91,11 +96,4 @@ public interface IObjectNode extends IJsonNode, Iterable<Entry<String, IJsonNode
 	 * @return number of bindings
 	 */
 	public abstract int size();
-
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.type.IJsonNode#clone()
-	 */
-	@Override
-	public IObjectNode clone();
 }

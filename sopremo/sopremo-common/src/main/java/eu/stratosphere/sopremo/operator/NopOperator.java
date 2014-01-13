@@ -23,7 +23,8 @@ import eu.stratosphere.sopremo.pact.SopremoNop;
 @InputCardinality
 @OutputCardinality
 public class NopOperator extends ElementaryOperator<NopOperator> {
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
 	 * @see eu.stratosphere.sopremo.operator.ElementaryOperator#getFunctionClass()
 	 */
 	@Override

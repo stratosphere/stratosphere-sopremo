@@ -33,16 +33,6 @@ public abstract class SingletonExpression extends EvaluationExpression {
 		this.textualRepresentation = textualRepresentation;
 	}
 
-	@Override
-	public boolean equals(final Object obj) {
-		return obj == this;
-	}
-
-	@Override
-	public int hashCode() {
-		return this.getClass().hashCode();
-	}
-
 	/*
 	 * (non-Javadoc)
 	 * @see eu.stratosphere.sopremo.expressions.EvaluationExpression#toString(java.lang.StringBuilder)
@@ -51,6 +41,16 @@ public abstract class SingletonExpression extends EvaluationExpression {
 	public void appendAsString(final Appendable appendable) throws IOException {
 		super.appendAsString(appendable);
 		appendable.append(this.textualRepresentation);
+	}
+
+	@Override
+	public boolean equals(final Object obj) {
+		return obj == this;
+	}
+
+	@Override
+	public int hashCode() {
+		return this.getClass().hashCode();
 	}
 
 }

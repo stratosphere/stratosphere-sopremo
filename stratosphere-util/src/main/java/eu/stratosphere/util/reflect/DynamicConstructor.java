@@ -23,11 +23,6 @@ public class DynamicConstructor<DeclaringClass> extends
 					: member.getDeclaringClass();
 	}
 
-	@Override
-	protected boolean isVarargs(final Constructor<DeclaringClass> member) {
-		return member.isVarArgs();
-	}
-
 	/*
 	 * (non-Javadoc)
 	 * @see eu.stratosphere.util.reflect.DynamicInvokable#getName()
@@ -35,6 +30,23 @@ public class DynamicConstructor<DeclaringClass> extends
 	@Override
 	public String getName() {
 		return String.format("%s#init()", this.declaringClass);
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public Class<DeclaringClass> getReturnType() {
+		return (Class<DeclaringClass>) this.declaringClass;
+	}
+
+	public DeclaringClass invoke(final Object... params) throws Throwable {
+		return super.invoke(null, params);
+	}
+
+	@Override
+	protected Constructor<DeclaringClass> findMember(final String name, final Class<DeclaringClass> clazz,
+			final Class<?>[] parameterTypes)
+			throws NoSuchMethodException {
+		return clazz.getDeclaredConstructor(parameterTypes);
 	}
 
 	@Override
@@ -49,8 +61,9 @@ public class DynamicConstructor<DeclaringClass> extends
 		return member.newInstance(params);
 	}
 
-	public DeclaringClass invoke(final Object... params) throws Throwable {
-		return super.invoke(null, params);
+	@Override
+	protected boolean isVarargs(final Constructor<DeclaringClass> member) {
+		return member.isVarArgs();
 	}
 
 	/*
@@ -60,19 +73,6 @@ public class DynamicConstructor<DeclaringClass> extends
 	@Override
 	protected boolean needsInstance(final Constructor<DeclaringClass> member) {
 		return false;
-	}
-
-	@Override
-	protected Constructor<DeclaringClass> findMember(final String name, final Class<DeclaringClass> clazz,
-			final Class<?>[] parameterTypes)
-			throws NoSuchMethodException {
-		return clazz.getDeclaredConstructor(parameterTypes);
-	}
-
-	@SuppressWarnings("unchecked")
-	@Override
-	public Class<DeclaringClass> getReturnType() {
-		return (Class<DeclaringClass>) this.declaringClass;
 	}
 
 	@SuppressWarnings("unchecked")

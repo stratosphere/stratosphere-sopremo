@@ -36,12 +36,13 @@ import eu.stratosphere.sopremo.type.NullNode;
  * <li>If the first index is higher than the second index, the returned list will still contain elements within the
  * range but in reversed order.
  * </ul>
- * 
  */
 @OptimizerHints(scope = Scope.ARRAY, iterating = true)
 public class ArrayAccess extends PathSegmentExpression {
 
 	private final int startIndex, endIndex;
+
+	private final transient IArrayNode<IJsonNode> result = new ArrayNode<IJsonNode>();
 
 	/**
 	 * Initializes ArrayAccess that reproduces any input array.
@@ -80,6 +81,35 @@ public class ArrayAccess extends PathSegmentExpression {
 		this.endIndex = endIndex;
 	}
 
+	@Override
+	public void appendAsString(final Appendable appendable) throws IOException {
+		this.getInputExpression().appendAsString(appendable);
+		appendable.append('[');
+		if (this.isSelectingAll())
+			appendable.append('*');
+		else {
+			TypeFormat.format(this.startIndex, appendable);
+			if (this.startIndex != this.endIndex) {
+				appendable.append(':');
+				TypeFormat.format(this.endIndex, appendable);
+			}
+		}
+		appendable.append(']');
+	}
+
+	public Collection<ArrayAccess> decompose() {
+		if (!this.isFixedSize())
+			throw new IllegalStateException("Not decomposable");
+
+		if (!this.isSelectingRange())
+			return Arrays.asList(this);
+
+		final ArrayList<ArrayAccess> accesses = new ArrayList<ArrayAccess>();
+		for (int index = this.startIndex; index <= this.endIndex; index++)
+			accesses.add(new ArrayAccess(index));
+		return accesses;
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * @see
@@ -92,7 +122,61 @@ public class ArrayAccess extends PathSegmentExpression {
 		return this.startIndex == other.startIndex && this.endIndex == other.endIndex;
 	}
 
-	private final transient IArrayNode<IJsonNode> result = new ArrayNode<IJsonNode>();
+	/**
+	 * Returns the endIndex.
+	 * 
+	 * @return the endIndex
+	 */
+	public int getEndIndex() {
+		return this.endIndex;
+	}
+
+	public int[] getIndices() {
+		if (!this.isFixedSize())
+			return null;
+		if (this.startIndex >= 0) { // normal access
+			final int[] indices = new int[this.endIndex - this.startIndex + 1];
+			for (int index = this.startIndex; index <= this.endIndex; index++)
+				indices[index - this.startIndex] = index;
+			return indices;
+		}
+		// backward array
+		final int[] indices = new int[-this.startIndex - this.endIndex + 1];
+		for (int index = this.startIndex; index <= this.endIndex; index++)
+			indices[this.startIndex - index] = index;
+		return indices;
+	}
+
+	/**
+	 * Returns the startIndex.
+	 * 
+	 * @return the startIndex
+	 */
+	public int getStartIndex() {
+		return this.startIndex;
+	}
+
+	public boolean isFixedSize() {
+		return this.startIndex >= 0 == this.endIndex >= 0;
+	}
+
+	/**
+	 * Returns true if any incoming array would be wholly reproduced.
+	 * 
+	 * @return true if any incoming array would be wholly reproduced
+	 */
+	public boolean isSelectingAll() {
+		return this.startIndex == 0 && this.endIndex == -1;
+	}
+
+	/**
+	 * Returns true if more than one element is selected.
+	 * 
+	 * @return true if more than one element is selected
+	 */
+	public boolean isSelectingRange() {
+		return this.startIndex != this.endIndex;
+	}
 
 	@Override
 	protected IJsonNode evaluateSegment(final IJsonNode node) {
@@ -123,24 +207,6 @@ public class ArrayAccess extends PathSegmentExpression {
 		return value == null ? NullNode.getInstance() : value;
 	}
 
-	/**
-	 * Returns the endIndex.
-	 * 
-	 * @return the endIndex
-	 */
-	public int getEndIndex() {
-		return this.endIndex;
-	}
-
-	/**
-	 * Returns the startIndex.
-	 * 
-	 * @return the startIndex
-	 */
-	public int getStartIndex() {
-		return this.startIndex;
-	}
-
 	/*
 	 * (non-Javadoc)
 	 * @see eu.stratosphere.sopremo.expressions.PathSegmentExpression#segmentHashCode()
@@ -148,57 +214,6 @@ public class ArrayAccess extends PathSegmentExpression {
 	@Override
 	protected int segmentHashCode() {
 		return this.startIndex * 47 + this.endIndex;
-	}
-
-	/**
-	 * Returns true if any incoming array would be wholly reproduced.
-	 * 
-	 * @return true if any incoming array would be wholly reproduced
-	 */
-	public boolean isSelectingAll() {
-		return this.startIndex == 0 && this.endIndex == -1;
-	}
-
-	/**
-	 * Returns true if more than one element is selected.
-	 * 
-	 * @return true if more than one element is selected
-	 */
-	public boolean isSelectingRange() {
-		return this.startIndex != this.endIndex;
-	}
-
-	public boolean isFixedSize() {
-		return this.startIndex >= 0 == this.endIndex >= 0;
-	}
-
-	public int[] getIndices() {
-		if (!this.isFixedSize())
-			return null;
-		if (this.startIndex >= 0) { // normal access
-			final int[] indices = new int[this.endIndex - this.startIndex + 1];
-			for (int index = this.startIndex; index <= this.endIndex; index++)
-				indices[index - this.startIndex] = index;
-			return indices;
-		}
-		// backward array
-		final int[] indices = new int[-this.startIndex - this.endIndex + 1];
-		for (int index = this.startIndex; index <= this.endIndex; index++)
-			indices[this.startIndex - index] = index;
-		return indices;
-	}
-
-	public Collection<ArrayAccess> decompose() {
-		if (!this.isFixedSize())
-			throw new IllegalStateException("Not decomposable");
-
-		if (!this.isSelectingRange())
-			return Arrays.asList(this);
-
-		final ArrayList<ArrayAccess> accesses = new ArrayList<ArrayAccess>();
-		for (int index = this.startIndex; index <= this.endIndex; index++)
-			accesses.add(new ArrayAccess(index));
-		return accesses;
 	}
 
 	/*
@@ -227,22 +242,6 @@ public class ArrayAccess extends PathSegmentExpression {
 		} else
 			SopremoUtil.replaceWithCopy(arrayNode, this.resolveIndex(this.startIndex, size), value);
 		return node;
-	}
-
-	@Override
-	public void appendAsString(final Appendable appendable) throws IOException {
-		this.getInputExpression().appendAsString(appendable);
-		appendable.append('[');
-		if (this.isSelectingAll())
-			appendable.append('*');
-		else {
-			TypeFormat.format(this.startIndex, appendable);
-			if (this.startIndex != this.endIndex) {
-				appendable.append(':');
-				TypeFormat.format(this.endIndex, appendable);
-			}
-		}
-		appendable.append(']');
 	}
 
 	private int resolveIndex(final int index, final int size) {

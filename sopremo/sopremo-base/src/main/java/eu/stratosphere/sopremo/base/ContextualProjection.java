@@ -15,7 +15,6 @@ import eu.stratosphere.sopremo.type.IJsonNode;
  * Implements a projection which gets contextual information through a logical side channel.<br>
  * The side channel is given by the second input source.<br>
  * This operator is useful, when a projection needs the result of a prior global aggregation.
- * 
  */
 @InputCardinality(2)
 @Internal

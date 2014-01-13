@@ -36,12 +36,24 @@ import eu.stratosphere.sopremo.type.TypeCoercer;
 /**
  */
 public class ExpressionUtil {
+	private final static ThreadLocal<NodeCache> NodeCache = new ThreadLocal<NodeCache>() {
+		@Override
+		protected NodeCache initialValue() {
+			return new NodeCache();
+		};
+	};
+
+	public static <T extends IJsonNode> T getConstant(final EvaluationExpression expression, final Class<T> type) {
+		final IJsonNode constant = expression.evaluate(MissingNode.getInstance());
+		return TypeCoercer.INSTANCE.coerce(constant, NodeCache.get(), type);
+	}
+
 	/**
-	 * Wraps the given {@link EvaluationExpression}s in a single {@link PathExpression}
+	 * Wraps the given {@link EvaluationExpression}s in a single {@link PathSegmentExpression}
 	 * 
 	 * @param expressions
 	 *        a List of the expressions that should be wrapped
-	 * @return the {@link PathExpression}
+	 * @return the {@link PathSegmentExpression}
 	 */
 	public static PathSegmentExpression makePath(final List<PathSegmentExpression> expressions) {
 		if (expressions.size() == 0)
@@ -58,43 +70,14 @@ public class ExpressionUtil {
 	}
 
 	/**
-	 * Wraps the given {@link EvaluationExpression}s in a single {@link PathExpression}
+	 * Wraps the given {@link EvaluationExpression}s in a single {@link PathSegmentExpression}
 	 * 
 	 * @param expressions
 	 *        an Array of the expressions that should be wrapped
-	 * @return the {@link PathExpression}
+	 * @return the {@link PathSegmentExpression}
 	 */
 	public static PathSegmentExpression makePath(final PathSegmentExpression... expressions) {
 		return makePath(Arrays.asList(expressions));
-	}
-
-	/**
-	 * Replaces fragments in the form of path expression (InputSelection, ArrayAccess).
-	 */
-	public static EvaluationExpression replaceIndexAccessWithAggregation(final EvaluationExpression baseExpression) {
-		return baseExpression.replace(Predicates.instanceOf(ArrayAccess.class), new TransformFunction() {
-			@Override
-			public EvaluationExpression apply(final EvaluationExpression argument) {
-				final ArrayAccess arrayAccess = (ArrayAccess) argument;
-				// only process array access directly on the input stream
-				if (!(arrayAccess.getInputExpression() instanceof InputSelection))
-					return arrayAccess;
-				if (arrayAccess.getStartIndex() < 0 || arrayAccess.getEndIndex() < 0)
-					throw new IllegalArgumentException("Negative indexes cannot replaced currently");
-				if (arrayAccess.getStartIndex() > arrayAccess.getEndIndex())
-					throw new IllegalArgumentException("Array inversion is not directly supported");
-
-				if (arrayAccess.getStartIndex() == 0 && arrayAccess.getEndIndex() == 0)
-					return new AggregationExpression(CoreFunctions.FIRST).withInputExpression(arrayAccess.getInputExpression());
-				return new AggregationExpression(new ArrayAccessAsAggregation(arrayAccess.getStartIndex(),
-					arrayAccess.getEndIndex(), arrayAccess.isSelectingRange())).withInputExpression(arrayAccess.getInputExpression());
-				// final FunctionCall aggregation = new FunctionCall("array access",
-				// new AggregationexFunction(new ArrayAccessAsAggregation(arrayAccess.getStartIndex(),
-				// arrayAccess.getEndIndex(), arrayAccess.isSelectingRange())),
-				// arrayAccess.getInputExpression().clone());
-				// return aggregation;
-			}
-		});
 	}
 
 	public static EvaluationExpression replaceAggregationWithBatchAggregation(final EvaluationExpression baseExpression) {
@@ -168,20 +151,6 @@ public class ExpressionUtil {
 		return result;
 	}
 
-	private static void findAggregatingFunctionCalls(final EvaluationExpression expression,
-			final Map<FunctionCall, EvaluationExpression> aggregatingFunctionCalls,
-			final Map<AggregationExpression, EvaluationExpression> aggregatingExpressions,
-			final EvaluationExpression parent) {
-		if (expression instanceof FunctionCall &&
-			((FunctionCall) expression).getFunction() instanceof AggregationFunction)
-			aggregatingFunctionCalls.put((FunctionCall) expression, parent);
-		else if (expression instanceof AggregationExpression)
-			aggregatingExpressions.put((AggregationExpression) expression, parent);
-
-		for (final EvaluationExpression child : expression)
-			findAggregatingFunctionCalls(child, aggregatingFunctionCalls, aggregatingExpressions, expression);
-	}
-
 	public static EvaluationExpression replaceArrayProjections(final EvaluationExpression evaluationExpression) {
 		return evaluationExpression.clone().remove(InputSelection.class).replace(
 			Predicates.instanceOf(ArrayProjection.class), new TransformFunction() {
@@ -194,15 +163,46 @@ public class ExpressionUtil {
 			}).simplify();
 	}
 
-	private final static ThreadLocal<NodeCache> NodeCache = new ThreadLocal<NodeCache>() {
-		@Override
-		protected NodeCache initialValue() {
-			return new NodeCache();
-		};
-	};
+	/**
+	 * Replaces fragments in the form of path expression (InputSelection, ArrayAccess).
+	 */
+	public static EvaluationExpression replaceIndexAccessWithAggregation(final EvaluationExpression baseExpression) {
+		return baseExpression.replace(Predicates.instanceOf(ArrayAccess.class), new TransformFunction() {
+			@Override
+			public EvaluationExpression apply(final EvaluationExpression argument) {
+				final ArrayAccess arrayAccess = (ArrayAccess) argument;
+				// only process array access directly on the input stream
+				if (!(arrayAccess.getInputExpression() instanceof InputSelection))
+					return arrayAccess;
+				if (arrayAccess.getStartIndex() < 0 || arrayAccess.getEndIndex() < 0)
+					throw new IllegalArgumentException("Negative indexes cannot replaced currently");
+				if (arrayAccess.getStartIndex() > arrayAccess.getEndIndex())
+					throw new IllegalArgumentException("Array inversion is not directly supported");
 
-	public static <T extends IJsonNode> T getConstant(final EvaluationExpression expression, final Class<T> type) {
-		final IJsonNode constant = expression.evaluate(MissingNode.getInstance());
-		return TypeCoercer.INSTANCE.coerce(constant, NodeCache.get(), type);
+				if (arrayAccess.getStartIndex() == 0 && arrayAccess.getEndIndex() == 0)
+					return new AggregationExpression(CoreFunctions.FIRST).withInputExpression(arrayAccess.getInputExpression());
+				return new AggregationExpression(new ArrayAccessAsAggregation(arrayAccess.getStartIndex(),
+					arrayAccess.getEndIndex(), arrayAccess.isSelectingRange())).withInputExpression(arrayAccess.getInputExpression());
+				// final FunctionCall aggregation = new FunctionCall("array access",
+				// new AggregationexFunction(new ArrayAccessAsAggregation(arrayAccess.getStartIndex(),
+				// arrayAccess.getEndIndex(), arrayAccess.isSelectingRange())),
+				// arrayAccess.getInputExpression().clone());
+				// return aggregation;
+			}
+		});
+	}
+
+	private static void findAggregatingFunctionCalls(final EvaluationExpression expression,
+			final Map<FunctionCall, EvaluationExpression> aggregatingFunctionCalls,
+			final Map<AggregationExpression, EvaluationExpression> aggregatingExpressions,
+			final EvaluationExpression parent) {
+		if (expression instanceof FunctionCall &&
+			((FunctionCall) expression).getFunction() instanceof AggregationFunction)
+			aggregatingFunctionCalls.put((FunctionCall) expression, parent);
+		else if (expression instanceof AggregationExpression)
+			aggregatingExpressions.put((AggregationExpression) expression, parent);
+
+		for (final EvaluationExpression child : expression)
+			findAggregatingFunctionCalls(child, aggregatingFunctionCalls, aggregatingExpressions, expression);
 	}
 }

@@ -91,9 +91,9 @@ public class PackageManager implements ParsingScope {
 	}
 
 	/**
-	 * Sets the defaultJarPath to the specified value.
+	 * Adds a location where the package loader should look for Sopremo Jars.
 	 * 
-	 * @param defaultJarPath
+	 * @param jarPathLocation
 	 *        the defaultJarPath to set
 	 */
 	public void addJarPathLocation(final File jarPathLocation) {

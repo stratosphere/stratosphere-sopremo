@@ -27,20 +27,16 @@ public abstract class QueryWithVariablesParser<VarType extends ISopremoType> ext
 	private final StackedRegistry<VarType, IRegistry<VarType>> variableRegistry =
 		new StackedRegistry<VarType, IRegistry<VarType>>(new DefaultRegistry<VarType>());
 
-	public QueryWithVariablesParser(final TokenStream input, final RecognizerSharedState state) {
-		super(input, state);
-	}
-
 	public QueryWithVariablesParser(final TokenStream input) {
 		super(input);
 	}
 
-	public void addScope() {
-		this.variableRegistry.push(new DefaultRegistry<VarType>());
+	public QueryWithVariablesParser(final TokenStream input, final RecognizerSharedState state) {
+		super(input, state);
 	}
 
-	public void removeScope() {
-		this.variableRegistry.pop();
+	public void addScope() {
+		this.variableRegistry.push(new DefaultRegistry<VarType>());
 	}
 
 	/**
@@ -50,5 +46,9 @@ public abstract class QueryWithVariablesParser<VarType extends ISopremoType> ext
 	 */
 	public StackedRegistry<VarType, IRegistry<VarType>> getVariableRegistry() {
 		return this.variableRegistry;
+	}
+
+	public void removeScope() {
+		this.variableRegistry.pop();
 	}
 }

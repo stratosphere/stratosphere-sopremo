@@ -19,7 +19,6 @@ package eu.stratosphere.nephele.rpc;
  * Abstract base class for all types of response messages used by this RPC service.
  * <p>
  * This class is thread-safe.
- * 
  */
 abstract class RPCResponse extends RPCMessage {
 

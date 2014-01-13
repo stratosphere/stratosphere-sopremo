@@ -42,6 +42,28 @@ public abstract class MeteorIT extends MeteorParseTest {
 
 	protected File inputDir;
 
+	@Before
+	public final void setup() throws Exception {
+		this.testServer = new SopremoTestServer(true);
+		this.inputDir = this.testServer.createDir("input");
+
+		this.client = new DefaultClient();
+		this.client.setServerAddress(this.testServer.getServerAddress());
+		this.client.setUpdateTime(100);
+	}
+
+	@After
+	public void teardown() throws Exception {
+		this.client.close();
+		this.testServer.close();
+	}
+
+	//
+	// @Override
+	// protected void initParser(QueryParser queryParser) {
+	// // queryParser.setInputDirectory(new File("target"));
+	// }
+
 	protected void execute(final SopremoPlan plan) {
 		final String[] messageHolder = new String[1];
 
@@ -54,28 +76,6 @@ public abstract class MeteorIT extends MeteorParseTest {
 		}, true);
 		if (messageHolder[0] != null)
 			Assert.fail(messageHolder[0]);
-	}
-
-	@Before
-	public final void setup() throws Exception {
-		this.testServer = new SopremoTestServer(true);
-		this.inputDir = this.testServer.createDir("input");
-
-		this.client = new DefaultClient();
-		this.client.setServerAddress(this.testServer.getServerAddress());
-		this.client.setUpdateTime(100);
-	}
-
-	//
-	// @Override
-	// protected void initParser(QueryParser queryParser) {
-	// // queryParser.setInputDirectory(new File("target"));
-	// }
-
-	@After
-	public void teardown() throws Exception {
-		this.client.close();
-		this.testServer.close();
 	}
 
 	protected IJsonNode[] getContentsToCheckFrom(final String fileName) throws JsonParseException,

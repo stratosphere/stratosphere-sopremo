@@ -33,6 +33,13 @@ public class ConstantExpression extends EvaluationExpression {
 	public static final EvaluationExpression NULL = new ConstantExpression(NullNode.getInstance());
 
 	/**
+	 * Initializes ConstantExpression.
+	 */
+	public ConstantExpression() {
+		this.constant = null;
+	}
+
+	/**
 	 * Initializes a ConstantExpression with the given JsonNode.
 	 * 
 	 * @param constant
@@ -53,20 +60,15 @@ public class ConstantExpression extends EvaluationExpression {
 		this.constant = JsonUtil.OBJECT_MAPPER.map(constant);
 	}
 
-	/**
-	 * Initializes ConstantExpression.
-	 */
-	public ConstantExpression() {
-		this.constant = null;
-	}
-
-	/**
-	 * Returns the constant.
-	 * 
-	 * @return the constant
-	 */
-	public IJsonNode getConstant() {
-		return this.constant;
+	@Override
+	public void appendAsString(final Appendable appendable) throws IOException {
+		if (this.constant instanceof CharSequence) {
+			appendable.append("\'");
+			this.constant.appendAsString(appendable);
+			appendable.append("\'");
+		}
+		else
+			this.constant.appendAsString(appendable);
 	}
 
 	@Override
@@ -83,20 +85,18 @@ public class ConstantExpression extends EvaluationExpression {
 		return this.constant;
 	}
 
-	@Override
-	public int hashCode() {
-		return 41 * super.hashCode() + this.constant.hashCode();
+	/**
+	 * Returns the constant.
+	 * 
+	 * @return the constant
+	 */
+	public IJsonNode getConstant() {
+		return this.constant;
 	}
 
 	@Override
-	public void appendAsString(final Appendable appendable) throws IOException {
-		if (this.constant instanceof CharSequence) {
-			appendable.append("\'");
-			this.constant.appendAsString(appendable);
-			appendable.append("\'");
-		}
-		else
-			this.constant.appendAsString(appendable);
+	public int hashCode() {
+		return 41 * super.hashCode() + this.constant.hashCode();
 	}
 
 }

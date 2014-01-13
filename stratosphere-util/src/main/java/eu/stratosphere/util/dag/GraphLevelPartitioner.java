@@ -20,19 +20,8 @@ import eu.stratosphere.util.IdentityList;
  * levels [A, B], [C], [D]. A and B are both independent from other nodes from the beginning. C only depends from A and
  * thus from nodes of the first level. However, D depends additionally on C and thus can not be included in the second
  * level.
- * 
  */
 public class GraphLevelPartitioner {
-
-	private static <Node> void gatherNodes(final List<Node> nodes, final ConnectionNavigator<Node> navigator,
-			final Node node) {
-		if (!nodes.contains(node))
-			if (node != null) {
-				nodes.add(node);
-				for (final Node child : navigator.getConnectedNodes(node))
-					gatherNodes(nodes, navigator, child);
-			}
-	}
 
 	/**
 	 * Partitions the DAG given by the start nodes and all nodes reachable by the navigator.
@@ -108,6 +97,16 @@ public class GraphLevelPartitioner {
 	 */
 	public static <Node> List<Level<Node>> getLevels(final Node[] startNodes, final ConnectionNavigator<Node> navigator) {
 		return getLevels(Arrays.asList(startNodes).iterator(), navigator);
+	}
+
+	private static <Node> void gatherNodes(final List<Node> nodes, final ConnectionNavigator<Node> navigator,
+			final Node node) {
+		if (!nodes.contains(node))
+			if (node != null) {
+				nodes.add(node);
+				for (final Node child : navigator.getConnectedNodes(node))
+					gatherNodes(nodes, navigator, child);
+			}
 	}
 
 	private static <Node> boolean isIndependent(final Node node, final Collection<Node> usedNodes,

@@ -88,10 +88,6 @@ public class SopremoTreeAdaptor extends BaseTreeAdaptor implements TreeAdaptor {
 		throw new UnsupportedOperationException();
 	}
 
-	protected Object instantiate(final Class<?> expressionClass, final Object[] params) {
-		return ReflectUtil.newInstance(expressionClass, params);
-	}
-
 	@Override
 	public Object nil() {
 		return new PlaceholderExpression();
@@ -137,6 +133,10 @@ public class SopremoTreeAdaptor extends BaseTreeAdaptor implements TreeAdaptor {
 
 	@Override
 	public void setTokenBoundaries(final Object t, final Token startToken, final Token stopToken) {
+	}
+
+	protected Object instantiate(final Class<?> expressionClass, final Object[] params) {
+		return ReflectUtil.newInstance(expressionClass, params);
 	}
 
 	public class PlaceholderExpression extends UnevaluableExpression {

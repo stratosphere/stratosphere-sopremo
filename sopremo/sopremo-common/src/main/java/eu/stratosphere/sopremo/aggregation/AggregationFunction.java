@@ -22,7 +22,6 @@ import eu.stratosphere.sopremo.type.IStreamNode;
 
 /**
  * AggregationFunction allows {@link Aggregation} to be called inside regular transformations.
- * 
  */
 public class AggregationFunction extends SopremoFunction1<IStreamNode<?>> {
 	private final Aggregation aggregation;
@@ -43,6 +42,27 @@ public class AggregationFunction extends SopremoFunction1<IStreamNode<?>> {
 		this.aggregation = null;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.function.SopremoFunction#appendAsString(java.lang.Appendable)
+	 */
+	@Override
+	public void appendAsString(final Appendable appendable) throws IOException {
+		this.aggregation.appendAsString(appendable);
+	}
+
+	@Override
+	public boolean equals(final Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (this.getClass() != obj.getClass())
+			return false;
+		final AggregationFunction other = (AggregationFunction) obj;
+		return this.aggregation.equals(other.aggregation);
+	}
+
 	/**
 	 * Returns the aggregation.
 	 * 
@@ -52,13 +72,12 @@ public class AggregationFunction extends SopremoFunction1<IStreamNode<?>> {
 		return this.aggregation;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.function.SopremoFunction#appendAsString(java.lang.Appendable)
-	 */
 	@Override
-	public void appendAsString(final Appendable appendable) throws IOException {
-		this.aggregation.appendAsString(appendable);
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + this.aggregation.hashCode();
+		return result;
 	}
 
 	/*
@@ -73,25 +92,5 @@ public class AggregationFunction extends SopremoFunction1<IStreamNode<?>> {
 			this.aggregation.aggregate(item);
 
 		return this.aggregation.getFinalAggregate();
-	}
-
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + this.aggregation.hashCode();
-		return result;
-	}
-
-	@Override
-	public boolean equals(final Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (this.getClass() != obj.getClass())
-			return false;
-		final AggregationFunction other = (AggregationFunction) obj;
-		return this.aggregation.equals(other.aggregation);
 	}
 }

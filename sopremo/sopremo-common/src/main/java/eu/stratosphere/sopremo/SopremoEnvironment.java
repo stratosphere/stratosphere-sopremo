@@ -16,9 +16,13 @@ package eu.stratosphere.sopremo;
 
 import eu.stratosphere.api.common.functions.RuntimeContext;
 import eu.stratosphere.configuration.Configuration;
+import eu.stratosphere.sopremo.operator.Operator;
 import eu.stratosphere.sopremo.pact.SopremoUtil;
 
 /**
+ * Provides a unified access to less needed information about an {@link Operator} or its implementation during compile
+ * and runtime.<br/>
+ * There is exactly one {@link SopremoEnvironment} per {@link Thread} and it is thus thread-safe.
  */
 public class SopremoEnvironment {
 	/**
@@ -39,8 +43,22 @@ public class SopremoEnvironment {
 
 	private RuntimeContext runtimeContext;
 
-	public static SopremoEnvironment getInstance() {
-		return INSTANCE.get();
+	/**
+	 * Returns the classLoader.
+	 * 
+	 * @return the classLoader
+	 */
+	public ClassLoader getClassLoader() {
+		return this.classLoader;
+	}
+
+	/**
+	 * Returns the configuration.
+	 * 
+	 * @return the configuration
+	 */
+	public Configuration getConfiguration() {
+		return this.configuration;
 	}
 
 	/**
@@ -53,12 +71,12 @@ public class SopremoEnvironment {
 	}
 
 	/**
-	 * Returns the classLoader.
+	 * Returns the runtimeContext.
 	 * 
-	 * @return the classLoader
+	 * @return the runtimeContext
 	 */
-	public ClassLoader getClassLoader() {
-		return this.classLoader;
+	public RuntimeContext getRuntimeContext() {
+		return this.runtimeContext;
 	}
 
 	/**
@@ -75,12 +93,25 @@ public class SopremoEnvironment {
 	}
 
 	/**
-	 * Returns the configuration.
+	 * Sets the configuration to the specified value.
 	 * 
-	 * @return the configuration
+	 * @param configuration
+	 *        the configuration to set
 	 */
-	public Configuration getConfiguration() {
-		return this.configuration;
+	public void setConfiguration(Configuration configuration) {
+		if (configuration == null)
+			throw new NullPointerException("configuration must not be null");
+
+		this.configuration = configuration;
+
+		this.configuration = configuration;
+		this.classLoader = configuration.getClassLoader();
+		this.evaluationContext = SopremoUtil.getEvaluationContext(configuration);
+	}
+
+	public void setConfigurationAndContext(final Configuration parameters, final RuntimeContext runtimeContext) {
+		this.setConfiguration(parameters);
+		this.setRuntimeContext(runtimeContext);
 	}
 
 	/**
@@ -99,7 +130,7 @@ public class SopremoEnvironment {
 	/**
 	 * Sets the runtimeContext to the specified value.
 	 * 
-	 * @param runtimeContext
+	 * @param context
 	 *        the runtimeContext to set
 	 */
 	public void setRuntimeContext(final RuntimeContext context) {
@@ -109,32 +140,7 @@ public class SopremoEnvironment {
 		this.runtimeContext = context;
 	}
 
-	/**
-	 * Returns the runtimeContext.
-	 * 
-	 * @return the runtimeContext
-	 */
-	public RuntimeContext getRuntimeContext() {
-		return this.runtimeContext;
-	}
-
-	/**
-	 * Sets the classLoader to the specified value.
-	 * 
-	 * @param classLoader
-	 *        the classLoader to set
-	 */
-	public void setConfiguration(final Configuration configuration) {
-		if (configuration == null)
-			throw new NullPointerException("configuration must not be null");
-
-		this.configuration = configuration;
-		this.classLoader = configuration.getClassLoader();
-		this.evaluationContext = SopremoUtil.getEvaluationContext(configuration);
-	}
-
-	public void setConfigurationAndContext(final Configuration parameters, final RuntimeContext runtimeContext) {
-		this.setConfiguration(parameters);
-		this.setRuntimeContext(runtimeContext);
+	public static SopremoEnvironment getInstance() {
+		return INSTANCE.get();
 	}
 }

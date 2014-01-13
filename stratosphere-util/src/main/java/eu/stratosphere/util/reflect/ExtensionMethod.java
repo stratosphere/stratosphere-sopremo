@@ -32,6 +32,10 @@ public class ExtensionMethod<ReturnType> extends DynamicMethod<ReturnType> {
 		super(name);
 	}
 
+	public ReturnType invoke(final Object... params) throws Throwable {
+		return super.invoke(null, params);
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * @see eu.stratosphere.util.reflect.DynamicInvokable#getSignatureTypes(java.lang.reflect.Member)
@@ -46,10 +50,6 @@ public class ExtensionMethod<ReturnType> extends DynamicMethod<ReturnType> {
 			signatureTypes = paramList.elements();
 		}
 		return signatureTypes;
-	}
-
-	public ReturnType invoke(final Object... params) throws Throwable {
-		return super.invoke(null, params);
 	}
 
 	/*

@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.codehaus.jackson.map.ObjectMapper;
+
 import eu.stratosphere.sopremo.expressions.ArrayAccess;
 import eu.stratosphere.sopremo.expressions.ArrayProjection;
 import eu.stratosphere.sopremo.expressions.ExpressionUtil;
@@ -13,7 +15,6 @@ import eu.stratosphere.sopremo.expressions.PathSegmentExpression;
 
 /**
  * Provides a set of utility functions and objects to handle json data.
- * 
  */
 public class JsonUtil {
 	/**
@@ -46,7 +47,52 @@ public class JsonUtil {
 	}
 
 	/**
-	 * Creates a new {@link PathExpression} from the given parts.
+	 * Creates an {@link ArrayNode} that contains all given constants as elements. This method converts the whole array
+	 * of parameters to an ArrayNode.
+	 * 
+	 * @param constants
+	 *        the constants that should be used to fill the array
+	 * @return the array
+	 */
+	public static IArrayNode<?> createArrayNode(final Object... constants) {
+		return (IArrayNode<?>) JsonUtil.OBJECT_MAPPER.map(constants);
+	}
+
+	/**
+	 * Creates an {@link ArrayNode} that contains all given constants as elements. This method converts each parameter
+	 * to an appropriate JsonNode before creating the ArrayNode.
+	 * 
+	 * @param constants
+	 *        the constants that should be used to fill the array
+	 * @return the array
+	 */
+	public static IArrayNode<IJsonNode> createCompactArray(final Object... constants) {
+		final IJsonNode[] nodes = new IJsonNode[constants.length];
+		for (int index = 0; index < nodes.length; index++)
+			nodes[index] = createValueNode(constants[index]);
+		return JsonUtil.asArray(nodes);
+	}
+
+	/**
+	 * Creates an {@link ObjectNode} that contains all given fields with there related value. The key and value of each
+	 * field has do be specified like the following example:</br>
+	 * createObjectNode("key1", value1, "key2", value2, ...)
+	 * 
+	 * @param fields
+	 *        the key-value pairs that should be used
+	 * @return the object node
+	 */
+	public static ObjectNode createObjectNode(final Object... fields) {
+		if (fields.length % 2 != 0)
+			throw new IllegalArgumentException("must have an even number of params");
+		final ObjectNode objectNode = new ObjectNode();
+		for (int index = 0; index < fields.length; index += 2)
+			objectNode.put(fields[index].toString(), JsonUtil.OBJECT_MAPPER.map(fields[index + 1]));
+		return objectNode;
+	}
+
+	/**
+	 * Creates a new {@link PathSegmentExpression} from the given parts.
 	 * 
 	 * @param parts
 	 *        the parts that should be used
@@ -77,7 +123,7 @@ public class JsonUtil {
 	}
 
 	/**
-	 * Creates a new {@link PathExpression} from the given parts.
+	 * Creates a new {@link PathSegmentExpression} from the given parts.
 	 * 
 	 * @param parts
 	 *        the parts that should be used
@@ -88,19 +134,7 @@ public class JsonUtil {
 	}
 
 	/**
-	 * Creates an {@link ArrayNode} that contains all given constants as elements. This method converts the whole array
-	 * of parameters to an ArrayNode.
-	 * 
-	 * @param constants
-	 *        the constants that should be used to fill the array
-	 * @return the array
-	 */
-	public static IArrayNode<?> createArrayNode(final Object... constants) {
-		return (IArrayNode<?>) JsonUtil.OBJECT_MAPPER.map(constants);
-	}
-
-	/**
-	 * Creates an {@link TypedStreamNode} that contains all given constants as elements. This method converts the whole
+	 * Creates an {@link IStreamNode} that contains all given constants as elements. This method converts the whole
 	 * array
 	 * of parameters to an TypedStreamNode.
 	 * 
@@ -110,41 +144,6 @@ public class JsonUtil {
 	 */
 	public static IStreamNode<?> createStreamArrayNode(final Object... constants) {
 		return new StreamNode<IJsonNode>(createArrayNode(constants).iterator());
-	}
-
-	/**
-	 * Creates an {@link ArrayNode} that contains all given constants as elements. This method converts each parameter
-	 * to an appropriate JsonNode before creating the ArrayNode.
-	 * 
-	 * @param constants
-	 *        the constants that should be used to fill the array
-	 * @return the array
-	 * @param constants
-	 * @return
-	 */
-	public static IArrayNode<IJsonNode> createCompactArray(final Object... constants) {
-		final IJsonNode[] nodes = new IJsonNode[constants.length];
-		for (int index = 0; index < nodes.length; index++)
-			nodes[index] = createValueNode(constants[index]);
-		return JsonUtil.asArray(nodes);
-	}
-
-	/**
-	 * Creates an {@link ObjectNode} that contains all given fields with there related value. The key and value of each
-	 * field has do be specified like the following example:</br>
-	 * createObjectNode("key1", value1, "key2", value2, ...)
-	 * 
-	 * @param fields
-	 *        the key-value pairs that should be used
-	 * @return the object node
-	 */
-	public static ObjectNode createObjectNode(final Object... fields) {
-		if (fields.length % 2 != 0)
-			throw new IllegalArgumentException("must have an even number of params");
-		final ObjectNode objectNode = new ObjectNode();
-		for (int index = 0; index < fields.length; index += 2)
-			objectNode.put(fields[index].toString(), JsonUtil.OBJECT_MAPPER.map(fields[index + 1]));
-		return objectNode;
 	}
 
 	public static IJsonNode createValueNode(final Object value) {

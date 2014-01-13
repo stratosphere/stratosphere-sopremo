@@ -22,28 +22,13 @@ import eu.stratosphere.sopremo.type.IntNode;
 
 public class BatchAggregationExpressionTest extends EvaluableExpressionTest<BatchAggregationExpression> {
 	@Override
-	protected BatchAggregationExpression createDefaultInstance(final int index) {
-		switch (index) {
-		case 0:
-			return new BatchAggregationExpression(CoreFunctions.MAX);
-		case 1:
-			return new BatchAggregationExpression(CoreFunctions.CONCAT);
-		case 2:
-			return new BatchAggregationExpression(CoreFunctions.FIRST);
-		default:
-			return new BatchAggregationExpression(CoreFunctions.MIN);
-		}
+	@Before
+	public void initContext() {
+		super.initContext();
 	}
 
 	@Before
 	public void setup() {
-	}
-
-	@Override
-	protected void initVerifier(final EqualsVerifier<BatchAggregationExpression> equalVerifier) {
-		super.initVerifier(equalVerifier);
-
-		equalVerifier.withPrefabValues(IJsonNode.class, IntNode.valueOf(23), IntNode.valueOf(42));
 	}
 
 	@Test
@@ -63,14 +48,6 @@ public class BatchAggregationExpressionTest extends EvaluableExpressionTest<Batc
 		Assert.assertTrue(Arrays.equals(expected, doubleResult));
 	}
 
-	private BatchAggregationExpression createBatchExpression() {
-		final BatchAggregationExpression batch = new BatchAggregationExpression(CoreFunctions.SUM);
-		batch.add(CoreFunctions.MAX);
-		batch.add(CoreFunctions.MAX, new ArithmeticExpression(EvaluationExpression.VALUE,
-			ArithmeticOperator.MULTIPLICATION, EvaluationExpression.VALUE));
-		return batch;
-	}
-
 	@Test
 	public void shouldReuseTarget() {
 		final BatchAggregationExpression batch = this.createBatchExpression();
@@ -81,13 +58,20 @@ public class BatchAggregationExpressionTest extends EvaluableExpressionTest<Batc
 	}
 
 	@Test
-	public void testPartialClone() throws IllegalAccessException {
-		final BatchAggregationExpression original = this.createBatchExpression();
-		final Partial partial1Clone = (Partial) original.getPartial(0).clone();
-		final Partial partial2Clone = (Partial) original.getPartial(1).clone();
+	public void shouldSerializeComplexAggregation() {
+		final ObjectCreation transformation = new ObjectCreation();
+		transformation.addMapping("dept",
+			makePath(new InputSelection(0), new ArrayAccess(0), new ObjectAccess("dept")));
+		transformation.addMapping("deptName",
+			makePath(new InputSelection(1), new ArrayAccess(0), new ObjectAccess("name")));
+		transformation.addMapping("emps", createFunctionCall(CoreFunctions.SORT,
+			makePath(new InputSelection(0), new ArrayProjection(new ObjectAccess("id")))));
+		transformation.addMapping("numEmps", createFunctionCall(CoreFunctions.COUNT, new InputSelection(0)));
 
-		this.testPropertyClone(BatchAggregationExpression.class, original, partial1Clone.getBatch());
-		Assert.assertSame(partial1Clone.getBatch(), partial2Clone.getBatch());
+		final EvaluationExpression aggregation = ExpressionUtil.replaceAggregationWithBatchAggregation(
+			ExpressionUtil.replaceIndexAccessWithAggregation(transformation));
+
+		this.testKryoSerialization(aggregation);
 	}
 
 	@Test
@@ -106,6 +90,16 @@ public class BatchAggregationExpressionTest extends EvaluableExpressionTest<Batc
 	}
 
 	@Test
+	public void testPartialClone() throws IllegalAccessException {
+		final BatchAggregationExpression original = this.createBatchExpression();
+		final Partial partial1Clone = (Partial) original.getPartial(0).clone();
+		final Partial partial2Clone = (Partial) original.getPartial(1).clone();
+
+		this.testPropertyClone(BatchAggregationExpression.class, original, partial1Clone.getBatch());
+		Assert.assertSame(partial1Clone.getBatch(), partial2Clone.getBatch());
+	}
+
+	@Test
 	public void testSuccessiveClones() throws IllegalAccessException {
 		final BatchAggregationExpression original = this.createBatchExpression();
 		final Partial partial1Clone = (Partial) original.getPartial(0).clone();
@@ -121,25 +115,31 @@ public class BatchAggregationExpressionTest extends EvaluableExpressionTest<Batc
 	}
 
 	@Override
-	@Before
-	public void initContext() {
-		super.initContext();
+	protected BatchAggregationExpression createDefaultInstance(final int index) {
+		switch (index) {
+		case 0:
+			return new BatchAggregationExpression(CoreFunctions.MAX);
+		case 1:
+			return new BatchAggregationExpression(CoreFunctions.CONCAT);
+		case 2:
+			return new BatchAggregationExpression(CoreFunctions.FIRST);
+		default:
+			return new BatchAggregationExpression(CoreFunctions.MIN);
+		}
 	}
 
-	@Test
-	public void shouldSerializeComplexAggregation() {
-		final ObjectCreation transformation = new ObjectCreation();
-		transformation.addMapping("dept",
-			makePath(new InputSelection(0), new ArrayAccess(0), new ObjectAccess("dept")));
-		transformation.addMapping("deptName",
-			makePath(new InputSelection(1), new ArrayAccess(0), new ObjectAccess("name")));
-		transformation.addMapping("emps", createFunctionCall(CoreFunctions.SORT,
-			makePath(new InputSelection(0), new ArrayProjection(new ObjectAccess("id")))));
-		transformation.addMapping("numEmps", createFunctionCall(CoreFunctions.COUNT, new InputSelection(0)));
+	@Override
+	protected void initVerifier(final EqualsVerifier<BatchAggregationExpression> equalVerifier) {
+		super.initVerifier(equalVerifier);
 
-		final EvaluationExpression aggregation = ExpressionUtil.replaceAggregationWithBatchAggregation(
-			ExpressionUtil.replaceIndexAccessWithAggregation(transformation));
+		equalVerifier.withPrefabValues(IJsonNode.class, IntNode.valueOf(23), IntNode.valueOf(42));
+	}
 
-		this.testKryoSerialization(aggregation);
+	private BatchAggregationExpression createBatchExpression() {
+		final BatchAggregationExpression batch = new BatchAggregationExpression(CoreFunctions.SUM);
+		batch.add(CoreFunctions.MAX);
+		batch.add(CoreFunctions.MAX, new ArithmeticExpression(EvaluationExpression.VALUE,
+			ArithmeticOperator.MULTIPLICATION, EvaluationExpression.VALUE));
+		return batch;
 	}
 }

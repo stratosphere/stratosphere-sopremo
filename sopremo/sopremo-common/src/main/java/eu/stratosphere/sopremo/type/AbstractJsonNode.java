@@ -4,7 +4,6 @@ import eu.stratosphere.sopremo.AbstractSopremoType;
 
 /**
  * Abstract class to provide basic implementations for all node types.
- * 
  */
 public abstract class AbstractJsonNode extends AbstractSopremoType implements IJsonNode {
 
@@ -31,17 +30,6 @@ public abstract class AbstractJsonNode extends AbstractSopremoType implements IJ
 			result = this.compareToSameType(otherNode);
 		// System.err.println(this + "<=>" + other + " -> " + result);
 		return result;
-	}
-
-	protected int compareToOtherType(final IJsonNode other) {
-		return this.getType().getName().compareTo(other.getType().getName());
-	}
-
-	protected void checkForSameType(final IJsonNode other) {
-		if (other.getType() != this.getType())
-			throw new IllegalArgumentException(String.format(
-				"The type of this node %s does not match the type of the other node %s: %s", this.getType(),
-				other.getType(), other));
 	}
 
 	/*
@@ -72,4 +60,15 @@ public abstract class AbstractJsonNode extends AbstractSopremoType implements IJ
 	 */
 	@Override
 	public abstract int hashCode();
+
+	protected void checkForSameType(final IJsonNode other) {
+		if (other.getType() != this.getType())
+			throw new IllegalArgumentException(String.format(
+				"The type of this node %s does not match the type of the other node %s: %s", this.getType(),
+				other.getType(), other));
+	}
+
+	protected int compareToOtherType(final IJsonNode other) {
+		return this.getType().getName().compareTo(other.getType().getName());
+	}
 }

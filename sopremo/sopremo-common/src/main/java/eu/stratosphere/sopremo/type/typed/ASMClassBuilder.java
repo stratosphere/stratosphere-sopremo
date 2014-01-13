@@ -23,9 +23,8 @@ import eu.stratosphere.sopremo.type.TypeMapper;
  * This class uses the ASM framework to build instances of {@link TypedObjectNode}s that implement a certain interface (
  * extending {@link ITypedObjectNode}), specified by the user. The main idea is to create
  * the getters and setters given in the interface which delegate the data to and
- * from the underlying backingObject of a {@link TypedObject}. These methods are
+ * from the underlying backingObject of a {@link TypedObjectNode}. These methods are
  * generated at JVM byte code level.
- * 
  */
 
 public class ASMClassBuilder implements Opcodes {
@@ -37,6 +36,12 @@ public class ASMClassBuilder implements Opcodes {
 
 	private final static String BaseClassName = Type.getInternalName(BaseClass);
 
+	private final List<FieldInitializer> fieldInitializations = new ArrayList<FieldInitializer>();
+
+	private final static String MapperDescriptor = Type.getDescriptor(TypeMapper.class);
+
+	private final static String MapperInternalName = Type.getInternalName(TypeMapper.class);
+
 	public ASMClassBuilder(final String className, final Class<?>... interfaces) {
 		this.className = className.replace('.', '/');
 
@@ -46,30 +51,6 @@ public class ASMClassBuilder implements Opcodes {
 
 		this.classWriter.visit(V1_5, ACC_PUBLIC + ACC_SUPER + ACC_FINAL, this.className, null,
 			BaseClassName, interfaceNames);
-	}
-
-	private final List<FieldInitializer> fieldInitializations = new ArrayList<FieldInitializer>();
-
-	protected byte[] dump() throws Exception {
-		this.addCtor();
-
-		this.classWriter.visitEnd();
-		return this.classWriter.toByteArray();
-	}
-
-	private void addCtor() throws Exception {
-		final MethodVisitor methodVisitor = this.classWriter.visitMethod(ACC_PUBLIC, "<init>", "()V", null, null);
-		methodVisitor.visitCode();
-		methodVisitor.visitVarInsn(ALOAD, 0);
-		methodVisitor.visitMethodInsn(INVOKESPECIAL, BaseClassName, "<init>", "()V");
-
-		for (final FieldInitializer initialization : this.fieldInitializations)
-			initialization.initialize(methodVisitor);
-
-		// methodVisitor.visitInsn(POP);
-		methodVisitor.visitInsn(RETURN);
-		methodVisitor.visitMaxs(0, 0);
-		methodVisitor.visitEnd();
 	}
 
 	public void addAccessorsForProperty(final PropertyDescriptor prop) throws Exception {
@@ -89,71 +70,24 @@ public class ASMClassBuilder implements Opcodes {
 				this.addConvertingSetterMethod(prop);
 	}
 
-	private void addTypedGetterMethod(final PropertyDescriptor prop) throws Exception {
-		final String propName = prop.getName();
-		final Class<?> propertyType = prop.getPropertyType();
-		final String propertyTypeName = Type.getDescriptor(propertyType);
-		final String typeField = this.getTypedObjectCacheFieldName(propName);
-		final FieldVisitor fv =
-			this.classWriter.visitField(ACC_PRIVATE, typeField, propertyTypeName, null, null);
-		fv.visitEnd();
+	protected byte[] dump() throws Exception {
+		this.addCtor();
 
-		final MethodVisitor methodVisitor =
-			this.classWriter.visitMethod(ACC_PUBLIC, prop.getReadMethod().getName(),
-				Type.getMethodDescriptor(prop.getReadMethod()), null, null);
-		methodVisitor.visitCode();
-		methodVisitor.visitVarInsn(ALOAD, 0);
-		methodVisitor.visitLdcInsn(prop.getName());
-		methodVisitor.visitVarInsn(ALOAD, 0);
-		methodVisitor.visitFieldInsn(GETFIELD, this.className, typeField, propertyTypeName);
+		this.classWriter.visitEnd();
+		return this.classWriter.toByteArray();
+	}
 
-		final Label getTypedLabel = new Label();
-		methodVisitor.visitInsn(DUP);
-		methodVisitor.visitJumpInsn(IFNONNULL, getTypedLabel);
-		methodVisitor.visitInsn(POP);
-		methodVisitor.visitVarInsn(ALOAD, 0);
-		methodVisitor.visitVarInsn(ALOAD, 0);
-		methodVisitor.visitLdcInsn(Type.getType(propertyType));
-		methodVisitor.visitMethodInsn(INVOKESPECIAL, BaseClassName, "createWrappingObject",
-			Type.getMethodDescriptor(BaseClass.getDeclaredMethod("createWrappingObject", Class.class)));
-		methodVisitor.visitInsn(DUP_X1);
-		methodVisitor.visitTypeInsn(CHECKCAST, Type.getInternalName(propertyType));
-		methodVisitor.visitFieldInsn(PUTFIELD, this.className, typeField, propertyTypeName);
+	protected String getConvertedJsonCacheFieldName(final String propName) {
+		return propName + "JsonValue";
+	}
 
-		methodVisitor.visitLabel(getTypedLabel);
-		methodVisitor.visitMethodInsn(INVOKESPECIAL, BaseClassName, "getTyped",
-			Type.getMethodDescriptor(TypedObjectNode.class.getMethod("getTyped", String.class, ITypedObjectNode.class)));
-		methodVisitor.visitTypeInsn(CHECKCAST, propertyTypeName);
-		methodVisitor.visitInsn(ARETURN);
-		methodVisitor.visitMaxs(0, 0);
-		methodVisitor.visitEnd();
+	protected String getConvertedTypeCacheFieldName(final String propName) {
+		return propName + "JavaValue";
 	}
 
 	protected String getTypedObjectCacheFieldName(final String propName) {
 		return propName + "TypedObject";
 	}
-
-	private void addGetterMethod(final PropertyDescriptor prop) throws Exception {
-		final String propertyTypeName = Type.getInternalName(prop.getPropertyType());
-		final String methodDescriptor = Type.getMethodDescriptor(prop.getReadMethod());
-		final String name = prop.getReadMethod().getName();
-		final MethodVisitor methodVisitor =
-			this.classWriter.visitMethod(ACC_PUBLIC + ACC_SYNTHETIC, name, methodDescriptor, null, null);
-		methodVisitor.visitCode();
-		methodVisitor.visitVarInsn(ALOAD, 0);
-		methodVisitor.visitLdcInsn(prop.getName());
-		final String getSignature =
-			Type.getMethodDescriptor(Type.getType(IJsonNode.class), new Type[] { Type.getType(String.class) });
-		methodVisitor.visitMethodInsn(INVOKESPECIAL, this.className, "getOrNull", getSignature);
-		methodVisitor.visitTypeInsn(CHECKCAST, propertyTypeName);
-		methodVisitor.visitInsn(ARETURN);
-		methodVisitor.visitMaxs(0, 0);
-		methodVisitor.visitEnd();
-	}
-
-	private final static String MapperDescriptor = Type.getDescriptor(TypeMapper.class);
-
-	private final static String MapperInternalName = Type.getInternalName(TypeMapper.class);
 
 	private void addConvertingGetterMethod(final PropertyDescriptor prop) throws Exception {
 		final java.lang.reflect.Type jsonType = JavaToJsonMapper.INSTANCE.getDefaultMappingType(prop.getPropertyType());
@@ -258,49 +192,6 @@ public class ASMClassBuilder implements Opcodes {
 		methodVisitor.visitMaxs(0, 0);
 		methodVisitor.visitEnd();
 
-	}
-
-	protected String getConvertedTypeCacheFieldName(final String propName) {
-		return propName + "JavaValue";
-	}
-
-	private void addSetterMethod(final PropertyDescriptor prop) throws Exception {
-		final MethodVisitor methodVisitor = this.classWriter.visitMethod(ACC_PUBLIC, prop.getWriteMethod().getName(),
-			Type.getMethodDescriptor(prop.getWriteMethod()), null, null);
-		methodVisitor.visitCode();
-		methodVisitor.visitVarInsn(ALOAD, 0);
-		methodVisitor.visitLdcInsn(prop.getName());
-		methodVisitor.visitVarInsn(ALOAD, 1);
-		methodVisitor.visitMethodInsn(INVOKESPECIAL, this.className, "putOrNull",
-			Type.getMethodDescriptor(TypedObjectNode.class.getMethod("putOrNull", String.class, IJsonNode.class)));
-		methodVisitor.visitInsn(POP);
-		methodVisitor.visitInsn(RETURN);
-		methodVisitor.visitMaxs(0, 0);
-		methodVisitor.visitEnd();
-	}
-
-	private void addTypedSetterMethod(final PropertyDescriptor prop) throws Exception {
-		final MethodVisitor methodVisitor = this.classWriter.visitMethod(ACC_PUBLIC, prop.getWriteMethod().getName(),
-			Type.getMethodDescriptor(prop.getWriteMethod()), null, null);
-		methodVisitor.visitCode();
-		if (prop.getReadMethod() != null) { // store node in cache to avoid unnecessary instantiation in getter
-			methodVisitor.visitVarInsn(ALOAD, 0);
-			methodVisitor.visitVarInsn(ALOAD, 1);
-			methodVisitor.visitFieldInsn(PUTFIELD, this.className, this.getTypedObjectCacheFieldName(prop.getName()),
-				Type.getDescriptor(prop.getPropertyType()));
-		}
-		methodVisitor.visitVarInsn(ALOAD, 0);
-		methodVisitor.visitLdcInsn(prop.getName());
-		methodVisitor.visitVarInsn(ALOAD, 1);
-		methodVisitor.visitMethodInsn(INVOKESPECIAL, this.className, "putTyped",
-			Type.getMethodDescriptor(TypedObjectNode.class.getMethod("putTyped", String.class, ITypedObjectNode.class)));
-		methodVisitor.visitInsn(RETURN);
-		methodVisitor.visitMaxs(0, 0);
-		methodVisitor.visitEnd();
-	}
-
-	private interface FieldInitializer {
-		public void initialize(MethodVisitor methodVisitor) throws Exception;
 	}
 
 	private void addConvertingSetterMethod(final PropertyDescriptor prop) throws Exception {
@@ -411,7 +302,115 @@ public class ASMClassBuilder implements Opcodes {
 
 	}
 
-	protected String getConvertedJsonCacheFieldName(final String propName) {
-		return propName + "JsonValue";
+	private void addCtor() throws Exception {
+		final MethodVisitor methodVisitor = this.classWriter.visitMethod(ACC_PUBLIC, "<init>", "()V", null, null);
+		methodVisitor.visitCode();
+		methodVisitor.visitVarInsn(ALOAD, 0);
+		methodVisitor.visitMethodInsn(INVOKESPECIAL, BaseClassName, "<init>", "()V");
+
+		for (final FieldInitializer initialization : this.fieldInitializations)
+			initialization.initialize(methodVisitor);
+
+		// methodVisitor.visitInsn(POP);
+		methodVisitor.visitInsn(RETURN);
+		methodVisitor.visitMaxs(0, 0);
+		methodVisitor.visitEnd();
+	}
+
+	private void addGetterMethod(final PropertyDescriptor prop) throws Exception {
+		final String propertyTypeName = Type.getInternalName(prop.getPropertyType());
+		final String methodDescriptor = Type.getMethodDescriptor(prop.getReadMethod());
+		final String name = prop.getReadMethod().getName();
+		final MethodVisitor methodVisitor =
+			this.classWriter.visitMethod(ACC_PUBLIC + ACC_SYNTHETIC, name, methodDescriptor, null, null);
+		methodVisitor.visitCode();
+		methodVisitor.visitVarInsn(ALOAD, 0);
+		methodVisitor.visitLdcInsn(prop.getName());
+		final String getSignature =
+			Type.getMethodDescriptor(Type.getType(IJsonNode.class), new Type[] { Type.getType(String.class) });
+		methodVisitor.visitMethodInsn(INVOKESPECIAL, this.className, "getOrNull", getSignature);
+		methodVisitor.visitTypeInsn(CHECKCAST, propertyTypeName);
+		methodVisitor.visitInsn(ARETURN);
+		methodVisitor.visitMaxs(0, 0);
+		methodVisitor.visitEnd();
+	}
+
+	private void addSetterMethod(final PropertyDescriptor prop) throws Exception {
+		final MethodVisitor methodVisitor = this.classWriter.visitMethod(ACC_PUBLIC, prop.getWriteMethod().getName(),
+			Type.getMethodDescriptor(prop.getWriteMethod()), null, null);
+		methodVisitor.visitCode();
+		methodVisitor.visitVarInsn(ALOAD, 0);
+		methodVisitor.visitLdcInsn(prop.getName());
+		methodVisitor.visitVarInsn(ALOAD, 1);
+		methodVisitor.visitMethodInsn(INVOKESPECIAL, this.className, "putOrNull",
+			Type.getMethodDescriptor(TypedObjectNode.class.getMethod("putOrNull", String.class, IJsonNode.class)));
+		methodVisitor.visitInsn(POP);
+		methodVisitor.visitInsn(RETURN);
+		methodVisitor.visitMaxs(0, 0);
+		methodVisitor.visitEnd();
+	}
+
+	private void addTypedGetterMethod(final PropertyDescriptor prop) throws Exception {
+		final String propName = prop.getName();
+		final Class<?> propertyType = prop.getPropertyType();
+		final String propertyTypeName = Type.getDescriptor(propertyType);
+		final String typeField = this.getTypedObjectCacheFieldName(propName);
+		final FieldVisitor fv =
+			this.classWriter.visitField(ACC_PRIVATE, typeField, propertyTypeName, null, null);
+		fv.visitEnd();
+
+		final MethodVisitor methodVisitor =
+			this.classWriter.visitMethod(ACC_PUBLIC, prop.getReadMethod().getName(),
+				Type.getMethodDescriptor(prop.getReadMethod()), null, null);
+		methodVisitor.visitCode();
+		methodVisitor.visitVarInsn(ALOAD, 0);
+		methodVisitor.visitLdcInsn(prop.getName());
+		methodVisitor.visitVarInsn(ALOAD, 0);
+		methodVisitor.visitFieldInsn(GETFIELD, this.className, typeField, propertyTypeName);
+
+		final Label getTypedLabel = new Label();
+		methodVisitor.visitInsn(DUP);
+		methodVisitor.visitJumpInsn(IFNONNULL, getTypedLabel);
+		methodVisitor.visitInsn(POP);
+		methodVisitor.visitVarInsn(ALOAD, 0);
+		methodVisitor.visitVarInsn(ALOAD, 0);
+		methodVisitor.visitLdcInsn(Type.getType(propertyType));
+		methodVisitor.visitMethodInsn(INVOKESPECIAL, BaseClassName, "createWrappingObject",
+			Type.getMethodDescriptor(BaseClass.getDeclaredMethod("createWrappingObject", Class.class)));
+		methodVisitor.visitInsn(DUP_X1);
+		methodVisitor.visitTypeInsn(CHECKCAST, Type.getInternalName(propertyType));
+		methodVisitor.visitFieldInsn(PUTFIELD, this.className, typeField, propertyTypeName);
+
+		methodVisitor.visitLabel(getTypedLabel);
+		methodVisitor.visitMethodInsn(INVOKESPECIAL, BaseClassName, "getTyped",
+			Type.getMethodDescriptor(TypedObjectNode.class.getMethod("getTyped", String.class, ITypedObjectNode.class)));
+		methodVisitor.visitTypeInsn(CHECKCAST, propertyTypeName);
+		methodVisitor.visitInsn(ARETURN);
+		methodVisitor.visitMaxs(0, 0);
+		methodVisitor.visitEnd();
+	}
+
+	private void addTypedSetterMethod(final PropertyDescriptor prop) throws Exception {
+		final MethodVisitor methodVisitor = this.classWriter.visitMethod(ACC_PUBLIC, prop.getWriteMethod().getName(),
+			Type.getMethodDescriptor(prop.getWriteMethod()), null, null);
+		methodVisitor.visitCode();
+		if (prop.getReadMethod() != null) { // store node in cache to avoid unnecessary instantiation in getter
+			methodVisitor.visitVarInsn(ALOAD, 0);
+			methodVisitor.visitVarInsn(ALOAD, 1);
+			methodVisitor.visitFieldInsn(PUTFIELD, this.className, this.getTypedObjectCacheFieldName(prop.getName()),
+				Type.getDescriptor(prop.getPropertyType()));
+		}
+		methodVisitor.visitVarInsn(ALOAD, 0);
+		methodVisitor.visitLdcInsn(prop.getName());
+		methodVisitor.visitVarInsn(ALOAD, 1);
+		methodVisitor.visitMethodInsn(INVOKESPECIAL, this.className, "putTyped",
+			Type.getMethodDescriptor(TypedObjectNode.class.getMethod("putTyped", String.class, ITypedObjectNode.class)));
+		methodVisitor.visitInsn(RETURN);
+		methodVisitor.visitMaxs(0, 0);
+		methodVisitor.visitEnd();
+	}
+
+	private interface FieldInitializer {
+		public void initialize(MethodVisitor methodVisitor) throws Exception;
 	}
 }

@@ -7,13 +7,13 @@ import eu.stratosphere.api.common.operators.BulkIteration;
 import eu.stratosphere.api.common.operators.DeltaIteration;
 import eu.stratosphere.api.common.operators.IterationOperator;
 import eu.stratosphere.api.common.operators.Operator;
-import eu.stratosphere.api.common.operators.util.ContractUtil;
+import eu.stratosphere.api.common.operators.util.OperatorUtil;
 import eu.stratosphere.util.dag.ConnectionNavigator;
 
 /**
- * {@link Navigator} for traversing a graph of {@link Operator}s.
+ * {@link ConnectionNavigator} for traversing a graph of {@link Operator}s.
  * 
- * @see Navigator
+ * @see ConnectionNavigator
  */
 public class OperatorNavigator implements ConnectionNavigator<Operator> {
 	/**
@@ -24,7 +24,7 @@ public class OperatorNavigator implements ConnectionNavigator<Operator> {
 	@Override
 	public List<Operator> getConnectedNodes(final Operator node) {
 		if (node instanceof IterationOperator) {
-			List<Operator> inputs = new ArrayList<>(ContractUtil.getFlatInputs(node));
+			final List<Operator> inputs = new ArrayList<>(OperatorUtil.getFlatInputs(node));
 
 			if (node instanceof BulkIteration) {
 				inputs.add(((BulkIteration) node).getPartialSolution());
@@ -39,6 +39,6 @@ public class OperatorNavigator implements ConnectionNavigator<Operator> {
 
 			return inputs;
 		}
-		return ContractUtil.getFlatInputs(node);
+		return OperatorUtil.getFlatInputs(node);
 	}
 }

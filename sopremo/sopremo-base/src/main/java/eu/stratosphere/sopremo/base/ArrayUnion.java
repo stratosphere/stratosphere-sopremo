@@ -30,20 +30,6 @@ public final class ArrayUnion extends FixedTypeAssociativeAggregation<ArrayNode<
 
 	/*
 	 * (non-Javadoc)
-	 * @see
-	 * eu.stratosphere.sopremo.aggregation.FixedTypeAssociativeAggregation#aggregateInto(eu.stratosphere.sopremo.type
-	 * .IJsonNode, eu.stratosphere.sopremo.type.IJsonNode)
-	 */
-	@Override
-	protected void aggregateInto(final ArrayNode<IJsonNode> aggregator, final IJsonNode element) {
-		final IArrayNode<?> node = (IArrayNode<?>) element;
-		for (int index = 0; index < node.size(); index++)
-			if (aggregator.get(index) == MissingNode.getInstance() && node.get(index) != MissingNode.getInstance())
-				aggregator.set(index, node.get(index));
-	}
-
-	/*
-	 * (non-Javadoc)
 	 * @see eu.stratosphere.sopremo.aggregation.Aggregation#appendAsString(java.lang.Appendable)
 	 */
 	@Override
@@ -58,5 +44,19 @@ public final class ArrayUnion extends FixedTypeAssociativeAggregation<ArrayNode<
 	@Override
 	public Aggregation clone() {
 		return new ArrayUnion();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see
+	 * eu.stratosphere.sopremo.aggregation.FixedTypeAssociativeAggregation#aggregateInto(eu.stratosphere.sopremo.type
+	 * .IJsonNode, eu.stratosphere.sopremo.type.IJsonNode)
+	 */
+	@Override
+	protected void aggregateInto(final ArrayNode<IJsonNode> aggregator, final IJsonNode element) {
+		final IArrayNode<?> node = (IArrayNode<?>) element;
+		for (int index = 0; index < node.size(); index++)
+			if (aggregator.get(index) == MissingNode.getInstance() && node.get(index) != MissingNode.getInstance())
+				aggregator.set(index, node.get(index));
 	}
 }

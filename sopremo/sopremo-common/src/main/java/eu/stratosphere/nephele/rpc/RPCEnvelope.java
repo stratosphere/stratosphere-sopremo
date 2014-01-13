@@ -21,7 +21,6 @@ package eu.stratosphere.nephele.rpc;
  * from the actual RPC logic.
  * <p>
  * This class is thread-safe.
- * 
  */
 class RPCEnvelope {
 

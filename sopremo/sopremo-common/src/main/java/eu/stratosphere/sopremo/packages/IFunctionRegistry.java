@@ -17,15 +17,15 @@ package eu.stratosphere.sopremo.packages;
 import java.lang.reflect.Method;
 
 import eu.stratosphere.sopremo.function.Callable;
+import eu.stratosphere.sopremo.function.SopremoFunction;
 
 /**
  * Registry that manages {@link SopremoFunction}s.
- * 
  */
 public interface IFunctionRegistry extends IRegistry<Callable<?, ?>> {
-	public void put(final Method method);
-
 	public void put(final Class<?> javaFunctions);
+
+	public void put(final Method method);
 
 	public void put(String registeredName, final Class<?> clazz, final String staticMethodName);
 }

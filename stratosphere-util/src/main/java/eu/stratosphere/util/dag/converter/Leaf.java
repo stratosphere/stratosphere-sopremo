@@ -8,7 +8,6 @@ import java.lang.annotation.Target;
 /**
  * Gives the {@link GraphConverter} the hint that no child elements need to be processed, since the annotated
  * {@link NodeConverter} is considered to be leaf of the graph.
- * 
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.TYPE })

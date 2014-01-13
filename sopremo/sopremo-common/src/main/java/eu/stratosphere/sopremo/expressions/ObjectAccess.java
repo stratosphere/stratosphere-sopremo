@@ -25,7 +25,6 @@ import eu.stratosphere.sopremo.type.NullNode;
 
 /**
  * Returns the value of an attribute of one or more Json nodes.
- * 
  */
 @OptimizerHints(scope = Scope.OBJECT)
 public class ObjectAccess extends PathSegmentExpression {
@@ -49,13 +48,10 @@ public class ObjectAccess extends PathSegmentExpression {
 		this.field = null;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.expressions.PathSegmentExpression#segmentHashCode()
-	 */
 	@Override
-	protected int segmentHashCode() {
-		return this.field.hashCode();
+	public void appendAsString(final Appendable appendable) throws IOException {
+		this.appendInputAsString(appendable);
+		appendable.append('.').append(this.field);
 	}
 
 	@Override
@@ -93,6 +89,15 @@ public class ObjectAccess extends PathSegmentExpression {
 
 	/*
 	 * (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.expressions.PathSegmentExpression#segmentHashCode()
+	 */
+	@Override
+	protected int segmentHashCode() {
+		return this.field.hashCode();
+	}
+
+	/*
+	 * (non-Javadoc)
 	 * @see eu.stratosphere.sopremo.expressions.PathSegmentExpression#setSegment(eu.stratosphere.sopremo.type.IJsonNode,
 	 * eu.stratosphere.sopremo.type.IJsonNode)
 	 */
@@ -102,11 +107,5 @@ public class ObjectAccess extends PathSegmentExpression {
 			throw new EvaluationException("Cannot set field of non-object " + node.getClass().getSimpleName());
 		SopremoUtil.replaceWithCopy((IObjectNode) node, this.field, value);
 		return node;
-	}
-
-	@Override
-	public void appendAsString(final Appendable appendable) throws IOException {
-		this.appendInputAsString(appendable);
-		appendable.append('.').append(this.field);
 	}
 }

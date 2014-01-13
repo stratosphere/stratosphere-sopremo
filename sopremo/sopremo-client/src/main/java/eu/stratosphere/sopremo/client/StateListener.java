@@ -21,6 +21,15 @@ import eu.stratosphere.sopremo.execution.ExecutionResponse.ExecutionState;
 public abstract class StateListener implements ProgressListener {
 	private ExecutionState lastState;
 
+	/**
+	 * Returns the lastState.
+	 * 
+	 * @return the lastState
+	 */
+	public ExecutionState getLastState() {
+		return this.lastState;
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * @see
@@ -35,17 +44,8 @@ public abstract class StateListener implements ProgressListener {
 			this.stateNotChanged(this.lastState, detail);
 	}
 
-	protected void stateNotChanged(final ExecutionState state, final String detail) {
-	}
-
 	protected abstract void stateChanged(ExecutionState executionState, String detail);
 
-	/**
-	 * Returns the lastState.
-	 * 
-	 * @return the lastState
-	 */
-	public ExecutionState getLastState() {
-		return this.lastState;
+	protected void stateNotChanged(final ExecutionState state, final String detail) {
 	}
 }

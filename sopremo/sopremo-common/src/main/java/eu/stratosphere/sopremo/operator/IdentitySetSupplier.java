@@ -26,12 +26,12 @@ import eu.stratosphere.util.IdentitySet;
 public class IdentitySetSupplier<T> implements Supplier<Set<T>> {
 	@SuppressWarnings("rawtypes")
 	private final static IdentitySetSupplier Instance = new IdentitySetSupplier();
-	
+
 	@Override
 	public Set<T> get() {
 		return new IdentitySet<>();
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	public static <T> IdentitySetSupplier<T> getInstance() {
 		return Instance;

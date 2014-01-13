@@ -17,11 +17,14 @@ import eu.stratosphere.api.common.functions.Function;
 import eu.stratosphere.api.common.functions.GenericMapper;
 import eu.stratosphere.api.common.operators.Ordering;
 import eu.stratosphere.api.common.operators.base.CoGroupOperatorBase;
+import eu.stratosphere.api.common.operators.base.CoGroupOperatorBase.CombinableFirst;
+import eu.stratosphere.api.common.operators.base.CoGroupOperatorBase.CombinableSecond;
 import eu.stratosphere.api.common.operators.base.CrossOperatorBase;
 import eu.stratosphere.api.common.operators.base.JoinOperatorBase;
 import eu.stratosphere.api.common.operators.base.MapOperatorBase;
 import eu.stratosphere.api.common.operators.base.ReduceOperatorBase;
-import eu.stratosphere.api.common.operators.util.ContractUtil;
+import eu.stratosphere.api.common.operators.base.ReduceOperatorBase.Combinable;
+import eu.stratosphere.api.common.operators.util.OperatorUtil;
 import eu.stratosphere.configuration.Configuration;
 import eu.stratosphere.pact.common.IdentityMap;
 import eu.stratosphere.pact.common.plan.PactModule;
@@ -69,13 +72,12 @@ import eu.stratosphere.util.IdentityList;
  * <ul>
  * <li>{@link #getFunctionClass()} allows to choose a different Function than the first inner class inheriting from
  * {@link Function}.
- * <li>{@link #getOperator()} instantiates a contract matching the stub class resulting from the previous callback. This
+ * <li>{@link #getOperator(SopremoRecordLayout)} instantiates a contract matching the stub class resulting from the previous callback. This
  * callback is especially useful if a PACT stub is chosen that is not supported in Sopremo yet.
- * <li>{@link #configureOperator(Operator, Configuration, EvaluationContext)} is a callback used to set parameters of
+ * <li>{@link #configureOperator(eu.stratosphere.api.common.operators.Operator, Configuration, EvaluationContext, SopremoRecordLayout)} is a callback used to set parameters of
  * the {@link Configuration} of the stub.
- * <li>{@link #asPactModule(EvaluationContext)} gives complete control over the creation of the {@link PactModule}.
+ * <li>{@link #asPactModule(EvaluationContext, SopremoRecordLayout)} gives complete control over the creation of the {@link PactModule}.
  * </ul>
- * 
  */
 @OutputCardinality(min = 1, max = 1)
 public abstract class ElementaryOperator<Self extends ElementaryOperator<Self>>
@@ -88,26 +90,14 @@ public abstract class ElementaryOperator<Self extends ElementaryOperator<Self>>
 
 	private EvaluationExpression resultProjection = EvaluationExpression.VALUE;
 
-	public EvaluationExpression getResultProjection() {
-		return this.resultProjection;
+	{
+		for (int index = 0; index < this.getMinInputs(); index++)
+			this.keyExpressions.add(new ArrayList<EvaluationExpression>());
+		for (int index = 0; index < this.getMinInputs(); index++)
+			this.innerGroupOrders.add(new ArrayList<OrderingExpression>());
 	}
 
-	@Property
-	@Name(preposition = "into")
-	public void setResultProjection(final EvaluationExpression resultProjection) {
-		if (resultProjection == null)
-			throw new NullPointerException("resultProjection must not be null");
-
-		if (this.getMaxInputs() == 1)
-			this.resultProjection = resultProjection.clone().remove(new InputSelection(0));
-		else
-			this.resultProjection = resultProjection;
-	}
-
-	public Self withResultProjection(final EvaluationExpression resultProjection) {
-		this.setResultProjection(resultProjection);
-		return this.self();
-	}
+	private boolean combinable = false, combinableFirst = false, combinableSecond = false;
 
 	/**
 	 * Initializes the ElementaryOperator with the number of outputs set to 1.
@@ -116,6 +106,16 @@ public abstract class ElementaryOperator<Self extends ElementaryOperator<Self>>
 	 */
 	public ElementaryOperator() {
 		super();
+	}
+
+	/**
+	 * Initializes the ElementaryOperator with the given number of inputs.
+	 * 
+	 * @param inputs
+	 *        the number of inputs
+	 */
+	public ElementaryOperator(final int inputs) {
+		this(inputs, inputs);
 	}
 
 	/**
@@ -130,21 +130,100 @@ public abstract class ElementaryOperator<Self extends ElementaryOperator<Self>>
 		super(minInputs, maxInputs, 1, 1);
 	}
 
-	/**
-	 * Initializes the ElementaryOperator with the given number of inputs.
-	 * 
-	 * @param inputs
-	 *        the number of inputs
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.operator.Operator#appendAsString(java.lang.Appendable)
 	 */
-	public ElementaryOperator(final int inputs) {
-		this(inputs, inputs);
+	@Override
+	public void appendAsString(final Appendable appendable) throws IOException {
+		super.appendAsString(appendable);
+		if (this.getResultProjection() != EvaluationExpression.VALUE) {
+			appendable.append(" to ");
+			this.getResultProjection().appendAsString(appendable);
+		}
 	}
 
-	{
-		for (int index = 0; index < this.getMinInputs(); index++)
-			this.keyExpressions.add(new ArrayList<EvaluationExpression>());
-		for (int index = 0; index < this.getMinInputs(); index++)
-			this.innerGroupOrders.add(new ArrayList<OrderingExpression>());
+	@Override
+	public ElementarySopremoModule asElementaryOperators() {
+		final ElementarySopremoModule module =
+			new ElementarySopremoModule(this.getInputs().size(), this.getOutputs().size());
+		module.setName(this.toString());
+		final Operator<Self> clone = this.clone();
+		for (int index = 0; index < this.getInputs().size(); index++)
+			clone.setInput(index, module.getInput(index));
+		final List<JsonStream> outputs = clone.getOutputs();
+		for (int index = 0; index < outputs.size(); index++)
+			module.getOutput(index).setInput(index, outputs.get(index));
+		return module;
+	}
+
+	public PactModule asPactModule(final EvaluationContext context, final SopremoRecordLayout layout) {
+		final eu.stratosphere.api.common.operators.Operator contract = this.getOperator(layout);
+		context.setResultProjection(this.resultProjection);
+		this.configureOperator(contract, contract.getParameters(), context, layout);
+
+		final List<List<eu.stratosphere.api.common.operators.Operator>> inputLists = OperatorUtil
+			.getInputs(contract);
+		final List<eu.stratosphere.api.common.operators.Operator> distinctInputs =
+			new IdentityList<eu.stratosphere.api.common.operators.Operator>();
+		for (final List<eu.stratosphere.api.common.operators.Operator> inputs : inputLists) {
+			// assume at least one input for each contract input slot
+			if (inputs.isEmpty())
+				inputs.add(new MapOperatorBase<GenericMapper<SopremoRecord, SopremoRecord>>(IdentityMap.class, "nop"));
+			for (final eu.stratosphere.api.common.operators.Operator input : inputs)
+				if (!distinctInputs.contains(input))
+					distinctInputs.add(input);
+		}
+		final PactModule module = new PactModule(distinctInputs.size(), 1);
+		for (final List<eu.stratosphere.api.common.operators.Operator> inputs : inputLists)
+			for (int index = 0; index < inputs.size(); index++)
+				inputs.set(index, module.getInput(distinctInputs.indexOf(inputs.get(index))));
+		OperatorUtil.setInputs(contract, inputLists);
+
+		module.getOutput(0).addInput(contract);
+		return module;
+	}
+
+	@Override
+	public boolean equals(final Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (this.getClass() != obj.getClass())
+			return false;
+		final ElementaryOperator<?> other = (ElementaryOperator<?>) obj;
+		return this.keyExpressions.equals(other.keyExpressions) &&
+			this.innerGroupOrders.equals(other.innerGroupOrders) &&
+			this.resultProjection.equals(other.resultProjection);
+	}
+
+	public Set<EvaluationExpression> getAllKeyExpressions() {
+		final Set<EvaluationExpression> allKeys = new HashSet<EvaluationExpression>();
+		final List<JsonStream> inputs = this.getInputs();
+		for (int index = 0; index < inputs.size(); index++) {
+			allKeys.addAll(this.getKeyExpressions(index));
+			for (final OrderingExpression orderingExpression : this.getInnerGroupOrder(index))
+				allKeys.add(orderingExpression.getPath());
+		}
+		return allKeys;
+	}
+
+	/**
+	 * Returns the innerGroupOrder expressions of the given input.
+	 * 
+	 * @param inputIndex
+	 *        the index of the input
+	 * @return the secondarySortKey expressions of the given input
+	 */
+	@SuppressWarnings("unchecked")
+	public List<OrderingExpression> getInnerGroupOrder(final int inputIndex) {
+		if (inputIndex >= this.innerGroupOrders.size())
+			return Collections.EMPTY_LIST;
+		final List<OrderingExpression> innerGroupOrder = this.innerGroupOrders.get(inputIndex);
+		if (innerGroupOrder == null)
+			return Collections.EMPTY_LIST;
+		return innerGroupOrder;
 	}
 
 	/**
@@ -164,38 +243,80 @@ public abstract class ElementaryOperator<Self extends ElementaryOperator<Self>>
 		return expressions;
 	}
 
-	/**
-	 * Sets the keyExpressions to the specified value.
-	 * 
-	 * @param keyExpressions
-	 *        the keyExpressions to set
-	 * @param inputIndex
-	 *        the index of the input
-	 */
-	// @Property(hidden = true)
-	public void setKeyExpressions(final int inputIndex,
-			final List<? extends EvaluationExpression> keyExpressions) {
-		if (keyExpressions == null)
-			throw new NullPointerException("keyExpressions must not be null");
-		CollectionUtil.ensureSize(this.keyExpressions, inputIndex + 1);
-		this.keyExpressions.set(inputIndex, new ArrayList<EvaluationExpression>(keyExpressions));
+	public EvaluationExpression getResultProjection() {
+		return this.resultProjection;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result + this.keyExpressions.hashCode();
+		result = prime * result + this.innerGroupOrders.hashCode();
+		result = prime * result + this.resultProjection.hashCode();
+		return result;
 	}
 
 	/**
-	 * Returns the innerGroupOrder expressions of the given input.
+	 * Returns true, if the implementing stub is combinable. This method will only be invoked for Reduce stubs.
 	 * 
-	 * @param inputIndex
-	 *        the index of the input
-	 * @return the secondarySortKey expressions of the given input
+	 * @see Combinable
 	 */
-	@SuppressWarnings("unchecked")
-	public List<OrderingExpression> getInnerGroupOrder(final int inputIndex) {
-		if (inputIndex >= this.innerGroupOrders.size())
-			return Collections.EMPTY_LIST;
-		final List<OrderingExpression> innerGroupOrder = this.innerGroupOrders.get(inputIndex);
-		if (innerGroupOrder == null)
-			return Collections.EMPTY_LIST;
-		return innerGroupOrder;
+	public boolean isCombinable() {
+		return this.combinable;
+	}
+
+	/**
+	 * Returns true, if the implementing stub is combinable for left input. This method will only be invoked for CoGroup
+	 * stubs.
+	 * 
+	 * @see CombinableFirst
+	 */
+	public boolean isCombinableFirst() {
+		return this.combinableFirst;
+	}
+
+	/**
+	 * Returns true, if the implementing stub is combinable for right input. This method will only be invoked for
+	 * CoGroup stubs.
+	 * 
+	 * @see CombinableSecond
+	 */
+	public boolean isCombinableSecond() {
+		return this.combinableSecond;
+	}
+
+	/**
+	 * Sets the combinable to the specified value. This method has only effects for Reduce stubs.
+	 * 
+	 * @param combinable
+	 *        the combinable to set
+	 * @see Combinable
+	 */
+	public void setCombinable(final boolean combinable) {
+		this.combinable = combinable;
+	}
+
+	/**
+	 * Sets the combinableFirst to the specified value. This method has only effects for CoGroup stubs.
+	 * 
+	 * @param combinableFirst
+	 *        the combinableFirst to set
+	 * @see CombinableFirst
+	 */
+	public void setCombinableFirst(final boolean combinableFirst) {
+		this.combinableFirst = combinableFirst;
+	}
+
+	/**
+	 * Sets the combinableSecond to the specified value. This method has only effects for CoGroup stubs.
+	 * 
+	 * @param combinableSecond
+	 *        the combinableSecond to set
+	 * @see CombinableSecond
+	 */
+	public void setCombinableSecond(final boolean combinableSecond) {
+		this.combinableSecond = combinableSecond;
 	}
 
 	/**
@@ -244,16 +365,67 @@ public abstract class ElementaryOperator<Self extends ElementaryOperator<Self>>
 	}
 
 	/**
-	 * Sets the innerGroupOrder to the specified value.
+	 * Sets the keyExpressions to the specified value.
 	 * 
-	 * @param innerGroupOrder
-	 *        the innerGroupOrder to set
+	 * @param keyExpressions
+	 *        the keyExpressions to set
 	 * @param inputIndex
 	 *        the index of the input
 	 */
-	public Self withInnerGroupOrdering(final int index, final OrderingExpression... innerGroupOrder) {
-		this.setInnerGroupOrder(index, innerGroupOrder);
+	// @Property(hidden = true)
+	public void setKeyExpressions(final int inputIndex,
+			final List<? extends EvaluationExpression> keyExpressions) {
+		if (keyExpressions == null)
+			throw new NullPointerException("keyExpressions must not be null");
+		CollectionUtil.ensureSize(this.keyExpressions, inputIndex + 1);
+		this.keyExpressions.set(inputIndex, new ArrayList<EvaluationExpression>(keyExpressions));
+	}
+
+	@Property
+	@Name(preposition = "into")
+	public void setResultProjection(final EvaluationExpression resultProjection) {
+		if (resultProjection == null)
+			throw new NullPointerException("resultProjection must not be null");
+
+		if (this.getMaxInputs() == 1)
+			this.resultProjection = resultProjection.clone().remove(new InputSelection(0));
+		else
+			this.resultProjection = resultProjection;
+	}
+
+	/**
+	 * Sets the combinable to the specified value. This method has only effects for Reduce stubs.
+	 * 
+	 * @param combinable
+	 *        the combinable to set
+	 * @see Combinable
+	 */
+	public Self withCombinable(final boolean combinable) {
+		this.setCombinable(combinable);
 		return this.self();
+	}
+
+	/**
+	 * Sets the combinableFirst to the specified value. This method has only effects for CoGroup stubs.
+	 * 
+	 * @param combinableFirst
+	 *        the combinableFirst to set
+	 * @see CombinableFirst
+	 */
+	public Self withCombinableFirst(final boolean combinableFirst) {
+		this.combinableFirst = combinableFirst;
+		return this.self();
+	}
+
+	/**
+	 * Sets the combinableSecond to the specified value. This method has only effects for CoGroup stubs.
+	 * 
+	 * @param combinableSecond
+	 *        the combinableSecond to set
+	 * @see CombinableSecond
+	 */
+	public void withCombinableSecond(final boolean combinableSecond) {
+		this.combinableSecond = combinableSecond;
 	}
 
 	/**
@@ -261,7 +433,7 @@ public abstract class ElementaryOperator<Self extends ElementaryOperator<Self>>
 	 * 
 	 * @param innerGroupOrder
 	 *        the innerGroupOrder to set
-	 * @param inputIndex
+	 * @param index
 	 *        the index of the input
 	 * @return this
 	 */
@@ -271,11 +443,24 @@ public abstract class ElementaryOperator<Self extends ElementaryOperator<Self>>
 	}
 
 	/**
+	 * Sets the innerGroupOrder to the specified value.
+	 * 
+	 * @param innerGroupOrder
+	 *        the innerGroupOrder to set
+	 * @param index
+	 *        the index of the input
+	 */
+	public Self withInnerGroupOrdering(final int index, final OrderingExpression... innerGroupOrder) {
+		this.setInnerGroupOrder(index, innerGroupOrder);
+		return this.self();
+	}
+
+	/**
 	 * Sets the keyExpressions of the given input to the specified value.
 	 * 
 	 * @param keyExpressions
 	 *        the keyExpressions to set
-	 * @param inputIndex
+	 * @param index
 	 *        the index of the input
 	 * @return this
 	 */
@@ -289,7 +474,7 @@ public abstract class ElementaryOperator<Self extends ElementaryOperator<Self>>
 	 * 
 	 * @param keyExpressions
 	 *        the keyExpressions to set
-	 * @param inputIndex
+	 * @param index
 	 *        the index of the input
 	 * @return this
 	 */
@@ -298,42 +483,9 @@ public abstract class ElementaryOperator<Self extends ElementaryOperator<Self>>
 		return this.self();
 	}
 
-	public PactModule asPactModule(final EvaluationContext context, final SopremoRecordLayout layout) {
-		final eu.stratosphere.api.common.operators.Operator contract = this.getOperator(layout);
-		context.setResultProjection(this.resultProjection);
-		this.configureOperator(contract, contract.getParameters(), context, layout);
-
-		final List<List<eu.stratosphere.api.common.operators.Operator>> inputLists = ContractUtil
-			.getInputs(contract);
-		final List<eu.stratosphere.api.common.operators.Operator> distinctInputs =
-			new IdentityList<eu.stratosphere.api.common.operators.Operator>();
-		for (final List<eu.stratosphere.api.common.operators.Operator> inputs : inputLists) {
-			// assume at least one input for each contract input slot
-			if (inputs.isEmpty())
-				inputs.add(new MapOperatorBase<GenericMapper<SopremoRecord, SopremoRecord>>(IdentityMap.class, "nop"));
-			for (final eu.stratosphere.api.common.operators.Operator input : inputs)
-				if (!distinctInputs.contains(input))
-					distinctInputs.add(input);
-		}
-		final PactModule module = new PactModule(distinctInputs.size(), 1);
-		for (final List<eu.stratosphere.api.common.operators.Operator> inputs : inputLists)
-			for (int index = 0; index < inputs.size(); index++)
-				inputs.set(index, module.getInput(distinctInputs.indexOf(inputs.get(index))));
-		ContractUtil.setInputs(contract, inputLists);
-
-		module.getOutput(0).addInput(contract);
-		return module;
-	}
-
-	/**
-	 * Creates a module that delegates all input directly to the output.
-	 * 
-	 * @return a short circuit module
-	 */
-	protected PactModule createShortCircuitModule() {
-		final PactModule module = new PactModule(1, 1);
-		module.getOutput(0).setInput(module.getInput(0));
-		return module;
+	public Self withResultProjection(final EvaluationExpression resultProjection) {
+		this.setResultProjection(resultProjection);
+		return this.self();
 	}
 
 	/**
@@ -362,19 +514,63 @@ public abstract class ElementaryOperator<Self extends ElementaryOperator<Self>>
 		SopremoUtil.setEvaluationContext(stubConfiguration, context);
 	}
 
-	@Override
-	public ElementarySopremoModule asElementaryOperators() {
-		final ElementarySopremoModule module =
-			new ElementarySopremoModule(this.getInputs().size(), this.getOutputs().size());
-		module.setName(this.toString());
-		final Operator<Self> clone = this.clone();
-		for (int index = 0; index < this.getInputs().size(); index++)
-			clone.setInput(index, module.getInput(index));
-		final List<JsonStream> outputs = clone.getOutputs();
-		for (int index = 0; index < outputs.size(); index++)
-			module.getOutput(index).setInput(index, outputs.get(index));
+	protected Ordering createOrdering(final SopremoRecordLayout layout, final List<OrderingExpression> innerGroupOrder) {
+		final List<EvaluationExpression> paths = new ArrayList<EvaluationExpression>();
+		for (final OrderingExpression orderingExpression : innerGroupOrder)
+			paths.add(orderingExpression.getPath());
+		final int[] keyIndices = this.getKeyIndices(layout, paths);
+		final Ordering ordering = new Ordering();
+		for (int index = 0; index < keyIndices.length; index++)
+			ordering.appendOrdering(keyIndices[index], null, innerGroupOrder.get(index).getOrder());
+		return ordering;
+	}
+
+	/**
+	 * Creates a module that delegates all input directly to the output.
+	 * 
+	 * @return a short circuit module
+	 */
+	protected PactModule createShortCircuitModule() {
+		final PactModule module = new PactModule(1, 1);
+		module.getOutput(0).setInput(module.getInput(0));
 		return module;
 	}
+
+	/**
+	 * Returns the stub class that represents the functionality of this
+	 * operator.<br>
+	 * This method returns the first static inner class found with {@link Class#getDeclaredClasses()} that is extended
+	 * from {@link Function} by
+	 * default.
+	 * 
+	 * @return the stub class
+	 */
+	@SuppressWarnings("unchecked")
+	protected Class<? extends Function> getFunctionClass() {
+		for (final Class<?> stubClass : this.getClass().getDeclaredClasses())
+			if ((stubClass.getModifiers() & Modifier.STATIC) != 0
+				&& Function.class.isAssignableFrom(stubClass))
+				return (Class<? extends Function>) stubClass;
+		return null;
+	}
+
+	protected int[] getKeyIndices(final SopremoRecordLayout sopremoRecordLayout,
+			final Iterable<? extends EvaluationExpression> keyExpressions) {
+		final IntSet keyIndices = new IntOpenHashSet();
+		for (final EvaluationExpression expression : keyExpressions)
+			keyIndices.addAll(sopremoRecordLayout.indicesOf(expression));
+		if (keyIndices.isEmpty()) {
+			if (keyExpressions.iterator().hasNext())
+				throw new IllegalStateException(
+					String.format("Operator %s did not specify key expression that it now requires",
+						this.getClass()));
+
+			throw new IllegalStateException(String.format("Needs to specify key expressions: %s", this.getClass()));
+		}
+		return keyIndices.toIntArray();
+	}
+
+	// protected abstract Schema getKeyFields();
 
 	/**
 	 * Creates the {@link Operator} that represents this operator.
@@ -387,7 +583,7 @@ public abstract class ElementaryOperator<Self extends ElementaryOperator<Self>>
 		if (stubClass == null)
 			throw new IllegalStateException("no implementing stub found");
 		final Class<? extends eu.stratosphere.api.common.operators.Operator> contractClass =
-			ContractUtil.getContractClass(stubClass);
+			OperatorUtil.getContractClass(stubClass);
 		if (contractClass == null)
 			throw new IllegalStateException("no associated contract found");
 
@@ -425,199 +621,5 @@ public abstract class ElementaryOperator<Self extends ElementaryOperator<Self>>
 			throw new IllegalStateException("Cannot create contract from stub "
 				+ stubClass, e);
 		}
-	}
-
-	protected Ordering createOrdering(final SopremoRecordLayout layout, final List<OrderingExpression> innerGroupOrder) {
-		final List<EvaluationExpression> paths = new ArrayList<EvaluationExpression>();
-		for (final OrderingExpression orderingExpression : innerGroupOrder)
-			paths.add(orderingExpression.getPath());
-		final int[] keyIndices = this.getKeyIndices(layout, paths);
-		final Ordering ordering = new Ordering();
-		for (int index = 0; index < keyIndices.length; index++)
-			ordering.appendOrdering(keyIndices[index], null, innerGroupOrder.get(index).getOrder());
-		return ordering;
-	}
-
-	private boolean combinable = false, combinableFirst = false, combinableSecond = false;
-
-	/**
-	 * Returns true, if the implementing stub is combinable. This method will only be invoked for Reduce stubs.
-	 * 
-	 * @see eu.stratosphere.pact.generic.contract.GenericReduceOperator.Combinable
-	 */
-	public boolean isCombinable() {
-		return this.combinable;
-	}
-
-	/**
-	 * Sets the combinable to the specified value. This method has only effects for Reduce stubs.
-	 * 
-	 * @param combinable
-	 *        the combinable to set
-	 * @see eu.stratosphere.pact.generic.contract.GenericReduceOperator.Combinable
-	 */
-	public void setCombinable(final boolean combinable) {
-		this.combinable = combinable;
-	}
-
-	/**
-	 * Sets the combinable to the specified value. This method has only effects for Reduce stubs.
-	 * 
-	 * @param combinable
-	 *        the combinable to set
-	 * @see eu.stratosphere.pact.generic.contract.GenericReduceOperator.Combinable
-	 */
-	public Self withCombinable(final boolean combinable) {
-		this.setCombinable(combinable);
-		return this.self();
-	}
-
-	/**
-	 * Returns true, if the implementing stub is combinable for left input. This method will only be invoked for CoGroup
-	 * stubs.
-	 * 
-	 * @see eu.stratosphere.pact.generic.contract.GenericCoGroupOperator.CombinableFirst
-	 */
-	public boolean isCombinableFirst() {
-		return this.combinableFirst;
-	}
-
-	/**
-	 * Sets the combinableFirst to the specified value. This method has only effects for CoGroup stubs.
-	 * 
-	 * @param combinableFirst
-	 *        the combinableFirst to set
-	 * @see eu.stratosphere.pact.generic.contract.GenericCoGroupOperator.CombinableFirst
-	 */
-	public void setCombinableFirst(final boolean combinableFirst) {
-		this.combinableFirst = combinableFirst;
-	}
-
-	/**
-	 * Sets the combinableFirst to the specified value. This method has only effects for CoGroup stubs.
-	 * 
-	 * @param combinableFirst
-	 *        the combinableFirst to set
-	 * @see eu.stratosphere.pact.generic.contract.GenericCoGroupOperator.CombinableFirst
-	 */
-	public Self withCombinableFirst(final boolean combinableFirst) {
-		this.combinableFirst = combinableFirst;
-		return this.self();
-	}
-
-	/**
-	 * Returns true, if the implementing stub is combinable for right input. This method will only be invoked for
-	 * CoGroup stubs.
-	 * 
-	 * @see eu.stratosphere.pact.generic.contract.GenericCoGroupOperator.CombinableSecond
-	 */
-	public boolean isCombinableSecond() {
-		return this.combinableSecond;
-	}
-
-	/**
-	 * Sets the combinableSecond to the specified value. This method has only effects for CoGroup stubs.
-	 * 
-	 * @param combinableSecond
-	 *        the combinableSecond to set
-	 * @see eu.stratosphere.pact.generic.contract.GenericCoGroupOperator.CombinableSecond
-	 */
-	public void setCombinableSecond(final boolean combinableSecond) {
-		this.combinableSecond = combinableSecond;
-	}
-
-	/**
-	 * Sets the combinableSecond to the specified value. This method has only effects for CoGroup stubs.
-	 * 
-	 * @param combinableSecond
-	 *        the combinableSecond to set
-	 * @see eu.stratosphere.pact.generic.contract.GenericCoGroupOperator.CombinableSecond
-	 */
-	public void withCombinableSecond(final boolean combinableSecond) {
-		this.combinableSecond = combinableSecond;
-	}
-
-	public Set<EvaluationExpression> getAllKeyExpressions() {
-		final Set<EvaluationExpression> allKeys = new HashSet<EvaluationExpression>();
-		final List<JsonStream> inputs = this.getInputs();
-		for (int index = 0; index < inputs.size(); index++) {
-			allKeys.addAll(this.getKeyExpressions(index));
-			for (final OrderingExpression orderingExpression : this.getInnerGroupOrder(index))
-				allKeys.add(orderingExpression.getPath());
-		}
-		return allKeys;
-	}
-
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = super.hashCode();
-		result = prime * result + this.keyExpressions.hashCode();
-		result = prime * result + this.innerGroupOrders.hashCode();
-		result = prime * result + this.resultProjection.hashCode();
-		return result;
-	}
-
-	@Override
-	public boolean equals(final Object obj) {
-		if (this == obj)
-			return true;
-		if (!super.equals(obj))
-			return false;
-		if (this.getClass() != obj.getClass())
-			return false;
-		final ElementaryOperator<?> other = (ElementaryOperator<?>) obj;
-		return this.keyExpressions.equals(other.keyExpressions) &&
-			this.innerGroupOrders.equals(other.innerGroupOrders) &&
-			this.resultProjection.equals(other.resultProjection);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.operator.Operator#appendAsString(java.lang.Appendable)
-	 */
-	@Override
-	public void appendAsString(final Appendable appendable) throws IOException {
-		super.appendAsString(appendable);
-		if (this.getResultProjection() != EvaluationExpression.VALUE) {
-			appendable.append(" to ");
-			this.getResultProjection().appendAsString(appendable);
-		}
-	}
-
-	protected int[] getKeyIndices(final SopremoRecordLayout sopremoRecordLayout,
-			final Iterable<? extends EvaluationExpression> keyExpressions) {
-		final IntSet keyIndices = new IntOpenHashSet();
-		for (final EvaluationExpression expression : keyExpressions)
-			keyIndices.addAll(sopremoRecordLayout.indicesOf(expression));
-		if (keyIndices.isEmpty()) {
-			if (keyExpressions.iterator().hasNext())
-				throw new IllegalStateException(
-					String.format("Operator %s did not specify key expression that it now requires",
-						this.getClass()));
-
-			throw new IllegalStateException(String.format("Needs to specify key expressions: %s", this.getClass()));
-		}
-		return keyIndices.toIntArray();
-	}
-
-	// protected abstract Schema getKeyFields();
-
-	/**
-	 * Returns the stub class that represents the functionality of this
-	 * operator.<br>
-	 * This method returns the first static inner class found with {@link Class#getDeclaredClasses()} that is extended
-	 * from {@link Function} by
-	 * default.
-	 * 
-	 * @return the stub class
-	 */
-	@SuppressWarnings("unchecked")
-	protected Class<? extends Function> getFunctionClass() {
-		for (final Class<?> stubClass : this.getClass().getDeclaredClasses())
-			if ((stubClass.getModifiers() & Modifier.STATIC) != 0
-				&& Function.class.isAssignableFrom(stubClass))
-				return (Class<? extends Function>) stubClass;
-		return null;
 	}
 }

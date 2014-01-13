@@ -23,18 +23,19 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import eu.stratosphere.pact.testing.AssertUtil;
+import eu.stratosphere.core.testing.AssertUtil;
 
 /**
  */
 public class ObjectNodeTest extends JsonNodeTest<ObjectNode> {
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.EqualVerifyTest#createDefaultInstance(int)
+	 * @see eu.stratosphere.sopremo.type.ObjectNodeBaseTest#initObjectNode()
 	 */
-	@Override
-	protected ObjectNode createDefaultInstance(final int index) {
-		return new ObjectNode().put("age", new IntNode(index));
+	public ObjectNode createObjectNode() {
+		return new ObjectNode().put("firstName", TextNode.valueOf("Hans")).put("age", IntNode.valueOf(25))
+			.put("gender", TextNode.valueOf("male"));
+
 	}
 
 	@Before
@@ -43,29 +44,8 @@ public class ObjectNodeTest extends JsonNodeTest<ObjectNode> {
 	}
 
 	@Test
-	public void shouldSetAndGetValue() {
-		this.node.put("key", IntNode.valueOf(42));
-		Assert.assertEquals(IntNode.valueOf(42), this.node.get("key"));
-	}
-
-	@Test
-	public void shouldHaveCorrectSize() {
-		this.node.clear();
-		Assert.assertEquals(0, this.node.size());
-		this.node.put("key1", IntNode.valueOf(23)).put("key2", IntNode.valueOf(42));
-		Assert.assertEquals(2, this.node.size());
-	}
-
-	@Test
-	public void shouldReturnMissingNodeIfFieldNotSet() {
-		Assert.assertSame(MissingNode.getInstance(), this.node.get("thisFieldShouldNotBeAssigned"));
-	}
-
-	@Test
-	public void shouldRemoveNode() {
-		this.node.put("testkey", NullNode.getInstance());
-		this.node.remove("testkey");
-		Assert.assertSame(MissingNode.getInstance(), this.node.get("testkey"));
+	public void shouldBeEqualWithAnotherObjectNode() {
+		Assert.assertEquals(this.createObjectNode(), this.createObjectNode());
 	}
 
 	@Test
@@ -86,22 +66,42 @@ public class ObjectNodeTest extends JsonNodeTest<ObjectNode> {
 	}
 
 	@Test
+	public void shouldHaveCorrectSize() {
+		this.node.clear();
+		Assert.assertEquals(0, this.node.size());
+		this.node.put("key1", IntNode.valueOf(23)).put("key2", IntNode.valueOf(42));
+		Assert.assertEquals(2, this.node.size());
+	}
+
+	@Test
 	public void shouldPutAll() {
 		Assert.assertEquals(this.node, this.node.putAll(this.node));
 	}
 
 	@Test
-	public void shouldBeEqualWithAnotherObjectNode() {
-		Assert.assertEquals(this.createObjectNode(), this.createObjectNode());
+	public void shouldRemoveNode() {
+		this.node.put("testkey", NullNode.getInstance());
+		this.node.remove("testkey");
+		Assert.assertSame(MissingNode.getInstance(), this.node.get("testkey"));
+	}
+
+	@Test
+	public void shouldReturnMissingNodeIfFieldNotSet() {
+		Assert.assertSame(MissingNode.getInstance(), this.node.get("thisFieldShouldNotBeAssigned"));
+	}
+
+	@Test
+	public void shouldSetAndGetValue() {
+		this.node.put("key", IntNode.valueOf(42));
+		Assert.assertEquals(IntNode.valueOf(42), this.node.get("key"));
 	}
 
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.type.ObjectNodeBaseTest#initObjectNode()
+	 * @see eu.stratosphere.sopremo.EqualVerifyTest#createDefaultInstance(int)
 	 */
-	public ObjectNode createObjectNode() {
-		return new ObjectNode().put("firstName", TextNode.valueOf("Hans")).put("age", IntNode.valueOf(25))
-			.put("gender", TextNode.valueOf("male"));
-
+	@Override
+	protected ObjectNode createDefaultInstance(final int index) {
+		return new ObjectNode().put("age", new IntNode(index));
 	}
 }

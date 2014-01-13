@@ -32,15 +32,6 @@ public class ValueSplit extends ElementaryOperator<ValueSplit> {
 		return this;
 	}
 
-	@Name(preposition = "into")
-	@Property
-	public void setProjections(final ArrayCreation projections) {
-		if (projections == null)
-			throw new NullPointerException("projections must not be null");
-
-		this.projections = projections.getElements();
-	}
-
 	/**
 	 * Returns the projections.
 	 * 
@@ -50,11 +41,13 @@ public class ValueSplit extends ElementaryOperator<ValueSplit> {
 		return new ArrayCreation(this.projections);
 	}
 
-	public void setProjections(final List<EvaluationExpression> projections) {
+	@Name(preposition = "into")
+	@Property
+	public void setProjections(final ArrayCreation projections) {
 		if (projections == null)
 			throw new NullPointerException("projections must not be null");
 
-		this.projections = projections;
+		this.projections = projections.getElements();
 	}
 
 	public void setProjections(final EvaluationExpression... projections) {
@@ -64,7 +57,14 @@ public class ValueSplit extends ElementaryOperator<ValueSplit> {
 		this.projections = Lists.newArrayList(projections);
 	}
 
-	public ValueSplit withProjections(final List<EvaluationExpression> projections) {
+	public void setProjections(final List<EvaluationExpression> projections) {
+		if (projections == null)
+			throw new NullPointerException("projections must not be null");
+
+		this.projections = projections;
+	}
+
+	public ValueSplit withProjections(final ArrayCreation projections) {
 		this.setProjections(projections);
 		return this;
 	}
@@ -74,7 +74,7 @@ public class ValueSplit extends ElementaryOperator<ValueSplit> {
 		return this;
 	}
 
-	public ValueSplit withProjections(final ArrayCreation projections) {
+	public ValueSplit withProjections(final List<EvaluationExpression> projections) {
 		this.setProjections(projections);
 		return this;
 	}

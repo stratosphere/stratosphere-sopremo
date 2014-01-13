@@ -32,7 +32,6 @@ import eu.stratosphere.sopremo.type.NullNode;
 
 /**
  * Input format that reads values from the config and outputs them.
- * 
  */
 public class GeneratorInputFormat extends GenericInputFormat<SopremoRecord> {
 	/**
@@ -51,6 +50,15 @@ public class GeneratorInputFormat extends GenericInputFormat<SopremoRecord> {
 	private Iterator<IJsonNode> valueIterator;
 
 	private int numValues = 1;
+
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.api.io .InputFormat#close()
+	 */
+	@Override
+	public void close() throws IOException {
+		// nothing to do here
+	}
 
 	@SuppressWarnings("unchecked")
 	@Override
@@ -101,6 +109,16 @@ public class GeneratorInputFormat extends GenericInputFormat<SopremoRecord> {
 		return GeneratorInputSplit.class;
 	}
 
+	@Override
+	public boolean nextRecord(final SopremoRecord record) throws IOException {
+		if (this.reachedEnd())
+			throw new IOException("End of input split is reached");
+
+		final IJsonNode value = this.valueIterator.next();
+		record.setNode(value);
+		return true;
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * @see
@@ -118,25 +136,6 @@ public class GeneratorInputFormat extends GenericInputFormat<SopremoRecord> {
 	@Override
 	public boolean reachedEnd() throws IOException {
 		return !this.valueIterator.hasNext();
-	}
-
-	@Override
-	public boolean nextRecord(final SopremoRecord record) throws IOException {
-		if (this.reachedEnd())
-			throw new IOException("End of input split is reached");
-
-		final IJsonNode value = this.valueIterator.next();
-		record.setNode(value);
-		return true;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.api.io .InputFormat#close()
-	 */
-	@Override
-	public void close() throws IOException {
-		// nothing to do here
 	}
 
 }

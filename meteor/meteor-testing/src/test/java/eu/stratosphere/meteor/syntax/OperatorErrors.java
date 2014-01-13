@@ -19,6 +19,9 @@ import org.junit.Test;
 /**
  */
 public class OperatorErrors extends SyntaxTest {
+	/**
+	 * 
+	 */
 	@Test
 	public void testMisspelledFilter() {
 		final String query = "$input = read from 'file://input.json';\n" +
@@ -28,6 +31,9 @@ public class OperatorErrors extends SyntaxTest {
 		this.assertParserError(query, "filter");
 	}
 
+	/**
+	 * 
+	 */
 	@Test
 	public void testMisspelledProperty() {
 		final String query = "$input = read from 'file://input.json';\n" +
@@ -37,6 +43,9 @@ public class OperatorErrors extends SyntaxTest {
 		this.assertParserError(query, "where");
 	}
 
+	/**
+	 * 
+	 */
 	@Test
 	public void testUnknownOperator() {
 		final String query = "$input = read from 'file://input.json';\n" +
@@ -46,6 +55,9 @@ public class OperatorErrors extends SyntaxTest {
 		this.assertParserError(query, "xqwzts");
 	}
 
+	/**
+	 * 
+	 */
 	@Test
 	public void testUnknownProperty() {
 		final String query = "$input = read from 'file://input.json';\n" +

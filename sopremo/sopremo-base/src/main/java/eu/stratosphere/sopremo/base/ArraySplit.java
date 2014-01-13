@@ -18,28 +18,18 @@ import eu.stratosphere.sopremo.type.NullNode;
 /**
  * Splits an array into multiple tuples.<br>
  * This operator provides a means to emit more than one tuple in contrast to most other base operators.
- * 
  */
 @InputCardinality(1)
 @Name(verb = "split array")
 public class ArraySplit extends ElementaryOperator<ArraySplit> {
 	private EvaluationExpression arrayPath = EvaluationExpression.VALUE, splitProjection = new ArrayAccess(0);
 
-	public enum ResultField {
-		Element, Index, Array, WholeValue;
-	};
-
 	public EvaluationExpression getArrayPath() {
 		return this.arrayPath;
-	}
+	};
 
 	public EvaluationExpression getSplitProjection() {
 		return this.splitProjection;
-	}
-
-	public ArraySplit withArrayPath(final EvaluationExpression arrayPath) {
-		this.arrayPath = arrayPath;
-		return this;
 	}
 
 	/**
@@ -60,17 +50,6 @@ public class ArraySplit extends ElementaryOperator<ArraySplit> {
 	/**
 	 * (element, index, array, node) -&gt; value
 	 * 
-	 * @param valueProjection
-	 * @return this
-	 */
-	public ArraySplit withSplitProjection(final EvaluationExpression valueProjection) {
-		this.setSplitProjection(valueProjection);
-		return this;
-	}
-
-	/**
-	 * (element, index, array, node) -&gt; value
-	 * 
 	 * @param elementProjection
 	 */
 	@Property
@@ -83,12 +62,16 @@ public class ArraySplit extends ElementaryOperator<ArraySplit> {
 
 	/**
 	 * (element, index, array, node) -&gt; value
-	 * 
-	 * @param valueProjection
-	 * @return this
 	 */
-	public ArraySplit withSplitProjection(final ResultField... fields) {
-		this.setSplitProjection(fields);
+	public void setSplitProjection(final ResultField... fields) {
+		final int[] indices = new int[fields.length];
+		for (int index = 0; index < indices.length; index++)
+			indices[index] = fields[index].ordinal();
+		this.setSplitProjection(ArrayAccess.arrayWithIndices(indices));
+	}
+
+	public ArraySplit withArrayPath(final EvaluationExpression arrayPath) {
+		this.arrayPath = arrayPath;
 		return this;
 	}
 
@@ -96,12 +79,21 @@ public class ArraySplit extends ElementaryOperator<ArraySplit> {
 	 * (element, index, array, node) -&gt; value
 	 * 
 	 * @param valueProjection
+	 * @return this
 	 */
-	public void setSplitProjection(final ResultField... fields) {
-		final int[] indices = new int[fields.length];
-		for (int index = 0; index < indices.length; index++)
-			indices[index] = fields[index].ordinal();
-		this.setSplitProjection(ArrayAccess.arrayWithIndices(indices));
+	public ArraySplit withSplitProjection(final EvaluationExpression valueProjection) {
+		this.setSplitProjection(valueProjection);
+		return this;
+	}
+
+	/**
+	 * (element, index, array, node) -&gt; value
+	 * 
+	 * @return this
+	 */
+	public ArraySplit withSplitProjection(final ResultField... fields) {
+		this.setSplitProjection(fields);
+		return this;
 	}
 
 	public static class Implementation extends SopremoMap {
@@ -126,5 +118,9 @@ public class ArraySplit extends ElementaryOperator<ArraySplit> {
 				index++;
 			}
 		}
+	}
+
+	public enum ResultField {
+		Element, Index, Array, WholeValue;
 	}
 }

@@ -76,25 +76,6 @@ public class SopremoServerTest {
 	}
 
 	@Test
-	public void testJobEnqueueing() {
-		when(this.mockInfo.getStatus()).thenReturn(ExecutionState.ENQUEUED);
-
-		final ExecutionResponse response = this.server.execute(this.request);
-		Assert.assertSame(ExecutionState.ENQUEUED, response.getState());
-	}
-
-	@Test
-	public void testSuccessfulExecution() {
-		when(this.mockInfo.getStatus()).thenReturn(ExecutionState.ENQUEUED).thenReturn(ExecutionState.RUNNING).thenReturn(
-			ExecutionState.FINISHED);
-
-		ExecutionResponse response = this.server.execute(this.request);
-		response = this.waitForStateToFinish(response, ExecutionState.ENQUEUED);
-		response = this.waitForStateToFinish(response, ExecutionState.RUNNING);
-		Assert.assertSame(ExecutionState.FINISHED, response.getState());
-	}
-
-	@Test
 	public void testFailBeforeRunning() {
 		when(this.mockInfo.getStatus()).thenReturn(ExecutionState.ENQUEUED).thenReturn(ExecutionState.ERROR);
 
@@ -115,6 +96,25 @@ public class SopremoServerTest {
 		Assert.assertSame(ExecutionState.ERROR, response.getState());
 	}
 
+	@Test
+	public void testJobEnqueueing() {
+		when(this.mockInfo.getStatus()).thenReturn(ExecutionState.ENQUEUED);
+
+		final ExecutionResponse response = this.server.execute(this.request);
+		Assert.assertSame(ExecutionState.ENQUEUED, response.getState());
+	}
+
+	@Test
+	public void testSuccessfulExecution() {
+		when(this.mockInfo.getStatus()).thenReturn(ExecutionState.ENQUEUED).thenReturn(ExecutionState.RUNNING).thenReturn(
+			ExecutionState.FINISHED);
+
+		ExecutionResponse response = this.server.execute(this.request);
+		response = this.waitForStateToFinish(response, ExecutionState.ENQUEUED);
+		response = this.waitForStateToFinish(response, ExecutionState.RUNNING);
+		Assert.assertSame(ExecutionState.FINISHED, response.getState());
+	}
+
 	private ExecutionResponse waitForStateToFinish(final ExecutionResponse response, final ExecutionState status) {
 
 		try {
@@ -122,6 +122,16 @@ public class SopremoServerTest {
 		} catch (final Exception e) {
 			e.printStackTrace();
 			return null;
+		}
+	}
+
+	public static String createTemporaryFile(final String prefix) {
+		try {
+			final File tempFile = File.createTempFile(prefix, ".json");
+			tempFile.deleteOnExit();
+			return tempFile.toURI().toString();
+		} catch (final IOException e) {
+			throw new IllegalStateException("Cannot create temporary file", e);
 		}
 	}
 
@@ -138,15 +148,5 @@ public class SopremoServerTest {
 		final Sink output = new Sink(createTemporaryFile("output")).withInputs(selection);
 		plan.setSinks(output);
 		return plan;
-	}
-
-	public static String createTemporaryFile(final String prefix) {
-		try {
-			final File tempFile = File.createTempFile(prefix, ".json");
-			tempFile.deleteOnExit();
-			return tempFile.toURI().toString();
-		} catch (final IOException e) {
-			throw new IllegalStateException("Cannot create temporary file", e);
-		}
 	}
 }

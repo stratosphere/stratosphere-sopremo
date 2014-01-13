@@ -8,7 +8,6 @@ import java.lang.annotation.Target;
 /**
  * Annotation for a {@link NodeConverter} specifying that the child elements should be appended to the result of the
  * current {@link NodeConverter}.
- * 
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.TYPE })

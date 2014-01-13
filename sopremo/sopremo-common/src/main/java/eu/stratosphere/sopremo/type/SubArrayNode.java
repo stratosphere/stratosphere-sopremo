@@ -21,7 +21,6 @@ import com.google.common.collect.Iterators;
 
 /**
  * Represents a reusable view on arrays.
- * 
  */
 @DefaultSerializer(AbstractArrayNode.ArraySerializer.class)
 public class SubArrayNode<T extends IJsonNode> extends AbstractArrayNode<T> {
@@ -30,34 +29,15 @@ public class SubArrayNode<T extends IJsonNode> extends AbstractArrayNode<T> {
 
 	private int startIndex, length;
 
-	public void init(final IArrayNode<T> originalArray, final int startIndex, final int length) {
-		if (startIndex < 0)
-			throw new IllegalArgumentException();
-		if (length < 0)
-			throw new IllegalArgumentException();
-		this.originalArray = originalArray;
-		this.startIndex = startIndex;
-		this.length = length;
-	}
-
-	public void init(final IArrayNode<T> originalArray, final int startIndex) {
-		this.init(originalArray, startIndex, originalArray.size() - startIndex);
-	}
-
-	@Override
-	public void setSize(final int length) {
-		if (length < 0)
-			throw new IllegalArgumentException();
-		this.length = length;
-	}
-
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.type.IArrayNode#size()
+	 * @see eu.stratosphere.sopremo.type.IArrayNode#add(int, eu.stratosphere.sopremo.type.IJsonNode)
 	 */
 	@Override
-	public int size() {
-		return this.length;
+	public IArrayNode<T> add(final int index, final T element) {
+		this.originalArray.add(this.startIndex + index, element);
+		this.length++;
+		return this;
 	}
 
 	/*
@@ -73,13 +53,12 @@ public class SubArrayNode<T extends IJsonNode> extends AbstractArrayNode<T> {
 
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.type.IArrayNode#add(int, eu.stratosphere.sopremo.type.IJsonNode)
+	 * @see eu.stratosphere.sopremo.type.IArrayNode#clear()
 	 */
 	@Override
-	public IArrayNode<T> add(final int index, final T element) {
-		this.originalArray.add(this.startIndex + index, element);
-		this.length++;
-		return this;
+	public void clear() {
+		for (; this.length > 0; this.length--)
+			this.originalArray.remove(this.startIndex);
 	}
 
 	/*
@@ -91,36 +70,18 @@ public class SubArrayNode<T extends IJsonNode> extends AbstractArrayNode<T> {
 		return this.originalArray.get(this.startIndex + index);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.type.IArrayNode#set(int, eu.stratosphere.sopremo.type.IJsonNode)
-	 */
-	@Override
-	public void set(final int index, final T node) {
-		this.originalArray.set(this.startIndex + index, node);
+	public void init(final IArrayNode<T> originalArray, final int startIndex) {
+		this.init(originalArray, startIndex, originalArray.size() - startIndex);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.type.IArrayNode#remove(int)
-	 */
-	@Override
-	public void remove(final int index) {
-		if (index < 0 || index >= this.size())
-			return;
-
-		this.length--;
-		this.originalArray.remove(this.startIndex + index);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.type.IArrayNode#clear()
-	 */
-	@Override
-	public void clear() {
-		for (; this.length > 0; this.length--)
-			this.originalArray.remove(this.startIndex);
+	public void init(final IArrayNode<T> originalArray, final int startIndex, final int length) {
+		if (startIndex < 0)
+			throw new IllegalArgumentException();
+		if (length < 0)
+			throw new IllegalArgumentException();
+		this.originalArray = originalArray;
+		this.startIndex = startIndex;
+		this.length = length;
 	}
 
 	/*
@@ -141,5 +102,43 @@ public class SubArrayNode<T extends IJsonNode> extends AbstractArrayNode<T> {
 		final Iterator<T> iterator = this.originalArray.iterator();
 		Iterators.advance(iterator, this.startIndex);
 		return Iterators.limit(iterator, this.length);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.type.IArrayNode#remove(int)
+	 */
+	@Override
+	public void remove(final int index) {
+		if (index < 0 || index >= this.size())
+			return;
+
+		this.length--;
+		this.originalArray.remove(this.startIndex + index);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.type.IArrayNode#set(int, eu.stratosphere.sopremo.type.IJsonNode)
+	 */
+	@Override
+	public void set(final int index, final T node) {
+		this.originalArray.set(this.startIndex + index, node);
+	}
+
+	@Override
+	public void setSize(final int length) {
+		if (length < 0)
+			throw new IllegalArgumentException();
+		this.length = length;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.type.IArrayNode#size()
+	 */
+	@Override
+	public int size() {
+		return this.length;
 	}
 }

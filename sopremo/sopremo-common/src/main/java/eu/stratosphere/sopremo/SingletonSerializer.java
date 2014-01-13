@@ -35,10 +35,6 @@ public abstract class SingletonSerializer extends ReusingSerializer {
 	}
 
 	@Override
-	public void write(final Kryo kryo, final Output output, final Object object) {
-	}
-
-	@Override
 	public Object read(final Kryo kryo, final Input input, final Class type) {
 		return this.singleton;
 	}
@@ -51,5 +47,9 @@ public abstract class SingletonSerializer extends ReusingSerializer {
 	@Override
 	public Object read(final Kryo kryo, final Input input, final Object oldInstance, final Class type) {
 		return this.singleton;
+	}
+
+	@Override
+	public void write(final Kryo kryo, final Output output, final Object object) {
 	}
 }

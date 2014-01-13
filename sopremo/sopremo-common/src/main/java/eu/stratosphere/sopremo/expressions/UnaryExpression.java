@@ -32,6 +32,8 @@ public class UnaryExpression extends BooleanExpression {
 
 	private final boolean negate;
 
+	private transient final NodeCache nodeCache = new NodeCache();
+
 	/**
 	 * Initializes an UnaryExpression with the given {@link EvaluationExpression}.
 	 * 
@@ -52,8 +54,8 @@ public class UnaryExpression extends BooleanExpression {
 	 * @param negate
 	 *        indicates either the result of the evaluation should be negated or not
 	 */
-	public UnaryExpression(final EvaluationExpression expr, final boolean negate) {
-		this.expr = expr;
+	public UnaryExpression(final EvaluationExpression booleanExpr, final boolean negate) {
+		this.expr = booleanExpr;
 		this.negate = negate;
 	}
 
@@ -66,14 +68,19 @@ public class UnaryExpression extends BooleanExpression {
 	}
 
 	@Override
+	public void appendAsString(final Appendable appendable) throws IOException {
+		if (this.negate)
+			appendable.append("!");
+		this.expr.appendAsString(appendable);
+	}
+
+	@Override
 	public boolean equals(final Object obj) {
 		if (!super.equals(obj))
 			return false;
 		final UnaryExpression other = (UnaryExpression) obj;
 		return this.expr.equals(other.expr) && this.negate == other.negate;
 	}
-
-	private transient final NodeCache nodeCache = new NodeCache();
 
 	@Override
 	public BooleanNode evaluate(final IJsonNode node) {
@@ -87,26 +94,6 @@ public class UnaryExpression extends BooleanExpression {
 		return result;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.expressions.ExpressionParent#iterator()
-	 */
-	@Override
-	public ChildIterator iterator() {
-		return new NamedChildIterator("expr") {
-
-			@Override
-			protected void set(final int index, final EvaluationExpression e) {
-				UnaryExpression.this.expr = e;
-			}
-
-			@Override
-			protected EvaluationExpression get(final int index) {
-				return UnaryExpression.this.expr;
-			}
-		};
-	}
-
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -116,11 +103,24 @@ public class UnaryExpression extends BooleanExpression {
 		return result;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.expressions.ExpressionParent#iterator()
+	 */
 	@Override
-	public void appendAsString(final Appendable appendable) throws IOException {
-		if (this.negate)
-			appendable.append("!");
-		this.expr.appendAsString(appendable);
+	public ChildIterator iterator() {
+		return new NamedChildIterator("expr") {
+
+			@Override
+			protected EvaluationExpression get(final int index) {
+				return UnaryExpression.this.expr;
+			}
+
+			@Override
+			protected void set(final int index, final EvaluationExpression e) {
+				UnaryExpression.this.expr = e;
+			}
+		};
 	}
 
 	public static BooleanExpression not(final EvaluationExpression expression) {

@@ -20,6 +20,9 @@ import org.junit.Test;
  */
 public class ObjectCreationErrors extends SyntaxTest {
 
+	/**
+	 * 
+	 */
 	@Test
 	public void testGrouping1() {
 		final String query = "$daily = read from 'file://NYSE_dividends.json';\n" +
@@ -29,6 +32,9 @@ public class ObjectCreationErrors extends SyntaxTest {
 		this.assertParserError(query, "json object");
 	}
 
+	/**
+	 * 
+	 */
 	@Test
 	public void testGrouping2() {
 		final String query = "$daily = read from 'file://NYSE_dividends.json';\n" +

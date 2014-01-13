@@ -17,6 +17,8 @@ package eu.stratosphere.util;
 /**
  */
 public interface Stringifier<T> {
+	public static Stringifier<Object> JavaString = new JavaStringifier();
+
 	public String stringify(T object);
 
 	public static class JavaStringifier implements Stringifier<Object> {
@@ -29,6 +31,4 @@ public interface Stringifier<T> {
 			return object.toString();
 		}
 	}
-
-	public static Stringifier<Object> JavaString = new JavaStringifier();
 }

@@ -1,7 +1,9 @@
 package eu.stratosphere.util.reflect;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -14,35 +16,9 @@ import com.google.common.primitives.Primitives;
 
 /**
  * Convenience methods for reflective programming.
- * 
  */
 public class ReflectUtil {
 	private static Map<Class<?>, DynamicClass<?>> CACHED_CLASSES = new HashMap<Class<?>, DynamicClass<?>>();
-
-	//
-	// @SuppressWarnings("serial")
-	// private final static Map<Class<?>, Class<?>> BoxingClasses = new IdentityHashMap<Class<?>, Class<?>>() {
-	// {
-	// this.put(java.lang.Boolean.TYPE, java.lang.Boolean.class);
-	// this.put(java.lang.Character.TYPE, java.lang.Character.class);
-	// this.put(java.lang.Byte.TYPE, java.lang.Byte.class);
-	// this.put(java.lang.Short.TYPE, java.lang.Short.class);
-	// this.put(java.lang.Integer.TYPE, java.lang.Integer.class);
-	// this.put(java.lang.Long.TYPE, java.lang.Long.class);
-	// this.put(java.lang.Float.TYPE, java.lang.Float.class);
-	// this.put(java.lang.Double.TYPE, java.lang.Double.class);
-	// this.put(java.lang.Void.TYPE, java.lang.Void.class);
-	// }
-	// };
-	//
-	// @SuppressWarnings("serial")
-	// private final static Map<Class<?>, Class<?>> PrimitiveClasses = new IdentityHashMap<Class<?>, Class<?>>() {
-	// {
-	// for (iterable_type c : BoxingClasses.entrySet()) {
-	//
-	// }
-	// }
-	// };
 
 	/**
 	 * Returns the first annotation of the specified annotation type for the given type.<br>
@@ -122,6 +98,27 @@ public class ReflectUtil {
 		return distance;
 	}
 
+	public static synchronized <T> DynamicClass<T> getDynamicClass(final Class<T> clazz) {
+		@SuppressWarnings("unchecked")
+		DynamicClass<T> dynamicClass = (DynamicClass<T>) CACHED_CLASSES.get(clazz);
+		if (dynamicClass == null)
+			CACHED_CLASSES.put(clazz, dynamicClass = new DynamicClass<T>(clazz));
+		return dynamicClass;
+	}
+
+	public static synchronized List<Field> getFields(final Class<?> clazz, final String name,
+			final int... modifierBitsets) {
+		final ArrayList<Field> fields = new ArrayList<Field>();
+		for (final Field field : clazz.getDeclaredFields())
+			if (name == null || field.getName().equals(name)) {
+				for (final int modifiers : modifierBitsets)
+					if ((field.getModifiers() & modifiers) != modifiers)
+						continue;
+				fields.add(field);
+			}
+		return fields;
+	}
+
 	public static List<Type> getHierarchy(final Class<?> superClass, final Class<?> subclass) {
 		if (!superClass.isAssignableFrom(subclass))
 			throw new IllegalArgumentException();
@@ -167,6 +164,21 @@ public class ReflectUtil {
 			clazz = rawType.getGenericSuperclass();
 		} while (superClass != rawType);
 		return hierarchy;
+	}
+
+	public static synchronized List<Method> getMethods(final Class<?> clazz, final String name,
+			final int... modifierBitsets) {
+		final ArrayList<Method> methods = new ArrayList<Method>();
+		int modifiers = 0;
+		for (final int modifier : modifierBitsets)
+			modifiers |= modifier;
+		for (final Method method : clazz.getDeclaredMethods())
+			if (name == null || method.getName().equals(name)) {
+				if ((method.getModifiers() & modifiers) != modifiers)
+					continue;
+				methods.add(method);
+			}
+		return methods;
 	}
 
 	/**
@@ -242,7 +254,6 @@ public class ReflectUtil {
 	 * @param type
 	 *        the type to instantiate
 	 * @return the created instance
-	 * @throws Throwable
 	 */
 	public static <T> T newInstance(final Class<T> type) throws IllegalArgumentException {
 		try {
@@ -278,46 +289,6 @@ public class ReflectUtil {
 		}
 	}
 
-	public static synchronized <T> DynamicClass<T> getDynamicClass(final Class<T> clazz) {
-		@SuppressWarnings("unchecked")
-		DynamicClass<T> dynamicClass = (DynamicClass<T>) CACHED_CLASSES.get(clazz);
-		if (dynamicClass == null)
-			CACHED_CLASSES.put(clazz, dynamicClass = new DynamicClass<T>(clazz));
-		return dynamicClass;
-	}
-
-	public static synchronized List<Method> getMethods(final Class<?> clazz, final String name,
-			final int... modifierBitsets) {
-		final ArrayList<Method> methods = new ArrayList<Method>();
-		int modifiers = 0;
-		for (final int modifier : modifierBitsets)
-			modifiers |= modifier;
-		for (final Method method : clazz.getDeclaredMethods())
-			if (name == null || method.getName().equals(name)) {
-				if ((method.getModifiers() & modifiers) != modifiers)
-					continue;
-				methods.add(method);
-			}
-		return methods;
-	}
-
-	public static synchronized List<Field> getFields(final Class<?> clazz, final String name,
-			final int... modifierBitsets) {
-		final ArrayList<Field> fields = new ArrayList<Field>();
-		for (final Field field : clazz.getDeclaredFields())
-			if (name == null || field.getName().equals(name)) {
-				for (final int modifiers : modifierBitsets)
-					if ((field.getModifiers() & modifiers) != modifiers)
-						continue;
-				fields.add(field);
-			}
-		return fields;
-	}
-
-	public static void setField(final Object object, final String fieldName, final Object value) {
-		setField(object, object.getClass(), fieldName, value);
-	}
-
 	public static void setField(final Object object, final Class<?> declaringClass, final String fieldName,
 			final Object value) {
 		try {
@@ -328,5 +299,9 @@ public class ReflectUtil {
 			throw new IllegalArgumentException(
 				String.format("Cannot set field %s of %s to %s", fieldName, object, value), e);
 		}
+	}
+
+	public static void setField(final Object object, final String fieldName, final Object value) {
+		setField(object, object.getClass(), fieldName, value);
 	}
 }

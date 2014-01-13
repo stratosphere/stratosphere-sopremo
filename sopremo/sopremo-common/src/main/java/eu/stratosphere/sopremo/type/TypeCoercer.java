@@ -55,6 +55,98 @@ public class TypeCoercer {
 		this.coercers.put(targetClass, (Map) coercers);
 	}
 
+	public <From extends IJsonNode, To extends IJsonNode> To coerce(final From node, final NodeCache nodeCache,
+			final Class<To> targetType) {
+		final To result = this.coerce(node, nodeCache, targetType, null);
+		if (result == null)
+			throw new CoercionException(String.format("Cannot coerce %s to %s", node, targetType));
+		return result;
+	}
+
+	@SuppressWarnings("unchecked")
+	public <From extends IJsonNode, To extends IJsonNode> To coerce(final From node, final NodeCache nodeCache,
+			final Class<To> targetClass, final To defaultValue) {
+		Map<Class<? extends IJsonNode>, TypeMapper<?, ?>> toCoercer = this.coercers.get(targetClass);
+		if (toCoercer == null) {
+			final Map<Class<? extends IJsonNode>, TypeMapper<?, ?>> superclassCoercers = this
+				.findSuperclassCoercers(targetClass);
+			if (superclassCoercers == null)
+				toCoercer = new IdentityHashMap<Class<? extends IJsonNode>, TypeMapper<?, ?>>();
+			else
+				toCoercer = new IdentityHashMap<Class<? extends IJsonNode>, TypeMapper<?, ?>>(superclassCoercers);
+
+			this.coercers.put(targetClass, toCoercer);
+		}
+		TypeMapper<From, To> fromCoercer = (TypeMapper<From, To>) toCoercer.get(node.getClass());
+		if (fromCoercer == null) {
+			fromCoercer = this.findJoiningCoercer(node, toCoercer);
+			if (fromCoercer == null)
+				fromCoercer = (TypeMapper<From, To>) NULL_COERCER;
+			toCoercer.put(node.getClass(), fromCoercer);
+		}
+
+		final Class<? extends To> defaultType = fromCoercer.getDefaultType();
+		To result = defaultType != null ? nodeCache.getNode(defaultType) : null;
+		result = fromCoercer.mapTo(node, result);
+		if (result == null)
+			return defaultValue;
+		return result;
+	}
+
+	@SuppressWarnings("unchecked")
+	public <From extends IJsonNode, To extends IJsonNode> To coerce(final From node, final NodeCache nodeCache,
+			final To defaultValue) {
+		return this.coerce(node, nodeCache, (Class<To>) defaultValue.getClass(), defaultValue);
+	}
+
+	public <From extends IJsonNode, To extends IJsonNode> void setCoercer(final Class<From> from, final Class<To> to,
+			final TypeMapper<From, To> coercer) {
+		Map<Class<? extends IJsonNode>, TypeMapper<?, ?>> toCoercers = this.coercers.get(to);
+		if (toCoercers == null)
+			this.coercers.put(to, toCoercers = new IdentityHashMap<Class<? extends IJsonNode>, TypeMapper<?, ?>>());
+		toCoercers.put(from, coercer);
+	}
+
+	@SuppressWarnings("unchecked")
+	protected <To, From> TypeMapper<From, To> findJoiningCoercer(final From node,
+			final Map<Class<? extends IJsonNode>, TypeMapper<?, ?>> toCoercer) {
+		final Reference<TypeMapper<From, To>> fromCoercer = new Reference<TypeMapper<From, To>>();
+
+		TypeHierarchyBrowser.INSTANCE.visit(node.getClass(), Mode.CLASS_FIRST, new Visitor<Class<?>>() {
+			@Override
+			public boolean visited(final Class<?> superClass, final int distance) {
+				final TypeMapper<From, To> coercer = (TypeMapper<From, To>) toCoercer.get(superClass);
+				if (coercer == null)
+					return true;
+				// found a matching coercer; terminate browsing
+				fromCoercer.setValue(coercer);
+				return false;
+			}
+		});
+
+		return fromCoercer.getValue();
+	}
+
+	protected <To, From> Map<Class<? extends IJsonNode>, TypeMapper<?, ?>> findSuperclassCoercers(final Class<?> toClass) {
+		final Reference<Map<Class<? extends IJsonNode>, TypeMapper<?, ?>>> toCoercers =
+			new Reference<Map<Class<? extends IJsonNode>, TypeMapper<?, ?>>>();
+
+		TypeHierarchyBrowser.INSTANCE.visit(toClass, Mode.CLASS_FIRST, new Visitor<Class<?>>() {
+			@Override
+			public boolean visited(final Class<?> superClass, final int distance) {
+				final Map<Class<? extends IJsonNode>, TypeMapper<?, ?>> froms =
+					TypeCoercer.this.coercers.get(superClass);
+				if (froms == null)
+					return true;
+				// found a matching coercer; terminate browsing
+				toCoercers.setValue(froms);
+				return false;
+			}
+		});
+
+		return toCoercers.getValue();
+	}
+
 	private void addNumericCoercers(
 			final Map<Class<? extends IJsonNode>, Map<Class<? extends IJsonNode>, TypeMapper<?, ?>>> coercers) {
 		coercers.put(AbstractNumericNode.class, new IdentityHashMap<Class<? extends IJsonNode>, TypeMapper<?, ?>>());
@@ -196,90 +288,6 @@ public class TypeCoercer {
 		}
 	}
 
-	public <From extends IJsonNode, To extends IJsonNode> To coerce(final From node, final NodeCache nodeCache,
-			final Class<To> targetType) {
-		final To result = this.coerce(node, nodeCache, targetType, null);
-		if (result == null)
-			throw new CoercionException(String.format("Cannot coerce %s to %s", node, targetType));
-		return result;
-	}
-
-	@SuppressWarnings("unchecked")
-	public <From extends IJsonNode, To extends IJsonNode> To coerce(final From node, final NodeCache nodeCache,
-			final Class<To> targetClass, final To defaultValue) {
-		Map<Class<? extends IJsonNode>, TypeMapper<?, ?>> toCoercer = this.coercers.get(targetClass);
-		if (toCoercer == null) {
-			final Map<Class<? extends IJsonNode>, TypeMapper<?, ?>> superclassCoercers = this
-				.findSuperclassCoercers(targetClass);
-			if (superclassCoercers == null)
-				toCoercer = new IdentityHashMap<Class<? extends IJsonNode>, TypeMapper<?, ?>>();
-			else
-				toCoercer = new IdentityHashMap<Class<? extends IJsonNode>, TypeMapper<?, ?>>(superclassCoercers);
-
-			this.coercers.put(targetClass, toCoercer);
-		}
-		TypeMapper<From, To> fromCoercer = (TypeMapper<From, To>) toCoercer.get(node.getClass());
-		if (fromCoercer == null) {
-			fromCoercer = this.findJoiningCoercer(node, toCoercer);
-			if (fromCoercer == null)
-				fromCoercer = (TypeMapper<From, To>) NULL_COERCER;
-			toCoercer.put(node.getClass(), fromCoercer);
-		}
-
-		final Class<? extends To> defaultType = fromCoercer.getDefaultType();
-		To result = defaultType != null ? nodeCache.getNode(defaultType) : null;
-		result = fromCoercer.mapTo(node, result);
-		if (result == null)
-			return defaultValue;
-		return result;
-	}
-
-	protected <To, From> Map<Class<? extends IJsonNode>, TypeMapper<?, ?>> findSuperclassCoercers(final Class<?> toClass) {
-		final Reference<Map<Class<? extends IJsonNode>, TypeMapper<?, ?>>> toCoercers =
-			new Reference<Map<Class<? extends IJsonNode>, TypeMapper<?, ?>>>();
-
-		TypeHierarchyBrowser.INSTANCE.visit(toClass, Mode.CLASS_FIRST, new Visitor<Class<?>>() {
-			@Override
-			public boolean visited(final Class<?> superClass, final int distance) {
-				final Map<Class<? extends IJsonNode>, TypeMapper<?, ?>> froms =
-					TypeCoercer.this.coercers.get(superClass);
-				if (froms == null)
-					return true;
-				// found a matching coercer; terminate browsing
-				toCoercers.setValue(froms);
-				return false;
-			}
-		});
-
-		return toCoercers.getValue();
-	}
-
-	@SuppressWarnings("unchecked")
-	protected <To, From> TypeMapper<From, To> findJoiningCoercer(final From node,
-			final Map<Class<? extends IJsonNode>, TypeMapper<?, ?>> toCoercer) {
-		final Reference<TypeMapper<From, To>> fromCoercer = new Reference<TypeMapper<From, To>>();
-
-		TypeHierarchyBrowser.INSTANCE.visit(node.getClass(), Mode.CLASS_FIRST, new Visitor<Class<?>>() {
-			@Override
-			public boolean visited(final Class<?> superClass, final int distance) {
-				final TypeMapper<From, To> coercer = (TypeMapper<From, To>) toCoercer.get(superClass);
-				if (coercer == null)
-					return true;
-				// found a matching coercer; terminate browsing
-				fromCoercer.setValue(coercer);
-				return false;
-			}
-		});
-
-		return fromCoercer.getValue();
-	}
-
-	@SuppressWarnings("unchecked")
-	public <From extends IJsonNode, To extends IJsonNode> To coerce(final From node, final NodeCache nodeCache,
-			final To defaultValue) {
-		return this.coerce(node, nodeCache, (Class<To>) defaultValue.getClass(), defaultValue);
-	}
-
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private Map<Class<? extends IJsonNode>, TypeMapper<?, IArrayNode>> getToArrayCoercers() {
 		final Map<Class<? extends IJsonNode>, TypeMapper<?, IArrayNode>> toArrayCoercers =
@@ -380,31 +388,6 @@ public class TypeCoercer {
 		return toStringCoercers;
 	}
 
-	public <From extends IJsonNode, To extends IJsonNode> void setCoercer(final Class<From> from, final Class<To> to,
-			final TypeMapper<From, To> coercer) {
-		Map<Class<? extends IJsonNode>, TypeMapper<?, ?>> toCoercers = this.coercers.get(to);
-		if (toCoercers == null)
-			this.coercers.put(to, toCoercers = new IdentityHashMap<Class<? extends IJsonNode>, TypeMapper<?, ?>>());
-		toCoercers.put(from, coercer);
-	}
-
-	/**
-	 */
-	private static final class SelfCoercer extends TypeMapper<IJsonNode, IJsonNode> {
-		/**
-		 * Initializes SelfCoercer.
-		 */
-		public SelfCoercer(final Class<? extends IJsonNode> defaultType) {
-			super(defaultType);
-		}
-
-		@Override
-		public IJsonNode mapTo(final IJsonNode node, final IJsonNode target) {
-			target.copyValueFrom(node);
-			return target;
-		}
-	}
-
 	/**
 	 */
 	private static final class CopyCoercer extends TypeMapper<IJsonNode, IJsonNode> {
@@ -419,6 +402,23 @@ public class TypeCoercer {
 		public IJsonNode mapTo(final IJsonNode node, IJsonNode target) {
 			if (target == null)
 				target = ReflectUtil.newInstance(node.getClass());
+			target.copyValueFrom(node);
+			return target;
+		}
+	}
+
+	/**
+	 */
+	private static final class SelfCoercer extends TypeMapper<IJsonNode, IJsonNode> {
+		/**
+		 * Initializes SelfCoercer.
+		 */
+		public SelfCoercer(final Class<? extends IJsonNode> defaultType) {
+			super(defaultType);
+		}
+
+		@Override
+		public IJsonNode mapTo(final IJsonNode node, final IJsonNode target) {
 			target.copyValueFrom(node);
 			return target;
 		}

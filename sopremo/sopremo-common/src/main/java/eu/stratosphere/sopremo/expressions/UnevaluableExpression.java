@@ -44,6 +44,11 @@ public class UnevaluableExpression extends EvaluationExpression {
 	}
 
 	@Override
+	public void appendAsString(final Appendable appendable) throws IOException {
+		appendable.append(this.message);
+	}
+
+	@Override
 	public boolean equals(final Object obj) {
 		if (!super.equals(obj))
 			return false;
@@ -59,11 +64,6 @@ public class UnevaluableExpression extends EvaluationExpression {
 	@Override
 	public int hashCode() {
 		return 31 * super.hashCode() + this.message.hashCode();
-	}
-
-	@Override
-	public void appendAsString(final Appendable appendable) throws IOException {
-		appendable.append(this.message);
 	}
 
 }

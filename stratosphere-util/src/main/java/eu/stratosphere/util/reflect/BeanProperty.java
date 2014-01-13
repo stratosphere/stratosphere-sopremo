@@ -29,12 +29,13 @@ public class BeanProperty<Type> extends DynamicProperty<Type> {
 
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.util.reflect.DynamicProperty#set(java.lang.Object, java.lang.Object)
+	 * @see eu.stratosphere.util.reflect.DynamicProperty#get(java.lang.Object)
 	 */
+	@SuppressWarnings("unchecked")
 	@Override
-	public void set(final Object instance, final Type value) {
+	public Type get(final Object instance) {
 		try {
-			this.propertyDescriptor.getWriteMethod().invoke(instance, value);
+			return (Type) this.propertyDescriptor.getReadMethod().invoke(instance);
 		} catch (final IllegalAccessException e) {
 			throw new RuntimeException(e);
 		} catch (final InvocationTargetException e) {
@@ -62,27 +63,26 @@ public class BeanProperty<Type> extends DynamicProperty<Type> {
 
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.util.reflect.DynamicProperty#get(java.lang.Object)
-	 */
-	@SuppressWarnings("unchecked")
-	@Override
-	public Type get(final Object instance) {
-		try {
-			return (Type) this.propertyDescriptor.getReadMethod().invoke(instance);
-		} catch (final IllegalAccessException e) {
-			throw new RuntimeException(e);
-		} catch (final InvocationTargetException e) {
-			throw new RuntimeException(e);
-		}
-	}
-
-	/*
-	 * (non-Javadoc)
 	 * @see eu.stratosphere.util.reflect.DynamicProperty#getType()
 	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Override
 	public Class<Type> getType() {
 		return (Class) this.propertyDescriptor.getPropertyType();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.util.reflect.DynamicProperty#set(java.lang.Object, java.lang.Object)
+	 */
+	@Override
+	public void set(final Object instance, final Type value) {
+		try {
+			this.propertyDescriptor.getWriteMethod().invoke(instance, value);
+		} catch (final IllegalAccessException e) {
+			throw new RuntimeException(e);
+		} catch (final InvocationTargetException e) {
+			throw new RuntimeException(e);
+		}
 	}
 }

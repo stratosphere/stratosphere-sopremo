@@ -28,21 +28,6 @@ import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
  */
 public class MavenUtil {
 
-	/**
-	 * @return
-	 */
-	public static String getProjectName() {
-		try {
-			final Reader reader = new FileReader("pom.xml");
-			final MavenXpp3Reader xpp3Reader = new MavenXpp3Reader();
-			final Model model = xpp3Reader.read(reader);
-			reader.close();
-			return model.getName();
-		} catch (final Exception e) {
-			throw new RuntimeException("Could not read project name", e);
-		}
-	}
-
 	public static File buildJarForProject(final String canonicalProjectPath, final String jarName) {
 		/*
 		 * MavenCli cli = new MavenCli(); if (cli.doMain(new String[] {
@@ -75,5 +60,17 @@ public class MavenUtil {
 			throw new RuntimeException("Jar for desired project path " + canonicalProjectPath + " could not be build.");
 		}
 		return new File("target", jarName + ".jar");
+	}
+
+	public static String getProjectName() {
+		try {
+			final Reader reader = new FileReader("pom.xml");
+			final MavenXpp3Reader xpp3Reader = new MavenXpp3Reader();
+			final Model model = xpp3Reader.read(reader);
+			reader.close();
+			return model.getName();
+		} catch (final Exception e) {
+			throw new RuntimeException("Could not read project name", e);
+		}
 	}
 }

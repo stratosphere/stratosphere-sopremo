@@ -36,36 +36,6 @@ import eu.stratosphere.sopremo.type.IJsonNode;
 /**
  */
 public class SortTest extends SopremoOperatorTestBase<Sort> {
-	@Override
-	protected Sort createDefaultInstance(final int index) {
-		return new Sort().withOrderingExpression(new OrderingExpression(Order.ASCENDING, new ArrayAccess(index)));
-	}
-
-	@Test
-	public void shouldSortOnValue() {
-		final Sort sort = new Sort();
-		final SopremoTestPlan sopremoPlan = new SopremoTestPlan(sort);
-		sort.setOrderingExpression(new OrderingExpression(Order.DESCENDING, EvaluationExpression.VALUE));
-
-		sopremoPlan.getInput(0).
-			addValue("b").
-			addValue("d").
-			addValue("c").
-			addValue("a");
-		sopremoPlan.getExpectedOutput(0).
-			addValue("d").
-			addValue("c").
-			addValue("b").
-			addValue("a");
-
-		sopremoPlan.run();
-
-		final List<IJsonNode> expected = Lists.newArrayList(sopremoPlan.getInput(0));
-		Collections.sort(expected, Collections.reverseOrder());
-		final List<IJsonNode> actual = Lists.newArrayList(sopremoPlan.getActualOutput(0));
-		Assert.assertEquals(expected, actual);
-	}
-
 	@Test
 	public void shouldSortOnExpression() {
 		final Sort sort = new Sort();
@@ -99,6 +69,36 @@ public class SortTest extends SopremoOperatorTestBase<Sort> {
 		});
 		final List<IJsonNode> actual = Lists.newArrayList(sopremoPlan.getActualOutput(0).unsortedIterator());
 		Assert.assertEquals(expected, actual);
+	}
+
+	@Test
+	public void shouldSortOnValue() {
+		final Sort sort = new Sort();
+		final SopremoTestPlan sopremoPlan = new SopremoTestPlan(sort);
+		sort.setOrderingExpression(new OrderingExpression(Order.DESCENDING, EvaluationExpression.VALUE));
+
+		sopremoPlan.getInput(0).
+			addValue("b").
+			addValue("d").
+			addValue("c").
+			addValue("a");
+		sopremoPlan.getExpectedOutput(0).
+			addValue("d").
+			addValue("c").
+			addValue("b").
+			addValue("a");
+
+		sopremoPlan.run();
+
+		final List<IJsonNode> expected = Lists.newArrayList(sopremoPlan.getInput(0));
+		Collections.sort(expected, Collections.reverseOrder());
+		final List<IJsonNode> actual = Lists.newArrayList(sopremoPlan.getActualOutput(0));
+		Assert.assertEquals(expected, actual);
+	}
+
+	@Override
+	protected Sort createDefaultInstance(final int index) {
+		return new Sort().withOrderingExpression(new OrderingExpression(Order.ASCENDING, new ArrayAccess(index)));
 	}
 
 	/**

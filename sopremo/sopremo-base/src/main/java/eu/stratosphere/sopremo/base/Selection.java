@@ -52,16 +52,16 @@ public class Selection extends ElementaryOperator<Selection> {
 			new InputSelection(0)).simplify();
 	}
 
-	public Selection withCondition(final BooleanExpression condition) {
-		this.setCondition(condition);
-		return this;
-	}
-
 	@Override
 	public String toString() {
 		final StringBuilder builder = new StringBuilder(this.getName());
 		builder.append(" on ").append(this.condition);
 		return builder.toString();
+	}
+
+	public Selection withCondition(final BooleanExpression condition) {
+		this.setCondition(condition);
+		return this;
 	}
 
 	public static class Implementation extends SopremoMap {

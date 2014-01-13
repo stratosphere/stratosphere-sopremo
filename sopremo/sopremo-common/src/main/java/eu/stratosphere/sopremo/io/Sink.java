@@ -39,10 +39,27 @@ public class Sink extends ElementaryOperator<Sink> {
 			localSortingKey = new ArrayList<OrderingExpression>();
 
 	/**
-	 * Initializes a Sink with the given {@link FileOutputFormat} and the given path.
+	 * Initializes a Sink. This constructor uses {@link Sink#Sink(String)} with an empty string.
+	 */
+	public Sink() {
+		this("file:///");
+	}
+
+	/**
+	 * Initializes a Sink with the given {@link SopremoFormat}.
 	 * 
-	 * @param outputFormat
-	 *        the FileOutputFormat that should be used
+	 * @param format
+	 *        the SopremoFormat that should be used
+	 */
+	public Sink(final SopremoFormat format) {
+		this(format, null);
+	}
+
+	/**
+	 * Initializes a Sink with the given {@link SopremoFormat} and the given path.
+	 * 
+	 * @param format
+	 *        the SopremoFormat that should be used
 	 * @param outputPath
 	 *        the path of this Sink
 	 */
@@ -57,31 +74,82 @@ public class Sink extends ElementaryOperator<Sink> {
 	}
 
 	/**
-	 * Initializes a Sink with the given {@link FileOutputFormat}.
-	 * 
-	 * @param outputFormat
-	 *        the FileOutputFormat that should be used
-	 */
-	public Sink(final SopremoFormat format) {
-		this(format, null);
-	}
-
-	/**
-	 * Initializes a Sink with the given name. This Sink uses {@link Sink#Sink(Class, String)} with the given name and
-	 * a {@link JsonOutputFormat} to write the data.
+	 * Initializes a Sink with the given name. This Sink uses a {@link JsonFormat} to write the data.
 	 * 
 	 * @param outputPath
-	 *        the name of this Sink
+	 *        the path of this Sink
 	 */
-	public Sink(final String outputName) {
-		this(new JsonFormat(), outputName);
+	public Sink(final String outputPath) {
+		this(new JsonFormat(), outputPath);
 	}
 
-	/**
-	 * Initializes a Sink. This constructor uses {@link Sink#Sink(String)} with an empty string.
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.operator.ElementaryOperator#appendAsString(java.lang.Appendable)
 	 */
-	public Sink() {
-		this("file:///");
+	@Override
+	public void appendAsString(final Appendable appendable) throws IOException {
+		appendable.append(this.getName());
+		appendable.append(" [");
+		if (this.outputPath != null)
+			appendable.append(this.outputPath).append(", ");
+		this.format.appendAsString(appendable);
+		appendable.append("]");
+	}
+
+	@Override
+	public ElementarySopremoModule asElementaryOperators() {
+		final ElementarySopremoModule module = new ElementarySopremoModule(1, 0);
+		final Sink clone = (Sink) this.clone();
+		module.addInternalOutput(clone);
+		clone.setInput(0, module.getInput(0));
+		return module;
+	}
+
+	@Override
+	public PactModule asPactModule(final EvaluationContext context, final SopremoRecordLayout layout) {
+		final PactModule pactModule = new PactModule(1, 0);
+
+		final Class<? extends OutputFormat<SopremoRecord>> outputFormat = this.format.getOutputFormat();
+		final GenericDataSink contract = new GenericDataSink(outputFormat, this.getName());
+		this.format.configureForOutput(contract.getParameters(), this.outputPath);
+		SopremoUtil.setEvaluationContext(contract.getParameters(), context);
+		contract.setDegreeOfParallelism(this.getDegreeOfParallelism());
+
+		contract.setInput(pactModule.getInput(0));
+		if (!this.globalSortingKey.isEmpty())
+			contract.setGlobalOrder(this.createOrdering(layout, this.globalSortingKey));
+		if (!this.localSortingKey.isEmpty())
+			contract.setLocalOrder(this.createOrdering(layout, this.localSortingKey));
+		pactModule.addInternalOutput(contract);
+		return pactModule;
+	}
+
+	@Override
+	public boolean equals(final Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (this.getClass() != obj.getClass())
+			return false;
+		final Sink other = (Sink) obj;
+		return Equaler.SafeEquals.equal(this.outputPath, other.outputPath)
+			&& Equaler.SafeEquals.equal(this.format, other.format);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.operator.ElementaryOperator#getAllKeyExpressions()
+	 */
+	@Override
+	public Set<EvaluationExpression> getAllKeyExpressions() {
+		final Set<EvaluationExpression> allKeyExpressions = super.getAllKeyExpressions();
+		for (final OrderingExpression ordering : this.globalSortingKey)
+			allKeyExpressions.add(ordering.getPath());
+		for (final OrderingExpression ordering : this.localSortingKey)
+			allKeyExpressions.add(ordering.getPath());
+		return allKeyExpressions;
 	}
 
 	/**
@@ -91,6 +159,47 @@ public class Sink extends ElementaryOperator<Sink> {
 	 */
 	public SopremoFormat getFormat() {
 		return this.format;
+	}
+
+	/**
+	 * Returns the globalSortingKey.
+	 * 
+	 * @return the globalSortingKey
+	 */
+	public List<OrderingExpression> getGlobalSortingKey() {
+		return this.globalSortingKey;
+	}
+
+	/**
+	 * Returns the localSortingKey.
+	 * 
+	 * @return the localSortingKey
+	 */
+	public List<OrderingExpression> getLocalSortingKey() {
+		return this.localSortingKey;
+	}
+
+	/**
+	 * Returns the name of this Sink.
+	 * 
+	 * @return the name
+	 */
+	public String getOutputPath() {
+		return this.outputPath;
+	}
+
+	@Override
+	public Output getSource() {
+		throw new UnsupportedOperationException("Sink has not output");
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result + (this.format == null ? 0 : this.format.hashCode());
+		result = prime * result + (this.outputPath == null ? 0 : this.outputPath.hashCode());
+		return result;
 	}
 
 	/**
@@ -138,90 +247,6 @@ public class Sink extends ElementaryOperator<Sink> {
 	}
 
 	/**
-	 * Returns the localSortingKey.
-	 * 
-	 * @return the localSortingKey
-	 */
-	public List<OrderingExpression> getLocalSortingKey() {
-		return this.localSortingKey;
-	}
-
-	/**
-	 * Returns the globalSortingKey.
-	 * 
-	 * @return the globalSortingKey
-	 */
-	public List<OrderingExpression> getGlobalSortingKey() {
-		return this.globalSortingKey;
-	}
-
-	public Sink withLocalSortingKey(final List<OrderingExpression> localSortingKey) {
-		this.setLocalSortingKey(localSortingKey);
-		return this;
-	}
-
-	public Sink withGlobalSortingKey(final List<OrderingExpression> sortingKey) {
-		this.setGlobalSortingKey(sortingKey);
-		return this;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.operator.ElementaryOperator#getAllKeyExpressions()
-	 */
-	@Override
-	public Set<EvaluationExpression> getAllKeyExpressions() {
-		final Set<EvaluationExpression> allKeyExpressions = super.getAllKeyExpressions();
-		for (final OrderingExpression ordering : this.globalSortingKey)
-			allKeyExpressions.add(ordering.getPath());
-		for (final OrderingExpression ordering : this.localSortingKey)
-			allKeyExpressions.add(ordering.getPath());
-		return allKeyExpressions;
-	}
-
-	@Override
-	public Output getSource() {
-		throw new UnsupportedOperationException("Sink has not output");
-	}
-
-	@Override
-	public PactModule asPactModule(final EvaluationContext context, final SopremoRecordLayout layout) {
-		final PactModule pactModule = new PactModule(1, 0);
-
-		final Class<? extends OutputFormat<SopremoRecord>> outputFormat = this.format.getOutputFormat();
-		final GenericDataSink contract = new GenericDataSink(outputFormat, this.getName());
-		this.format.configureForOutput(contract.getParameters(), this.outputPath);
-		SopremoUtil.setEvaluationContext(contract.getParameters(), context);
-		contract.setDegreeOfParallelism(this.getDegreeOfParallelism());
-
-		contract.setInput(pactModule.getInput(0));
-		if (!this.globalSortingKey.isEmpty())
-			contract.setGlobalOrder(this.createOrdering(layout, this.globalSortingKey));
-		if (!this.localSortingKey.isEmpty())
-			contract.setLocalOrder(this.createOrdering(layout, this.localSortingKey));
-		pactModule.addInternalOutput(contract);
-		return pactModule;
-	}
-
-	@Override
-	public ElementarySopremoModule asElementaryOperators() {
-		final ElementarySopremoModule module = new ElementarySopremoModule(1, 0);
-		final Sink clone = (Sink) this.clone();
-		module.addInternalOutput(clone);
-		clone.setInput(0, module.getInput(0));
-		return module;
-	}
-
-	/**
-	 * Returns the name of this Sink.
-	 * 
-	 * @return the name
-	 */
-	public String getOutputPath() {
-		return this.outputPath;
-	}
-
-	/**
 	 * Sets the outputPath to the specified value.
 	 * 
 	 * @param outputPath
@@ -233,6 +258,28 @@ public class Sink extends ElementaryOperator<Sink> {
 
 		this.outputPath = outputPath;
 		this.checkPath();
+	}
+
+	public Sink withGlobalSortingKey(final List<OrderingExpression> sortingKey) {
+		this.setGlobalSortingKey(sortingKey);
+		return this;
+	}
+
+	public Sink withLocalSortingKey(final List<OrderingExpression> localSortingKey) {
+		this.setLocalSortingKey(localSortingKey);
+		return this;
+	}
+
+	/**
+	 * Sets the outputPath to the specified value.
+	 * 
+	 * @param outputPath
+	 *        the outputPath to set
+	 * @return this
+	 */
+	public Sink withOutputPath(final String outputPath) {
+		this.setOutputPath(outputPath);
+		return this;
 	}
 
 	/**
@@ -247,53 +294,5 @@ public class Sink extends ElementaryOperator<Sink> {
 		} catch (final URISyntaxException e) {
 			throw new IllegalArgumentException("Invalid path", e);
 		}
-	}
-
-	/**
-	 * Sets the outputPath to the specified value.
-	 * 
-	 * @param outputPath
-	 *        the outputPath to set
-	 * @return
-	 */
-	public Sink withOutputPath(final String outputPath) {
-		this.setOutputPath(outputPath);
-		return this;
-	}
-
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = super.hashCode();
-		result = prime * result + (this.format == null ? 0 : this.format.hashCode());
-		result = prime * result + (this.outputPath == null ? 0 : this.outputPath.hashCode());
-		return result;
-	}
-
-	@Override
-	public boolean equals(final Object obj) {
-		if (this == obj)
-			return true;
-		if (!super.equals(obj))
-			return false;
-		if (this.getClass() != obj.getClass())
-			return false;
-		final Sink other = (Sink) obj;
-		return Equaler.SafeEquals.equal(this.outputPath, other.outputPath)
-			&& Equaler.SafeEquals.equal(this.format, other.format);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.operator.ElementaryOperator#appendAsString(java.lang.Appendable)
-	 */
-	@Override
-	public void appendAsString(final Appendable appendable) throws IOException {
-		appendable.append(this.getName());
-		appendable.append(" [");
-		if (this.outputPath != null)
-			appendable.append(this.outputPath).append(", ");
-		this.format.appendAsString(appendable);
-		appendable.append("]");
 	}
 }

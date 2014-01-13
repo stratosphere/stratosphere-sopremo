@@ -17,7 +17,6 @@ import eu.stratosphere.util.reflect.ReflectUtil;
  * interface that extends {@link ITypedObjectNode}. It is implemented as a
  * singleton and already created class instances of {@link TypedObjectNode}s are
  * cached.
- * 
  */
 
 public class TypedObjectNodeFactory {
@@ -27,12 +26,6 @@ public class TypedObjectNodeFactory {
 
 	private TypedObjectNodeFactory() {
 		this.typesMap = new IdentityHashMap<Class<? extends ITypedObjectNode>, Class<? extends ITypedObjectNode>>();
-	}
-
-	public static TypedObjectNodeFactory getInstance() {
-		if (instance == null)
-			instance = new TypedObjectNodeFactory();
-		return instance;
 	}
 
 	@SuppressWarnings("unchecked")
@@ -46,6 +39,17 @@ public class TypedObjectNodeFactory {
 			}
 
 		return ReflectUtil.newInstance(classObject);
+	}
+
+	private Set<Class<?>> collectAllInterfacesToImplement(final Class<?> anInterface) {
+		final Set<Class<?>> allInterfacesToImplement = new IdentitySet<Class<?>>();
+		for (final Class<?> superInterface : anInterface.getInterfaces())
+			if (ITypedObjectNode.class.isAssignableFrom(superInterface) && superInterface != ITypedObjectNode.class) {
+				allInterfacesToImplement.add(superInterface);
+				allInterfacesToImplement.addAll(this.collectAllInterfacesToImplement(superInterface));
+			}
+		allInterfacesToImplement.add(anInterface);
+		return allInterfacesToImplement;
 	}
 
 	//
@@ -122,17 +126,6 @@ public class TypedObjectNodeFactory {
 		}
 	}
 
-	private Set<Class<?>> collectAllInterfacesToImplement(final Class<?> anInterface) {
-		final Set<Class<?>> allInterfacesToImplement = new IdentitySet<Class<?>>();
-		for (final Class<?> superInterface : anInterface.getInterfaces())
-			if (ITypedObjectNode.class.isAssignableFrom(superInterface) && superInterface != ITypedObjectNode.class) {
-				allInterfacesToImplement.add(superInterface);
-				allInterfacesToImplement.addAll(this.collectAllInterfacesToImplement(superInterface));
-			}
-		allInterfacesToImplement.add(anInterface);
-		return allInterfacesToImplement;
-	}
-
 	// taken from http://asm.ow2.org/doc/faq.html#Q5
 	@SuppressWarnings("unchecked")
 	private <T extends ITypedObjectNode> Class<T> loadClass(final byte[] b, final String className) throws Exception {
@@ -152,5 +145,11 @@ public class TypedObjectNodeFactory {
 			method.setAccessible(false);
 		}
 		return clazz;
+	}
+
+	public static TypedObjectNodeFactory getInstance() {
+		if (instance == null)
+			instance = new TypedObjectNodeFactory();
+		return instance;
 	}
 }

@@ -37,13 +37,10 @@ public class ExpressionCache<E extends EvaluationExpression> implements ISopremo
 		this.template = null;
 	}
 
-	/**
-	 * Returns the template.
-	 * 
-	 * @return the template
-	 */
-	public E getTemplate() {
-		return this.template;
+	@SuppressWarnings("unchecked")
+	@Override
+	public ExpressionCache<E> clone() {
+		return new ExpressionCache<E>((E) this.template.clone());
 	}
 
 	@SuppressWarnings("unchecked")
@@ -53,9 +50,12 @@ public class ExpressionCache<E extends EvaluationExpression> implements ISopremo
 		return this.expressions.get(index);
 	}
 
-	@SuppressWarnings("unchecked")
-	@Override
-	public ExpressionCache<E> clone() {
-		return new ExpressionCache<E>((E) this.template.clone());
+	/**
+	 * Returns the template.
+	 * 
+	 * @return the template
+	 */
+	public E getTemplate() {
+		return this.template;
 	}
 }

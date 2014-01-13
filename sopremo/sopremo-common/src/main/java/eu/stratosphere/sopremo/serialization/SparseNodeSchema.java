@@ -34,6 +34,25 @@ public class SparseNodeSchema extends AbstractSchema<EvaluationExpression> {
 
 	/*
 	 * (non-Javadoc)
+	 * @see eu.stratosphere.compiler.postpass.AbstractSchema#addType(int, java.lang.Object)
+	 */
+	@Override
+	public void addType(final int pos, final EvaluationExpression expression) throws ConflictingFieldTypeInfoException {
+		CollectionUtil.ensureSize(this.keyExpressions, pos + 1, EvaluationExpression.VALUE);
+		this.keyExpressions.set(pos, expression);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.compiler.postpass.AbstractSchema#getType(int)
+	 */
+	@Override
+	public EvaluationExpression getType(final int field) {
+		return this.keyExpressions.get(field);
+	}
+
+	/*
+	 * (non-Javadoc)
 	 * @see java.lang.Iterable#iterator()
 	 */
 	@Override
@@ -58,25 +77,6 @@ public class SparseNodeSchema extends AbstractSchema<EvaluationExpression> {
 				throw new UnsupportedOperationException();
 			}
 		};
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.compiler.postpass.AbstractSchema#addType(int, java.lang.Object)
-	 */
-	@Override
-	public void addType(final int pos, final EvaluationExpression expression) throws ConflictingFieldTypeInfoException {
-		CollectionUtil.ensureSize(this.keyExpressions, pos + 1, EvaluationExpression.VALUE);
-		this.keyExpressions.set(pos, expression);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.compiler.postpass.AbstractSchema#getType(int)
-	 */
-	@Override
-	public EvaluationExpression getType(final int field) {
-		return this.keyExpressions.get(field);
 	}
 
 }

@@ -67,12 +67,6 @@ public class FunctionRegistryTest {
 		Assert.assertSame(ARRAY_NODE, this.evaluate("count", new ArrayNode<IJsonNode>()));
 	}
 
-	private IJsonNode evaluate(final String name, final IJsonNode... parameters) {
-		final SopremoFunction method = (SopremoFunction) this.registry.get(name);
-		Assert.assertNotNull(method);
-		return method.call(JsonUtil.asArray(parameters));
-	}
-
 	@Test
 	public void shouldInvokeDerivedVarargJavaFunction() {
 		this.registry.put(JavaFunctions.class);
@@ -111,21 +105,17 @@ public class FunctionRegistryTest {
 		Assert.assertSame(ONE_INT_VARARG_NODE, this.evaluate("count", new IntNode(1)));
 	}
 
+	private IJsonNode evaluate(final String name, final IJsonNode... parameters) {
+		final SopremoFunction method = (SopremoFunction) this.registry.get(name);
+		Assert.assertNotNull(method);
+		return method.call(JsonUtil.asArray(parameters));
+	}
+
 	public static class JavaFunctions {
 
 		@Name(verb = "count")
 		public static IJsonNode count(final IArrayNode<IJsonNode> node) {
 			return ARRAY_NODE;
-		}
-
-		@Name(verb = "count")
-		public static IJsonNode count(final IPrimitiveNode node, final IPrimitiveNode node2) {
-			return TWO_INT_NODE;
-		}
-
-		@Name(verb = "count")
-		public static IJsonNode count(final IPrimitiveNode node, final IPrimitiveNode... nodes) {
-			return ONE_INT_VARARG_NODE;
 		}
 
 		@Name(verb = "count")
@@ -136,6 +126,16 @@ public class FunctionRegistryTest {
 		@Name(verb = "count")
 		public static IJsonNode count(final IJsonNode... node) {
 			return GENERIC_VARARG_NODE;
+		}
+
+		@Name(verb = "count")
+		public static IJsonNode count(final IPrimitiveNode node, final IPrimitiveNode node2) {
+			return TWO_INT_NODE;
+		}
+
+		@Name(verb = "count")
+		public static IJsonNode count(final IPrimitiveNode node, final IPrimitiveNode... nodes) {
+			return ONE_INT_VARARG_NODE;
 		}
 
 		@Name(verb = "sum")

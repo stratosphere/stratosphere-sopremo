@@ -17,8 +17,10 @@ package eu.stratosphere.sopremo.server;
 import java.util.HashMap;
 import java.util.Map;
 
-import eu.stratosphere.nephele.client.JobClient;
+import com.amazonaws.services.simpleworkflow.model.ExecutionStatus;
+
 import eu.stratosphere.configuration.Configuration;
+import eu.stratosphere.nephele.client.JobClient;
 import eu.stratosphere.sopremo.execution.ExecutionRequest;
 import eu.stratosphere.sopremo.execution.ExecutionResponse.ExecutionState;
 import eu.stratosphere.sopremo.execution.SopremoID;
@@ -40,21 +42,16 @@ public class SopremoJobInfo {
 
 	public static final String OPTMIZEDPACTPLANJSON = "optmized.pact.plan.json";
 
+	private ExecutionState status = ExecutionState.ENQUEUED;
+
+	private String detail = "";
+
 	public SopremoJobInfo(final SopremoID jobId, final ExecutionRequest initialRequest,
 			final Configuration configuration) {
 		this.initialRequest = initialRequest;
 		this.configuration = configuration;
 		this.jobId = jobId;
 		this.metadata = new HashMap<String, Object>();
-	}
-
-	/**
-	 * Returns the jobId.
-	 * 
-	 * @return the jobId
-	 */
-	public SopremoID getJobId() {
-		return this.jobId;
 	}
 
 	/**
@@ -66,12 +63,48 @@ public class SopremoJobInfo {
 		return this.configuration;
 	}
 
-	private ExecutionState status = ExecutionState.ENQUEUED;
-
-	private String detail = "";
-
 	public String getDetail() {
 		return this.detail;
+	}
+
+	/**
+	 * Returns the initialRequest.
+	 * 
+	 * @return the initialRequest
+	 */
+	public ExecutionRequest getInitialRequest() {
+		return this.initialRequest;
+	}
+
+	/**
+	 * Returns the jobClient.
+	 * 
+	 * @return the jobClient
+	 */
+	public JobClient getJobClient() {
+		return this.jobClient;
+	}
+
+	/**
+	 * Returns the jobId.
+	 * 
+	 * @return the jobId
+	 */
+	public SopremoID getJobId() {
+		return this.jobId;
+	}
+
+	public Object getMetaData(final String key) {
+		return this.metadata.get(key);
+	}
+
+	/**
+	 * Returns the status.
+	 * 
+	 * @return the status
+	 */
+	public ExecutionState getStatus() {
+		return this.status;
 	}
 
 	/**
@@ -87,36 +120,12 @@ public class SopremoJobInfo {
 		this.jobClient = jobClient;
 	}
 
-	/**
-	 * Returns the jobClient.
-	 * 
-	 * @return the jobClient
-	 */
-	public JobClient getJobClient() {
-		return this.jobClient;
+	public void setMetaData(final String key, final String value) {
+		this.metadata.put(key, value);
 	}
 
 	/**
-	 * Returns the initialRequest.
-	 * 
-	 * @return the initialRequest
-	 */
-	public ExecutionRequest getInitialRequest() {
-		return this.initialRequest;
-	}
-
-	/**
-	 * Returns the status.
-	 * 
-	 * @return the status
-	 */
-	public ExecutionState getStatus() {
-		return this.status;
-	}
-
-	/**
-	 * @param running
-	 * @param string
+	 * Sets the {@link ExecutionStatus} and provides additional details.
 	 */
 	public void setStatusAndDetail(final ExecutionState status, final String detail) {
 		if (status == null)
@@ -125,13 +134,5 @@ public class SopremoJobInfo {
 			throw new NullPointerException("detail must not be null");
 		this.status = status;
 		this.detail = detail;
-	}
-
-	public void setMetaData(final String key, final String value) {
-		this.metadata.put(key, value);
-	}
-
-	public Object getMetaData(final String key) {
-		return this.metadata.get(key);
 	}
 }

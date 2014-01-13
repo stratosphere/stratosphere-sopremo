@@ -9,7 +9,6 @@ import eu.stratosphere.sopremo.pact.SopremoUtil;
 
 /**
  * This node represents an integer value.
- * 
  */
 public class IntNode extends AbstractNumericNode implements INumericNode {
 
@@ -37,37 +36,29 @@ public class IntNode extends AbstractNumericNode implements INumericNode {
 
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.type.INumericNode#getGeneralilty()
+	 * @see eu.stratosphere.sopremo.ISopremoType#toString(java.lang.StringBuilder)
 	 */
 	@Override
-	public byte getGeneralilty() {
-		return 16;
-	}
-
-	/**
-	 * Creates a new instance of IntNode. This new instance represents the given value.
-	 * 
-	 * @param v
-	 *        the value that should be represented by the new instance
-	 * @return the newly created instance of IntNode
-	 */
-	public static IntNode valueOf(final int v) {
-		return new IntNode(v);
-	}
-
-	/**
-	 * Sets the value to the specified value.
-	 * 
-	 * @param value
-	 *        the value to set
-	 */
-	public void setValue(final int value) {
-		this.value = value;
+	public void appendAsString(final Appendable appendable) throws IOException {
+		TypeFormat.format(this.value, appendable);
 	}
 
 	@Override
-	public int hashCode() {
-		return this.value;
+	public void clear() {
+		if (SopremoUtil.DEBUG)
+			this.value = 0;
+	}
+
+	@Override
+	public int compareToSameType(final IJsonNode other) {
+		final int thisVal = this.value, anotherVal = ((IntNode) other).value;
+		return thisVal < anotherVal ? -1 : thisVal == anotherVal ? 0 : 1;
+	}
+
+	@Override
+	public void copyValueFrom(final IJsonNode otherNode) {
+		checkNumber(otherNode);
+		this.value = ((INumericNode) otherNode).getIntValue();
 	}
 
 	@Override
@@ -81,16 +72,6 @@ public class IntNode extends AbstractNumericNode implements INumericNode {
 
 		final IntNode other = (IntNode) obj;
 		return this.value == other.value;
-	}
-
-	@Override
-	public int getIntValue() {
-		return this.value;
-	}
-
-	@Override
-	public long getLongValue() {
-		return Long.valueOf(this.value);
 	}
 
 	@Override
@@ -108,14 +89,18 @@ public class IntNode extends AbstractNumericNode implements INumericNode {
 		return Double.valueOf(this.value);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.type.INumericNode#getGeneralilty()
+	 */
 	@Override
-	public boolean isIntegralNumber() {
-		return true;
+	public byte getGeneralilty() {
+		return 16;
 	}
 
 	@Override
-	public String getValueAsText() {
-		return String.valueOf(this.value);
+	public int getIntValue() {
+		return this.value;
 	}
 
 	@Override
@@ -124,38 +109,52 @@ public class IntNode extends AbstractNumericNode implements INumericNode {
 	}
 
 	@Override
+	public long getLongValue() {
+		return Long.valueOf(this.value);
+	}
+
+	@Override
 	public Class<IntNode> getType() {
 		return IntNode.class;
 	}
 
 	@Override
-	public void copyValueFrom(final IJsonNode otherNode) {
-		checkNumber(otherNode);
-		this.value = ((INumericNode) otherNode).getIntValue();
+	public String getValueAsText() {
+		return String.valueOf(this.value);
 	}
 
 	@Override
-	public int compareToSameType(final IJsonNode other) {
-		final int thisVal = this.value, anotherVal = ((IntNode) other).value;
-		return thisVal < anotherVal ? -1 : thisVal == anotherVal ? 0 : 1;
-	}
-
-	@Override
-	public void clear() {
-		if (SopremoUtil.DEBUG)
-			this.value = 0;
+	public int hashCode() {
+		return this.value;
 	}
 
 	public void increment() {
 		this.value++;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.ISopremoType#toString(java.lang.StringBuilder)
-	 */
 	@Override
-	public void appendAsString(final Appendable appendable) throws IOException {
-		TypeFormat.format(this.value, appendable);
+	public boolean isIntegralNumber() {
+		return true;
+	}
+
+	/**
+	 * Sets the value to the specified value.
+	 * 
+	 * @param value
+	 *        the value to set
+	 */
+	public void setValue(final int value) {
+		this.value = value;
+	}
+
+	/**
+	 * Creates a new instance of IntNode. This new instance represents the given value.
+	 * 
+	 * @param v
+	 *        the value that should be represented by the new instance
+	 * @return the newly created instance of IntNode
+	 */
+	public static IntNode valueOf(final int v) {
+		return new IntNode(v);
 	}
 }

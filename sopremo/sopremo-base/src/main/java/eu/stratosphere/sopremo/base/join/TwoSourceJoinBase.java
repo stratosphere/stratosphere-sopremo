@@ -14,13 +14,13 @@ public abstract class TwoSourceJoinBase<Self extends TwoSourceJoinBase<Self>> ex
 		this.setResultProjection(new AggregationExpression(new ArrayUnion()));
 	}
 
-	public TwoSourceJoinBase(final int minInputs, final int maxInputs) {
-		super(minInputs, maxInputs);
+	public TwoSourceJoinBase(final int inputs) {
+		super(inputs);
 		this.setResultProjection(new AggregationExpression(new ArrayUnion()));
 	}
 
-	public TwoSourceJoinBase(final int inputs) {
-		super(inputs);
+	public TwoSourceJoinBase(final int minInputs, final int maxInputs) {
+		super(minInputs, maxInputs);
 		this.setResultProjection(new AggregationExpression(new ArrayUnion()));
 	}
 }

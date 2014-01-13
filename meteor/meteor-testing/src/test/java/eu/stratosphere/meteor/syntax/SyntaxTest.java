@@ -29,7 +29,7 @@ public class SyntaxTest extends MeteorParseTest {
 	/**
 	 * @param query
 	 *        the query to test
-	 * @param error
+	 * @param partialMessage
 	 *        the expected error message
 	 */
 	protected void assertParserError(final String query, final String partialMessage) {

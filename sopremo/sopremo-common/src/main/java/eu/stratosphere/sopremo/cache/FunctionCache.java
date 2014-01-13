@@ -40,21 +40,6 @@ public class FunctionCache implements ISopremoCache {
 		this.subParams.init(this.cachedParams, 0);
 	}
 
-	/**
-	 * Returns the template.
-	 * 
-	 * @return the template
-	 */
-	public SopremoFunction getTemplate() {
-		return this.template;
-	}
-
-	public SopremoFunction get(final int index) {
-		while (index >= this.functions.size())
-			this.functions.add(this.template.clone());
-		return this.functions.get(index);
-	}
-
 	public IJsonNode call(final int functionIndex, final IJsonNode... params) {
 		this.subParams.setSize(params.length);
 		for (int index = 0; index < params.length; index++)
@@ -65,5 +50,20 @@ public class FunctionCache implements ISopremoCache {
 	@Override
 	public FunctionCache clone() {
 		return new FunctionCache(this.template.clone());
+	}
+
+	public SopremoFunction get(final int index) {
+		while (index >= this.functions.size())
+			this.functions.add(this.template.clone());
+		return this.functions.get(index);
+	}
+
+	/**
+	 * Returns the template.
+	 * 
+	 * @return the template
+	 */
+	public SopremoFunction getTemplate() {
+		return this.template;
 	}
 }

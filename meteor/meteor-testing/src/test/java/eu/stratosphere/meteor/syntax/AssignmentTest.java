@@ -30,6 +30,9 @@ import eu.stratosphere.sopremo.operator.SopremoPlan;
  */
 public class AssignmentTest extends MeteorParseTest {
 
+	/**
+	 * 
+	 */
 	@Test
 	public void test() {
 		final SopremoPlan actualPlan =

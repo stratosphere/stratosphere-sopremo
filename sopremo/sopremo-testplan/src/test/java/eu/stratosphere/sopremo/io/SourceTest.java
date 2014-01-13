@@ -12,15 +12,6 @@ import eu.stratosphere.sopremo.type.TextNode;
 //import eu.stratosphere.sopremo.testing.SopremoTestPlan;
 
 public class SourceTest extends EqualCloneTest<Source> {
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.EqualVerifyTest#createDefaultInstance(int)
-	 */
-	@Override
-	protected Source createDefaultInstance(final int index) {
-		return new Source("file:///" + String.valueOf(index));
-	}
-
 	@Override
 	@Test
 	public void shouldComplyEqualsOperator() {
@@ -44,5 +35,14 @@ public class SourceTest extends EqualCloneTest<Source> {
 			add(IntNode.valueOf(42)).
 			add(TextNode.valueOf("test"));
 		plan.run();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.EqualVerifyTest#createDefaultInstance(int)
+	 */
+	@Override
+	protected Source createDefaultInstance(final int index) {
+		return new Source("file:///" + String.valueOf(index));
 	}
 }

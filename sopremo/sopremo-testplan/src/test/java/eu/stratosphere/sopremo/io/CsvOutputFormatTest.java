@@ -5,11 +5,18 @@ import java.io.IOException;
 import org.junit.Assert;
 import org.junit.Test;
 
+import eu.stratosphere.core.testing.TestPlan;
 import eu.stratosphere.sopremo.io.CsvFormat.CsvOutputFormat;
 import eu.stratosphere.sopremo.type.IJsonNode;
 import eu.stratosphere.sopremo.type.JsonUtil;
 
 public class CsvOutputFormatTest extends OutputFormatTest {
+
+	@Test
+	public void shouldEscapeProperly() {
+		final String escapedString = new CsvOutputFormat().escapeString("\"Unesc\\unesc\"end\"");
+		Assert.assertEquals("\\\"Unesc\\\\unesc\\\"end\\\"", escapedString);
+	}
 
 	/**
 	 * Tests if a {@link TestPlan} can be executed.
@@ -48,12 +55,6 @@ public class CsvOutputFormatTest extends OutputFormatTest {
 				"type", "american", "class", "'0'"), };
 
 		writeAndRead(format, values);
-	}
-
-	@Test
-	public void shouldEscapeProperly() {
-		final String escapedString = new CsvOutputFormat().escapeString("\"Unesc\\unesc\"end\"");
-		Assert.assertEquals("\\\"Unesc\\\\unesc\\\"end\\\"", escapedString);
 	}
 
 }

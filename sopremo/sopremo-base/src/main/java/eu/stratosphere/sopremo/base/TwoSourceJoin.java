@@ -10,7 +10,7 @@ import java.util.List;
 
 import com.google.common.base.Predicates;
 
-import eu.stratosphere.api.common.operators.util.ContractUtil;
+import eu.stratosphere.api.common.operators.util.OperatorUtil;
 import eu.stratosphere.pact.common.plan.PactModule;
 import eu.stratosphere.sopremo.EvaluationContext;
 import eu.stratosphere.sopremo.base.join.AntiJoin;
@@ -90,23 +90,8 @@ public class TwoSourceJoin extends TwoSourceJoinBase<TwoSourceJoin> {
 
 		final PactModule pactModule = this.strategy.asPactModule(context, layout);
 		if (this.inverseInputs)
-			ContractUtil.swapInputs(pactModule.getOutput(0).getInputs().get(0), 0, 1);
+			OperatorUtil.swapInputs(pactModule.getOutput(0).getInputs().get(0), 0, 1);
 		return pactModule;
-	}
-
-	public BinaryBooleanExpression getCondition() {
-		return this.condition;
-	}
-
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = super.hashCode();
-		result = prime * result + this.condition.hashCode();
-		result = prime * result + (this.inverseInputs ? 1231 : 1237);
-		result = prime * result + this.outerJoinSources.hashCode();
-		result = prime * result + this.strategy.hashCode();
-		return result;
 	}
 
 	@Override
@@ -122,6 +107,10 @@ public class TwoSourceJoin extends TwoSourceJoinBase<TwoSourceJoin> {
 			&& this.outerJoinSources.equals(other.outerJoinSources) && this.strategy.equals(other.strategy);
 	}
 
+	public BinaryBooleanExpression getCondition() {
+		return this.condition;
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * @see eu.stratosphere.sopremo.ElementaryOperator#getKeyExpressions(int)
@@ -129,6 +118,10 @@ public class TwoSourceJoin extends TwoSourceJoinBase<TwoSourceJoin> {
 	@Override
 	public List<? extends EvaluationExpression> getKeyExpressions(final int inputIndex) {
 		return this.strategy.getKeyExpressions(inputIndex);
+	}
+
+	public int[] getOuterJoinIndices() {
+		return this.outerJoinSources.toIntArray();
 	}
 
 	public EvaluationExpression getOuterJoinSources() {
@@ -139,6 +132,17 @@ public class TwoSourceJoin extends TwoSourceJoinBase<TwoSourceJoin> {
 			expressions[index] = new InputSelection(inputIndex);
 		}
 		return new ArrayCreation(expressions);
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result + this.condition.hashCode();
+		result = prime * result + (this.inverseInputs ? 1231 : 1237);
+		result = prime * result + this.outerJoinSources.hashCode();
+		result = prime * result + this.strategy.hashCode();
+		return result;
 	}
 
 	// TODO name inconsistency with Join.setJoinCondition()
@@ -168,6 +172,15 @@ public class TwoSourceJoin extends TwoSourceJoinBase<TwoSourceJoin> {
 		this.chooseStrategy();
 	}
 
+	public void setOuterJoinIndices(final int... outerJoinIndices) {
+		if (outerJoinIndices == null)
+			throw new NullPointerException("outerJoinIndices must not be null");
+
+		this.outerJoinSources.clear();
+		for (final int index : outerJoinIndices)
+			this.outerJoinSources.add(index);
+	}
+
 	@Property
 	@Name(verb = "preserve")
 	public void setOuterJoinSources(final EvaluationExpression outerJoinSources) {
@@ -187,31 +200,18 @@ public class TwoSourceJoin extends TwoSourceJoinBase<TwoSourceJoin> {
 			this.outerJoinSources.add(((InputSelection) expression).getIndex());
 	}
 
-	public void setOuterJoinIndices(final int... outerJoinIndices) {
-		if (outerJoinIndices == null)
-			throw new NullPointerException("outerJoinIndices must not be null");
-
-		this.outerJoinSources.clear();
-		for (final int index : outerJoinIndices)
-			this.outerJoinSources.add(index);
-	}
-
-	public int[] getOuterJoinIndices() {
-		return this.outerJoinSources.toIntArray();
-	}
-
 	public TwoSourceJoin withCondition(final BinaryBooleanExpression condition) {
 		this.setCondition(condition);
 		return this;
 	}
 
-	public TwoSourceJoin withOuterJoinSources(final EvaluationExpression outerJoinSources) {
-		this.setOuterJoinSources(outerJoinSources);
+	public TwoSourceJoin withOuterJoinIndices(final int... outerJoinIndices) {
+		this.setOuterJoinIndices(outerJoinIndices);
 		return this;
 	}
 
-	public TwoSourceJoin withOuterJoinIndices(final int... outerJoinIndices) {
-		this.setOuterJoinIndices(outerJoinIndices);
+	public TwoSourceJoin withOuterJoinSources(final EvaluationExpression outerJoinSources) {
+		this.setOuterJoinSources(outerJoinSources);
 		return this;
 	}
 

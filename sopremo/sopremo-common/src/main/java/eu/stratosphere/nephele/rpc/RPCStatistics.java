@@ -27,153 +27,67 @@ import com.esotericsoftware.minlog.Log;
  * etc.
  * <p>
  * This class is thread safe.
- * 
  */
 public class RPCStatistics {
 
 	/**
-	 * Auxiliary class to hold statistics on the round-trip times (RTTs) of RPC class.
-	 * <p>
-	 * This class is thread-safe.
-	 * 
+	 * Map storing the collected retry statistics data by the number of packets the request consisted of.
 	 */
-	private static final class RTTStatistics {
+	private final ConcurrentMap<Integer, RetryStatistics> statisticsData =
+		new ConcurrentHashMap<Integer, RetryStatistics>();
 
-		/**
-		 * The number of reported requests in the current collection interval.
-		 */
-		private final AtomicInteger requestCounter = new AtomicInteger(0);
+	/**
+	 * The RTT statistics.
+	 */
+	private final RTTStatistics rttStatistics = new RTTStatistics();
 
-		/**
-		 * The sum of all RTTs in the current collection interval in milliseconds.
-		 */
-		private final AtomicInteger sumOfRTTs = new AtomicInteger(0);
+	/**
+	 * Triggers the periodic processing the of the collected data.
+	 */
+	void processCollectedData() {
 
-		/**
-		 * The name of the method with the minimum RTT in the current collection interval.
-		 */
-		private volatile String minMethodName = null;
-
-		/**
-		 * The minimum RTT in the current collection interval in milliseconds.
-		 */
-		private final AtomicInteger minRTT = new AtomicInteger(Integer.MAX_VALUE);
-
-		/**
-		 * The name of the method with the maximum RTT in the current collection interval.
-		 */
-		private volatile String maxMethodName = null;
-
-		/**
-		 * The maximum RTT in the current collection interval in milliseconds.
-		 */
-		private final AtomicInteger maxRTT = new AtomicInteger(Integer.MIN_VALUE);
-
-		/**
-		 * Reports the RTT of an RPC call.
-		 * 
-		 * @param methodName
-		 *        the name of the remote method that has been called
-		 * @param rtt
-		 *        the required RTT in milliseconds
-		 */
-		private final void reportRTT(final String methodName, final int rtt) {
-
-			this.requestCounter.incrementAndGet();
-			this.sumOfRTTs.addAndGet(rtt);
-			this.testAndSetLowestRTT(methodName, rtt);
-			this.testAndSetHighestRTT(methodName, rtt);
+		final Iterator<RetryStatistics> it = this.statisticsData.values().iterator();
+		while (it.hasNext()) {
+			final RetryStatistics data = it.next();
+			it.remove();
+			data.processCollectedData();
 		}
 
-		/**
-		 * Sets the lowest RTT in a thread-safe way.
-		 * 
-		 * @param methodName
-		 *        the method name
-		 * @param rtt
-		 *        the RTT in milliseconds
-		 */
-		private void testAndSetLowestRTT(final String methodName, final int rtt) {
+		this.rttStatistics.processCollectedData();
+	}
 
-			while (true) {
+	void reportRTT(final String methodName, final int rtt) {
+		this.rttStatistics.reportRTT(methodName, rtt);
+	}
 
-				final int val = this.minRTT.get();
-				if (rtt < val) {
-					if (!this.minRTT.compareAndSet(val, rtt))
-						continue;
+	/**
+	 * Reports the number of required retries for a successful transmission call to the statistics module.
+	 * 
+	 * @param methodName
+	 *        the name of the remote method that has been invoked as part of the transmission
+	 * @param numberOfPackets
+	 *        the number of packets the transmission consisted of
+	 * @param requiredRetries
+	 *        the number of required retries before the transmission was fully acknowledged
+	 */
+	void reportSuccessfulTransmission(final String methodName, final int numberOfPackets, final int requiredRetries) {
 
-					this.minMethodName = methodName;
-				}
-
-				break;
-			}
+		final Integer key = Integer.valueOf(numberOfPackets);
+		RetryStatistics data = this.statisticsData.get(key);
+		if (data == null) {
+			data = new RetryStatistics(numberOfPackets);
+			final RetryStatistics oldValue = this.statisticsData.putIfAbsent(key, data);
+			if (oldValue != null)
+				data = oldValue;
 		}
 
-		/**
-		 * Sets the highest RTT in a thread-safe way.
-		 * 
-		 * @param methodName
-		 *        the method name
-		 * @param rtt
-		 *        the RTT in milliseconds
-		 */
-		private void testAndSetHighestRTT(final String methodName, final int rtt) {
-
-			while (true) {
-
-				final int val = this.maxRTT.get();
-				if (rtt > val) {
-					if (!this.maxRTT.compareAndSet(val, rtt))
-						continue;
-
-					this.maxMethodName = methodName;
-				}
-
-				break;
-			}
-		}
-
-		/**
-		 * Processes and logs the collected RTT data.
-		 */
-		private void processCollectedData() {
-
-			final int numberOfRequests = this.requestCounter.getAndSet(0);
-			if (numberOfRequests == 0)
-				return;
-
-			final float avg = (float) this.sumOfRTTs.getAndSet(0) / (float) numberOfRequests;
-			final int min = this.minRTT.getAndSet(Integer.MAX_VALUE);
-			final String minMethodName = this.minMethodName;
-			this.minMethodName = null;
-			final int max = this.maxRTT.getAndSet(Integer.MIN_VALUE);
-			final String maxMethodName = this.maxMethodName;
-			this.maxMethodName = null;
-
-			if (Log.DEBUG) {
-
-				final StringBuilder sb = new StringBuilder("RTT stats: ");
-				sb.append(avg);
-				sb.append(" ms avg,\t: ");
-				sb.append(min);
-				sb.append(" ms min (");
-				sb.append(minMethodName);
-				sb.append("),\t");
-				sb.append(max);
-				sb.append(" ms max (");
-				sb.append(maxMethodName);
-				sb.append(')');
-
-				Log.debug(sb.toString());
-			}
-		}
+		data.reportNumberOfRequiredRetries(methodName, requiredRetries);
 	}
 
 	/**
 	 * Auxiliary class to hold the transmission retry statistics for a particular number of packets.
 	 * <p>
 	 * This class is thread-safe.
-	 * 
 	 */
 	private static final class RetryStatistics {
 
@@ -223,70 +137,6 @@ public class RPCStatistics {
 		}
 
 		/**
-		 * Reports the number of required retries for an RPC call.
-		 * 
-		 * @param methodName
-		 *        the name of the remote method that has been called
-		 * @param requiredRetries
-		 *        the number of required retries
-		 */
-		private final void reportNumberOfRequiredRetries(final String methodName, final int requiredRetries) {
-
-			this.requestCounter.incrementAndGet();
-			this.sumOfRetries.addAndGet(requiredRetries);
-			this.testAndSetMin(methodName, requiredRetries);
-			this.testAndSetMax(methodName, requiredRetries);
-		}
-
-		/**
-		 * Sets the minimum number of required retries in a thread-safe way.
-		 * 
-		 * @param methodName
-		 *        the method name
-		 * @param requiredRetries
-		 *        the number of required retries
-		 */
-		private void testAndSetMin(final String methodName, final int requiredRetries) {
-
-			while (true) {
-
-				final int val = this.minRetries.get();
-				if (requiredRetries < val) {
-					if (!this.minRetries.compareAndSet(val, requiredRetries))
-						continue;
-
-					this.minMethodName = methodName;
-				}
-
-				break;
-			}
-		}
-
-		/**
-		 * Sets the maximum number of required retries in a thread-safe way.
-		 * 
-		 * @param methodName
-		 *        the method name
-		 * @param requiredRetries
-		 *        the number of required retries
-		 */
-		private void testAndSetMax(final String methodName, final int requiredRetries) {
-
-			while (true) {
-
-				final int val = this.maxRetries.get();
-				if (requiredRetries > val) {
-					if (!this.maxRetries.compareAndSet(val, requiredRetries))
-						continue;
-
-					this.maxMethodName = methodName;
-				}
-
-				break;
-			}
-		}
-
-		/**
 		 * Processes and logs the collected statistics data.
 		 */
 		private void processCollectedData() {
@@ -316,59 +166,206 @@ public class RPCStatistics {
 				Log.debug(sb.toString());
 			}
 		}
-	}
 
-	/**
-	 * Map storing the collected retry statistics data by the number of packets the request consisted of.
-	 */
-	private final ConcurrentMap<Integer, RetryStatistics> statisticsData =
-		new ConcurrentHashMap<Integer, RetryStatistics>();
+		/**
+		 * Reports the number of required retries for an RPC call.
+		 * 
+		 * @param methodName
+		 *        the name of the remote method that has been called
+		 * @param requiredRetries
+		 *        the number of required retries
+		 */
+		private final void reportNumberOfRequiredRetries(final String methodName, final int requiredRetries) {
 
-	/**
-	 * The RTT statistics.
-	 */
-	private final RTTStatistics rttStatistics = new RTTStatistics();
-
-	/**
-	 * Reports the number of required retries for a successful transmission call to the statistics module.
-	 * 
-	 * @param methodName
-	 *        the name of the remote method that has been invoked as part of the transmission
-	 * @param numberOfPackets
-	 *        the number of packets the transmission consisted of
-	 * @param requiredRetries
-	 *        the number of required retries before the transmission was fully acknowledged
-	 */
-	void reportSuccessfulTransmission(final String methodName, final int numberOfPackets, final int requiredRetries) {
-
-		final Integer key = Integer.valueOf(numberOfPackets);
-		RetryStatistics data = this.statisticsData.get(key);
-		if (data == null) {
-			data = new RetryStatistics(numberOfPackets);
-			final RetryStatistics oldValue = this.statisticsData.putIfAbsent(key, data);
-			if (oldValue != null)
-				data = oldValue;
+			this.requestCounter.incrementAndGet();
+			this.sumOfRetries.addAndGet(requiredRetries);
+			this.testAndSetMin(methodName, requiredRetries);
+			this.testAndSetMax(methodName, requiredRetries);
 		}
 
-		data.reportNumberOfRequiredRetries(methodName, requiredRetries);
-	}
+		/**
+		 * Sets the maximum number of required retries in a thread-safe way.
+		 * 
+		 * @param methodName
+		 *        the method name
+		 * @param requiredRetries
+		 *        the number of required retries
+		 */
+		private void testAndSetMax(final String methodName, final int requiredRetries) {
 
-	void reportRTT(final String methodName, final int rtt) {
-		this.rttStatistics.reportRTT(methodName, rtt);
+			while (true) {
+
+				final int val = this.maxRetries.get();
+				if (requiredRetries > val) {
+					if (!this.maxRetries.compareAndSet(val, requiredRetries))
+						continue;
+
+					this.maxMethodName = methodName;
+				}
+
+				break;
+			}
+		}
+
+		/**
+		 * Sets the minimum number of required retries in a thread-safe way.
+		 * 
+		 * @param methodName
+		 *        the method name
+		 * @param requiredRetries
+		 *        the number of required retries
+		 */
+		private void testAndSetMin(final String methodName, final int requiredRetries) {
+
+			while (true) {
+
+				final int val = this.minRetries.get();
+				if (requiredRetries < val) {
+					if (!this.minRetries.compareAndSet(val, requiredRetries))
+						continue;
+
+					this.minMethodName = methodName;
+				}
+
+				break;
+			}
+		}
 	}
 
 	/**
-	 * Triggers the periodic processing the of the collected data.
+	 * Auxiliary class to hold statistics on the round-trip times (RTTs) of RPC class.
+	 * <p>
+	 * This class is thread-safe.
 	 */
-	void processCollectedData() {
+	private static final class RTTStatistics {
 
-		final Iterator<RetryStatistics> it = this.statisticsData.values().iterator();
-		while (it.hasNext()) {
-			final RetryStatistics data = it.next();
-			it.remove();
-			data.processCollectedData();
+		/**
+		 * The number of reported requests in the current collection interval.
+		 */
+		private final AtomicInteger requestCounter = new AtomicInteger(0);
+
+		/**
+		 * The sum of all RTTs in the current collection interval in milliseconds.
+		 */
+		private final AtomicInteger sumOfRTTs = new AtomicInteger(0);
+
+		/**
+		 * The name of the method with the minimum RTT in the current collection interval.
+		 */
+		private volatile String minMethodName = null;
+
+		/**
+		 * The minimum RTT in the current collection interval in milliseconds.
+		 */
+		private final AtomicInteger minRTT = new AtomicInteger(Integer.MAX_VALUE);
+
+		/**
+		 * The name of the method with the maximum RTT in the current collection interval.
+		 */
+		private volatile String maxMethodName = null;
+
+		/**
+		 * The maximum RTT in the current collection interval in milliseconds.
+		 */
+		private final AtomicInteger maxRTT = new AtomicInteger(Integer.MIN_VALUE);
+
+		/**
+		 * Processes and logs the collected RTT data.
+		 */
+		private void processCollectedData() {
+
+			final int numberOfRequests = this.requestCounter.getAndSet(0);
+			if (numberOfRequests == 0)
+				return;
+
+			final float avg = (float) this.sumOfRTTs.getAndSet(0) / (float) numberOfRequests;
+			final int min = this.minRTT.getAndSet(Integer.MAX_VALUE);
+			final String minMethodName = this.minMethodName;
+			this.minMethodName = null;
+			final int max = this.maxRTT.getAndSet(Integer.MIN_VALUE);
+			final String maxMethodName = this.maxMethodName;
+			this.maxMethodName = null;
+
+			if (Log.DEBUG) {
+
+				final StringBuilder sb = new StringBuilder("RTT stats: ");
+				sb.append(avg);
+				sb.append(" ms avg,\t: ");
+				sb.append(min);
+				sb.append(" ms min (");
+				sb.append(minMethodName);
+				sb.append("),\t");
+				sb.append(max);
+				sb.append(" ms max (");
+				sb.append(maxMethodName);
+				sb.append(')');
+
+				Log.debug(sb.toString());
+			}
 		}
 
-		this.rttStatistics.processCollectedData();
+		/**
+		 * Reports the RTT of an RPC call.
+		 * 
+		 * @param methodName
+		 *        the name of the remote method that has been called
+		 * @param rtt
+		 *        the required RTT in milliseconds
+		 */
+		private final void reportRTT(final String methodName, final int rtt) {
+
+			this.requestCounter.incrementAndGet();
+			this.sumOfRTTs.addAndGet(rtt);
+			this.testAndSetLowestRTT(methodName, rtt);
+			this.testAndSetHighestRTT(methodName, rtt);
+		}
+
+		/**
+		 * Sets the highest RTT in a thread-safe way.
+		 * 
+		 * @param methodName
+		 *        the method name
+		 * @param rtt
+		 *        the RTT in milliseconds
+		 */
+		private void testAndSetHighestRTT(final String methodName, final int rtt) {
+
+			while (true) {
+
+				final int val = this.maxRTT.get();
+				if (rtt > val) {
+					if (!this.maxRTT.compareAndSet(val, rtt))
+						continue;
+
+					this.maxMethodName = methodName;
+				}
+
+				break;
+			}
+		}
+
+		/**
+		 * Sets the lowest RTT in a thread-safe way.
+		 * 
+		 * @param methodName
+		 *        the method name
+		 * @param rtt
+		 *        the RTT in milliseconds
+		 */
+		private void testAndSetLowestRTT(final String methodName, final int rtt) {
+
+			while (true) {
+
+				final int val = this.minRTT.get();
+				if (rtt < val) {
+					if (!this.minRTT.compareAndSet(val, rtt))
+						continue;
+
+					this.minMethodName = methodName;
+				}
+
+				break;
+			}
+		}
 	}
 }

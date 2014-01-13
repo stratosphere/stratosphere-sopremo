@@ -19,6 +19,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
+import eu.stratosphere.api.common.Program;
 import eu.stratosphere.api.common.io.FileInputFormat;
 import eu.stratosphere.api.common.io.FileOutputFormat;
 import eu.stratosphere.api.common.operators.FileDataSink;
@@ -26,7 +27,7 @@ import eu.stratosphere.api.common.operators.FileDataSource;
 import eu.stratosphere.api.common.operators.GenericDataSink;
 import eu.stratosphere.api.common.operators.GenericDataSource;
 import eu.stratosphere.api.common.operators.Operator;
-import eu.stratosphere.api.common.operators.util.ContractUtil;
+import eu.stratosphere.api.common.operators.util.OperatorUtil;
 import eu.stratosphere.util.Visitable;
 import eu.stratosphere.util.Visitor;
 import eu.stratosphere.util.dag.GraphModule;
@@ -36,7 +37,7 @@ import eu.stratosphere.util.dag.NodePrinter;
 import eu.stratosphere.util.dag.OneTimeTraverser;
 
 /**
- * The PactModule is a subgraph of a {@link PactProgram} with an arbitrary but
+ * The PactModule is a subgraph of a {@link Program} with an arbitrary but
  * well-defined number of inputs and outputs. It is designed to facilitate
  * modularization and thus to increase the maintainability of large
  * PactPrograms. While the interface of the module are the number of inputs and
@@ -71,7 +72,7 @@ public class PactModule extends GraphModule<Operator, GenericDataSource<?>, Gene
 	 * Traverses the pact plan, starting from the data outputs that were added
 	 * to this program.
 	 * 
-	 * @see eu.stratosphere.api.plan.Visitable#accept(eu.stratosphere.api.plan.Visitor)
+	 * @see Visitable#accept(Visitor)
 	 */
 	@Override
 	public void accept(final Visitor<Operator> visitor) {
@@ -103,8 +104,6 @@ public class PactModule extends GraphModule<Operator, GenericDataSource<?>, Gene
 	 * Wraps the graph given by the sinks and referenced contracts in a
 	 * PactModule.
 	 * 
-	 * @param name
-	 *        the name of the PactModule
 	 * @param sinks
 	 *        all sinks that span the graph to wrap
 	 * @return a PactModule representing the given graph
@@ -116,7 +115,7 @@ public class PactModule extends GraphModule<Operator, GenericDataSource<?>, Gene
 			new GraphTraverseListener<Operator>() {
 				@Override
 				public void nodeTraversed(final Operator node) {
-					final List<List<Operator>> contractInputs = ContractUtil.getInputs(node);
+					final List<List<Operator>> contractInputs = OperatorUtil.getInputs(node);
 					if (contractInputs.size() == 0)
 						inputs.add(node);
 					else
@@ -138,14 +137,14 @@ public class PactModule extends GraphModule<Operator, GenericDataSource<?>, Gene
 
 		for (int index = 0; index < inputs.size();) {
 			final Operator node = inputs.get(index);
-			final List<List<Operator>> contractInputs = ContractUtil.getInputs(node);
+			final List<List<Operator>> contractInputs = OperatorUtil.getInputs(node);
 			if (contractInputs.isEmpty())
 				module.setInput(index++, (GenericDataSource<?>) node);
 			else {
 				for (int unconnectedIndex = 0; unconnectedIndex < contractInputs.size(); unconnectedIndex++)
 					if (contractInputs.get(unconnectedIndex).isEmpty())
 						contractInputs.get(unconnectedIndex).add(module.getInput(index++));
-				ContractUtil.setInputs(node, contractInputs);
+				OperatorUtil.setInputs(node, contractInputs);
 			}
 		}
 		return module;
@@ -155,8 +154,6 @@ public class PactModule extends GraphModule<Operator, GenericDataSource<?>, Gene
 	 * Wraps the graph given by the sinks and referenced contracts in a
 	 * PactModule.
 	 * 
-	 * @param name
-	 *        the name of the PactModule
 	 * @param sinks
 	 *        all sinks that span the graph to wrap
 	 * @return a PactModule representing the given graph

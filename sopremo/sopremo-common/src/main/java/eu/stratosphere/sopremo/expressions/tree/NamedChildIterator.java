@@ -29,31 +29,39 @@ public abstract class NamedChildIterator implements ChildIterator {
 
 	/*
 	 * (non-Javadoc)
+	 * @see java.util.ListIterator#add(java.lang.Object)
+	 */
+	@Override
+	public void add(final EvaluationExpression childExpression) {
+		throw new UnsupportedOperationException();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.expressions.tree.ChildIterator#isNamed()
+	 */
+	@Override
+	public boolean canChildBeRemoved() {
+		return false;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.expressions.tree.ChildIterator#getChildName()
+	 */
+	@Override
+	public String getChildName() {
+		return this.childNames[this.index];
+	}
+
+	/*
+	 * (non-Javadoc)
 	 * @see java.util.ListIterator#hasNext()
 	 */
 	@Override
 	public boolean hasNext() {
 		return this.index < this.childNames.length - 1;
 	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see java.util.ListIterator#next()
-	 */
-	@Override
-	public EvaluationExpression next() {
-		return this.get(++this.index);
-	}
-
-	protected int getSize() {
-		return this.childNames.length;
-	}
-
-	/**
-	 * @param i
-	 * @return
-	 */
-	protected abstract EvaluationExpression get(int index);
 
 	/*
 	 * (non-Javadoc)
@@ -66,11 +74,11 @@ public abstract class NamedChildIterator implements ChildIterator {
 
 	/*
 	 * (non-Javadoc)
-	 * @see java.util.ListIterator#previous()
+	 * @see java.util.ListIterator#next()
 	 */
 	@Override
-	public EvaluationExpression previous() {
-		return this.get(--this.index);
+	public EvaluationExpression next() {
+		return this.get(++this.index);
 	}
 
 	/*
@@ -80,6 +88,15 @@ public abstract class NamedChildIterator implements ChildIterator {
 	@Override
 	public int nextIndex() {
 		return this.index + 1;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see java.util.ListIterator#previous()
+	 */
+	@Override
+	public EvaluationExpression previous() {
+		return this.get(--this.index);
 	}
 
 	/*
@@ -109,25 +126,7 @@ public abstract class NamedChildIterator implements ChildIterator {
 		this.set(this.index, childExpression);
 	}
 
-	protected abstract void set(int index, EvaluationExpression childExpression);
-
-	/*
-	 * (non-Javadoc)
-	 * @see java.util.ListIterator#add(java.lang.Object)
-	 */
-	@Override
-	public void add(final EvaluationExpression childExpression) {
-		throw new UnsupportedOperationException();
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.expressions.tree.ChildIterator#isNamed()
-	 */
-	@Override
-	public boolean canChildBeRemoved() {
-		return false;
-	}
+	protected abstract EvaluationExpression get(int index);
 
 	/**
 	 * Returns the childNames.
@@ -138,13 +137,10 @@ public abstract class NamedChildIterator implements ChildIterator {
 		return this.childNames;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.expressions.tree.ChildIterator#getChildName()
-	 */
-	@Override
-	public String getChildName() {
-		return this.childNames[this.index];
+	protected int getSize() {
+		return this.childNames.length;
 	}
+
+	protected abstract void set(int index, EvaluationExpression childExpression);
 
 }

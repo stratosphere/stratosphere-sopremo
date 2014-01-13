@@ -30,7 +30,7 @@ import eu.stratosphere.sopremo.type.JsonUtil;
 public class TernaryExpressionTest extends MeteorParseTest {
 
 	@Test
-	public void shouldSupportTernary() {
+	public void shouldSupportElvis() {
 		final SopremoPlan actualPlan = this.parseScript("$input = read from 'file://input.json';\n" +
 			"$result = transform $input into {name: $input.name ? $input.name : 'unknown'};\n" +
 			"write $result to 'file://output.json'; ");
@@ -51,7 +51,7 @@ public class TernaryExpressionTest extends MeteorParseTest {
 	}
 
 	@Test
-	public void shouldSupportElvis() {
+	public void shouldSupportTernary() {
 		final SopremoPlan actualPlan = this.parseScript("$input = read from 'file://input.json';\n" +
 			"$result = transform $input into {name: $input.name ? $input.name : 'unknown'};\n" +
 			"write $result to 'file://output.json'; ");

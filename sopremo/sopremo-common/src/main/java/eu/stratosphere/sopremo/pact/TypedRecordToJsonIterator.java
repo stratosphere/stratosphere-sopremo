@@ -8,7 +8,7 @@ import eu.stratosphere.sopremo.type.IObjectNode;
 import eu.stratosphere.sopremo.type.typed.TypedObjectNode;
 
 /**
- * Iterator that allows to iterate over {@link PactRecord}s. Each record is converted to a {@link IJsonNode} before
+ * Iterator that allows to iterate over {@link SopremoRecord}s. Each record is converted to a {@link IJsonNode} before
  * returning it.
  */
 public final class TypedRecordToJsonIterator<Elem extends IJsonNode> implements RecordToJsonIterator<Elem> {
@@ -20,21 +20,10 @@ public final class TypedRecordToJsonIterator<Elem extends IJsonNode> implements 
 	/**
 	 * Initializes TypedRecordToJsonIterator.
 	 * 
-	 * @param typedInputNode
+	 * @param typedNode
 	 */
 	public TypedRecordToJsonIterator(final TypedObjectNode typedNode) {
 		this.typedNode = typedNode;
-	}
-
-	/**
-	 * Sets the iterator to the specified value.
-	 * 
-	 * @param iterator
-	 *        the iterator to set
-	 */
-	@Override
-	public void setIterator(final Iterator<SopremoRecord> iterator) {
-		this.iterator = iterator;
 	}
 
 	/*
@@ -65,6 +54,17 @@ public final class TypedRecordToJsonIterator<Elem extends IJsonNode> implements 
 	@Override
 	public void remove() {
 		this.iterator.remove();
+	}
+
+	/**
+	 * Sets the iterator to the specified value.
+	 * 
+	 * @param iterator
+	 *        the iterator to set
+	 */
+	@Override
+	public void setIterator(final Iterator<SopremoRecord> iterator) {
+		this.iterator = iterator;
 	}
 
 }

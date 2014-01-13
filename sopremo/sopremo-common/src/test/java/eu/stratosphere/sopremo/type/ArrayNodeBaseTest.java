@@ -11,20 +11,20 @@ import org.junit.Test;
 
 import com.google.common.collect.Lists;
 
-import eu.stratosphere.pact.testing.AssertUtil;
+import eu.stratosphere.core.testing.AssertUtil;
 
 @Ignore
 public abstract class ArrayNodeBaseTest<T extends IArrayNode<IJsonNode>> extends JsonNodeTest<T> {
 
 	// protected T node;
 
+	@Before
+	public abstract void initArrayNode();
+
 	@Override
 	@Before
 	public void setUp() {
 	}
-
-	@Before
-	public abstract void initArrayNode();
 
 	@Test
 	public void shouldAddNodes() {
@@ -47,6 +47,33 @@ public abstract class ArrayNodeBaseTest<T extends IArrayNode<IJsonNode>> extends
 	}
 
 	@Test
+	public void shouldClearTheNode() {
+		this.node.add(TextNode.valueOf("firstname"));
+		this.node.add(TextNode.valueOf("lastname"));
+
+		Assert.assertTrue(this.node.size() != 0);
+
+		this.node.clear();
+		Assert.assertEquals(0, this.node.size());
+	}
+
+	@Test
+	public void shouldCreateIterator() {
+		this.node.clear();
+		final List<IJsonNode> expected = new ArrayList<IJsonNode>();
+
+		for (int i = 0; i < 10; i++) {
+			final IJsonNode value = IntNode.valueOf(i);
+
+			expected.add(value);
+			this.node.add(value);
+		}
+
+		final Iterator<IJsonNode> it = this.node.iterator();
+		AssertUtil.assertIteratorEquals(expected.iterator(), it);
+	}
+
+	@Test
 	public void shouldRemoveNodes() {
 
 		this.node.add(0, TextNode.valueOf("firstname"));
@@ -60,6 +87,14 @@ public abstract class ArrayNodeBaseTest<T extends IArrayNode<IJsonNode>> extends
 		// index of following nodes should be decremented by 1 after removal of a node
 		this.node.remove(0);
 		Assert.assertEquals(initialSize - 2, this.node.size());
+	}
+
+	@Test
+	public void shouldRemoveNothingIfRemoveIndexOutOfRange() {
+		// index range of node: 0 to size - 1
+		final IArrayNode<IJsonNode> clone = this.node.clone();
+		this.node.remove(this.node.size());
+		Assert.assertEquals(clone, this.node);
 	}
 
 	@Test
@@ -77,14 +112,9 @@ public abstract class ArrayNodeBaseTest<T extends IArrayNode<IJsonNode>> extends
 	}
 
 	@Test
-	public void shouldClearTheNode() {
-		this.node.add(TextNode.valueOf("firstname"));
-		this.node.add(TextNode.valueOf("lastname"));
-
-		Assert.assertTrue(this.node.size() != 0);
-
-		this.node.clear();
-		Assert.assertEquals(0, this.node.size());
+	public void shouldReturnMissingIfGetIndexOutOfRange() {
+		// index range of node: 0 to size -1
+		Assert.assertSame(MissingNode.getInstance(), this.node.get(this.node.size()));
 	}
 
 	@Test
@@ -97,38 +127,8 @@ public abstract class ArrayNodeBaseTest<T extends IArrayNode<IJsonNode>> extends
 
 	}
 
-	@Test
-	public void shouldReturnMissingIfGetIndexOutOfRange() {
-		// index range of node: 0 to size -1
-		Assert.assertSame(MissingNode.getInstance(), this.node.get(this.node.size()));
-	}
-
-	@Test
-	public void shouldRemoveNothingIfRemoveIndexOutOfRange() {
-		// index range of node: 0 to size - 1
-		final IArrayNode<IJsonNode> clone = this.node.clone();
-		this.node.remove(this.node.size());
-		Assert.assertEquals(clone, this.node);
-	}
-
 	@Test(expected = IndexOutOfBoundsException.class)
 	public void shouldThrowExceptionIfAddingWithWrongIndex() {
 		this.node.add(this.node.size() + 1, TextNode.valueOf("firstname"));
-	}
-
-	@Test
-	public void shouldCreateIterator() {
-		this.node.clear();
-		final List<IJsonNode> expected = new ArrayList<IJsonNode>();
-
-		for (int i = 0; i < 10; i++) {
-			final IJsonNode value = IntNode.valueOf(i);
-
-			expected.add(value);
-			this.node.add(value);
-		}
-
-		final Iterator<IJsonNode> it = this.node.iterator();
-		AssertUtil.assertIteratorEquals(expected.iterator(), it);
 	}
 }

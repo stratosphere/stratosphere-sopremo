@@ -29,6 +29,80 @@ public class JsonToJavaMapperTest {
 	}
 
 	@Test
+	public void shouldMapBoolean() {
+		Assert.assertEquals(false, this.mapper.map(BooleanNode.FALSE, null, Object.class));
+		Assert.assertEquals(true, this.mapper.map(BooleanNode.TRUE, null, Boolean.TYPE));
+		Assert.assertEquals(false, this.mapper.map(BooleanNode.FALSE, null, Boolean.class));
+		Assert.assertEquals(true, this.mapper.map(BooleanNode.TRUE));
+	}
+
+	@Test
+	public void shouldMapDouble() {
+		Assert.assertEquals(Double.valueOf(1.23), this.mapper.map(DoubleNode.valueOf(1.23)));
+		Assert.assertEquals(Double.valueOf(1.23), this.mapper.map(DoubleNode.valueOf(1.23), null, Number.class));
+		Assert.assertEquals(Double.valueOf(1.23), this.mapper.map(DoubleNode.valueOf(1.23), null, Object.class));
+		Assert.assertEquals(Double.valueOf(1.23), this.mapper.map(DoubleNode.valueOf(1.23), null, Double.class));
+		Assert.assertEquals(Double.valueOf(1.23), this.mapper.map(DoubleNode.valueOf(1.23), null, Double.TYPE));
+		Assert.assertEquals(Float.valueOf(1.23f), this.mapper.map(DoubleNode.valueOf(1.23), null, Float.class));
+		Assert.assertEquals(Float.valueOf(1.23f), this.mapper.map(DoubleNode.valueOf(1.23), null, Float.TYPE));
+	}
+
+	@Test
+	public void shouldMapEnum() {
+		Assert.assertEquals(RetentionPolicy.RUNTIME,
+			this.mapper.map(TextNode.valueOf(RetentionPolicy.RUNTIME.name()), null, RetentionPolicy.class));
+	}
+
+	@Test
+	public void shouldMapInt() {
+		Assert.assertEquals(Integer.valueOf(42), this.mapper.map(IntNode.valueOf(42)));
+		Assert.assertEquals(Integer.valueOf(42), this.mapper.map(IntNode.valueOf(42), null, Number.class));
+		Assert.assertEquals(Integer.valueOf(42), this.mapper.map(IntNode.valueOf(42), null, Object.class));
+		Assert.assertEquals(Integer.valueOf(42), this.mapper.map(IntNode.valueOf(42), null, Integer.TYPE));
+		Assert.assertEquals(Integer.valueOf(42), this.mapper.map(IntNode.valueOf(42), null, Integer.class));
+		Assert.assertEquals(Byte.valueOf((byte) 42), this.mapper.map(IntNode.valueOf(42), null, Byte.TYPE));
+		Assert.assertEquals(Byte.valueOf((byte) 42), this.mapper.map(IntNode.valueOf(42), null, Byte.class));
+		Assert.assertEquals(Short.valueOf((short) 42), this.mapper.map(IntNode.valueOf(42), null, Short.TYPE));
+		Assert.assertEquals(Short.valueOf((short) 42), this.mapper.map(IntNode.valueOf(42), null, Short.class));
+	}
+
+	@Test
+	public void shouldMapIntArray() {
+		final ArrayNode<IJsonNode> input =
+			new ArrayNode<IJsonNode>().add(new IntNode(1)).add(new IntNode(2)).add(new IntNode(3));
+
+		Assert.assertArrayEquals(new int[] { 1, 2, 3 }, this.mapper.map(input, null, int[].class));
+		Assert.assertArrayEquals(new Integer[] { 1, 2, 3 }, this.mapper.map(input, null, Integer[].class));
+		Assert.assertArrayEquals(new byte[] { 1, 2, 3 }, this.mapper.map(input, null, byte[].class));
+		Assert.assertArrayEquals(new Byte[] { 1, 2, 3 }, this.mapper.map(input, null, Byte[].class));
+		Assert.assertArrayEquals(new short[] { 1, 2, 3 }, this.mapper.map(input, null, short[].class));
+		Assert.assertArrayEquals(new Short[] { 1, 2, 3 }, this.mapper.map(input, null, Short[].class));
+	}
+
+	@Test
+	public void shouldMapList() {
+		final ArrayNode<IJsonNode> input = new ArrayNode<IJsonNode>();
+		input.add(IntNode.valueOf(1));
+		input.add(TextNode.valueOf("test"));
+
+		final List<Object> expected = new ArrayList<Object>();
+		expected.add(1);
+		expected.add("test");
+
+		Assert.assertEquals(expected, this.mapper.map(input, null, List.class));
+		Assert.assertEquals(expected, this.mapper.map(input));
+	}
+
+	@Test
+	public void shouldMapLong() {
+		Assert.assertEquals(Long.valueOf(42), this.mapper.map(LongNode.valueOf(42), null, Number.class));
+		Assert.assertEquals(Long.valueOf(42), this.mapper.map(LongNode.valueOf(42), null, Object.class));
+		Assert.assertEquals(Long.valueOf(42), this.mapper.map(LongNode.valueOf(42), null, Long.TYPE));
+		Assert.assertEquals(Long.valueOf(42), this.mapper.map(LongNode.valueOf(42), null, Long.class));
+		Assert.assertEquals(Long.valueOf(42), this.mapper.map(LongNode.valueOf(42)));
+	}
+
+	@Test
 	public void shouldMapNestedArray() {
 		final ArrayNode<IJsonNode> input =
 			new ArrayNode<IJsonNode>().add(new ArrayNode<IJsonNode>().add(new TextNode("field1")).add(new IntNode(1)))
@@ -60,22 +134,19 @@ public class JsonToJavaMapperTest {
 	}
 
 	@Test
-	public void shouldMapIntArray() {
-		final ArrayNode<IJsonNode> input =
-			new ArrayNode<IJsonNode>().add(new IntNode(1)).add(new IntNode(2)).add(new IntNode(3));
+	public void shouldMapObject() {
+		final ObjectNode object = new ObjectNode();
+		object.put("a", IntNode.valueOf(1));
+		object.put("b", TextNode.valueOf("test"));
 
-		Assert.assertArrayEquals(new int[] { 1, 2, 3 }, this.mapper.map(input, null, int[].class));
-		Assert.assertArrayEquals(new Integer[] { 1, 2, 3 }, this.mapper.map(input, null, Integer[].class));
-		Assert.assertArrayEquals(new byte[] { 1, 2, 3 }, this.mapper.map(input, null, byte[].class));
-		Assert.assertArrayEquals(new Byte[] { 1, 2, 3 }, this.mapper.map(input, null, Byte[].class));
-		Assert.assertArrayEquals(new short[] { 1, 2, 3 }, this.mapper.map(input, null, short[].class));
-		Assert.assertArrayEquals(new Short[] { 1, 2, 3 }, this.mapper.map(input, null, Short[].class));
-	}
+		final Map<String, Object> expected = new HashMap<String, Object>();
+		expected.put("a", 1);
+		expected.put("b", "test");
 
-	@Test
-	public void shouldMapEnum() {
-		Assert.assertEquals(RetentionPolicy.RUNTIME,
-			this.mapper.map(TextNode.valueOf(RetentionPolicy.RUNTIME.name()), null, RetentionPolicy.class));
+		Assert.assertEquals(expected, this.mapper.map(object, null, Map.class));
+		Assert.assertEquals(expected, this.mapper.map(object, null, HashMap.class));
+		Assert.assertSame(HashMap.class, this.mapper.map(object, null, HashMap.class).getClass());
+		Assert.assertEquals(expected, this.mapper.map(object));
 	}
 
 	@Test
@@ -92,68 +163,26 @@ public class JsonToJavaMapperTest {
 			this.mapper.map(TextNode.valueOf("test"), null, StringBuilder.class));
 	}
 
-	private void assertEquals(final StringBuilder expected, final Object actual) {
-		if (!(actual instanceof StringBuilder))
-			Assert.assertEquals(expected, actual);
-		else
-			Assert.assertEquals(expected.toString(), actual.toString());
+	@Test
+	public void shouldMapToStringWhenSpecified() {
+		Assert.assertEquals("42", this.mapper.map(IntNode.valueOf(42), null, String.class));
+		Assert.assertEquals("41", this.mapper.map(IntNode.valueOf(41), null, String.class));
+		Assert.assertEquals("1.23", this.mapper.map(new DecimalNode("1.23"), null, String.class));
 	}
 
 	@Test
-	public void shouldMapDouble() {
-		Assert.assertEquals(Double.valueOf(1.23), this.mapper.map(DoubleNode.valueOf(1.23)));
-		Assert.assertEquals(Double.valueOf(1.23), this.mapper.map(DoubleNode.valueOf(1.23), null, Number.class));
-		Assert.assertEquals(Double.valueOf(1.23), this.mapper.map(DoubleNode.valueOf(1.23), null, Object.class));
-		Assert.assertEquals(Double.valueOf(1.23), this.mapper.map(DoubleNode.valueOf(1.23), null, Double.class));
-		Assert.assertEquals(Double.valueOf(1.23), this.mapper.map(DoubleNode.valueOf(1.23), null, Double.TYPE));
-		Assert.assertEquals(Float.valueOf(1.23f), this.mapper.map(DoubleNode.valueOf(1.23), null, Float.class));
-		Assert.assertEquals(Float.valueOf(1.23f), this.mapper.map(DoubleNode.valueOf(1.23), null, Float.TYPE));
-	}
+	public void shouldMapTypedList() {
+		final ArrayNode<IJsonNode> input = new ArrayNode<IJsonNode>();
+		input.add(IntNode.valueOf(1));
+		input.add(TextNode.valueOf("test"));
 
-	@Test
-	public void shouldMapInt() {
-		Assert.assertEquals(Integer.valueOf(42), this.mapper.map(IntNode.valueOf(42)));
-		Assert.assertEquals(Integer.valueOf(42), this.mapper.map(IntNode.valueOf(42), null, Number.class));
-		Assert.assertEquals(Integer.valueOf(42), this.mapper.map(IntNode.valueOf(42), null, Object.class));
-		Assert.assertEquals(Integer.valueOf(42), this.mapper.map(IntNode.valueOf(42), null, Integer.TYPE));
-		Assert.assertEquals(Integer.valueOf(42), this.mapper.map(IntNode.valueOf(42), null, Integer.class));
-		Assert.assertEquals(Byte.valueOf((byte) 42), this.mapper.map(IntNode.valueOf(42), null, Byte.TYPE));
-		Assert.assertEquals(Byte.valueOf((byte) 42), this.mapper.map(IntNode.valueOf(42), null, Byte.class));
-		Assert.assertEquals(Short.valueOf((short) 42), this.mapper.map(IntNode.valueOf(42), null, Short.TYPE));
-		Assert.assertEquals(Short.valueOf((short) 42), this.mapper.map(IntNode.valueOf(42), null, Short.class));
-	}
+		final List<String> expected = new ArrayList<String>();
+		expected.add("1");
+		expected.add("test");
 
-	@Test
-	public void shouldMapLong() {
-		Assert.assertEquals(Long.valueOf(42), this.mapper.map(LongNode.valueOf(42), null, Number.class));
-		Assert.assertEquals(Long.valueOf(42), this.mapper.map(LongNode.valueOf(42), null, Object.class));
-		Assert.assertEquals(Long.valueOf(42), this.mapper.map(LongNode.valueOf(42), null, Long.TYPE));
-		Assert.assertEquals(Long.valueOf(42), this.mapper.map(LongNode.valueOf(42), null, Long.class));
-		Assert.assertEquals(Long.valueOf(42), this.mapper.map(LongNode.valueOf(42)));
-	}
-
-	@Test
-	public void shouldMapBoolean() {
-		Assert.assertEquals(false, this.mapper.map(BooleanNode.FALSE, null, Object.class));
-		Assert.assertEquals(true, this.mapper.map(BooleanNode.TRUE, null, Boolean.TYPE));
-		Assert.assertEquals(false, this.mapper.map(BooleanNode.FALSE, null, Boolean.class));
-		Assert.assertEquals(true, this.mapper.map(BooleanNode.TRUE));
-	}
-
-	@Test
-	public void shouldMapObject() {
-		final ObjectNode object = new ObjectNode();
-		object.put("a", IntNode.valueOf(1));
-		object.put("b", TextNode.valueOf("test"));
-
-		final Map<String, Object> expected = new HashMap<String, Object>();
-		expected.put("a", 1);
-		expected.put("b", "test");
-
-		Assert.assertEquals(expected, this.mapper.map(object, null, Map.class));
-		Assert.assertEquals(expected, this.mapper.map(object, null, HashMap.class));
-		Assert.assertSame(HashMap.class, this.mapper.map(object, null, HashMap.class).getClass());
-		Assert.assertEquals(expected, this.mapper.map(object));
+		final Object actual = this.mapper.map(input, null, new TypeToken<List<String>>() {
+		}.getType());
+		Assert.assertEquals(expected, actual);
 	}
 
 	@Test
@@ -178,40 +207,11 @@ public class JsonToJavaMapperTest {
 		Assert.assertEquals(expected, this.mapper.map(input));
 	}
 
-	@Test
-	public void shouldMapList() {
-		final ArrayNode<IJsonNode> input = new ArrayNode<IJsonNode>();
-		input.add(IntNode.valueOf(1));
-		input.add(TextNode.valueOf("test"));
-
-		final List<Object> expected = new ArrayList<Object>();
-		expected.add(1);
-		expected.add("test");
-
-		Assert.assertEquals(expected, this.mapper.map(input, null, List.class));
-		Assert.assertEquals(expected, this.mapper.map(input));
-	}
-
-	@Test
-	public void shouldMapToStringWhenSpecified() {
-		Assert.assertEquals("42", this.mapper.map(IntNode.valueOf(42), null, String.class));
-		Assert.assertEquals("41", this.mapper.map(IntNode.valueOf(41), null, String.class));
-		Assert.assertEquals("1.23", this.mapper.map(new DecimalNode("1.23"), null, String.class));
-	}
-
-	@Test
-	public void shouldMapTypedList() {
-		final ArrayNode<IJsonNode> input = new ArrayNode<IJsonNode>();
-		input.add(IntNode.valueOf(1));
-		input.add(TextNode.valueOf("test"));
-
-		final List<String> expected = new ArrayList<String>();
-		expected.add("1");
-		expected.add("test");
-
-		final Object actual = this.mapper.map(input, null, new TypeToken<List<String>>() {
-		}.getType());
-		Assert.assertEquals(expected, actual);
+	private void assertEquals(final StringBuilder expected, final Object actual) {
+		if (!(actual instanceof StringBuilder))
+			Assert.assertEquals(expected, actual);
+		else
+			Assert.assertEquals(expected.toString(), actual.toString());
 	}
 
 }

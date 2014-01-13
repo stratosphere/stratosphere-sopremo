@@ -33,7 +33,7 @@ public final class PlanWithSopremoPostPass extends Plan {
 	 */
 	public PlanWithSopremoPostPass(final SopremoRecordLayout layout, final Collection<GenericDataSink> sinks) {
 		super(sinks);
-		if(layout == null)
+		if (layout == null)
 			throw new NullPointerException();
 		this.layout = layout;
 	}

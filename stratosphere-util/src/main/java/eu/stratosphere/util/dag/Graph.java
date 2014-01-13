@@ -79,15 +79,6 @@ public class Graph<Node> implements Iterable<Graph<Node>.NodePath> {
 		return Iterables.filter(this, selector);
 	}
 
-	/**
-	 * Returns the startNodes.
-	 * 
-	 * @return the startNodes
-	 */
-	public List<Node> getStartNodes() {
-		return this.startNodes;
-	}
-
 	public NodePath getPath(final Node startNode, final int... indizes) {
 		int startIndex = -1;
 		for (int index = 0; index < this.startNodes.size(); index++)
@@ -103,6 +94,15 @@ public class Graph<Node> implements Iterable<Graph<Node>.NodePath> {
 		for (final int pathIndex : indizes)
 			nodePath = nodePath.followConnection(pathIndex);
 		return nodePath;
+	}
+
+	/**
+	 * Returns the startNodes.
+	 * 
+	 * @return the startNodes
+	 */
+	public List<Node> getStartNodes() {
+		return this.startNodes;
 	}
 
 	@Override
@@ -141,15 +141,16 @@ public class Graph<Node> implements Iterable<Graph<Node>.NodePath> {
 	public class GraphIterator extends AbstractIterator<NodePath> {
 		private NodePath path = new StartPath();
 
-		private NodePath followNext(final NodePath path, final int nextIndex) {
-			final NodePath incoming = path.getIncoming();
-			if (incoming == null)
-				return this.noMoreElements();
-
-			if (nextIndex < incoming.getOutgoingCount())
-				return incoming.followConnection(nextIndex);
-
-			return this.followNext(incoming, incoming.getIndex() + 1);
+		/*
+		 * (non-Javadoc)
+		 * @see eu.stratosphere.util.AbstractIterator#remove()
+		 */
+		@Override
+		public void remove() {
+			final NodePath referencingNode = this.path.getIncoming();
+			final List<Node> outgoings = referencingNode.getOutgoings();
+			outgoings.remove(this.path.getIndex());
+			referencingNode.setOutgoings(outgoings);
 		}
 
 		/*
@@ -164,16 +165,15 @@ public class Graph<Node> implements Iterable<Graph<Node>.NodePath> {
 			return this.path = this.followNext(this.path, this.path.getIndex() + 1);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see eu.stratosphere.util.AbstractIterator#remove()
-		 */
-		@Override
-		public void remove() {
-			final NodePath referencingNode = this.path.getIncoming();
-			final List<Node> outgoings = referencingNode.getOutgoings();
-			outgoings.remove(this.path.getIndex());
-			referencingNode.setOutgoings(outgoings);
+		private NodePath followNext(final NodePath path, final int nextIndex) {
+			final NodePath incoming = path.getIncoming();
+			if (incoming == null)
+				return this.noMoreElements();
+
+			if (nextIndex < incoming.getOutgoingCount())
+				return incoming.followConnection(nextIndex);
+
+			return this.followNext(incoming, incoming.getIndex() + 1);
 		}
 
 		private class StartPath extends NodePath {
@@ -221,6 +221,22 @@ public class Graph<Node> implements Iterable<Graph<Node>.NodePath> {
 			this.index = followedIndex;
 		}
 
+		@Override
+		public boolean equals(final Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (this.getClass() != obj.getClass())
+				return false;
+			@SuppressWarnings("unchecked")
+			final NodePath other = (NodePath) obj;
+			return this.getOuterType().equals(other.getOuterType())
+				&& this.index == other.index
+				&& (this.node == null ? other.node == null : this.node.equals(other.node))
+				&& (this.parentPath == null ? other.parentPath == null : this.parentPath.equals(other.parentPath));
+		}
+
 		public NodePath followConnection(final int connectionIndex) {
 			return new NodePath(this, Graph.this.navigator.getConnectedNodes(this.node).get(connectionIndex),
 				connectionIndex);
@@ -261,6 +277,17 @@ public class Graph<Node> implements Iterable<Graph<Node>.NodePath> {
 			return (List<Node>) Graph.this.navigator.getConnectedNodes(this.node);
 		}
 
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + this.getOuterType().hashCode();
+			result = prime * result + this.index;
+			result = prime * result + (this.node == null ? 0 : this.node.hashCode());
+			result = prime * result + (this.parentPath == null ? 0 : this.parentPath.hashCode());
+			return result;
+		}
+
 		/*
 		 * (non-Javadoc)
 		 * @see java.lang.Iterable#iterator()
@@ -293,33 +320,6 @@ public class Graph<Node> implements Iterable<Graph<Node>.NodePath> {
 				builder.append(this.parentPath.toString()).append("[").append(this.index).append("]=>");
 			builder.append(this.node.toString());
 			return builder.toString();
-		}
-
-		@Override
-		public int hashCode() {
-			final int prime = 31;
-			int result = 1;
-			result = prime * result + this.getOuterType().hashCode();
-			result = prime * result + this.index;
-			result = prime * result + (this.node == null ? 0 : this.node.hashCode());
-			result = prime * result + (this.parentPath == null ? 0 : this.parentPath.hashCode());
-			return result;
-		}
-
-		@Override
-		public boolean equals(final Object obj) {
-			if (this == obj)
-				return true;
-			if (obj == null)
-				return false;
-			if (this.getClass() != obj.getClass())
-				return false;
-			@SuppressWarnings("unchecked")
-			final NodePath other = (NodePath) obj;
-			return this.getOuterType().equals(other.getOuterType())
-				&& this.index == other.index
-				&& (this.node == null ? other.node == null : this.node.equals(other.node))
-				&& (this.parentPath == null ? other.parentPath == null : this.parentPath.equals(other.parentPath));
 		}
 
 		private Graph<Node> getOuterType() {

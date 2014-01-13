@@ -18,20 +18,9 @@ import eu.stratosphere.sopremo.ISopremoType;
 
 /**
  * Interface for all JsonNodes.
- * 
  */
 public interface IJsonNode extends ISopremoType, Comparable<IJsonNode> {
 	public void clear();
-
-	public Class<? extends IJsonNode> getType();
-
-	/**
-	 * Deeply copies the state of the given node to this node.
-	 * 
-	 * @param otherNode
-	 *        the node of which the state should be copied
-	 */
-	public abstract void copyValueFrom(IJsonNode otherNode);
 
 	/**
 	 * Creates a new instance of this class and invokes {@link #copyValueFrom(IJsonNode)}.<br />
@@ -61,4 +50,14 @@ public interface IJsonNode extends ISopremoType, Comparable<IJsonNode> {
 	 * @return result of the comparison
 	 */
 	public abstract int compareToSameType(IJsonNode other);
+
+	/**
+	 * Deeply copies the state of the given node to this node.
+	 * 
+	 * @param otherNode
+	 *        the node of which the state should be copied
+	 */
+	public abstract void copyValueFrom(IJsonNode otherNode);
+
+	public Class<? extends IJsonNode> getType();
 }

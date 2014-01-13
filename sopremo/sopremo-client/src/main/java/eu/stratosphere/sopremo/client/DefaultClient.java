@@ -25,14 +25,13 @@ import java.util.List;
 
 import eu.stratosphere.configuration.Configuration;
 import eu.stratosphere.configuration.GlobalConfiguration;
+import eu.stratosphere.core.fs.Path;
 import eu.stratosphere.nephele.execution.librarycache.LibraryCacheManager;
 import eu.stratosphere.nephele.execution.librarycache.LibraryCacheProfileRequest;
 import eu.stratosphere.nephele.execution.librarycache.LibraryCacheProfileResponse;
 import eu.stratosphere.nephele.execution.librarycache.LibraryCacheUpdate;
-import eu.stratosphere.core.fs.Path;
 import eu.stratosphere.nephele.jobgraph.JobID;
 import eu.stratosphere.nephele.rpc.RPCService;
-import eu.stratosphere.util.StringUtils;
 import eu.stratosphere.sopremo.execution.ExecutionRequest;
 import eu.stratosphere.sopremo.execution.ExecutionRequest.ExecutionMode;
 import eu.stratosphere.sopremo.execution.ExecutionResponse;
@@ -41,27 +40,11 @@ import eu.stratosphere.sopremo.execution.SopremoConstants;
 import eu.stratosphere.sopremo.execution.SopremoExecutionProtocol;
 import eu.stratosphere.sopremo.execution.SopremoID;
 import eu.stratosphere.sopremo.operator.SopremoPlan;
+import eu.stratosphere.util.StringUtils;
 
 /**
  */
 public class DefaultClient implements Closeable {
-	/**
-	 * Avoids plenty of null checks.
-	 * 
-	 */
-	private static class ThrowingListener implements ProgressListener {
-		/*
-		 * (non-Javadoc)
-		 * @see eu.stratosphere.sopremo.client.ProgressListener#progressUpdate(eu.stratosphere.sopremo.execution.
-		 * ExecutionResponse.ExecutionState, java.lang.String)
-		 */
-		@Override
-		public void progressUpdate(final ExecutionState state, final String detail) {
-			if (state == ExecutionState.ERROR)
-				throw new RuntimeException(detail);
-		}
-	}
-
 	private Configuration configuration;
 
 	private RPCService rpcService;
@@ -88,26 +71,14 @@ public class DefaultClient implements Closeable {
 		this.configuration = configuration;
 	}
 
-	/**
-	 * Returns the executionMode.
-	 * 
-	 * @return the executionMode
+	/*
+	 * (non-Javadoc)
+	 * @see java.io.Closeable#close()
 	 */
-	public ExecutionMode getExecutionMode() {
-		return this.executionMode;
-	}
-
-	/**
-	 * Sets the executionMode to the specified value.
-	 * 
-	 * @param executionMode
-	 *        the executionMode to set
-	 */
-	public void setExecutionMode(final ExecutionMode executionMode) {
-		if (executionMode == null)
-			throw new NullPointerException("executionMode must not be null");
-
-		this.executionMode = executionMode;
+	@Override
+	public void close() {
+		if (this.rpcService != null)
+			this.rpcService.shutDown();
 	}
 
 	/**
@@ -117,6 +88,20 @@ public class DefaultClient implements Closeable {
 	 */
 	public Configuration getConfiguration() {
 		return this.configuration;
+	}
+
+	/**
+	 * Returns the executionMode.
+	 * 
+	 * @return the executionMode
+	 */
+	public ExecutionMode getExecutionMode() {
+		return this.executionMode;
+	}
+
+	public Object getMetaData(final SopremoID id, final String key) throws IOException, InterruptedException {
+		final Object result = this.executor.getMetaData(id, key);
+		return result;
 	}
 
 	/**
@@ -148,6 +133,19 @@ public class DefaultClient implements Closeable {
 			throw new NullPointerException("configuration must not be null");
 
 		this.configuration = configuration;
+	}
+
+	/**
+	 * Sets the executionMode to the specified value.
+	 * 
+	 * @param executionMode
+	 *        the executionMode to set
+	 */
+	public void setExecutionMode(final ExecutionMode executionMode) {
+		if (executionMode == null)
+			throw new NullPointerException("executionMode must not be null");
+
+		this.executionMode = executionMode;
 	}
 
 	/**
@@ -203,6 +201,51 @@ public class DefaultClient implements Closeable {
 		return response.getJobId();
 	}
 
+	protected void sleepSafely(final int updateTime) {
+		try {
+			Thread.sleep(updateTime);
+		} catch (final InterruptedException e) {
+		}
+	}
+
+	private void dealWithError(final ProgressListener progressListener, final Exception e, final String detail) {
+		if (e != null)
+			progressListener.progressUpdate(ExecutionState.ERROR, String.format("%s: %s", detail,
+				StringUtils.stringifyException(e)));
+		else
+			progressListener.progressUpdate(ExecutionState.ERROR, detail);
+	}
+
+	private void initConnection(final ProgressListener progressListener) {
+		InetSocketAddress serverAddress = this.serverAddress;
+
+		if (serverAddress == null) {
+			final String address =
+				this.configuration.getString(SopremoConstants.SOPREMO_SERVER_IPC_ADDRESS_KEY, "localhost");
+			final int port = this.configuration.getInteger(SopremoConstants.SOPREMO_SERVER_IPC_PORT_KEY,
+				SopremoConstants.DEFAULT_SOPREMO_SERVER_IPC_PORT);
+			serverAddress = new InetSocketAddress(address, port);
+		}
+
+		try {
+			this.rpcService = new RPCService();
+			this.executor = this.rpcService.getProxy(serverAddress, SopremoExecutionProtocol.class);
+		} catch (final IOException e) {
+			this.dealWithError(progressListener, e, "Error while connecting to the server");
+		}
+	}
+
+	private ExecutionResponse sendPlan(final SopremoPlan query, final ProgressListener progressListener) {
+		try {
+			final ExecutionRequest request = new ExecutionRequest(query);
+			request.setMode(this.executionMode);
+			return this.executor.execute(request);
+		} catch (final Exception e) {
+			this.dealWithError(progressListener, e, "Error while sending the query to the server");
+			return null;
+		}
+	}
+
 	private boolean transferLibraries(final SopremoPlan plan, final ProgressListener progressListener) {
 		final JobID dummyKey = JobID.generate();
 		final List<String> requiredLibraries = new ArrayList<String>(plan.getRequiredPackages());
@@ -252,61 +295,6 @@ public class DefaultClient implements Closeable {
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.io.Closeable#close()
-	 */
-	@Override
-	public void close() {
-		if (this.rpcService != null)
-			this.rpcService.shutDown();
-	}
-
-	protected void sleepSafely(final int updateTime) {
-		try {
-			Thread.sleep(updateTime);
-		} catch (final InterruptedException e) {
-		}
-	}
-
-	private void dealWithError(final ProgressListener progressListener, final Exception e, final String detail) {
-		if (e != null)
-			progressListener.progressUpdate(ExecutionState.ERROR, String.format("%s: %s", detail,
-				StringUtils.stringifyException(e)));
-		else
-			progressListener.progressUpdate(ExecutionState.ERROR, detail);
-	}
-
-	private void initConnection(final ProgressListener progressListener) {
-		InetSocketAddress serverAddress = this.serverAddress;
-
-		if (serverAddress == null) {
-			final String address =
-				this.configuration.getString(SopremoConstants.SOPREMO_SERVER_IPC_ADDRESS_KEY, "localhost");
-			final int port = this.configuration.getInteger(SopremoConstants.SOPREMO_SERVER_IPC_PORT_KEY,
-				SopremoConstants.DEFAULT_SOPREMO_SERVER_IPC_PORT);
-			serverAddress = new InetSocketAddress(address, port);
-		}
-
-		try {
-			this.rpcService = new RPCService();
-			this.executor = this.rpcService.getProxy(serverAddress, SopremoExecutionProtocol.class);
-		} catch (final IOException e) {
-			this.dealWithError(progressListener, e, "Error while connecting to the server");
-		}
-	}
-
-	private ExecutionResponse sendPlan(final SopremoPlan query, final ProgressListener progressListener) {
-		try {
-			final ExecutionRequest request = new ExecutionRequest(query);
-			request.setMode(this.executionMode);
-			return this.executor.execute(request);
-		} catch (final Exception e) {
-			this.dealWithError(progressListener, e, "Error while sending the query to the server");
-			return null;
-		}
-	}
-
 	private SopremoID waitForCompletion(final ExecutionResponse submissionResponse,
 			final ProgressListener progressListener) {
 		ExecutionResponse lastResponse = submissionResponse;
@@ -341,9 +329,20 @@ public class DefaultClient implements Closeable {
 		}
 	}
 
-	public Object getMetaData(final SopremoID id, final String key) throws IOException, InterruptedException {
-		final Object result = this.executor.getMetaData(id, key);
-		return result;
+	/**
+	 * Avoids plenty of null checks.
+	 */
+	private static class ThrowingListener implements ProgressListener {
+		/*
+		 * (non-Javadoc)
+		 * @see eu.stratosphere.sopremo.client.ProgressListener#progressUpdate(eu.stratosphere.sopremo.execution.
+		 * ExecutionResponse.ExecutionState, java.lang.String)
+		 */
+		@Override
+		public void progressUpdate(final ExecutionState state, final String detail) {
+			if (state == ExecutionState.ERROR)
+				throw new RuntimeException(detail);
+		}
 	}
 
 }

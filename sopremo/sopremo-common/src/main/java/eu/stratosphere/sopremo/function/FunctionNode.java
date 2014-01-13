@@ -71,6 +71,18 @@ public class FunctionNode extends AbstractJsonNode {
 		this.function = ((FunctionNode) otherNode).function.clone();
 	}
 
+	@Override
+	public boolean equals(final Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (this.getClass() != obj.getClass())
+			return false;
+		final FunctionNode other = (FunctionNode) obj;
+		return this.function.equals(other.function);
+	}
+
 	/**
 	 * Returns the function.
 	 * 
@@ -95,18 +107,6 @@ public class FunctionNode extends AbstractJsonNode {
 		int result = 1;
 		result = prime * result + this.function.hashCode();
 		return result;
-	}
-
-	@Override
-	public boolean equals(final Object obj) {
-		if (this == obj)
-			return true;
-		if (!super.equals(obj))
-			return false;
-		if (this.getClass() != obj.getClass())
-			return false;
-		final FunctionNode other = (FunctionNode) obj;
-		return this.function.equals(other.function);
 	}
 
 	/**

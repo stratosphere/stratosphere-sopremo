@@ -67,34 +67,6 @@ public class JoinTest extends MeteorParseTest {
 	}
 
 	@Test
-	public void testOuterJoin() {
-		final SopremoPlan actualPlan = this.parseScript("$users = read from 'file://users.json';\n" +
-			"$pages = read from 'file://pages.json';\n" +
-			"$result = join $u in $users, $p in $pages\n" +
-			"  preserve $u\n" +
-			"  where $u.id == $p.userid\n" +
-			"  into { $u.name, $p.* };\n" +
-			"write $result to 'file://result.json';");
-
-		final SopremoPlan expectedPlan = new SopremoPlan();
-		final Source users = new Source("file://users.json");
-		final Source pages = new Source("file://pages.json");
-		final Join join = new Join().
-			withInputs(users, pages).
-			withOuterJoinIndices(0).
-			withJoinCondition(new ComparativeExpression(JsonUtil.createPath("0", "id"),
-				BinaryOperator.EQUAL, JsonUtil.createPath("1", "userid"))).
-			withResultProjection(new ObjectCreation(
-				new ObjectCreation.FieldAssignment("name", JsonUtil.createPath("0", "name")),
-				new ObjectCreation.CopyFields(JsonUtil.createPath("1"))
-				));
-		final Sink result = new Sink("file://result.json").withInputs(join);
-		expectedPlan.setSinks(result);
-
-		assertPlanEquals(expectedPlan, actualPlan);
-	}
-
-	@Test
 	public void testLeftOuterJoin() {
 		final SopremoPlan actualPlan = this.parseScript("$stocks = read from 'file://stocks.json';" +
 			"$tweets = read from 'file://tweets.json';" +
@@ -121,6 +93,34 @@ public class JoinTest extends MeteorParseTest {
 				new ObjectCreation.FieldAssignment("x2_count", JsonUtil.createPath("1", "count"))
 				));
 		final Sink result = new Sink("file://merged.json").withInputs(join);
+		expectedPlan.setSinks(result);
+
+		assertPlanEquals(expectedPlan, actualPlan);
+	}
+
+	@Test
+	public void testOuterJoin() {
+		final SopremoPlan actualPlan = this.parseScript("$users = read from 'file://users.json';\n" +
+			"$pages = read from 'file://pages.json';\n" +
+			"$result = join $u in $users, $p in $pages\n" +
+			"  preserve $u\n" +
+			"  where $u.id == $p.userid\n" +
+			"  into { $u.name, $p.* };\n" +
+			"write $result to 'file://result.json';");
+
+		final SopremoPlan expectedPlan = new SopremoPlan();
+		final Source users = new Source("file://users.json");
+		final Source pages = new Source("file://pages.json");
+		final Join join = new Join().
+			withInputs(users, pages).
+			withOuterJoinIndices(0).
+			withJoinCondition(new ComparativeExpression(JsonUtil.createPath("0", "id"),
+				BinaryOperator.EQUAL, JsonUtil.createPath("1", "userid"))).
+			withResultProjection(new ObjectCreation(
+				new ObjectCreation.FieldAssignment("name", JsonUtil.createPath("0", "name")),
+				new ObjectCreation.CopyFields(JsonUtil.createPath("1"))
+				));
+		final Sink result = new Sink("file://result.json").withInputs(join);
 		expectedPlan.setSinks(result);
 
 		assertPlanEquals(expectedPlan, actualPlan);

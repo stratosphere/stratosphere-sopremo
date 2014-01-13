@@ -44,6 +44,17 @@ public class RegexTokenizer extends AbstractTokenizer {
 		this.pattern = pattern;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.ISopremoType#toString(java.lang.StringBuilder)
+	 */
+	@Override
+	public void appendAsString(final Appendable appendable) throws IOException {
+		appendable.append("RegexTokenizer [pattern=");
+		TextFormat.getInstance(Pattern.class).format(this.pattern, appendable);
+		appendable.append("]");
+	}
+
 	/**
 	 * Returns the pattern.
 	 * 
@@ -89,17 +100,6 @@ public class RegexTokenizer extends AbstractTokenizer {
 			start = matcher.end();
 		} while (matcher.find());
 		this.addToken(tokens, text, start, text.length());
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.ISopremoType#toString(java.lang.StringBuilder)
-	 */
-	@Override
-	public void appendAsString(final Appendable appendable) throws IOException {
-		appendable.append("RegexTokenizer [pattern=");
-		TextFormat.getInstance(Pattern.class).format(this.pattern, appendable);
-		appendable.append("]");
 	}
 
 }

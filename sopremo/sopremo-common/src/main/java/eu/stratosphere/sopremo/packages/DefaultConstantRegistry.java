@@ -12,17 +12,15 @@ public class DefaultConstantRegistry extends DefaultRegistry<EvaluationExpressio
 
 	/**
 	 * Initializes DefaultConstantRegistry.
-	 * 
-	 * @param nameChooserProvider
 	 */
-	public DefaultConstantRegistry(final NameChooser constantNameChooser) {
-		super(constantNameChooser);
+	public DefaultConstantRegistry() {
 	}
 
 	/**
 	 * Initializes DefaultConstantRegistry.
 	 */
-	public DefaultConstantRegistry() {
+	public DefaultConstantRegistry(final NameChooser constantNameChooser) {
+		super(constantNameChooser);
 	}
 
 	@Override

@@ -17,15 +17,15 @@ package eu.stratosphere.sopremo.packages;
 /**
  */
 public interface NameChooserProvider {
+	NameChooser getConstantNameChooser();
+
+	NameChooser getFormatNameChooser();
+
+	NameChooser getFunctionNameChooser();
+
 	NameChooser getOperatorNameChooser();
 
 	NameChooser getPropertyNameChooser();
 
-	NameChooser getFunctionNameChooser();
-
-	NameChooser getConstantNameChooser();
-
 	NameChooser getTypeNameChooser();
-
-	NameChooser getFormatNameChooser();
 }

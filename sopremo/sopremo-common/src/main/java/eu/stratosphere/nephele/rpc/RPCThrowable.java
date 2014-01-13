@@ -19,7 +19,6 @@ package eu.stratosphere.nephele.rpc;
  * This message is used to transport an exception of a remote procedure call back to the caller.
  * <p>
  * This message is thread-safe.
- * 
  */
 final class RPCThrowable extends RPCResponse {
 

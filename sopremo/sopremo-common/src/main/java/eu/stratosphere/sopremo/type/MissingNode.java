@@ -9,7 +9,6 @@ import eu.stratosphere.util.Immutable;
 
 /**
  * This node represents a missing value.
- * 
  */
 @Immutable
 @DefaultSerializer(MissingNode.MissingSerializer.class)
@@ -24,28 +23,13 @@ public class MissingNode extends AbstractJsonNode implements IPrimitiveNode {
 	MissingNode() {
 	}
 
-	/**
-	 * Returns the instance of MissingNode.
-	 * 
-	 * @return the instance of MissingNode
-	 */
-	public static MissingNode getInstance() {
-		return Instance;
-	}
-
 	@Override
 	public void appendAsString(final Appendable sb) throws IOException {
 		sb.append("<missing>");
 	}
 
 	@Override
-	public boolean equals(final Object o) {
-		return this == o;
-	}
-
-	@Override
-	public Class<MissingNode> getType() {
-		return MissingNode.class;
+	public void clear() {
 	}
 
 	/*
@@ -68,12 +52,27 @@ public class MissingNode extends AbstractJsonNode implements IPrimitiveNode {
 	}
 
 	@Override
+	public boolean equals(final Object o) {
+		return this == o;
+	}
+
+	@Override
+	public Class<MissingNode> getType() {
+		return MissingNode.class;
+	}
+
+	@Override
 	public int hashCode() {
 		return 42;
 	}
 
-	@Override
-	public void clear() {
+	/**
+	 * Returns the instance of MissingNode.
+	 * 
+	 * @return the instance of MissingNode
+	 */
+	public static MissingNode getInstance() {
+		return Instance;
 	}
 
 	public static class MissingSerializer extends SingletonSerializer {

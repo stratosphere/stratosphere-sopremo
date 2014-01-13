@@ -24,10 +24,71 @@ import com.google.common.collect.Iterables;
 
 /**
  * A facility to easily browse through the hierarchy of types.
- * 
  */
 public class TypeHierarchyBrowser {
 	public static TypeHierarchyBrowser INSTANCE = new TypeHierarchyBrowser();
+
+	/**
+	 * Moves through the hierarchy of the given start type and calls the callback for each type found.<br>
+	 * The superclass and all directly implemented interfaces have a depth of one.<br>
+	 * If the callback returns <code>false</code>, the method immediately returns.<br>
+	 * Note that the same interface may be returned multiple times if it is implemented at more than one point in the
+	 * hierarchy.
+	 * 
+	 * @param startType
+	 *        the start type
+	 * @param mode
+	 *        the mode that determines what kinds of types are returned.
+	 * @param callback
+	 *        the callback to call
+	 */
+	public void visit(final Class<?> startType, final Mode mode, final Visitor<Class<?>> callback) {
+		this.visit(startType, mode, callback, Integer.MAX_VALUE);
+	}
+
+	/**
+	 * Moves through the hierarchy of the given start type and calls the callback for each type found up to the given
+	 * depth.<br>
+	 * The superclass and all directly implemented interfaces have a depth of one.<br>
+	 * If the callback returns <code>false</code>, the method immediately returns.<br>
+	 * Note that the same interface may be returned multiple times if it is implemented at more than one point in the
+	 * hierarchy.
+	 * 
+	 * @param startType
+	 *        the start type
+	 * @param mode
+	 *        the mode that determines what kinds of types are returned.
+	 * @param callback
+	 *        the callback to call
+	 * @param maxDepth
+	 *        the maximum depth
+	 */
+	public void visit(final Class<?> startType, final Mode mode, final Visitor<Class<?>> callback, final int maxDepth) {
+		if (maxDepth <= 0)
+			return;
+
+		List<Class<?>> currentTypes = new LinkedList<Class<?>>(), nextTypes = new LinkedList<Class<?>>();
+		currentTypes.add(startType);
+		for (int depth = 1; depth <= maxDepth && !currentTypes.isEmpty(); depth++) {
+			final boolean shouldDescend = depth + 1 <= maxDepth;
+
+			for (final Class<?> type : currentTypes) {
+				final Iterable<? extends Class<?>> superTypes = mode.getSuperTypes(type);
+				for (final Class<?> superType : superTypes) {
+					if (mode.shouldInvokeCallback(superType))
+						if (!callback.visited(superType, depth))
+							return;
+					if (shouldDescend)
+						nextTypes.add(superType);
+				}
+			}
+
+			currentTypes.clear();
+			final List<Class<?>> swap = currentTypes;
+			currentTypes = mode.prepare(nextTypes);
+			nextTypes = swap;
+		}
+	}
 
 	public enum Mode {
 		CLASS_ONLY {
@@ -108,10 +169,6 @@ public class TypeHierarchyBrowser {
 		},
 		ALL;
 
-		boolean shouldInvokeCallback(final Class<?> superType) {
-			return true;
-		}
-
 		Iterable<? extends Class<?>> getSuperTypes(final Class<?> startClass) {
 			final Class<?> superclass = startClass.getSuperclass();
 			if (superclass == null)
@@ -123,67 +180,9 @@ public class TypeHierarchyBrowser {
 		List<Class<?>> prepare(final List<Class<?>> nextTypes) {
 			return nextTypes;
 		}
-	}
 
-	/**
-	 * Moves through the hierarchy of the given start type and calls the callback for each type found up to the given
-	 * depth.<br>
-	 * The superclass and all directly implemented interfaces have a depth of one.<br>
-	 * If the callback returns <code>false</code>, the method immediately returns.<br>
-	 * Note that the same interface may be returned multiple times if it is implemented at more than one point in the
-	 * hierarchy.
-	 * 
-	 * @param startType
-	 *        the start type
-	 * @param mode
-	 *        the mode that determines what kinds of types are returned.
-	 * @param callback
-	 *        the callback to call
-	 * @param maxDepth
-	 *        the maximum depth
-	 */
-	public void visit(final Class<?> startType, final Mode mode, final Visitor<Class<?>> callback, final int maxDepth) {
-		if (maxDepth <= 0)
-			return;
-
-		List<Class<?>> currentTypes = new LinkedList<Class<?>>(), nextTypes = new LinkedList<Class<?>>();
-		currentTypes.add(startType);
-		for (int depth = 1; depth <= maxDepth && !currentTypes.isEmpty(); depth++) {
-			final boolean shouldDescend = depth + 1 <= maxDepth;
-
-			for (final Class<?> type : currentTypes) {
-				final Iterable<? extends Class<?>> superTypes = mode.getSuperTypes(type);
-				for (final Class<?> superType : superTypes) {
-					if (mode.shouldInvokeCallback(superType))
-						if (!callback.visited(superType, depth))
-							return;
-					if (shouldDescend)
-						nextTypes.add(superType);
-				}
-			}
-
-			currentTypes.clear();
-			final List<Class<?>> swap = currentTypes;
-			currentTypes = mode.prepare(nextTypes);
-			nextTypes = swap;
+		boolean shouldInvokeCallback(final Class<?> superType) {
+			return true;
 		}
-	}
-
-	/**
-	 * Moves through the hierarchy of the given start type and calls the callback for each type found.<br>
-	 * The superclass and all directly implemented interfaces have a depth of one.<br>
-	 * If the callback returns <code>false</code>, the method immediately returns.<br>
-	 * Note that the same interface may be returned multiple times if it is implemented at more than one point in the
-	 * hierarchy.
-	 * 
-	 * @param startType
-	 *        the start type
-	 * @param mode
-	 *        the mode that determines what kinds of types are returned.
-	 * @param callback
-	 *        the callback to call
-	 */
-	public void visit(final Class<?> startType, final Mode mode, final Visitor<Class<?>> callback) {
-		this.visit(startType, mode, callback, Integer.MAX_VALUE);
 	}
 }

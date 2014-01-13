@@ -10,11 +10,6 @@ import eu.stratosphere.sopremo.type.IArrayNode;
 import eu.stratosphere.sopremo.type.IJsonNode;
 
 public class ArrayAccessTest extends EvaluableExpressionTest<ArrayAccess> {
-	@Override
-	protected ArrayAccess createDefaultInstance(final int index) {
-		return new ArrayAccess(index);
-	}
-
 	@Test
 	public void shouldAccessAllElements() {
 		final IJsonNode result = new ArrayAccess().evaluate(
@@ -94,15 +89,14 @@ public class ArrayAccessTest extends EvaluableExpressionTest<ArrayAccess> {
 	}
 
 	@Test
-	public void shouldReuseTargetIfWholeNodeIsAccessed() {
+	public void shouldReuseTargetIfIndexIsAccessed() {
 		final IArrayNode<?> input = createArrayNode(createObjectNode("fieldName", 1), createObjectNode("fieldName", 2),
 			createObjectNode("fieldName", 3), createObjectNode("fieldName", 4),
 			createObjectNode("fieldName", 5));
-		final ArrayAccess arrayAccess = new ArrayAccess();
+		final ArrayAccess arrayAccess = new ArrayAccess(1);
 		final IJsonNode result1 = arrayAccess.evaluate(input);
 		final IJsonNode result2 = arrayAccess.evaluate(input);
 
-		Assert.assertEquals(input, result1);
 		Assert.assertNotSame(input, result1);
 		Assert.assertSame(result1, result2);
 	}
@@ -121,15 +115,21 @@ public class ArrayAccessTest extends EvaluableExpressionTest<ArrayAccess> {
 	}
 
 	@Test
-	public void shouldReuseTargetIfIndexIsAccessed() {
+	public void shouldReuseTargetIfWholeNodeIsAccessed() {
 		final IArrayNode<?> input = createArrayNode(createObjectNode("fieldName", 1), createObjectNode("fieldName", 2),
 			createObjectNode("fieldName", 3), createObjectNode("fieldName", 4),
 			createObjectNode("fieldName", 5));
-		final ArrayAccess arrayAccess = new ArrayAccess(1);
+		final ArrayAccess arrayAccess = new ArrayAccess();
 		final IJsonNode result1 = arrayAccess.evaluate(input);
 		final IJsonNode result2 = arrayAccess.evaluate(input);
 
+		Assert.assertEquals(input, result1);
 		Assert.assertNotSame(input, result1);
 		Assert.assertSame(result1, result2);
+	}
+
+	@Override
+	protected ArrayAccess createDefaultInstance(final int index) {
+		return new ArrayAccess(index);
 	}
 }

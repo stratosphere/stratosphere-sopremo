@@ -9,7 +9,6 @@ import java.util.List;
 import org.junit.Test;
 
 import eu.stratosphere.sopremo.EqualCloneTest;
-import eu.stratosphere.sopremo.EvaluationContext;
 import eu.stratosphere.sopremo.io.Sink;
 import eu.stratosphere.sopremo.io.Source;
 import eu.stratosphere.sopremo.pact.JsonCollector;
@@ -19,15 +18,9 @@ import eu.stratosphere.util.dag.GraphLevelPartitioner;
 import eu.stratosphere.util.dag.GraphLevelPartitioner.Level;
 
 /**
- * The class <code>CompositeOperatorTest</code> contains tests for the class <code>{@link CompositeOperator<?>}</code>.
- * 
+ * The class <code>CompositeOperatorTest</code> contains tests for the class <code>{@link CompositeOperator}</code>.
  */
 public class CompositeOperatorTest extends EqualCloneTest<CompositeOperatorTest.CompositeOperatorImpl> {
-	@Override
-	protected CompositeOperatorImpl createDefaultInstance(final int index) {
-		return new CompositeOperatorImpl(index);
-	}
-
 	/**
 	 * Run the PactModule asPactModule(EvaluationContext) method test.
 	 */
@@ -38,7 +31,6 @@ public class CompositeOperatorTest extends EqualCloneTest<CompositeOperatorTest.
 		final Operator<?> input3 = new Source("file://3");
 		final CompositeOperator<?> fixture = new CompositeOperatorImpl(1);
 		fixture.setInputs(input1, input2, input3);
-		final EvaluationContext context = new EvaluationContext();
 
 		final ElementarySopremoModule module = fixture.asElementaryOperators();
 
@@ -59,19 +51,24 @@ public class CompositeOperatorTest extends EqualCloneTest<CompositeOperatorTest.
 		assertSame(Sink.class, reachableNodes.get(3).getLevelNodes().get(0).getClass());
 	}
 
+	@Override
+	protected CompositeOperatorImpl createDefaultInstance(final int index) {
+		return new CompositeOperatorImpl(index);
+	}
+
 	static class CompositeOperatorImpl extends CompositeOperator<CompositeOperatorImpl> {
 		private final int index;
-
-		public CompositeOperatorImpl(final int index) {
-			super(3, 1);
-			this.index = index;
-		}
 
 		/**
 		 * Initializes CompositeOperatorTest.CompositeOperatorImpl.
 		 */
 		public CompositeOperatorImpl() {
 			this(0);
+		}
+
+		public CompositeOperatorImpl(final int index) {
+			super(3, 1);
+			this.index = index;
 		}
 
 		/*

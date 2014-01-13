@@ -45,24 +45,16 @@ public class SampleFormat extends SopremoFormat {
 		return this.originalFormat.canHandleFormat(path);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.io.SopremoFormat#getPreferredFilenameExtensions()
-	 */
 	@Override
-	protected String[] getPreferredFilenameExtensions() {
-		return this.originalFormat.getPreferredFilenameExtensions();
-	}
-
-	/**
-	 * Sets the sampleSize to the specified value.
-	 * 
-	 * @param sampleSize
-	 *        the sampleSize to set
-	 */
-	@Property
-	public void setSampleSize(final long sampleSize) {
-		this.sampleSize = sampleSize;
+	public boolean equals(final Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (this.getClass() != obj.getClass())
+			return false;
+		final SampleFormat other = (SampleFormat) obj;
+		return this.sampleSize == other.sampleSize && this.originalFormat.equals(other.originalFormat);
 	}
 
 	/**
@@ -83,16 +75,24 @@ public class SampleFormat extends SopremoFormat {
 		return result;
 	}
 
+	/**
+	 * Sets the sampleSize to the specified value.
+	 * 
+	 * @param sampleSize
+	 *        the sampleSize to set
+	 */
+	@Property
+	public void setSampleSize(final long sampleSize) {
+		this.sampleSize = sampleSize;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.io.SopremoFormat#getPreferredFilenameExtensions()
+	 */
 	@Override
-	public boolean equals(final Object obj) {
-		if (this == obj)
-			return true;
-		if (!super.equals(obj))
-			return false;
-		if (this.getClass() != obj.getClass())
-			return false;
-		final SampleFormat other = (SampleFormat) obj;
-		return this.sampleSize == other.sampleSize && this.originalFormat.equals(other.originalFormat);
+	protected String[] getPreferredFilenameExtensions() {
+		return this.originalFormat.getPreferredFilenameExtensions();
 	}
 
 	public static class SampleInputFormat extends AbstractSopremoInputFormat<InputSplit> {
@@ -107,6 +107,15 @@ public class SampleFormat extends SopremoFormat {
 		private SopremoInputFormat<InputSplit> originalInputFormat;
 
 		private long currentSample, sampleSize;
+
+		/*
+		 * (non-Javadoc)
+		 * @see eu.stratosphere.api.io.InputFormat#close()
+		 */
+		@Override
+		public void close() throws IOException {
+			this.originalInputFormat.close();
+		}
 
 		/*
 		 * (non-Javadoc)
@@ -129,11 +138,20 @@ public class SampleFormat extends SopremoFormat {
 
 		/*
 		 * (non-Javadoc)
-		 * @see eu.stratosphere.api.io.InputFormat#open(eu.stratosphere.nephele.template.InputSplit)
+		 * @see eu.stratosphere.api.io.InputFormat#createInputSplits(int)
 		 */
 		@Override
-		public void open(final InputSplit split) throws IOException {
-			this.originalInputFormat.open(split);
+		public InputSplit[] createInputSplits(final int minNumSplits) throws IOException {
+			return this.originalInputFormat.createInputSplits(minNumSplits);
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see eu.stratosphere.api.io.InputFormat#getInputSplitType()
+		 */
+		@Override
+		public Class<? extends InputSplit> getInputSplitType() {
+			return this.originalInputFormat.getInputSplitType();
 		}
 
 		/*
@@ -193,29 +211,11 @@ public class SampleFormat extends SopremoFormat {
 
 		/*
 		 * (non-Javadoc)
-		 * @see eu.stratosphere.api.io.InputFormat#createInputSplits(int)
+		 * @see eu.stratosphere.api.io.InputFormat#open(eu.stratosphere.nephele.template.InputSplit)
 		 */
 		@Override
-		public InputSplit[] createInputSplits(final int minNumSplits) throws IOException {
-			return this.originalInputFormat.createInputSplits(minNumSplits);
-		}
-
-		/*
-		 * (non-Javadoc)
-		 * @see eu.stratosphere.api.io.InputFormat#getInputSplitType()
-		 */
-		@Override
-		public Class<? extends InputSplit> getInputSplitType() {
-			return this.originalInputFormat.getInputSplitType();
-		}
-
-		/*
-		 * (non-Javadoc)
-		 * @see eu.stratosphere.api.io.InputFormat#close()
-		 */
-		@Override
-		public void close() throws IOException {
-			this.originalInputFormat.close();
+		public void open(final InputSplit split) throws IOException {
+			this.originalInputFormat.open(split);
 		}
 
 	}

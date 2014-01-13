@@ -30,6 +30,14 @@ public class SopremoCoGroupOperator extends CoGroupOperatorBase {
 		this.operator = operator;
 	}
 
+	public Ordering getFirstInnerGroupOrdering() {
+		return this.firstInnerGroupOrdering;
+	}
+
+	public Ordering getSecondInnerGroupOrdering() {
+		return this.secondInnerGroupOrdering;
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * @see eu.stratosphere.pact.generic.contract.GenericCoGroupOperator#isCombinableFirst()
@@ -48,19 +56,11 @@ public class SopremoCoGroupOperator extends CoGroupOperatorBase {
 		return this.operator.isCombinableSecond();
 	}
 
-	public Ordering getFirstInnerGroupOrdering() {
-		return this.firstInnerGroupOrdering;
-	}
-
 	public void setFirstInnerGroupOrdering(final Ordering firstInnerGroupOrdering) {
 		if (firstInnerGroupOrdering == null)
 			throw new NullPointerException("firstInnerGroupOrdering must not be null");
 
 		this.firstInnerGroupOrdering = firstInnerGroupOrdering;
-	}
-
-	public Ordering getSecondInnerGroupOrdering() {
-		return this.secondInnerGroupOrdering;
 	}
 
 	public void setSecondInnerGroupOrdering(final Ordering secondInnerGroupOrdering) {

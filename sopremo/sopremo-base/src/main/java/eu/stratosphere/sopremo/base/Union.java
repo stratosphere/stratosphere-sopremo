@@ -10,7 +10,6 @@ import eu.stratosphere.sopremo.operator.SopremoModule;
  * Calculates the set-based union of two or more input streams.<br>
  * If a value is contained in more than one input streams and/or more than once within one input stream, it is
  * emitted once only.
- * 
  */
 @Name(verb = "union")
 @InputCardinality(min = 1)

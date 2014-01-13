@@ -19,7 +19,6 @@ import eu.stratosphere.util.ICloneable;
 
 /**
  * Interface for all types.
- * 
  */
 public interface ISopremoType extends ICloneable, IAppending {
 }

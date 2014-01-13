@@ -24,51 +24,12 @@ import eu.stratosphere.sopremo.type.IStreamNode;
 
 /**
  * The class <code>ElementaryOperatorTest</code> contains tests for the class <code>{@link ElementaryOperator}</code>.
- * 
  */
 public class ElementaryOperatorTest {
 	/**
 	 * 
 	 */
 	private static final SopremoRecordLayout LAYOUT = SopremoRecordLayout.create();
-
-	@Test(expected = IllegalStateException.class)
-	public void getOperatorShouldFailIfOperatorNotInstancable() {
-		new OperatorWithUninstantiableFunction().getOperator(LAYOUT);
-	}
-
-	@Test(expected = IllegalStateException.class)
-	public void getOperatorShouldFailIfNoFunction() {
-		new OperatorWithNoFunctions().getOperator(LAYOUT);
-	}
-
-	@Test(expected = IllegalStateException.class)
-	public void getOperatorShouldFailIfOnlyInstanceFunction() {
-		new OperatorWithInstanceFunction().getOperator(LAYOUT);
-	}
-
-	@Test(expected = IllegalStateException.class)
-	public void getOperatorShouldFailIfOnlyUnknownFunction() {
-		new OperatorWithUnknownFunction().getOperator(LAYOUT);
-	}
-
-	@Test
-	public void getOperatorShouldReturnTheJoiningOperatorToTheFirstFunction() {
-		final SopremoRecordLayout layout = SopremoRecordLayout.create(new ObjectAccess("someField"));
-		final eu.stratosphere.api.common.operators.Operator contract =
-			new OperatorWithTwoFunctions().getOperator(layout);
-		assertEquals(SopremoReduceOperator.class, contract.getClass());
-		assertTrue(Arrays.asList(OperatorWithTwoFunctions.Implementation1.class,
-			OperatorWithTwoFunctions.Implementation2.class).contains(contract.getUserCodeWrapper().getUserCodeClass()));
-	}
-
-	@Test
-	public void getOperatorShouldReturnTheJoiningOperatorToTheOnlyFunction() {
-		final eu.stratosphere.api.common.operators.Operator contract =
-			new OperatorWithOneFunction().getOperator(LAYOUT);
-		assertEquals(MapOperatorBase.class, contract.getClass());
-		assertEquals(OperatorWithOneFunction.Implementation.class, contract.getUserCodeWrapper().getUserCodeClass());
-	}
 
 	@SuppressWarnings({ "rawtypes" })
 	public ElementaryOperator<?> getDefault() {
@@ -93,6 +54,44 @@ public class ElementaryOperatorTest {
 	public void getFunctionClassShouldReturnTheOnlyFunction() {
 		assertEquals(OperatorWithOneFunction.Implementation.class,
 			new OperatorWithOneFunction().getFunctionClass());
+	}
+
+	@Test(expected = IllegalStateException.class)
+	public void getOperatorShouldFailIfNoFunction() {
+		new OperatorWithNoFunctions().getOperator(LAYOUT);
+	}
+
+	@Test(expected = IllegalStateException.class)
+	public void getOperatorShouldFailIfOnlyInstanceFunction() {
+		new OperatorWithInstanceFunction().getOperator(LAYOUT);
+	}
+
+	@Test(expected = IllegalStateException.class)
+	public void getOperatorShouldFailIfOnlyUnknownFunction() {
+		new OperatorWithUnknownFunction().getOperator(LAYOUT);
+	}
+
+	@Test(expected = IllegalStateException.class)
+	public void getOperatorShouldFailIfOperatorNotInstancable() {
+		new OperatorWithUninstantiableFunction().getOperator(LAYOUT);
+	}
+
+	@Test
+	public void getOperatorShouldReturnTheJoiningOperatorToTheFirstFunction() {
+		final SopremoRecordLayout layout = SopremoRecordLayout.create(new ObjectAccess("someField"));
+		final eu.stratosphere.api.common.operators.Operator contract =
+			new OperatorWithTwoFunctions().getOperator(layout);
+		assertEquals(SopremoReduceOperator.class, contract.getClass());
+		assertTrue(Arrays.asList(OperatorWithTwoFunctions.Implementation1.class,
+			OperatorWithTwoFunctions.Implementation2.class).contains(contract.getUserCodeWrapper().getUserCodeClass()));
+	}
+
+	@Test
+	public void getOperatorShouldReturnTheJoiningOperatorToTheOnlyFunction() {
+		final eu.stratosphere.api.common.operators.Operator contract =
+			new OperatorWithOneFunction().getOperator(LAYOUT);
+		assertEquals(MapOperatorBase.class, contract.getClass());
+		assertEquals(OperatorWithOneFunction.Implementation.class, contract.getUserCodeWrapper().getUserCodeClass());
 	}
 
 	@InputCardinality(1)
@@ -161,28 +160,6 @@ public class ElementaryOperatorTest {
 	}
 
 	@InputCardinality(1)
-	static class OperatorWithUnknownFunction extends ElementaryOperator<OperatorWithUnknownFunction> {
-		static class Implementation extends AbstractFunction {
-
-			/*
-			 * (non-Javadoc)
-			 * @see eu.stratosphere.api.record.functions.Function#open(eu.stratosphere.configuration.Configuration)
-			 */
-			@Override
-			public void open(final Configuration parameters) throws Exception {
-			}
-
-			/*
-			 * (non-Javadoc)
-			 * @see eu.stratosphere.api.record.functions.Function#close()
-			 */
-			@Override
-			public void close() throws Exception {
-			}
-		}
-	}
-
-	@InputCardinality(1)
 	static class OperatorWithUninstantiableFunction extends ElementaryOperator<OperatorWithUnknownFunction> {
 		@InputCardinality(1)
 		static class UninstanceableOperator extends SingleInputOperator<Function> {
@@ -192,6 +169,28 @@ public class ElementaryOperatorTest {
 				throw new IllegalStateException("not instanceable");
 			}
 
+		}
+	}
+
+	@InputCardinality(1)
+	static class OperatorWithUnknownFunction extends ElementaryOperator<OperatorWithUnknownFunction> {
+		static class Implementation extends AbstractFunction {
+
+			/*
+			 * (non-Javadoc)
+			 * @see eu.stratosphere.api.record.functions.Function#close()
+			 */
+			@Override
+			public void close() throws Exception {
+			}
+
+			/*
+			 * (non-Javadoc)
+			 * @see eu.stratosphere.api.record.functions.Function#open(eu.stratosphere.configuration.Configuration)
+			 */
+			@Override
+			public void open(final Configuration parameters) throws Exception {
+			}
 		}
 	}
 

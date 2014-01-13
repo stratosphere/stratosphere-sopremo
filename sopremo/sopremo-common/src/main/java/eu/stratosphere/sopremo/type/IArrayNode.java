@@ -18,25 +18,8 @@ import eu.stratosphere.sopremo.cache.ArrayCache;
 
 /**
  * Interface for all array type nodes.
- * 
  */
 public interface IArrayNode<T extends IJsonNode> extends IStreamNode<T> {
-
-	/**
-	 * Returns the actual size of this node.
-	 * 
-	 * @return size
-	 */
-	public abstract int size();
-
-	/**
-	 * Adds the given {@link IJsonNode} to the end of the array
-	 * 
-	 * @param node
-	 *        the node wich should be added
-	 * @return this node
-	 */
-	public abstract IArrayNode<T> add(final T node);
 
 	/**
 	 * Adds the given {@link IJsonNode} at the specified <code>index</code> to the array. All previous nodes at this or
@@ -50,12 +33,47 @@ public interface IArrayNode<T extends IJsonNode> extends IStreamNode<T> {
 	 */
 	public abstract IArrayNode<T> add(final int index, final T element);
 
+	/**
+	 * Adds the given {@link IJsonNode} to the end of the array
+	 * 
+	 * @param node
+	 *        the node wich should be added
+	 * @return this node
+	 */
+	public abstract IArrayNode<T> add(final T node);
+
+	/**
+	 * Adds all {@link IJsonNode}s in the given iterable to the end of this array.
+	 * 
+	 * @param c
+	 *        a Collection of all nodes that should be added
+	 * @return this node
+	 */
+	public abstract IArrayNode<T> addAll(final Iterable<? extends T> c);
+
+	/**
+	 * Adds all {@link IJsonNode}s to the end of this array.
+	 * 
+	 * @param nodes
+	 *        all nodes that should be added
+	 * @return this node
+	 */
+	public abstract IArrayNode<T> addAll(T[] nodes);
+
+	/**
+	 * Clears this array from all saved nodes.
+	 */
+	@Override
+	public abstract void clear();
+
 	/*
 	 * (non-Javadoc)
 	 * @see eu.stratosphere.sopremo.type.IJsonNode#clone()
 	 */
 	@Override
 	public IArrayNode<T> clone();
+
+	public abstract boolean contains(T node);
 
 	/**
 	 * Returns the node which is saved in the array at the specified <code>index</code>.
@@ -68,6 +86,15 @@ public interface IArrayNode<T extends IJsonNode> extends IStreamNode<T> {
 	public abstract T get(final int index);
 
 	/**
+	 * Removes the node which is saved at the specified <code>index</code>. All nodes with a higher index then the given
+	 * get there index decremented by 1.
+	 * 
+	 * @param index
+	 *        the index in the array where the saved node should be removed
+	 */
+	public abstract void remove(final int index);
+
+	/**
 	 * Sets the given {@link IJsonNode} at the specified <code>index</code> in the array. The node which was saved at
 	 * this index before will be overwriten.
 	 * 
@@ -75,56 +102,22 @@ public interface IArrayNode<T extends IJsonNode> extends IStreamNode<T> {
 	 *        the index for which the node should be set
 	 * @param node
 	 *        the node that should be set
-	 * @return the node which has been overwriten
 	 */
 	public abstract void set(final int index, final T node);
 
 	/**
-	 * Removes the node which is saved at the specified <code>index</code>. All nodes with a higher index then the given
-	 * get there index decremented by 1.
+	 * Returns the actual size of this node.
 	 * 
-	 * @param index
-	 *        the index in the array where the saved node should be removed
-	 * @return the removed node
+	 * @return size
 	 */
-	public abstract void remove(final int index);
-
-	/**
-	 * Clears this array from all saved nodes.
-	 */
-	@Override
-	public abstract void clear();
-
-	/**
-	 * Adds all {@link IJsonNode}s in the given iterable to the end of this array.
-	 * 
-	 * @param c
-	 *        a Collection of all nodes that should be added
-	 * @return this node
-	 */
-	public abstract IArrayNode<T> addAll(final Iterable<? extends T> c);
+	public abstract int size();
 
 	/**
 	 * Transforms this node into a standard Java-Array containing all saved nodes.
 	 * 
-	 * @param array
-	 *        preallocated array that should be used, when the size matches
+	 * @param arrayCache
+	 *        {@link ArrayCache} that recycles allocated arrays
 	 * @return Array of all saved nodes
 	 */
 	public abstract T[] toArray(ArrayCache<T> arrayCache);
-
-	/**
-	 * Adds all {@link IJsonNode}s to the end of this array.
-	 * 
-	 * @param node
-	 *        an IArrayNode<T> with all nodes that should be added
-	 * @return this node
-	 */
-	public abstract IArrayNode<T> addAll(T[] nodes);
-
-	/**
-	 * @param node
-	 * @return
-	 */
-	public abstract boolean contains(T node);
 }

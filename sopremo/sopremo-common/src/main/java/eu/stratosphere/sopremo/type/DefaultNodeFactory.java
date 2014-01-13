@@ -27,21 +27,6 @@ public class DefaultNodeFactory implements NodeFactory {
 	private final Map<Class<? extends IJsonNode>, Class<? extends IJsonNode>> interfaceImplementations =
 		new IdentityHashMap<Class<? extends IJsonNode>, Class<? extends IJsonNode>>();
 
-	/**
-	 * Returns the instance.
-	 * 
-	 * @return the instance
-	 */
-	public static DefaultNodeFactory getInstance() {
-		return Instance;
-	}
-
-	public <T extends IJsonNode> DefaultNodeFactory register(final Class<T> interfaceType,
-			final Class<? extends T> implementationType) {
-		this.interfaceImplementations.put(interfaceType, implementationType);
-		return this;
-	}
-
 	/*
 	 * (non-Javadoc)
 	 * @see eu.stratosphere.sopremo.cache.NodeFactory#instantiate(java.lang.Class)
@@ -57,5 +42,20 @@ public class DefaultNodeFactory implements NodeFactory {
 		if (interfaceType == MissingNode.class)
 			return (T) MissingNode.getInstance();
 		return ReflectUtil.newInstance(interfaceType);
+	}
+
+	public <T extends IJsonNode> DefaultNodeFactory register(final Class<T> interfaceType,
+			final Class<? extends T> implementationType) {
+		this.interfaceImplementations.put(interfaceType, implementationType);
+		return this;
+	}
+
+	/**
+	 * Returns the instance.
+	 * 
+	 * @return the instance
+	 */
+	public static DefaultNodeFactory getInstance() {
+		return Instance;
 	}
 }

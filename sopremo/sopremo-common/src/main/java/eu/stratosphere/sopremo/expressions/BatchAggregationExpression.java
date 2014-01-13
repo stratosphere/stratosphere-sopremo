@@ -22,15 +22,12 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.esotericsoftware.kryo.Kryo;
-import com.esotericsoftware.kryo.io.Input;
-import com.esotericsoftware.kryo.io.Output;
-import com.esotericsoftware.kryo.serializers.FieldSerializer;
 import com.google.common.base.Function;
 import com.google.common.base.Predicates;
 
 import eu.stratosphere.sopremo.EvaluationException;
 import eu.stratosphere.sopremo.aggregation.Aggregation;
+import eu.stratosphere.sopremo.aggregation.AggregationFunction;
 import eu.stratosphere.sopremo.expressions.tree.ChildIterator;
 import eu.stratosphere.sopremo.expressions.tree.ConcatenatingChildIterator;
 import eu.stratosphere.sopremo.function.ExpressionFunction;
@@ -39,128 +36,29 @@ import eu.stratosphere.sopremo.type.IArrayNode;
 import eu.stratosphere.sopremo.type.IJsonNode;
 import eu.stratosphere.sopremo.type.IStreamNode;
 import eu.stratosphere.sopremo.type.MissingNode;
-import eu.stratosphere.sopremo.type.ReusingSerializer;
 
 /**
  * Batch aggregates one stream of {@link IJsonNode} with several {@link AggregationFunction}s.
- * 
  */
-// @DefaultSerializer(BatchAggregationExpression.BAESerializer.class)
 public class BatchAggregationExpression extends PathSegmentExpression {
-	public static class PartialSerializer extends ReusingSerializer<Partial> {
-		private final Map<BatchAggregationExpression, Integer> objectReferenceMap =
-			new IdentityHashMap<BatchAggregationExpression, Integer>();
-
-		private int currentId = 0;
-
-		private final Map<Integer, BatchAggregationExpression> referenceObjectsMap =
-			new IdentityHashMap<Integer, BatchAggregationExpression>();
-
-		/*
-		 * (non-Javadoc)
-		 * @see eu.stratosphere.sopremo.type.ReusingSerializer#read(com.esotericsoftware.kryo.Kryo,
-		 * com.esotericsoftware.kryo.io.Input, java.lang.Object, java.lang.Class)
-		 */
-		@Override
-		public Partial read(final Kryo kryo, final Input input, final Partial oldInstance, final Class<Partial> type) {
-			final int id = input.readInt();
-			final BatchAggregationExpression bae;
-			if (id < 0) {
-				bae = kryo.readObject(input, BatchAggregationExpression.class);
-				this.referenceObjectsMap.put(-id - 1, bae);
-			} else
-				bae = this.referenceObjectsMap.get(id);
-			return bae.getPartial(input.readInt(true));
-		}
-
-		/*
-		 * (non-Javadoc)
-		 * @see com.esotericsoftware.kryo.Serializer#write(com.esotericsoftware.kryo.Kryo,
-		 * com.esotericsoftware.kryo.io.Output, java.lang.Object)
-		 */
-		@Override
-		public void write(final Kryo kryo, final Output output, final Partial object) {
-			final Integer id = this.objectReferenceMap.get(object.getBatch());
-			if (id == null) {
-				final int newId = this.currentId++;
-				output.writeInt(-newId - 1);
-				kryo.writeObject(output, object.getBatch());
-				this.objectReferenceMap.put(object.getBatch(), newId);
-			} else
-				output.writeInt(id);
-			output.writeInt(object.index, true);
-		}
-
-		/*
-		 * (non-Javadoc)
-		 * @see com.esotericsoftware.kryo.Serializer#copy(com.esotericsoftware.kryo.Kryo, java.lang.Object)
-		 */
-		@Override
-		public Partial copy(final Kryo kryo, final Partial original) {
-			return (Partial) original.clone();
-		}
-	}
-
-	public static class BAESerializer extends ReusingSerializer<BatchAggregationExpression> {
-		/*
-		 * (non-Javadoc)
-		 * @see eu.stratosphere.sopremo.type.ReusingSerializer#read(com.esotericsoftware.kryo.Kryo,
-		 * com.esotericsoftware.kryo.io.Input, java.lang.Object, java.lang.Class)
-		 */
-		@Override
-		public BatchAggregationExpression read(final Kryo kryo, final Input input,
-				final BatchAggregationExpression oldInstance,
-				final Class<BatchAggregationExpression> type) {
-			final BatchAggregationExpression bae;
-			if (oldInstance == null)
-				bae = new BatchAggregationExpression();
-			else {
-				bae = oldInstance;
-				bae.partials.clear();
-			}
-
-			bae.setInputExpression((EvaluationExpression) kryo.readClassAndObject(input));
-			final int size = input.readInt(true);
-			for (int index = 0; index < size; index++) {
-				final Aggregation aggregation = (Aggregation) kryo.readClassAndObject(input);
-				final EvaluationExpression inputExpression = (EvaluationExpression) kryo.readClassAndObject(input);
-				bae.add(aggregation, inputExpression);
-			}
-			return bae;
-		}
-
-		/*
-		 * (non-Javadoc)
-		 * @see com.esotericsoftware.kryo.Serializer#write(com.esotericsoftware.kryo.Kryo,
-		 * com.esotericsoftware.kryo.io.Output, java.lang.Object)
-		 */
-		@Override
-		public void write(final Kryo kryo, final Output output, final BatchAggregationExpression bae) {
-			kryo.writeClassAndObject(output, bae.getInputExpression());
-			output.writeInt(bae.partials.size(), true);
-			for (final Partial partial : bae.partials) {
-				kryo.writeClassAndObject(output, partial.getAggregation());
-				kryo.writeClassAndObject(output, partial.getInputExpression());
-			}
-		}
-
-		/*
-		 * (non-Javadoc)
-		 * @see com.esotericsoftware.kryo.Serializer#copy(com.esotericsoftware.kryo.Kryo, java.lang.Object)
-		 */
-		@Override
-		public BatchAggregationExpression copy(final Kryo kryo, final BatchAggregationExpression original) {
-			final BatchAggregationExpression copy = new BatchAggregationExpression();
-			copy.setInputExpression(original.getInputExpression().clone());
-			for (final Partial partial : original.partials)
-				copy.partials.add(partial.partialClone(kryo, copy));
-			return copy;
-		}
-	}
-
 	private final List<Partial> partials;
 
 	private final transient IArrayNode<IJsonNode> results = new ArrayNode<IJsonNode>();
+
+	private static final ThreadLocal<Map<BatchAggregationExpression, CloneHelper>> CLONE_MAP =
+		new ThreadLocal<Map<BatchAggregationExpression, CloneHelper>>() {
+			@Override
+			protected Map<BatchAggregationExpression, CloneHelper> initialValue() {
+				return new IdentityHashMap<BatchAggregationExpression, CloneHelper>();
+			}
+		};
+
+	/**
+	 * Initializes BatchAggregationExpression.
+	 */
+	public BatchAggregationExpression() {
+		this.partials = new ArrayList<Partial>();
+	}
 
 	/**
 	 * Initializes a BatchAggregationExpression with the given {@link AggregationFunction}s.
@@ -185,18 +83,11 @@ public class BatchAggregationExpression extends PathSegmentExpression {
 	}
 
 	/**
-	 * Initializes BatchAggregationExpression.
-	 */
-	public BatchAggregationExpression() {
-		this.partials = new ArrayList<Partial>();
-	}
-
-	/**
 	 * Adds a new {@link AggregationFunction}.
 	 * 
 	 * @param function
 	 *        the function that should be added
-	 * @return the function which has been added as a {@link Partial}
+	 * @return the function which has been added as a partial aggregation
 	 */
 	public AggregationExpression add(final Aggregation function) {
 		return this.add(function.clone(), EvaluationExpression.VALUE);
@@ -209,7 +100,7 @@ public class BatchAggregationExpression extends PathSegmentExpression {
 	 *        the function that should be added
 	 * @param preprocessing
 	 *        the preprocessing that should be used for this function
-	 * @return the function which has been added as a {@link Partial}
+	 * @return the function which has been added as a partial aggregation
 	 */
 	public AggregationExpression add(final Aggregation function, final EvaluationExpression preprocessing) {
 		final Partial partial = new Partial(this, function.clone(), this.partials.size())
@@ -234,15 +125,21 @@ public class BatchAggregationExpression extends PathSegmentExpression {
 			});
 	}
 
-	/**
-	 * Returns the partial aggregation at the given index.
-	 * 
-	 * @param index
-	 *        the index
-	 * @return the partial aggregation
+	@Override
+	public void appendAsString(final Appendable appendable) throws IOException {
+		this.getInputExpression().appendAsString(appendable);
+		appendable.append('^');
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see
+	 * eu.stratosphere.sopremo.expressions.PathSegmentExpression#equalsSameClass(eu.stratosphere.sopremo.expressions
+	 * .PathSegmentExpression)
 	 */
-	public EvaluationExpression get(final int index) {
-		return this.partials.get(index);
+	@Override
+	public boolean equalsSameClass(final PathSegmentExpression other) {
+		return this.partials.equals(((BatchAggregationExpression) other).partials);
 	}
 
 	/**
@@ -252,7 +149,7 @@ public class BatchAggregationExpression extends PathSegmentExpression {
 	 *        the index
 	 * @return the partial aggregation
 	 */
-	Partial getPartial(final int index) {
+	public EvaluationExpression get(final int index) {
 		return this.partials.get(index);
 	}
 
@@ -286,23 +183,25 @@ public class BatchAggregationExpression extends PathSegmentExpression {
 		return this.results;
 	}
 
-	private static class CloneHelper {
-		private final BatchAggregationExpression clone;
-
-		public CloneHelper(final BatchAggregationExpression clone) {
-			this.clone = clone;
-		}
-
-		private final BitSet clonedPartials = new BitSet();
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.expressions.PathSegmentExpression#segmentHashCode()
+	 */
+	@Override
+	protected int segmentHashCode() {
+		return this.partials.hashCode();
 	}
 
-	private static final ThreadLocal<Map<BatchAggregationExpression, CloneHelper>> CLONE_MAP =
-		new ThreadLocal<Map<BatchAggregationExpression, CloneHelper>>() {
-			@Override
-			protected Map<BatchAggregationExpression, CloneHelper> initialValue() {
-				return new IdentityHashMap<BatchAggregationExpression, CloneHelper>();
-			}
-		};
+	/**
+	 * Returns the partial aggregation at the given index.
+	 * 
+	 * @param index
+	 *        the index
+	 * @return the partial aggregation
+	 */
+	Partial getPartial(final int index) {
+		return this.partials.get(index);
+	}
 
 	private static BatchAggregationExpression getClone(final BatchAggregationExpression expression,
 			final Partial partial) {
@@ -314,7 +213,6 @@ public class BatchAggregationExpression extends PathSegmentExpression {
 		return cloneHelper.clone;
 	}
 
-	// @DefaultSerializer(PartialSerializer.class)
 	final static class Partial extends AggregationExpression {
 		private final int index;
 
@@ -325,8 +223,6 @@ public class BatchAggregationExpression extends PathSegmentExpression {
 		 * 
 		 * @param function
 		 *        an {@link AggregationFunction} that should be used by this Partial
-		 * @param preprocessing
-		 *        the preprocessing that should be used by this Partial
 		 * @param index
 		 *        the index of this Partial
 		 */
@@ -344,41 +240,6 @@ public class BatchAggregationExpression extends PathSegmentExpression {
 			this.index = 0;
 		}
 
-		BatchAggregationExpression getBatch() {
-			return this.bae;
-		}
-
-		/*
-		 * (non-Javadoc)
-		 * @see
-		 * eu.stratosphere.sopremo.expressions.PathSegmentExpression#withInputExpression(eu.stratosphere.sopremo.expressions
-		 * .EvaluationExpression)
-		 */
-		@Override
-		public Partial withInputExpression(final EvaluationExpression inputExpression) {
-			return (Partial) super.withInputExpression(inputExpression);
-		}
-
-		@SuppressWarnings("unchecked")
-		private Partial partialClone(final Kryo kryo, final BatchAggregationExpression outer) {
-			final Partial copy = new Partial(outer, this.getAggregation().clone(), this.index);
-			final FieldSerializer<PathSegmentExpression> serializer =
-				(FieldSerializer<PathSegmentExpression>) kryo.getSerializer(PathSegmentExpression.class);
-			for (final FieldSerializer<?>.CachedField<?> field : serializer.getFields())
-				field.copy(this, copy);
-			return copy;
-		}
-
-		/*
-		 * (non-Javadoc)
-		 * @see
-		 * eu.stratosphere.sopremo.expressions.PathSegmentExpression#evaluate(eu.stratosphere.sopremo.type.IJsonNode)
-		 */
-		@Override
-		public IJsonNode evaluate(final IJsonNode node) {
-			return ((IArrayNode<?>) this.bae.evaluate(node)).get(this.index);
-		}
-
 		/*
 		 * (non-Javadoc)
 		 * @see eu.stratosphere.sopremo.expressions.AggregationExpression#toString(java.lang.StringBuilder)
@@ -391,15 +252,6 @@ public class BatchAggregationExpression extends PathSegmentExpression {
 			if (this.getInputExpression() != EvaluationExpression.VALUE)
 				this.getInputExpression().appendAsString(appendable);
 			appendable.append(')');
-		}
-
-		/*
-		 * (non-Javadoc)
-		 * @see eu.stratosphere.sopremo.expressions.PathSegmentExpression#iterator()
-		 */
-		@Override
-		public ChildIterator iterator() {
-			return new ConcatenatingChildIterator(super.iterator(), this.bae.iterator());
 		}
 
 		/*
@@ -425,37 +277,55 @@ public class BatchAggregationExpression extends PathSegmentExpression {
 
 		/*
 		 * (non-Javadoc)
+		 * @see
+		 * eu.stratosphere.sopremo.expressions.PathSegmentExpression#evaluate(eu.stratosphere.sopremo.type.IJsonNode)
+		 */
+		@Override
+		public IJsonNode evaluate(final IJsonNode node) {
+			return ((IArrayNode<?>) this.bae.evaluate(node)).get(this.index);
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see eu.stratosphere.sopremo.expressions.PathSegmentExpression#iterator()
+		 */
+		@Override
+		public ChildIterator iterator() {
+			return new ConcatenatingChildIterator(super.iterator(), this.bae.iterator());
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see
+		 * eu.stratosphere.sopremo.expressions.PathSegmentExpression#withInputExpression(eu.stratosphere.sopremo.expressions
+		 * .EvaluationExpression)
+		 */
+		@Override
+		public Partial withInputExpression(final EvaluationExpression inputExpression) {
+			return (Partial) super.withInputExpression(inputExpression);
+		}
+
+		/*
+		 * (non-Javadoc)
 		 * @see eu.stratosphere.sopremo.expressions.AggregationExpression#segmentHashCode()
 		 */
 		@Override
 		protected int segmentHashCode() {
 			return super.segmentHashCode() + 43 * this.bae.getInputExpression().hashCode();
 		}
+
+		BatchAggregationExpression getBatch() {
+			return this.bae;
+		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.expressions.PathSegmentExpression#segmentHashCode()
-	 */
-	@Override
-	protected int segmentHashCode() {
-		return this.partials.hashCode();
-	}
+	private static class CloneHelper {
+		private final BatchAggregationExpression clone;
 
-	/*
-	 * (non-Javadoc)
-	 * @see
-	 * eu.stratosphere.sopremo.expressions.PathSegmentExpression#equalsSameClass(eu.stratosphere.sopremo.expressions
-	 * .PathSegmentExpression)
-	 */
-	@Override
-	public boolean equalsSameClass(final PathSegmentExpression other) {
-		return this.partials.equals(((BatchAggregationExpression) other).partials);
-	}
+		private final BitSet clonedPartials = new BitSet();
 
-	@Override
-	public void appendAsString(final Appendable appendable) throws IOException {
-		this.getInputExpression().appendAsString(appendable);
-		appendable.append('^');
+		public CloneHelper(final BatchAggregationExpression clone) {
+			this.clone = clone;
+		}
 	}
 }

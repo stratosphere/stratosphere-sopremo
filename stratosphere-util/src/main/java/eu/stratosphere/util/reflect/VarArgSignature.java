@@ -4,7 +4,6 @@ import java.lang.reflect.Array;
 
 /**
  * Signature with a number of fixed arguments followed by a variable number of arguments of a specific type.
- * 
  */
 public class VarArgSignature extends Signature {
 	/**
@@ -27,6 +26,25 @@ public class VarArgSignature extends Signature {
 	 * Initializes VarArgSignature.
 	 */
 	VarArgSignature() {
+	}
+
+	@Override
+	public Object[] adjustParameters(final Object[] params) {
+		final Class<?>[] parameterTypes = this.getParameterTypes();
+		final int varArgIndex = parameterTypes.length - 1;
+		final int varArgCount = params.length - varArgIndex;
+
+		if (varArgCount == 1 && parameterTypes[varArgIndex].isInstance(params[varArgIndex]))
+			return params;
+
+		final Object vararg = Array.newInstance(parameterTypes[varArgIndex].getComponentType(), varArgCount);
+		for (int index = 0; index < varArgCount; index++)
+			Array.set(vararg, index, params[varArgIndex + index]);
+
+		final Object[] actualParams = new Object[parameterTypes.length];
+		System.arraycopy(params, 0, actualParams, 0, varArgIndex);
+		actualParams[varArgIndex] = vararg;
+		return actualParams;
 	}
 
 	@Override
@@ -58,24 +76,5 @@ public class VarArgSignature extends Signature {
 			}
 
 		return distance;
-	}
-
-	@Override
-	public Object[] adjustParameters(final Object[] params) {
-		final Class<?>[] parameterTypes = this.getParameterTypes();
-		final int varArgIndex = parameterTypes.length - 1;
-		final int varArgCount = params.length - varArgIndex;
-
-		if (varArgCount == 1 && parameterTypes[varArgIndex].isInstance(params[varArgIndex]))
-			return params;
-
-		final Object vararg = Array.newInstance(parameterTypes[varArgIndex].getComponentType(), varArgCount);
-		for (int index = 0; index < varArgCount; index++)
-			Array.set(vararg, index, params[varArgIndex + index]);
-
-		final Object[] actualParams = new Object[parameterTypes.length];
-		System.arraycopy(params, 0, actualParams, 0, varArgIndex);
-		actualParams[varArgIndex] = vararg;
-		return actualParams;
 	}
 }

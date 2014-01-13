@@ -45,30 +45,11 @@ public interface SubGraph<Node, InputNode extends Node, OutputNode extends Node>
 	public abstract InputNode getInput(int index);
 
 	/**
-	 * Sets the input at the specified position.
-	 * 
-	 * @param index
-	 *        the index of the input
-	 * @param input
-	 *        the input at the specified position
-	 */
-	public void setInput(final int index, final InputNode input);
-
-	/**
 	 * Returns all inputs of this PactModule.
 	 * 
 	 * @return all inputs
 	 */
 	public abstract List<InputNode> getInputs();
-
-	/**
-	 * Returns the output at the specified position.
-	 * 
-	 * @param index
-	 *        the index of the output
-	 * @return the output at the specified position
-	 */
-	public abstract OutputNode getOutput(int index);
 
 	/**
 	 * Returns the internal output at the specified position.
@@ -80,14 +61,27 @@ public interface SubGraph<Node, InputNode extends Node, OutputNode extends Node>
 	public OutputNode getInternalOutputNodes(int index);
 
 	/**
-	 * Sets the output at the specified position.
+	 * Returns the number of inputs.
+	 * 
+	 * @return the number of inputs
+	 */
+	public int getNumInputs();
+
+	/**
+	 * Returns the number of outputs.
+	 * 
+	 * @return the number of outputs
+	 */
+	public int getNumOutputs();
+
+	/**
+	 * Returns the output at the specified position.
 	 * 
 	 * @param index
 	 *        the index of the output
-	 * @param input
-	 *        the output at the specified position
+	 * @return the output at the specified position
 	 */
-	public void setOutput(final int index, final OutputNode output);
+	public abstract OutputNode getOutput(int index);
 
 	/**
 	 * Returns all outputs of this Subgraph.
@@ -105,18 +99,24 @@ public interface SubGraph<Node, InputNode extends Node, OutputNode extends Node>
 	public abstract Iterable<? extends Node> getReachableNodes();
 
 	/**
-	 * Returns the number of inputs.
+	 * Sets the input at the specified position.
 	 * 
-	 * @return the number of inputs
+	 * @param index
+	 *        the index of the input
+	 * @param input
+	 *        the input at the specified position
 	 */
-	public int getNumInputs();
+	public void setInput(final int index, final InputNode input);
 
 	/**
-	 * Returns the number of outputs.
+	 * Sets the output at the specified position.
 	 * 
-	 * @return the number of outputs
+	 * @param index
+	 *        the index of the output
+	 * @param output
+	 *        the output at the specified position
 	 */
-	public int getNumOutputs();
+	public void setOutput(final int index, final OutputNode output);
 
 	/**
 	 * Checks whether all declared inputs and outputs are fully connected.

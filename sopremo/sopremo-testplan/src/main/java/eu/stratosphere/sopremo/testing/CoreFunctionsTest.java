@@ -20,11 +20,25 @@ import eu.stratosphere.sopremo.type.JsonUtil;
 import eu.stratosphere.sopremo.type.MissingNode;
 
 /**
- * Tests {@link BuiltinFunctions}
+ * Tests {@link CoreFunctions}
  */
 public class CoreFunctionsTest {
 
 	protected EvaluationContext context = new EvaluationContext();
+
+	@Test
+	public void shouldCalculateMean() {
+		assertReturn(new BigDecimal("50"), CoreFunctions.MEAN, 50, 25, 75);
+	}
+
+	@Test
+	public void shouldCalculateMeanWithDifferentNodes() {
+		final List<Object> numbers = new ArrayList<Object>();
+		for (int i = 1; i < 500; i++)
+			numbers.add(i % 2 == 0 ? IntNode.valueOf(i) : DoubleNode.valueOf(i));
+
+		assertReturn(250.0, CoreFunctions.MEAN, numbers.toArray());
+	}
 
 	/**
 	 * 
@@ -32,13 +46,6 @@ public class CoreFunctionsTest {
 	@Test
 	public void shouldCoerceDataWhenSumming() {
 		assertAggregate(new BigDecimal("6.5"), CoreFunctions.SUM, 1.2, 2, new BigDecimal("3.3"));
-	}
-
-	/**
-	 * 
-	 */
-	public void shouldNotConcatenateObjects() {
-		assertAggregate("bla1blu2", CoreFunctions.CONCAT, "bla", 1, "blu", 2);
 	}
 
 	/**
@@ -65,6 +72,11 @@ public class CoreFunctionsTest {
 		assertReturn(0, CoreFunctions.COUNT, new int[0]);
 	}
 
+	@Test
+	public void shouldCreateRightCamelCaseRepresentation() {
+		assertReturn("This Is Just A Test !!!", CoreFunctions.CAMEL_CASE, "this iS JusT a TEST !!!");
+	}
+
 	/**
 	 * 
 	 */
@@ -76,9 +88,26 @@ public class CoreFunctionsTest {
 	/**
 	 * 
 	 */
+	public void shouldNotConcatenateObjects() {
+		assertAggregate("bla1blu2", CoreFunctions.CONCAT, "bla", 1, "blu", 2);
+	}
+
+	@Test
+	public void shouldReturnCorrectSubstring() {
+		assertReturn("345", CoreFunctions.SUBSTRING, "0123456789", 3, 6);
+	}
+
+	/**
+	 * 
+	 */
 	@Test
 	public void shouldReturnEmptyStringWhenConcatenatingEmptyArray() {
 		assertAggregate("", CoreFunctions.CONCAT);
+	}
+
+	@Test
+	public void shouldReturnMissingIfMeanNotAggregated() {
+		assertReturn(MissingNode.getInstance(), CoreFunctions.MEAN);
 	}
 
 	/**
@@ -121,17 +150,17 @@ public class CoreFunctionsTest {
 	 * 
 	 */
 	@Test
-	public void shouldSumDoubles() {
-		assertAggregate(6.6, CoreFunctions.SUM, 1.1, 2.2, 3.3);
+	public void shouldSplitCorrectly() {
+		assertReturn(createArrayNode("OpenNew", "x", "Open", "New"), CoreFunctions.SPLIT, "OpenNew x Open New", " ");
+		assertReturn(createArrayNode("ZoomIn", "x", "Zoom", "In"), CoreFunctions.SPLIT, "ZoomIn x Zoom In", " ");
 	}
 
 	/**
 	 * 
 	 */
 	@Test
-	public void shouldSplitCorrectly() {
-		assertReturn(createArrayNode("OpenNew", "x", "Open", "New"), CoreFunctions.SPLIT, "OpenNew x Open New", " ");
-		assertReturn(createArrayNode("ZoomIn", "x", "Zoom", "In"), CoreFunctions.SPLIT, "ZoomIn x Zoom In", " ");
+	public void shouldSumDoubles() {
+		assertAggregate(6.6, CoreFunctions.SUM, 1.1, 2.2, 3.3);
 	}
 
 	/**
@@ -189,34 +218,5 @@ public class CoreFunctionsTest {
 			JsonUtil.createStreamArrayNode(1, 2, 3),
 			JsonUtil.createStreamArrayNode(4, 5),
 			JsonUtil.createStreamArrayNode(6));
-	}
-
-	@Test
-	public void shouldCalculateMean() {
-		assertReturn(new BigDecimal("50"), CoreFunctions.MEAN, 50, 25, 75);
-	}
-
-	@Test
-	public void shouldCalculateMeanWithDifferentNodes() {
-		final List<Object> numbers = new ArrayList<Object>();
-		for (int i = 1; i < 500; i++)
-			numbers.add(i % 2 == 0 ? IntNode.valueOf(i) : DoubleNode.valueOf(i));
-
-		assertReturn(250.0, CoreFunctions.MEAN, numbers.toArray());
-	}
-
-	@Test
-	public void shouldReturnMissingIfMeanNotAggregated() {
-		assertReturn(MissingNode.getInstance(), CoreFunctions.MEAN);
-	}
-
-	@Test
-	public void shouldReturnCorrectSubstring() {
-		assertReturn("345", CoreFunctions.SUBSTRING, "0123456789", 3, 6);
-	}
-
-	@Test
-	public void shouldCreateRightCamelCaseRepresentation() {
-		assertReturn("This Is Just A Test !!!", CoreFunctions.CAMEL_CASE, "this iS JusT a TEST !!!");
 	}
 }

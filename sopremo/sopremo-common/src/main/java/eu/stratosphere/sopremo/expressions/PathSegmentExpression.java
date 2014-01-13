@@ -25,6 +25,58 @@ import eu.stratosphere.sopremo.type.IJsonNode;
 public abstract class PathSegmentExpression extends EvaluationExpression {
 	private EvaluationExpression inputExpression = EvaluationExpression.VALUE;
 
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.expressions.EvaluationExpression#clone()
+	 */
+	@Override
+	public PathSegmentExpression clone() {
+		return (PathSegmentExpression) super.clone();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.expressions.EvaluationExpression#clone()
+	 */
+	public PathSegmentExpression cloneSegment() {
+		final EvaluationExpression originalInput = this.inputExpression;
+		this.inputExpression = EvaluationExpression.VALUE;
+		final PathSegmentExpression partialClone = this.clone();
+		this.inputExpression = originalInput;
+		return partialClone;
+	}
+
+	@Override
+	public boolean equals(final Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (this.getClass() != obj.getClass())
+			return false;
+		final PathSegmentExpression other = (PathSegmentExpression) obj;
+		return this.equalsSameClass(other) && this.inputExpression.equals(other.inputExpression);
+	}
+
+	public boolean equalsThisSeqment(final PathSegmentExpression obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (this.getClass() != obj.getClass())
+			return false;
+		return this.equalsSameClass(obj);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.expressions.EvaluationExpression#evaluate(eu.stratosphere.sopremo.type.IJsonNode)
+	 */
+	@Override
+	public IJsonNode evaluate(final IJsonNode node) {
+		return this.evaluateSegment(this.getInputExpression().evaluate(node));
+	}
+
 	/**
 	 * Returns the inputExpression.
 	 * 
@@ -32,6 +84,50 @@ public abstract class PathSegmentExpression extends EvaluationExpression {
 	 */
 	public EvaluationExpression getInputExpression() {
 		return this.inputExpression;
+	}
+
+	public PathSegmentExpression getLast() {
+		PathSegmentExpression segment = this;
+		while (segment.inputExpression != EvaluationExpression.VALUE &&
+			this.inputExpression instanceof PathSegmentExpression)
+			segment = (PathSegmentExpression) this.inputExpression;
+		return segment;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result + this.inputExpression.hashCode();
+		result = prime * result + this.segmentHashCode();
+		return result;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.expressions.ExpressionParent#iterator()
+	 */
+	@Override
+	public ChildIterator iterator() {
+		return this.namedChildIterator();
+	}
+
+	/**
+	 * Sets the value of the node specified by this expression.<br/>
+	 * Use this method with caution. Changing values in-place has side-effects inside of reducer, matcher, and
+	 * cogrouper. To be safe, always clone the input node.
+	 * 
+	 * @param node
+	 *        the node to change
+	 * @param value
+	 *        the value to set
+	 * @return the node or a new node if the expression directly accesses the node
+	 */
+	public IJsonNode set(final IJsonNode node, final IJsonNode value) {
+		if (this.getInputExpression() == EvaluationExpression.VALUE)
+			return this.setSegment(node, value);
+		this.setSegment(this.getInputExpression().evaluate(node), value);
+		return node;
 	}
 
 	/**
@@ -58,134 +154,38 @@ public abstract class PathSegmentExpression extends EvaluationExpression {
 		return this;
 	}
 
-	public PathSegmentExpression getLast() {
-		PathSegmentExpression segment = this;
-		while (segment.inputExpression != EvaluationExpression.VALUE &&
-			this.inputExpression instanceof PathSegmentExpression)
-			segment = (PathSegmentExpression) this.inputExpression;
-		return segment;
-	}
-
-	/**
-	 * Sets the value of the node specified by this expression.<br/>
-	 * Use this method with caution. Changing values in-place has side-effects inside of reducer, matcher, and
-	 * cogrouper. To be safe, always clone the input node.
-	 * 
-	 * @param node
-	 *        the node to change
-	 * @param value
-	 *        the value to set
-	 * @return the node or a new node if the expression directly accesses the node
-	 */
-	public IJsonNode set(final IJsonNode node, final IJsonNode value) {
-		if (this.getInputExpression() == EvaluationExpression.VALUE)
-			return this.setSegment(node, value);
-		this.setSegment(this.getInputExpression().evaluate(node), value);
-		return node;
-	}
-
-	protected IJsonNode setSegment(final IJsonNode node, final IJsonNode value) {
-		throw new UnsupportedOperationException(String.format(
-			"Cannot change the value with expression %s of node %s to %s", this, node, value));
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.expressions.EvaluationExpression#clone()
-	 */
-	@Override
-	public PathSegmentExpression clone() {
-		return (PathSegmentExpression) super.clone();
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.expressions.EvaluationExpression#clone()
-	 */
-	public PathSegmentExpression cloneSegment() {
-		final EvaluationExpression originalInput = this.inputExpression;
-		this.inputExpression = EvaluationExpression.VALUE;
-		final PathSegmentExpression partialClone = this.clone();
-		this.inputExpression = originalInput;
-		return partialClone;
-	}
-
 	public PathSegmentExpression withTail(final EvaluationExpression tail) {
 		this.getLast().setInputExpression(tail);
 		return this;
 	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.expressions.EvaluationExpression#evaluate(eu.stratosphere.sopremo.type.IJsonNode)
-	 */
-	@Override
-	public IJsonNode evaluate(final IJsonNode node) {
-		return this.evaluateSegment(this.getInputExpression().evaluate(node));
-	}
-
-	protected abstract IJsonNode evaluateSegment(IJsonNode node);
-
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = super.hashCode();
-		result = prime * result + this.inputExpression.hashCode();
-		result = prime * result + this.segmentHashCode();
-		return result;
-	}
-
-	protected abstract int segmentHashCode();
-
-	@Override
-	public boolean equals(final Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (this.getClass() != obj.getClass())
-			return false;
-		final PathSegmentExpression other = (PathSegmentExpression) obj;
-		return this.equalsSameClass(other) && this.inputExpression.equals(other.inputExpression);
-	}
-
-	public boolean equalsThisSeqment(final PathSegmentExpression obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (this.getClass() != obj.getClass())
-			return false;
-		return this.equalsSameClass(obj);
-	}
-
-	protected abstract boolean equalsSameClass(PathSegmentExpression other);
 
 	protected void appendInputAsString(final Appendable appendable) throws IOException {
 		if (this.inputExpression != EvaluationExpression.VALUE)
 			this.inputExpression.appendAsString(appendable);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.expressions.ExpressionParent#iterator()
-	 */
-	@Override
-	public ChildIterator iterator() {
-		return this.namedChildIterator();
-	}
+	protected abstract boolean equalsSameClass(PathSegmentExpression other);
+
+	protected abstract IJsonNode evaluateSegment(IJsonNode node);
 
 	protected NamedChildIterator namedChildIterator() {
 		return new NamedChildIterator("inputExpression") {
 			@Override
-			protected void set(final int index, final EvaluationExpression childExpression) {
-				PathSegmentExpression.this.inputExpression = childExpression;
-			}
-
-			@Override
 			protected EvaluationExpression get(final int index) {
 				return PathSegmentExpression.this.inputExpression;
 			}
+
+			@Override
+			protected void set(final int index, final EvaluationExpression childExpression) {
+				PathSegmentExpression.this.inputExpression = childExpression;
+			}
 		};
+	}
+
+	protected abstract int segmentHashCode();
+
+	protected IJsonNode setSegment(final IJsonNode node, final IJsonNode value) {
+		throw new UnsupportedOperationException(String.format(
+			"Cannot change the value with expression %s of node %s to %s", this, node, value));
 	}
 }

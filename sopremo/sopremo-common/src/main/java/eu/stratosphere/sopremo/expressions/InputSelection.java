@@ -18,11 +18,21 @@ import java.io.IOException;
 
 import javolution.text.TypeFormat;
 import eu.stratosphere.sopremo.EvaluationException;
+import eu.stratosphere.sopremo.operator.JsonStream;
+import eu.stratosphere.sopremo.operator.Operator;
 import eu.stratosphere.sopremo.type.IArrayNode;
 import eu.stratosphere.sopremo.type.IJsonNode;
 
 /**
- * Returns the element of an array which is saved at the specified index.
+ * Special expression to select the input to which to apply subsequent expressions. This expression is a simple form of
+ * {@link ArrayAccess} with a semantical annotation.<br/>
+ * Inside an operator it is safe to freely exchange both expressions, however many operators perform optimizations by
+ * inlining or transforming {@link InputSelection}. Thus, when manually assembling expressions for {@link Operator}s
+ * make sure to use the semantically correct form: 
+ * <ol>
+ * <li> InputSelection: needed only when the {@link Operator} can have more than one input to disambiguate the access.</li>
+ * <li> ArrayAccess: accessing an array inside a {@link JsonStream}.</li>
+ * </ol>
  */
 @OptimizerHints(scope = Scope.ANY, minNodes = 1, maxNodes = OptimizerHints.UNBOUND)
 public class InputSelection extends PathSegmentExpression {
@@ -45,13 +55,18 @@ public class InputSelection extends PathSegmentExpression {
 		this.index = 0;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.expressions.PathSegmentExpression#segmentHashCode()
-	 */
 	@Override
-	protected int segmentHashCode() {
-		return this.index;
+	public void appendAsString(final Appendable appendable) throws IOException {
+		this.appendInputAsString(appendable);
+		appendable.append("in");
+		TypeFormat.format(this.index, appendable);
+	}
+
+	/**
+	 * Returns an {@link ArrayAccess} that performs the same information.
+	 */
+	public ArrayAccess asArrayAccess() {
+		return new ArrayAccess(this.index);
 	}
 
 	/*
@@ -65,13 +80,6 @@ public class InputSelection extends PathSegmentExpression {
 		return this.index == ((InputSelection) other).index;
 	}
 
-	@Override
-	protected IJsonNode evaluateSegment(final IJsonNode node) {
-		if (!(node instanceof IArrayNode<?>))
-			throw new EvaluationException("Cannot select input " + node.getClass().getSimpleName());
-		return ((IArrayNode<?>) node).get(this.index);
-	}
-
 	/**
 	 * Returns the index
 	 * 
@@ -82,16 +90,18 @@ public class InputSelection extends PathSegmentExpression {
 	}
 
 	@Override
-	public void appendAsString(final Appendable appendable) throws IOException {
-		this.appendInputAsString(appendable);
-		appendable.append("in");
-		TypeFormat.format(this.index, appendable);
+	protected IJsonNode evaluateSegment(final IJsonNode node) {
+		if (!(node instanceof IArrayNode<?>))
+			throw new EvaluationException("Cannot select input " + node.getClass().getSimpleName());
+		return ((IArrayNode<?>) node).get(this.index);
 	}
 
-	/**
-	 * @return
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.expressions.PathSegmentExpression#segmentHashCode()
 	 */
-	public ArrayAccess asArrayAccess() {
-		return new ArrayAccess(this.index);
+	@Override
+	protected int segmentHashCode() {
+		return this.index;
 	}
 }

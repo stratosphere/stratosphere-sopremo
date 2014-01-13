@@ -19,7 +19,6 @@ package eu.stratosphere.nephele.rpc;
  * This message is used to transport the return value of a remote procedure call back to the caller.
  * <p>
  * This message is thread-safe.
- * 
  */
 final class RPCReturnValue extends RPCResponse {
 

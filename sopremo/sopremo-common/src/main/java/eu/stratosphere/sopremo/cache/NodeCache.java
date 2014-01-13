@@ -41,14 +41,9 @@ public final class NodeCache implements ISopremoCache {
 		this.nodeFactory = nodeFactory;
 	}
 
-	@SuppressWarnings("unchecked")
-	public <T extends IJsonNode> T getNode(final Class<T> type) {
-		final IJsonNode cachedValue = this.classCache.get(type);
-		if (cachedValue != null)
-			return (T) cachedValue;
-		final IJsonNode newValue = this.nodeFactory.instantiate(type);
-		this.classCache.put(type, newValue);
-		return (T) newValue;
+	@Override
+	public NodeCache clone() {
+		return new NodeCache();
 	}
 
 	/**
@@ -60,8 +55,13 @@ public final class NodeCache implements ISopremoCache {
 		return clone;
 	}
 
-	@Override
-	public NodeCache clone() {
-		return new NodeCache();
+	@SuppressWarnings("unchecked")
+	public <T extends IJsonNode> T getNode(final Class<T> type) {
+		final IJsonNode cachedValue = this.classCache.get(type);
+		if (cachedValue != null)
+			return (T) cachedValue;
+		final IJsonNode newValue = this.nodeFactory.instantiate(type);
+		this.classCache.put(type, newValue);
+		return (T) newValue;
 	}
 }

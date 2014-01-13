@@ -16,12 +16,12 @@ package eu.stratosphere.sopremo.testing;
 
 import java.util.Arrays;
 
-import eu.stratosphere.pact.testing.DefaultEqualer;
-import eu.stratosphere.pact.testing.DefaultStringifier;
-import eu.stratosphere.pact.testing.Equaler;
-import eu.stratosphere.pact.testing.GenericTestRecords;
-import eu.stratosphere.pact.testing.TypeConfig;
-import eu.stratosphere.pact.testing.TypeStringifier;
+import eu.stratosphere.core.testing.DefaultEqualer;
+import eu.stratosphere.core.testing.DefaultStringifier;
+import eu.stratosphere.core.testing.Equaler;
+import eu.stratosphere.core.testing.GenericTestRecords;
+import eu.stratosphere.core.testing.TypeConfig;
+import eu.stratosphere.core.testing.TypeStringifier;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
 import eu.stratosphere.sopremo.serialization.SopremoRecord;
 import eu.stratosphere.sopremo.serialization.SopremoRecordComparatorFactory;

@@ -38,6 +38,10 @@ public class GlobalEnumeration extends ElementaryOperator<GlobalEnumeration> {
 		return this.enumerationExpression;
 	}
 
+	public ObjectAccess getIdAccess() {
+		return new ObjectAccess(this.idFieldName);
+	}
+
 	public String getIdFieldName() {
 		return this.idFieldName;
 	}
@@ -59,25 +63,8 @@ public class GlobalEnumeration extends ElementaryOperator<GlobalEnumeration> {
 		return this.idGenerator;
 	}
 
-	public ObjectAccess getIdAccess() {
-		return new ObjectAccess(this.idFieldName);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see
-	 * eu.stratosphere.sopremo.operator.ElementaryOperator#configureOperator(eu.stratosphere.pact.generic.contract.Operator
-	 * , eu.stratosphere.configuration.Configuration, eu.stratosphere.sopremo.EvaluationContext,
-	 * eu.stratosphere.sopremo.serialization.SopremoRecordLayout)
-	 */
-	@Override
-	protected void configureOperator(final Operator contract, final Configuration stubConfiguration,
-			final EvaluationContext context, final SopremoRecordLayout layout) {
-		if (this.enumerationExpression == AUTO_ENUMERATION)
-			this.enumerationExpression = new AutoProjection(this.idFieldName, this.valueFieldName);
-		super.configureOperator(contract, stubConfiguration, context, layout);
-		if (this.enumerationExpression instanceof AutoProjection)
-			this.enumerationExpression = AUTO_ENUMERATION;
+	public String getValueFieldName() {
+		return this.valueFieldName;
 	}
 
 	@Property
@@ -98,18 +85,44 @@ public class GlobalEnumeration extends ElementaryOperator<GlobalEnumeration> {
 		this.idFieldName = enumerationFieldName;
 	}
 
-	public GlobalEnumeration withIdFieldName(final String enumerationFieldName) {
-		this.setIdFieldName(enumerationFieldName);
-		return this;
+	@Property
+	@Name(preposition = "by")
+	public void setIdGeneration(final IdGeneration idGeneration) {
+		if (idGeneration == null)
+			throw new NullPointerException("idGeneration must not be null");
+
+		this.idGenerator = idGeneration.getGenerator();
 	}
 
-	public GlobalEnumeration withValueFieldName(final String valueFieldName) {
-		this.setValueFieldName(valueFieldName);
-		return this;
+	/**
+	 * Sets the idGenerator to the specified value.
+	 * 
+	 * @param idGenerator
+	 *        the idGenerator to set
+	 */
+	public void setIdGenerator(final IdGenerator idGenerator) {
+		if (idGenerator == null)
+			throw new NullPointerException("idGenerator must not be null");
+
+		this.idGenerator = idGenerator;
+	}
+
+	@Property
+	@Name(verb = "retain value in")
+	public void setValueFieldName(final String valueFieldName) {
+		if (valueFieldName == null)
+			throw new NullPointerException("valueFieldName must not be null");
+
+		this.valueFieldName = valueFieldName;
 	}
 
 	public GlobalEnumeration withEnumerationExpression(final EvaluationExpression enumerationExpression) {
 		this.setEnumerationExpression(enumerationExpression);
+		return this;
+	}
+
+	public GlobalEnumeration withIdFieldName(final String enumerationFieldName) {
+		this.setIdFieldName(enumerationFieldName);
 		return this;
 	}
 
@@ -118,29 +131,26 @@ public class GlobalEnumeration extends ElementaryOperator<GlobalEnumeration> {
 		return this;
 	}
 
-	public enum IdGeneration {
-		LONG(new LongGenerator()), STRING(new StringGenerator()), MAPPER(new MapperNumberGenerator());
-
-		private final IdGenerator generator;
-
-		private IdGeneration(final IdGenerator generator) {
-			this.generator = generator;
-		}
-
-		/**
-		 * Returns the generator.
-		 * 
-		 * @return the generator
-		 */
-		public IdGenerator getGenerator() {
-			return this.generator;
-		}
+	public GlobalEnumeration withValueFieldName(final String valueFieldName) {
+		this.setValueFieldName(valueFieldName);
+		return this;
 	}
 
-	public static interface IdGenerator {
-		public void setup(int taskId, int numTasks);
-
-		public IJsonNode generate(long localId);
+	/*
+	 * (non-Javadoc)
+	 * @see
+	 * eu.stratosphere.sopremo.operator.ElementaryOperator#configureOperator(eu.stratosphere.pact.generic.contract.Operator
+	 * , eu.stratosphere.configuration.Configuration, eu.stratosphere.sopremo.EvaluationContext,
+	 * eu.stratosphere.sopremo.serialization.SopremoRecordLayout)
+	 */
+	@Override
+	protected void configureOperator(final Operator contract, final Configuration stubConfiguration,
+			final EvaluationContext context, final SopremoRecordLayout layout) {
+		if (this.enumerationExpression == AUTO_ENUMERATION)
+			this.enumerationExpression = new AutoProjection(this.idFieldName, this.valueFieldName);
+		super.configureOperator(contract, stubConfiguration, context, layout);
+		if (this.enumerationExpression instanceof AutoProjection)
+			this.enumerationExpression = AUTO_ENUMERATION;
 	}
 
 	public static abstract class AbstractIdGenerator extends AbstractSopremoType implements IdGenerator {
@@ -169,6 +179,53 @@ public class GlobalEnumeration extends ElementaryOperator<GlobalEnumeration> {
 		@Override
 		public int hashCode() {
 			return this.getClass().getSimpleName().hashCode();
+		}
+	}
+
+	public enum IdGeneration {
+		LONG(new LongGenerator()), STRING(new StringGenerator()), MAPPER(new MapperNumberGenerator());
+
+		private final IdGenerator generator;
+
+		private IdGeneration(final IdGenerator generator) {
+			this.generator = generator;
+		}
+
+		/**
+		 * Returns the generator.
+		 * 
+		 * @return the generator
+		 */
+		public IdGenerator getGenerator() {
+			return this.generator;
+		}
+	}
+
+	public static interface IdGenerator {
+		public IJsonNode generate(long localId);
+
+		public void setup(int taskId, int numTasks);
+	}
+
+	public static class Implementation extends SopremoMap {
+		private PathSegmentExpression enumerationExpression;
+
+		private IdGenerator idGenerator;
+
+		private long counter;
+
+		@Override
+		public void open(final Configuration parameters) {
+			super.open(parameters);
+			this.counter = 0;
+			this.idGenerator.setup(this.getRuntimeContext().getIndexOfThisSubtask(),
+				this.getRuntimeContext().getNumberOfParallelSubtasks());
+		}
+
+		@Override
+		protected void map(final IJsonNode value, final JsonCollector<IJsonNode> out) {
+			final IJsonNode id = this.idGenerator.generate(this.counter++);
+			out.collect(this.enumerationExpression.set(value, id));
 		}
 	}
 
@@ -220,39 +277,36 @@ public class GlobalEnumeration extends ElementaryOperator<GlobalEnumeration> {
 		}
 	}
 
-	@Property
-	@Name(preposition = "by")
-	public void setIdGeneration(final IdGeneration idGeneration) {
-		if (idGeneration == null)
-			throw new NullPointerException("idGeneration must not be null");
-
-		this.idGenerator = idGeneration.getGenerator();
-	}
-
 	/**
-	 * Sets the idGenerator to the specified value.
-	 * 
-	 * @param idGenerator
-	 *        the idGenerator to set
 	 */
-	public void setIdGenerator(final IdGenerator idGenerator) {
-		if (idGenerator == null)
-			throw new NullPointerException("idGenerator must not be null");
+	public static final class StringGenerator extends AbstractIdGenerator {
 
-		this.idGenerator = idGenerator;
-	}
+		private final transient TextNode result = new TextNode();
 
-	public String getValueFieldName() {
-		return this.valueFieldName;
-	}
+		private int prefixLength;
 
-	@Property
-	@Name(verb = "retain value in")
-	public void setValueFieldName(final String valueFieldName) {
-		if (valueFieldName == null)
-			throw new NullPointerException("valueFieldName must not be null");
+		/*
+		 * (non-Javadoc)
+		 * @see eu.stratosphere.sopremo.base.GlobalEnumeration.IdGenerator#generate(long)
+		 */
+		@Override
+		public IJsonNode generate(final long localId) {
+			this.result.setLength(this.prefixLength);
+			this.result.append(localId);
+			return this.result;
+		}
 
-		this.valueFieldName = valueFieldName;
+		/*
+		 * (non-Javadoc)
+		 * @see eu.stratosphere.sopremo.base.GlobalEnumeration.IdGenerator#setup(int, int)
+		 */
+		@Override
+		public void setup(final int taskId, final int numTasks) {
+			this.result.setLength(0);
+			this.result.append(taskId);
+			this.result.append('_');
+			this.prefixLength = this.result.length();
+		}
 	}
 
 	/**
@@ -261,11 +315,6 @@ public class GlobalEnumeration extends ElementaryOperator<GlobalEnumeration> {
 	static final class AutoProjection extends PathSegmentExpression {
 		private final String idFieldName, valueFieldName;
 
-		AutoProjection(final String idFieldName, final String valueFieldName) {
-			this.idFieldName = idFieldName;
-			this.valueFieldName = valueFieldName;
-		}
-
 		/**
 		 * Initializes GlobalEnumeration.AutoProjection.
 		 */
@@ -273,22 +322,20 @@ public class GlobalEnumeration extends ElementaryOperator<GlobalEnumeration> {
 			this(null, null);
 		}
 
+		AutoProjection(final String idFieldName, final String valueFieldName) {
+			this.idFieldName = idFieldName;
+			this.valueFieldName = valueFieldName;
+		}
+
 		/*
 		 * (non-Javadoc)
 		 * @see
-		 * eu.stratosphere.sopremo.expressions.PathSegmentExpression#setSegment(eu.stratosphere.sopremo.type.IJsonNode,
-		 * eu.stratosphere.sopremo.type.IJsonNode)
+		 * eu.stratosphere.sopremo.expressions.PathSegmentExpression#equalsSameClass(eu.stratosphere.sopremo.expressions
+		 * .PathSegmentExpression)
 		 */
 		@Override
-		protected IJsonNode setSegment(final IJsonNode node, final IJsonNode value) {
-			if (node instanceof IObjectNode) {
-				((IObjectNode) node).put(this.idFieldName, value);
-				return node;
-			}
-			final ObjectNode objectNode = new ObjectNode();
-			objectNode.put(this.idFieldName, value);
-			objectNode.put(this.valueFieldName, node);
-			return objectNode;
+		protected boolean equalsSameClass(final PathSegmentExpression other) {
+			return true;
 		}
 
 		/*
@@ -314,66 +361,19 @@ public class GlobalEnumeration extends ElementaryOperator<GlobalEnumeration> {
 		/*
 		 * (non-Javadoc)
 		 * @see
-		 * eu.stratosphere.sopremo.expressions.PathSegmentExpression#equalsSameClass(eu.stratosphere.sopremo.expressions
-		 * .PathSegmentExpression)
+		 * eu.stratosphere.sopremo.expressions.PathSegmentExpression#setSegment(eu.stratosphere.sopremo.type.IJsonNode,
+		 * eu.stratosphere.sopremo.type.IJsonNode)
 		 */
 		@Override
-		protected boolean equalsSameClass(final PathSegmentExpression other) {
-			return true;
-		}
-	}
-
-	/**
-	 */
-	public static final class StringGenerator extends AbstractIdGenerator {
-
-		private final transient TextNode result = new TextNode();
-
-		private int prefixLength;
-
-		/*
-		 * (non-Javadoc)
-		 * @see eu.stratosphere.sopremo.base.GlobalEnumeration.IdGenerator#setup(int, int)
-		 */
-		@Override
-		public void setup(final int taskId, final int numTasks) {
-			this.result.setLength(0);
-			this.result.append(taskId);
-			this.result.append('_');
-			this.prefixLength = this.result.length();
-		}
-
-		/*
-		 * (non-Javadoc)
-		 * @see eu.stratosphere.sopremo.base.GlobalEnumeration.IdGenerator#generate(long)
-		 */
-		@Override
-		public IJsonNode generate(final long localId) {
-			this.result.setLength(this.prefixLength);
-			this.result.append(localId);
-			return this.result;
-		}
-	}
-
-	public static class Implementation extends SopremoMap {
-		private PathSegmentExpression enumerationExpression;
-
-		private IdGenerator idGenerator;
-
-		private long counter;
-
-		@Override
-		public void open(final Configuration parameters) {
-			super.open(parameters);
-			this.counter = 0;
-			this.idGenerator.setup(this.getRuntimeContext().getIndexOfThisSubtask(),
-				this.getRuntimeContext().getNumberOfParallelSubtasks());
-		}
-
-		@Override
-		protected void map(final IJsonNode value, final JsonCollector<IJsonNode> out) {
-			final IJsonNode id = this.idGenerator.generate(this.counter++);
-			out.collect(this.enumerationExpression.set(value, id));
+		protected IJsonNode setSegment(final IJsonNode node, final IJsonNode value) {
+			if (node instanceof IObjectNode) {
+				((IObjectNode) node).put(this.idFieldName, value);
+				return node;
+			}
+			final ObjectNode objectNode = new ObjectNode();
+			objectNode.put(this.idFieldName, value);
+			objectNode.put(this.valueFieldName, node);
+			return objectNode;
 		}
 	}
 

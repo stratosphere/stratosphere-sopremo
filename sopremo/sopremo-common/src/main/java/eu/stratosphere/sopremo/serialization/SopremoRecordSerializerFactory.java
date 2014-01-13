@@ -41,23 +41,6 @@ public class SopremoRecordSerializerFactory implements TypeSerializerFactory<Sop
 		this.layout = layout;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.pact.common.generic.types.TypeSerializerFactory#getSerializer()
-	 */
-	@Override
-	public TypeSerializer<SopremoRecord> getSerializer() {
-		return new SopremoRecordSerializer(this.layout);
-	}
-
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + this.layout.hashCode();
-		return result;
-	}
-
 	@Override
 	public boolean equals(final Object obj) {
 		if (this == obj)
@@ -81,12 +64,19 @@ public class SopremoRecordSerializerFactory implements TypeSerializerFactory<Sop
 
 	/*
 	 * (non-Javadoc)
-	 * @see eu.stratosphere.api.typeutils.TypeSerializerFactory#writeParametersToConfig(eu.stratosphere.nephele.
-	 * configuration.Configuration)
+	 * @see eu.stratosphere.pact.common.generic.types.TypeSerializerFactory#getSerializer()
 	 */
 	@Override
-	public void writeParametersToConfig(final Configuration config) {
-		SopremoUtil.setObject(config, SopremoRecordLayout.LAYOUT_KEY, this.layout);
+	public TypeSerializer<SopremoRecord> getSerializer() {
+		return new SopremoRecordSerializer(this.layout);
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + this.layout.hashCode();
+		return result;
 	}
 
 	/*
@@ -98,5 +88,15 @@ public class SopremoRecordSerializerFactory implements TypeSerializerFactory<Sop
 	public void readParametersFromConfig(final Configuration config, final ClassLoader cl)
 			throws ClassNotFoundException {
 		this.layout = SopremoUtil.getObject(config, SopremoRecordLayout.LAYOUT_KEY, null);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.api.typeutils.TypeSerializerFactory#writeParametersToConfig(eu.stratosphere.nephele.
+	 * configuration.Configuration)
+	 */
+	@Override
+	public void writeParametersToConfig(final Configuration config) {
+		SopremoUtil.setObject(config, SopremoRecordLayout.LAYOUT_KEY, this.layout);
 	}
 }

@@ -35,18 +35,6 @@ import eu.stratosphere.sopremo.type.MissingNode;
 import eu.stratosphere.sopremo.type.TextNode;
 
 public class SopremoPlanTest extends EqualCloneTest<SopremoPlan> {
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.EqualVerifyTest#createDefaultInstance(int)
-	 */
-	@Override
-	protected SopremoPlan createDefaultInstance(final int index) {
-		final SopremoPlan plan = new SopremoPlan();
-		final Source source = new Source();
-		plan.setSinks(new Sink("file:///" + String.valueOf(index)).withInputs(source));
-		return plan;
-	}
-
 	@Test
 	public void shouldCloneDAGs() {
 		final SopremoPlan plan = new SopremoPlan();
@@ -61,20 +49,6 @@ public class SopremoPlanTest extends EqualCloneTest<SopremoPlan> {
 		final Operator<?> cloneTwoInput =
 			Iterables.find(clone.getContainedOperators(), Predicates.instanceOf(TwoInputOperator.class));
 		Assert.assertSame(cloneTwoInput.getInput(0), cloneTwoInput.getInput(1));
-	}
-
-	@Test
-	public void shouldSerializeTrivialDAGs() {
-		final SopremoPlan plan = new SopremoPlan();
-
-		final Source source = new Source("file:///input.csv");
-		plan.setSinks(new Sink("file:///output1.csv").withInputs(source),
-			new Sink("file:///output2.csv").withInputs(source));
-
-		final byte[] byteArray = SopremoUtil.serializable(plan);
-		final SopremoPlan clone = SopremoUtil.deserialize(byteArray, SopremoPlan.class);
-		Assert.assertEquals(2, clone.getSinks().size());
-		Assert.assertSame(clone.getSinks().get(0).getInput(0), clone.getSinks().get(1).getInput(0));
 	}
 
 	@Test
@@ -95,6 +69,20 @@ public class SopremoPlanTest extends EqualCloneTest<SopremoPlan> {
 	}
 
 	@Test
+	public void shouldSerializeTrivialDAGs() {
+		final SopremoPlan plan = new SopremoPlan();
+
+		final Source source = new Source("file:///input.csv");
+		plan.setSinks(new Sink("file:///output1.csv").withInputs(source),
+			new Sink("file:///output2.csv").withInputs(source));
+
+		final byte[] byteArray = SopremoUtil.serializable(plan);
+		final SopremoPlan clone = SopremoUtil.deserialize(byteArray, SopremoPlan.class);
+		Assert.assertEquals(2, clone.getSinks().size());
+		Assert.assertSame(clone.getSinks().get(0).getInput(0), clone.getSinks().get(1).getInput(0));
+	}
+
+	@Test
 	public void shouldTranslateDifferentStrategies() {
 		final SopremoPlan plan = new SopremoPlan();
 		final Source source = new Source("file:///input.json");
@@ -106,6 +94,18 @@ public class SopremoPlanTest extends EqualCloneTest<SopremoPlan> {
 
 		operator.setMethod(PolymorphOperator.Mode.IDENTITY);
 		this.expectPact(plan.asPactPlan(), Identity.Implementation.class);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.EqualVerifyTest#createDefaultInstance(int)
+	 */
+	@Override
+	protected SopremoPlan createDefaultInstance(final int index) {
+		final SopremoPlan plan = new SopremoPlan();
+		final Source source = new Source();
+		plan.setSinks(new Sink("file:///" + String.valueOf(index)).withInputs(source));
+		return plan;
 	}
 
 	private void expectPact(final Plan plan, final Class<?> pactFunction) {
@@ -124,10 +124,56 @@ public class SopremoPlanTest extends EqualCloneTest<SopremoPlan> {
 	}
 }
 
-@InputCardinality(2)
-@OutputCardinality(1)
-class TwoInputOperator extends ElementaryOperator<TwoInputOperator> {
+/**
+ * Counts the number of values for a given key. Hence, the number of
+ * occurences of a given token (word) is computed and emitted. The key is
+ * not modified, hence a SameKey OutputOperator is attached to this class.<br>
+ * Expected input: [{ word: "word1"}, { word: "word1"}] <br>
+ * Output: [{ word: "word1", count: 2}]
+ */
+@InputCardinality(1)
+class CountWords extends ElementaryOperator<CountWords> {
+	/**
+	 * Initializes SopremoTestPlanTest.CountWords.
+	 */
+	public CountWords() {
+		this.setKeyExpressions(0, new ObjectAccess("word"));
+	}
 
+	@Combinable
+	public static class Implementation extends SopremoReduce {
+		protected int getCount(final IObjectNode entry) {
+			final IJsonNode countNode = entry.get("count");
+			if (countNode == MissingNode.getInstance())
+				return 1;
+			return ((IntNode) countNode).getIntValue();
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see eu.stratosphere.sopremo.pact.SopremoReduce#reduce(eu.stratosphere.sopremo.type.IArrayNode,
+		 * eu.stratosphere.sopremo.pact.JsonCollector)
+		 */
+		@Override
+		protected void reduce(final IStreamNode<IJsonNode> values, final JsonCollector<IJsonNode> out) {
+			final Iterator<IJsonNode> valueIterator = values.iterator();
+			final IObjectNode firstEntry = (IObjectNode) valueIterator.next();
+			int sum = this.getCount(firstEntry);
+			while (valueIterator.hasNext())
+				sum += this.getCount((IObjectNode) valueIterator.next());
+			out.collect(JsonUtil.createObjectNode("word", firstEntry.get("word"), "count", sum));
+		}
+	}
+}
+
+@InputCardinality(1)
+class Identity extends ElementaryOperator<Identity> {
+	public static class Implementation extends SopremoMap {
+		@Override
+		protected void map(final IJsonNode value, final JsonCollector<IJsonNode> out) {
+			out.collect(value);
+		}
+	}
 }
 
 @InputCardinality(1)
@@ -135,8 +181,32 @@ class TwoInputOperator extends ElementaryOperator<TwoInputOperator> {
 class PolymorphOperator extends ElementaryOperator<PolymorphOperator> {
 	public Mode method = Mode.TOKENIZE;
 
-	public enum Mode {
-		TOKENIZE, IDENTITY;
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(final Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (this.getClass() != obj.getClass())
+			return false;
+		final PolymorphOperator other = (PolymorphOperator) obj;
+		return this.method == other.method;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result + this.method.hashCode();
+		return result;
 	}
 
 	/**
@@ -165,32 +235,8 @@ class PolymorphOperator extends ElementaryOperator<PolymorphOperator> {
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#hashCode()
-	 */
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = super.hashCode();
-		result = prime * result + this.method.hashCode();
-		return result;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
-	@Override
-	public boolean equals(final Object obj) {
-		if (this == obj)
-			return true;
-		if (!super.equals(obj))
-			return false;
-		if (this.getClass() != obj.getClass())
-			return false;
-		final PolymorphOperator other = (PolymorphOperator) obj;
-		return this.method == other.method;
+	public enum Mode {
+		TOKENIZE, IDENTITY;
 	}
 
 }
@@ -222,54 +268,8 @@ class TokenizeLine extends ElementaryOperator<TokenizeLine> {
 	}
 }
 
-/**
- * Counts the number of values for a given key. Hence, the number of
- * occurences of a given token (word) is computed and emitted. The key is
- * not modified, hence a SameKey OutputOperator is attached to this class.<br>
- * Expected input: [{ word: "word1"}, { word: "word1"}] <br>
- * Output: [{ word: "word1", count: 2}]
- */
-@InputCardinality(1)
-class CountWords extends ElementaryOperator<CountWords> {
-	/**
-	 * Initializes SopremoTestPlanTest.CountWords.
-	 */
-	public CountWords() {
-		this.setKeyExpressions(0, new ObjectAccess("word"));
-	}
+@InputCardinality(2)
+@OutputCardinality(1)
+class TwoInputOperator extends ElementaryOperator<TwoInputOperator> {
 
-	@Combinable
-	public static class Implementation extends SopremoReduce {
-		/*
-		 * (non-Javadoc)
-		 * @see eu.stratosphere.sopremo.pact.SopremoReduce#reduce(eu.stratosphere.sopremo.type.IArrayNode,
-		 * eu.stratosphere.sopremo.pact.JsonCollector)
-		 */
-		@Override
-		protected void reduce(final IStreamNode<IJsonNode> values, final JsonCollector<IJsonNode> out) {
-			final Iterator<IJsonNode> valueIterator = values.iterator();
-			final IObjectNode firstEntry = (IObjectNode) valueIterator.next();
-			int sum = this.getCount(firstEntry);
-			while (valueIterator.hasNext())
-				sum += this.getCount((IObjectNode) valueIterator.next());
-			out.collect(JsonUtil.createObjectNode("word", firstEntry.get("word"), "count", sum));
-		}
-
-		protected int getCount(final IObjectNode entry) {
-			final IJsonNode countNode = entry.get("count");
-			if (countNode == MissingNode.getInstance())
-				return 1;
-			return ((IntNode) countNode).getIntValue();
-		}
-	}
-}
-
-@InputCardinality(1)
-class Identity extends ElementaryOperator<Identity> {
-	public static class Implementation extends SopremoMap {
-		@Override
-		protected void map(final IJsonNode value, final JsonCollector<IJsonNode> out) {
-			out.collect(value);
-		}
-	}
 }

@@ -17,6 +17,8 @@ package eu.stratosphere.util;
 /**
  */
 public interface HashCoder<T> {
+	public static HashCoder<Object> JavaHashCode = new JavaHashCoder(), SystemHashCode = new SystemHashCoder();
+
 	public int hashCodeFor(Object object);
 
 	public static class JavaHashCoder implements HashCoder<Object> {
@@ -32,6 +34,4 @@ public interface HashCoder<T> {
 			return System.identityHashCode(object);
 		}
 	}
-
-	public static HashCoder<Object> JavaHashCode = new JavaHashCoder(), SystemHashCode = new SystemHashCoder();
 }

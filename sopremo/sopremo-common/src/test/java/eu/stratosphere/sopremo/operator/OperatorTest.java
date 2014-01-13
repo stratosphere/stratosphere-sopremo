@@ -11,20 +11,12 @@ import java.util.List;
 
 import org.junit.Test;
 
-import eu.stratosphere.pact.common.plan.PactModule;
 import eu.stratosphere.sopremo.EqualCloneTest;
-import eu.stratosphere.sopremo.serialization.SopremoRecordLayout;
 
 /**
- * The class <code>OperatorTest</code> contains tests for the class <code>{@link Operator<?>}</code>.
- * 
+ * The class <code>OperatorTest</code> contains tests for the class <code>{@link Operator}</code>.
  */
 public class OperatorTest extends EqualCloneTest<OperatorTest.OpImpl> {
-	@Override
-	protected OpImpl createDefaultInstance(final int index) {
-		return new OpImpl(index);
-	}
-
 	/**
 	 * Run the Operator<?> clone() method test.
 	 */
@@ -301,20 +293,25 @@ public class OperatorTest extends EqualCloneTest<OperatorTest.OpImpl> {
 		fixture.setName(name);
 	}
 
+	@Override
+	protected OpImpl createDefaultInstance(final int index) {
+		return new OpImpl(index);
+	}
+
 	@InputCardinality(min = 1, max = 2)
 	@OutputCardinality(1)
 	static class OpImpl extends Operator<OpImpl> {
 		private final int index;
-
-		public OpImpl(final int index) {
-			this.index = index;
-		}
 
 		/**
 		 * Initializes OperatorTest.OpImpl.
 		 */
 		public OpImpl() {
 			this.index = 0;
+		}
+
+		public OpImpl(final int index) {
+			this.index = index;
 		}
 
 		/*

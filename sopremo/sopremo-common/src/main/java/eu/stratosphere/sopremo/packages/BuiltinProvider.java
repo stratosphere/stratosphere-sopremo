@@ -1,10 +1,14 @@
 package eu.stratosphere.sopremo.packages;
 
+import eu.stratosphere.sopremo.aggregation.AggregationFunction;
+import eu.stratosphere.sopremo.function.SopremoFunction;
+import eu.stratosphere.sopremo.type.IJsonNode;
+
 /**
  * Tag interface to indicate that the given class provides built-in functions and constants.<br>
  * There are two ways to specify functions that are automatically added to the {@link IFunctionRegistry}:
  * <ul>
- * <li>Implement a public, static function that only takes {@link eu.stratosphere.sopremo.type.IJsonNode}s or sub-types
+ * <li>Implement a public, static function that only takes {@link IJsonNode}s or sub-types
  * as parameters and returns a IJsonNode or sub-types or void. The first parameter of such a function is the return
  * value.<br>
  * If the type of the return value of a function is fixed, then the return type of the function should be void:<br>
@@ -19,8 +23,8 @@ package eu.stratosphere.sopremo.packages;
  * The result parameter takes the result of the last invocation. Thus, on the first invocation the parameter is null if
  * the type is not directly instantiable.
  * <li>The second way is to specify constants that inherit directly or indirectly from
- * {@link eu.stratosphere.sopremo.function.AggregationFunction}. These functions will be transparently added as
- * {@link eu.stratosphere.sopremo.function.SopremoFunction}s to the registry. Please note, that only these methods can
+ * {@link AggregationFunction}. These functions will be transparently added as
+ * {@link SopremoFunction}s to the registry. Please note, that only these methods can
  * be used in aggregating expressions.
  * </ul>
  * <br>

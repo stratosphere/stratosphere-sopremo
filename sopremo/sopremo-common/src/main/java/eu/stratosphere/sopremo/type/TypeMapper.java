@@ -32,8 +32,6 @@ public abstract class TypeMapper<From, To> {
 		this.toType = TypeToken.of(toBinding).getRawType();
 	}
 
-	public abstract To mapTo(From from, To target);
-
 	/**
 	 * Returns the resultType.
 	 * 
@@ -46,6 +44,8 @@ public abstract class TypeMapper<From, To> {
 	public boolean isValidTarget(final Object possibleTarget) {
 		return this.toType.isInstance(possibleTarget);
 	}
+
+	public abstract To mapTo(From from, To target);
 
 	/*
 	 * (non-Javadoc)

@@ -52,7 +52,7 @@ public class OutputServlet extends AbstractServletGUI {
 	/**
 	 * Updates content to set new scripts.
 	 * 
-	 * @param map
+	 * @param outputs
 	 *        contains all scripts
 	 */
 	public void update(final List<String> outputs) {

@@ -6,15 +6,6 @@ import eu.stratosphere.sopremo.testing.SopremoOperatorTestBase;
 import eu.stratosphere.sopremo.testing.SopremoTestPlan;
 
 public class IntersectionTest extends SopremoOperatorTestBase<Intersection> {
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.EqualVerifyTest#createDefaultInstance(int)
-	 */
-	@Override
-	protected Intersection createDefaultInstance(final int index) {
-		return new Intersection();
-	}
-
 	@Test
 	public void shouldSupportArraysOfPrimitives() {
 		final SopremoTestPlan sopremoPlan = new SopremoTestPlan(2, 1);
@@ -132,5 +123,14 @@ public class IntersectionTest extends SopremoOperatorTestBase<Intersection> {
 			addValue(2);
 
 		sopremoPlan.run();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.EqualVerifyTest#createDefaultInstance(int)
+	 */
+	@Override
+	protected Intersection createDefaultInstance(final int index) {
+		return new Intersection();
 	}
 }

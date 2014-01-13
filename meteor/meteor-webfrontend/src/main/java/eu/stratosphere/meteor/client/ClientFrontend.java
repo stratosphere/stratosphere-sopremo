@@ -130,8 +130,6 @@ public class ClientFrontend {
 
 	/**
 	 * Returns the paths to JSON files
-	 * 
-	 * @return
 	 */
 	public List<String> getOutputPaths() {
 		return Collections.unmodifiableList(this.outputs);
@@ -139,8 +137,6 @@ public class ClientFrontend {
 
 	/**
 	 * Returns the path to visualization file
-	 * 
-	 * @return
 	 */
 	public String getVisualizationDataURL() {
 		return this.visOutput;
@@ -148,8 +144,6 @@ public class ClientFrontend {
 
 	/**
 	 * Returns the whole JSON representation of job states
-	 * 
-	 * @return
 	 */
 	public String getJobStates() {
 		return this.jobStates;
@@ -159,7 +153,6 @@ public class ClientFrontend {
 	 * Returns metadata of sopremoclient
 	 * 
 	 * @param key
-	 * @return
 	 */
 	public String getMetaData(final String key) {
 		System.out.println("returning metadata for " + this.currentSopremoID);
@@ -199,8 +192,6 @@ public class ClientFrontend {
 
 	/**
 	 * Returns the path to written json file
-	 * 
-	 * @return path to json file
 	 */
 	private void extractHDFSWrites() {
 		// try to find matches in the entire script using regex

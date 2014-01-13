@@ -10,6 +10,7 @@ import java.io.Writer;
 import java.util.IdentityHashMap;
 import java.util.Map;
 
+import eu.stratosphere.sopremo.type.ArrayNode;
 import eu.stratosphere.sopremo.type.IArrayNode;
 import eu.stratosphere.sopremo.type.IJsonNode;
 import eu.stratosphere.sopremo.type.IObjectNode;
@@ -25,6 +26,17 @@ public class JsonGenerator {
 	BufferedWriter writer;
 
 	boolean isFirst = true;
+
+	/**
+	 * Initializes a JsonGenerator which uses the given {@link File} as a sink.
+	 * 
+	 * @param file
+	 *        the file that should be used as a sink
+	 * @throws IOException
+	 */
+	public JsonGenerator(final File file) throws IOException {
+		this.writer = new BufferedWriter(new FileWriter(file));
+	}
 
 	/**
 	 * Initializes a JsonGenerator which uses the given {@link OutputStream} as
@@ -49,41 +61,12 @@ public class JsonGenerator {
 	}
 
 	/**
-	 * Initializes a JsonGenerator which uses the given {@link File} as a sink.
-	 * 
-	 * @param file
-	 *        the file that should be used as a sink
-	 * @throws IOException
-	 */
-	public JsonGenerator(final File file) throws IOException {
-		this.writer = new BufferedWriter(new FileWriter(file));
-	}
-
-	/**
 	 * Closes the connection to the specified sink.
 	 * 
 	 * @throws IOException
 	 */
 	public void close() throws IOException {
 		this.writer.close();
-	}
-
-	/**
-	 * Writes the given {@link IJsonNode} to the specified sink. The
-	 * string-representations of multiple invocations are separated by a comma.
-	 * 
-	 * @param iJsonNode
-	 *        the node that should be written to the sink
-	 * @throws IOException
-	 */
-	public void writeTree(final IJsonNode iJsonNode) throws IOException {
-		if (iJsonNode != null) {
-			if (!this.isFirst)
-				this.writer.write(",\n");
-			final JsonTypeWriter<IJsonNode> typeWriter = JsonTypeWriterPool.getJsonTypeWriterFor(iJsonNode);
-			typeWriter.write(iJsonNode, this.writer);
-			this.isFirst = false;
-		}
 	}
 
 	/**
@@ -119,68 +102,25 @@ public class JsonGenerator {
 	}
 
 	/**
-	 * This interface describes the general behavior of JsonTypeWriters.
+	 * Writes the given {@link IJsonNode} to the specified sink. The
+	 * string-representations of multiple invocations are separated by a comma.
 	 * 
-	 * @param <T>
-	 *        A JsonTypeWriter should only be used with types implementing
-	 *        IJsonNode
+	 * @param iJsonNode
+	 *        the node that should be written to the sink
+	 * @throws IOException
 	 */
-	private static interface JsonTypeWriter<T extends IJsonNode> {
-		/**
-		 * This method takes a IJsonNode and a writer and let's the writer write the node in a type-specific way.
-		 * 
-		 * @param node
-		 *        The node you want to write.
-		 * @param writer
-		 *        The writer you want to write in.
-		 * @throws IOException
-		 */
-		public void write(T node, Writer writer) throws IOException;
-	}
-
-	/**
-	 * This class implements the JSON-Serialization for TextNodes
-	 * 
-	 * @param <T>
-	 */
-	private static class TextNodeTypeWriter implements JsonTypeWriter<TextNode> {
-
-		private static TextNodeTypeWriter Instance = new TextNodeTypeWriter();
-
-		@Override
-		public void write(final TextNode node, final Writer writer) throws IOException {
-			writer.append('\"');
-			final CharSequence textValue = node;
-			for (int index = 0, count = textValue.length(); index < count; index++) {
-				final char ch = textValue.charAt(index);
-				if (ch == '"')
-					writer.append("\\\"");
-				else
-					writer.append(ch);
-			}
-			writer.append('\"');
+	public void writeTree(final IJsonNode iJsonNode) throws IOException {
+		if (iJsonNode != null) {
+			if (!this.isFirst)
+				this.writer.write(",\n");
+			final JsonTypeWriter<IJsonNode> typeWriter = JsonTypeWriterPool.getJsonTypeWriterFor(iJsonNode);
+			typeWriter.write(iJsonNode, this.writer);
+			this.isFirst = false;
 		}
 	}
 
 	/**
-	 * This class implements the JSON-Serialization for TextNodes
-	 * 
-	 * @param <T>
-	 */
-	private static class NullNodeTypeWriter implements JsonTypeWriter<NullNode> {
-
-		private static NullNodeTypeWriter Instance = new NullNodeTypeWriter();
-
-		@Override
-		public void write(final NullNode node, final Writer writer) throws IOException {
-			writer.append("null");
-		}
-	}
-
-	/**
-	 * This class implements the JSON-Serialization for TextNodes
-	 * 
-	 * @param <T>
+	 * This class implements the JSON-Serialization for {@link ArrayNode}s
 	 */
 	private static class ArrayNodeTypeWriter implements JsonTypeWriter<IStreamNode<?>> {
 
@@ -205,34 +145,6 @@ public class JsonGenerator {
 	}
 
 	/**
-	 * This class implements the JSON-Serialization for ObjectNodes
-	 * 
-	 * @param <T>
-	 */
-	private static class ObjectNodeTypeWriter implements JsonTypeWriter<IObjectNode> {
-
-		private static ObjectNodeTypeWriter Instance = new ObjectNodeTypeWriter();
-
-		@Override
-		public void write(final IObjectNode node, final Writer writer) throws IOException {
-			writer.append('{');
-
-			boolean first = true;
-			for (final Map.Entry<String, IJsonNode> en : node) {
-				if (first)
-					first = false;
-				else
-					writer.append(',');
-
-				writer.append('\"').append(en.getKey()).append("\":");
-				JsonTypeWriterPool.getJsonTypeWriterFor(en.getValue()).write(en.getValue(), writer);
-			}
-
-			writer.append('}');
-		}
-	}
-
-	/**
 	 * This class implements the JSON-Serialization for all IJsonNodes without
 	 * an explicit TypeWriter
 	 * 
@@ -246,6 +158,26 @@ public class JsonGenerator {
 		public void write(final IJsonNode node, final Writer writer) throws IOException {
 			node.appendAsString(writer);
 		}
+	}
+
+	/**
+	 * This interface describes the general behavior of JsonTypeWriters.
+	 * 
+	 * @param <T>
+	 *        A JsonTypeWriter should only be used with types implementing
+	 *        IJsonNode
+	 */
+	private static interface JsonTypeWriter<T extends IJsonNode> {
+		/**
+		 * This method takes a IJsonNode and a writer and let's the writer write the node in a type-specific way.
+		 * 
+		 * @param node
+		 *        The node you want to write.
+		 * @param writer
+		 *        The writer you want to write in.
+		 * @throws IOException
+		 */
+		public void write(T node, Writer writer) throws IOException;
 	}
 
 	/**
@@ -278,6 +210,67 @@ public class JsonGenerator {
 			if (writerToReturn == null)
 				writerToReturn = GenericNodeTypeWriter.Instance;
 			return writerToReturn;
+		}
+	}
+
+	/**
+	 * This class implements the JSON-Serialization for {@link NullNode}s.
+	 */
+	private static class NullNodeTypeWriter implements JsonTypeWriter<NullNode> {
+
+		private static NullNodeTypeWriter Instance = new NullNodeTypeWriter();
+
+		@Override
+		public void write(final NullNode node, final Writer writer) throws IOException {
+			writer.append("null");
+		}
+	}
+
+	/**
+	 * This class implements the JSON-Serialization for {@link IObjectNode}s.
+	 */
+	private static class ObjectNodeTypeWriter implements JsonTypeWriter<IObjectNode> {
+
+		private static ObjectNodeTypeWriter Instance = new ObjectNodeTypeWriter();
+
+		@Override
+		public void write(final IObjectNode node, final Writer writer) throws IOException {
+			writer.append('{');
+
+			boolean first = true;
+			for (final Map.Entry<String, IJsonNode> en : node) {
+				if (first)
+					first = false;
+				else
+					writer.append(',');
+
+				writer.append('\"').append(en.getKey()).append("\":");
+				JsonTypeWriterPool.getJsonTypeWriterFor(en.getValue()).write(en.getValue(), writer);
+			}
+
+			writer.append('}');
+		}
+	}
+
+	/**
+	 * This class implements the JSON-Serialization for TextNodes
+	 */
+	private static class TextNodeTypeWriter implements JsonTypeWriter<TextNode> {
+
+		private static TextNodeTypeWriter Instance = new TextNodeTypeWriter();
+
+		@Override
+		public void write(final TextNode node, final Writer writer) throws IOException {
+			writer.append('\"');
+			final CharSequence textValue = node;
+			for (int index = 0, count = textValue.length(); index < count; index++) {
+				final char ch = textValue.charAt(index);
+				if (ch == '"')
+					writer.append("\\\"");
+				else
+					writer.append(ch);
+			}
+			writer.append('\"');
 		}
 	}
 }

@@ -43,7 +43,6 @@ import eu.stratosphere.util.StringUtils;
  * This class implements a lightweight, UDP-based RPC service.
  * <p>
  * This class is thread-safe.
- * 
  */
 public final class RPCService {
 
@@ -104,84 +103,6 @@ public final class RPCService {
 	private final ConcurrentHashMap<Integer, CachedResponse> cachedResponses =
 		new ConcurrentHashMap<Integer, CachedResponse>();
 
-	private static final class CachedResponse {
-
-		private final long creationTime;
-
-		private final DatagramPacket[] packets;
-
-		private CachedResponse(final long creationTime, final DatagramPacket[] packets) {
-			this.creationTime = creationTime;
-			this.packets = packets;
-		}
-	}
-
-	private static final class RPCRequestMonitor {
-
-		private RPCResponse rpcResponse = null;
-	}
-
-	private final class RPCInvocationHandler implements InvocationHandler {
-
-		private final InetSocketAddress remoteSocketAddress;
-
-		private final String interfaceName;
-
-		private RPCInvocationHandler(final InetSocketAddress remoteSocketAddress, final String interfaceName) {
-			this.remoteSocketAddress = remoteSocketAddress;
-			this.interfaceName = interfaceName;
-		}
-
-		/**
-		 * {@inheritDoc}
-		 */
-		@Override
-		public Object invoke(final Object proxy, final Method method, final Object[] args) throws Throwable {
-
-			final int messageID = (int) (Integer.MIN_VALUE + Math.random() * Integer.MAX_VALUE * 2.0);
-			final RPCRequest rpcRequest = new RPCRequest(messageID, this.interfaceName, method, args);
-
-			return RPCService.this.sendRPCRequest(this.remoteSocketAddress, rpcRequest);
-		}
-	}
-
-	private final class CleanupTask extends TimerTask {
-
-		/**
-		 * {@inheritDoc}
-		 */
-		@Override
-		public void run() {
-
-			// Process the collected data
-			RPCService.this.statistics.processCollectedData();
-
-			final long now = System.currentTimeMillis();
-			final Iterator<Map.Entry<Integer, CachedResponse>> it =
-				RPCService.this.cachedResponses.entrySet().iterator();
-			while (it.hasNext()) {
-
-				final Map.Entry<Integer, CachedResponse> entry = it.next();
-				final CachedResponse cachedResponse = entry.getValue();
-				if (cachedResponse.creationTime + CLEANUP_INTERVAL < now)
-					it.remove();
-			}
-
-			RPCService.this.networkThread.cleanUpStaleState();
-		}
-	}
-
-	public RPCService(final int rpcPort, final int numRPCHandlers) throws IOException {
-
-		this.rpcHandlers = Executors.newFixedThreadPool(numRPCHandlers);
-
-		this.rpcPort = rpcPort;
-		this.networkThread = new NetworkThread(this, rpcPort);
-		this.networkThread.start();
-
-		this.cleanupTimer.schedule(new CleanupTask(), CLEANUP_INTERVAL, CLEANUP_INTERVAL);
-	}
-
 	public RPCService() throws IOException {
 		this(DEFAULT_NUM_RPC_HANDLERS);
 	}
@@ -197,6 +118,31 @@ public final class RPCService {
 		this.cleanupTimer.schedule(new CleanupTask(), CLEANUP_INTERVAL, CLEANUP_INTERVAL);
 	}
 
+	public RPCService(final int rpcPort, final int numRPCHandlers) throws IOException {
+
+		this.rpcHandlers = Executors.newFixedThreadPool(numRPCHandlers);
+
+		this.rpcPort = rpcPort;
+		this.networkThread = new NetworkThread(this, rpcPort);
+		this.networkThread.start();
+
+		this.cleanupTimer.schedule(new CleanupTask(), CLEANUP_INTERVAL, CLEANUP_INTERVAL);
+	}
+
+	@SuppressWarnings("unchecked")
+	public <T extends RPCProtocol> T getProxy(final InetSocketAddress remoteAddress, final Class<T> protocol) {
+
+		final Class<?>[] interfaces = new Class<?>[1];
+		interfaces[0] = protocol;
+		return (T) java.lang.reflect.Proxy.newProxyInstance(RPCService.class.getClassLoader(), interfaces,
+			new RPCInvocationHandler(remoteAddress, protocol.getName()));
+	}
+
+	public int getRPCPort() {
+
+		return this.rpcPort;
+	}
+
 	public void setProtocolCallbackHandler(final Class<? extends RPCProtocol> protocol,
 			final RPCProtocol callbackHandler) {
 
@@ -208,51 +154,84 @@ public final class RPCService {
 
 	}
 
-	/**
-	 * Checks the signature of the methods contained in the given protocol.
-	 * 
-	 * @param protocol
-	 *        the protocol to be checked
-	 */
-	private static final void checkRPCProtocol(final Class<? extends RPCProtocol> protocol) {
+	public void shutDown() {
 
-		if (!protocol.isInterface())
-			throw new IllegalArgumentException("Provided protocol " + protocol + " is not an interface");
+		if (!this.shutdownRequested.compareAndSet(false, true))
+			return;
+
+		// Request shutdown of network thread
+		try {
+			this.networkThread.shutdown();
+		} catch (final InterruptedException ie) {
+			Log.debug("Caught exception while waiting for network thread to shut down: ", ie);
+		}
+
+		this.rpcHandlers.shutdown();
 
 		try {
-			final Method[] methods = protocol.getMethods();
-			for (int i = 0; i < methods.length; ++i) {
-
-				final Method method = methods[i];
-				final Class<?>[] exceptionTypes = method.getExceptionTypes();
-				boolean ioExceptionFound = false;
-				boolean interruptedExceptionFound = false;
-				for (int j = 0; j < exceptionTypes.length; ++j)
-					if (IOException.class.equals(exceptionTypes[j]))
-						ioExceptionFound = true;
-					else if (InterruptedException.class.equals(exceptionTypes[j]))
-						interruptedExceptionFound = true;
-
-				if (!ioExceptionFound)
-					throw new IllegalArgumentException("Method " + method.getName()
-						+ " of protocol " + protocol.getName() + " must be declared to throw an IOException");
-				if (!interruptedExceptionFound)
-					throw new IllegalArgumentException("Method " + method.getName()
-						+ " of protocol " + protocol.getName() + " must be declared to throw an InterruptedException");
-			}
-		} catch (final SecurityException se) {
-			if (Log.DEBUG)
-				Log.debug(StringUtils.stringifyException(se));
+			this.rpcHandlers.awaitTermination(5000L, TimeUnit.MILLISECONDS);
+		} catch (final InterruptedException ie) {
+			Log.debug("Caught exception while waiting for RPC handlers to finish: ", ie);
 		}
+
+		this.cleanupTimer.cancel();
+
+		// Finally, process the last collected data
+		this.statistics.processCollectedData();
 	}
 
-	@SuppressWarnings("unchecked")
-	public <T extends RPCProtocol> T getProxy(final InetSocketAddress remoteAddress, final Class<T> protocol) {
+	void processIncomingRPCCleanup(final RPCCleanup rpcCleanup) {
 
-		final Class<?>[] interfaces = new Class<?>[1];
-		interfaces[0] = protocol;
-		return (T) java.lang.reflect.Proxy.newProxyInstance(RPCService.class.getClassLoader(), interfaces,
-			new RPCInvocationHandler(remoteAddress, protocol.getName()));
+		this.cachedResponses.remove(Integer.valueOf(rpcCleanup.getMessageID()));
+	}
+
+	void processIncomingRPCMessage(final InetSocketAddress remoteSocketAddress, final Input input) {
+
+		final Runnable runnable = new Runnable() {
+
+			/**
+			 * {@inheritDoc}
+			 */
+			@Override
+			public void run() {
+
+				final Kryo k = KryoUtil.getKryo();
+				k.reset();
+				final RPCEnvelope envelope = k.readObject(input, RPCEnvelope.class);
+				final RPCMessage msg = envelope.getRPCMessage();
+
+				if (msg instanceof RPCRequest)
+					RPCService.this.processIncomingRPCRequest(remoteSocketAddress, (RPCRequest) msg);
+				else if (msg instanceof RPCResponse)
+					RPCService.this.processIncomingRPCResponse((RPCResponse) msg);
+				else
+					RPCService.this.processIncomingRPCCleanup((RPCCleanup) msg);
+			}
+		};
+
+		this.rpcHandlers.execute(runnable);
+	}
+
+	/**
+	 * Processes an incoming RPC response.
+	 * 
+	 * @param rpcResponse
+	 *        the RPC response to be processed
+	 */
+	void processIncomingRPCResponse(final RPCResponse rpcResponse) {
+
+		final Integer messageID = Integer.valueOf(rpcResponse.getMessageID());
+
+		final RPCRequestMonitor requestMonitor = this.pendingRequests.get(messageID);
+
+		// The caller has already timed out or received an earlier response
+		if (requestMonitor == null)
+			return;
+
+		synchronized (requestMonitor) {
+			requestMonitor.rpcResponse = rpcResponse;
+			requestMonitor.notify();
+		}
 	}
 
 	/**
@@ -324,57 +303,39 @@ public final class RPCService {
 		throw ((RPCThrowable) rpcResponse).getThrowable();
 	}
 
-	public void shutDown() {
+	/**
+	 * Checks if the given class is registered with the RPC service.
+	 * 
+	 * @param throwableType
+	 *        the class to check
+	 * @return <code>true</code> if the given class is registered with the RPC service, <code>false</code> otherwise
+	 */
+	private boolean isThrowableRegistered(final Class<? extends Throwable> throwableType) {
 
-		if (!this.shutdownRequested.compareAndSet(false, true))
-			return;
-
-		// Request shutdown of network thread
+		final Kryo kryo = KryoUtil.getKryo();
 		try {
-			this.networkThread.shutdown();
-		} catch (final InterruptedException ie) {
-			Log.debug("Caught exception while waiting for network thread to shut down: ", ie);
+			kryo.getRegistration(throwableType);
+		} catch (final IllegalArgumentException e) {
+			return false;
 		}
 
-		this.rpcHandlers.shutdown();
-
-		try {
-			this.rpcHandlers.awaitTermination(5000L, TimeUnit.MILLISECONDS);
-		} catch (final InterruptedException ie) {
-			Log.debug("Caught exception while waiting for RPC handlers to finish: ", ie);
-		}
-
-		this.cleanupTimer.cancel();
-
-		// Finally, process the last collected data
-		this.statistics.processCollectedData();
+		return true;
 	}
 
-	void processIncomingRPCMessage(final InetSocketAddress remoteSocketAddress, final Input input) {
+	private DatagramPacket[] messageToPackets(final InetSocketAddress remoteSocketAddress, final RPCMessage rpcMessage) {
 
-		final Runnable runnable = new Runnable() {
+		final MultiPacketOutputStream mpos = new MultiPacketOutputStream(RPCMessage.MAXIMUM_MSG_SIZE
+			+ RPCMessage.METADATA_SIZE);
+		final Kryo kryo = KryoUtil.getKryo();
+		kryo.reset();
 
-			/**
-			 * {@inheritDoc}
-			 */
-			@Override
-			public void run() {
+		final Output output = new Output(mpos);
 
-				final Kryo k = KryoUtil.getKryo();
-				k.reset();
-				final RPCEnvelope envelope = k.readObject(input, RPCEnvelope.class);
-				final RPCMessage msg = envelope.getRPCMessage();
+		kryo.writeObject(output, new RPCEnvelope(rpcMessage));
+		output.close();
+		mpos.close();
 
-				if (msg instanceof RPCRequest)
-					RPCService.this.processIncomingRPCRequest(remoteSocketAddress, (RPCRequest) msg);
-				else if (msg instanceof RPCResponse)
-					RPCService.this.processIncomingRPCResponse((RPCResponse) msg);
-				else
-					RPCService.this.processIncomingRPCCleanup((RPCCleanup) msg);
-			}
-		};
-
-		this.rpcHandlers.execute(runnable);
+		return mpos.createPackets(remoteSocketAddress);
 	}
 
 	private void processIncomingRPCRequest(final InetSocketAddress remoteSocketAddress, final RPCRequest rpcRequest) {
@@ -442,22 +403,68 @@ public final class RPCService {
 	}
 
 	/**
-	 * Checks if the given class is registered with the RPC service.
+	 * Converts the unsigned short into an integer
 	 * 
-	 * @param throwableType
-	 *        the class to check
-	 * @return <code>true</code> if the given class is registered with the RPC service, <code>false</code> otherwise
+	 * @param val
+	 *        the unsigned short
+	 * @return the converted integer
 	 */
-	private boolean isThrowableRegistered(final Class<? extends Throwable> throwableType) {
+	static int decodeInteger(final short val) {
 
-		final Kryo kryo = KryoUtil.getKryo();
+		return val - Short.MIN_VALUE - 1;
+	}
+
+	/**
+	 * Converts the given integer to a unsigned short.
+	 * 
+	 * @param val
+	 *        the integer to convert
+	 * @return the unsigned short
+	 */
+	static short encodeInteger(final int val) {
+
+		if (val < -1 || val > 65534)
+			throw new IllegalArgumentException("Value must be in the range -1 and 65534 but is " + val);
+
+		return (short) (val - Short.MIN_VALUE + 1);
+	}
+
+	/**
+	 * Checks the signature of the methods contained in the given protocol.
+	 * 
+	 * @param protocol
+	 *        the protocol to be checked
+	 */
+	private static final void checkRPCProtocol(final Class<? extends RPCProtocol> protocol) {
+
+		if (!protocol.isInterface())
+			throw new IllegalArgumentException("Provided protocol " + protocol + " is not an interface");
+
 		try {
-			kryo.getRegistration(throwableType);
-		} catch (final IllegalArgumentException e) {
-			return false;
-		}
+			final Method[] methods = protocol.getMethods();
+			for (int i = 0; i < methods.length; ++i) {
 
-		return true;
+				final Method method = methods[i];
+				final Class<?>[] exceptionTypes = method.getExceptionTypes();
+				boolean ioExceptionFound = false;
+				boolean interruptedExceptionFound = false;
+				for (int j = 0; j < exceptionTypes.length; ++j)
+					if (IOException.class.equals(exceptionTypes[j]))
+						ioExceptionFound = true;
+					else if (InterruptedException.class.equals(exceptionTypes[j]))
+						interruptedExceptionFound = true;
+
+				if (!ioExceptionFound)
+					throw new IllegalArgumentException("Method " + method.getName()
+						+ " of protocol " + protocol.getName() + " must be declared to throw an IOException");
+				if (!interruptedExceptionFound)
+					throw new IllegalArgumentException("Method " + method.getName()
+						+ " of protocol " + protocol.getName() + " must be declared to throw an InterruptedException");
+			}
+		} catch (final SecurityException se) {
+			if (Log.DEBUG)
+				Log.debug(StringUtils.stringifyException(se));
+		}
 	}
 
 	/**
@@ -481,78 +488,70 @@ public final class RPCService {
 		return new IOException(sb.toString());
 	}
 
-	private DatagramPacket[] messageToPackets(final InetSocketAddress remoteSocketAddress, final RPCMessage rpcMessage) {
+	private static final class CachedResponse {
 
-		final MultiPacketOutputStream mpos = new MultiPacketOutputStream(RPCMessage.MAXIMUM_MSG_SIZE
-			+ RPCMessage.METADATA_SIZE);
-		final Kryo kryo = KryoUtil.getKryo();
-		kryo.reset();
+		private final long creationTime;
 
-		final Output output = new Output(mpos);
+		private final DatagramPacket[] packets;
 
-		kryo.writeObject(output, new RPCEnvelope(rpcMessage));
-		output.close();
-		mpos.close();
-
-		return mpos.createPackets(remoteSocketAddress);
-	}
-
-	/**
-	 * Processes an incoming RPC response.
-	 * 
-	 * @param rpcResponse
-	 *        the RPC response to be processed
-	 */
-	void processIncomingRPCResponse(final RPCResponse rpcResponse) {
-
-		final Integer messageID = Integer.valueOf(rpcResponse.getMessageID());
-
-		final RPCRequestMonitor requestMonitor = this.pendingRequests.get(messageID);
-
-		// The caller has already timed out or received an earlier response
-		if (requestMonitor == null)
-			return;
-
-		synchronized (requestMonitor) {
-			requestMonitor.rpcResponse = rpcResponse;
-			requestMonitor.notify();
+		private CachedResponse(final long creationTime, final DatagramPacket[] packets) {
+			this.creationTime = creationTime;
+			this.packets = packets;
 		}
 	}
 
-	void processIncomingRPCCleanup(final RPCCleanup rpcCleanup) {
+	private final class CleanupTask extends TimerTask {
 
-		this.cachedResponses.remove(Integer.valueOf(rpcCleanup.getMessageID()));
+		/**
+		 * {@inheritDoc}
+		 */
+		@Override
+		public void run() {
+
+			// Process the collected data
+			RPCService.this.statistics.processCollectedData();
+
+			final long now = System.currentTimeMillis();
+			final Iterator<Map.Entry<Integer, CachedResponse>> it =
+				RPCService.this.cachedResponses.entrySet().iterator();
+			while (it.hasNext()) {
+
+				final Map.Entry<Integer, CachedResponse> entry = it.next();
+				final CachedResponse cachedResponse = entry.getValue();
+				if (cachedResponse.creationTime + CLEANUP_INTERVAL < now)
+					it.remove();
+			}
+
+			RPCService.this.networkThread.cleanUpStaleState();
+		}
 	}
 
-	public int getRPCPort() {
+	private final class RPCInvocationHandler implements InvocationHandler {
 
-		return this.rpcPort;
+		private final InetSocketAddress remoteSocketAddress;
+
+		private final String interfaceName;
+
+		private RPCInvocationHandler(final InetSocketAddress remoteSocketAddress, final String interfaceName) {
+			this.remoteSocketAddress = remoteSocketAddress;
+			this.interfaceName = interfaceName;
+		}
+
+		/**
+		 * {@inheritDoc}
+		 */
+		@Override
+		public Object invoke(final Object proxy, final Method method, final Object[] args) throws Throwable {
+
+			final int messageID = (int) (Integer.MIN_VALUE + Math.random() * Integer.MAX_VALUE * 2.0);
+			final RPCRequest rpcRequest = new RPCRequest(messageID, this.interfaceName, method, args);
+
+			return RPCService.this.sendRPCRequest(this.remoteSocketAddress, rpcRequest);
+		}
 	}
 
-	/**
-	 * Converts the given integer to a unsigned short.
-	 * 
-	 * @param val
-	 *        the integer to convert
-	 * @return the unsigned short
-	 */
-	static short encodeInteger(final int val) {
+	private static final class RPCRequestMonitor {
 
-		if (val < -1 || val > 65534)
-			throw new IllegalArgumentException("Value must be in the range -1 and 65534 but is " + val);
-
-		return (short) (val - Short.MIN_VALUE + 1);
-	}
-
-	/**
-	 * Converts the unsigned short into an integer
-	 * 
-	 * @param val
-	 *        the unsigned short
-	 * @return the converted integer
-	 */
-	static int decodeInteger(final short val) {
-
-		return val - Short.MIN_VALUE - 1;
+		private RPCResponse rpcResponse = null;
 	}
 }

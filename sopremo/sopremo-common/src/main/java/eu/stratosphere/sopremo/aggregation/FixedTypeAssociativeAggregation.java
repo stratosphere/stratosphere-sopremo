@@ -38,8 +38,6 @@ public abstract class FixedTypeAssociativeAggregation<ElementType extends IJsonN
 		this.aggregator.copyValueFrom(this.initialAggregate);
 	}
 
-	protected abstract void aggregateInto(ElementType aggregator, IJsonNode element);
-
 	/*
 	 * (non-Javadoc)
 	 * @see eu.stratosphere.sopremo.aggregation.AssociativeAggregation#aggregate(eu.stratosphere.sopremo.type.IJsonNode,
@@ -49,4 +47,6 @@ public abstract class FixedTypeAssociativeAggregation<ElementType extends IJsonN
 	protected ElementType aggregate(final ElementType aggregator, final IJsonNode element) {
 		return null;
 	}
+
+	protected abstract void aggregateInto(ElementType aggregator, IJsonNode element);
 }

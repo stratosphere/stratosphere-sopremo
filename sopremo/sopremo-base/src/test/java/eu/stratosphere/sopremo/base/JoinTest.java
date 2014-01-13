@@ -20,13 +20,89 @@ import eu.stratosphere.sopremo.type.JsonUtil;
 import eu.stratosphere.sopremo.type.MissingNode;
 
 public class JoinTest extends SopremoOperatorTestBase<Join> {
-	@Override
-	protected Join createDefaultInstance(final int index) {
+	@Test
+	public void shouldFindAlignedTrianglesThroughJoin() {
+		final SopremoTestPlan sopremoPlan = new SopremoTestPlan(5, 1);
+
+		final AndExpression condition =
+			new AndExpression(new ComparativeExpression(createPath("0", "t"), BinaryOperator.EQUAL,
+				createPath("1", "s")),
+				new ComparativeExpression(createPath("1", "t"), BinaryOperator.EQUAL, createPath("2", "s")),
+				new ComparativeExpression(createPath("2", "t"),
+					BinaryOperator.EQUAL, createPath("0", "s")),
+				new ComparativeExpression(createPath("0", "t"), BinaryOperator.EQUAL, createPath("3", "s")),
+				new ComparativeExpression(createPath("3", "t"),
+					BinaryOperator.EQUAL, createPath("4", "s")),
+				new ComparativeExpression(createPath("4", "t"), BinaryOperator.EQUAL, createPath("0", "s")),
+				new ComparativeExpression(createPath("2", "s"),
+					BinaryOperator.NOT_EQUAL, createPath("4", "s")));
 		final ObjectCreation transformation = new ObjectCreation();
-		transformation.addMapping("field", createPath("0", "[" + index + "]"));
-		final BooleanExpression condition =
-			new ComparativeExpression(createPath("0", "id"), BinaryOperator.EQUAL, createPath("1", "userid"));
-		return new Join().withJoinCondition(condition).withResultProjection(transformation);
+		transformation.addMapping("s1", createPath("0", "s"));
+		transformation.addMapping("s2", createPath("1", "s"));
+		transformation.addMapping("s3", createPath("2", "s"));
+		transformation.addMapping("s4", createPath("4", "s"));
+		final Join join = new Join().withJoinCondition(condition).withResultProjection(transformation);
+		join.setInputs(sopremoPlan.getInputOperators(0, 5));
+		sopremoPlan.getOutputOperator(0).setInputs(join);
+		for (int i = 0; i <= 4; i++)
+			sopremoPlan.getInput(i).addObject("s", 1, "t", 3).addObject("s", 3, "t", 2).addObject("s", 2, "t", 1).addObject(
+				"s", 3, "t", 4)
+				.addObject("s", 4, "t", 1);
+		sopremoPlan.getExpectedOutput(0).addObject("s1", 1, "s2", 3, "s3", 2, "s4", 4).addObject("s1", 1, "s2", 3,
+			"s3", 4, "s4", 2);
+
+		sopremoPlan.run();
+	}
+
+	@Test
+	public void shouldFindCircleThroughJoin() {
+		final SopremoTestPlan sopremoPlan = new SopremoTestPlan(3, 1);
+
+		final AndExpression condition =
+			new AndExpression(new ComparativeExpression(createPath("0", "fk"), BinaryOperator.EQUAL, createPath("1",
+				"kryo")),
+				new ComparativeExpression(createPath("2", "fk"), BinaryOperator.EQUAL, createPath("0", "kryo")),
+				new ComparativeExpression(createPath("1", "fk"),
+					BinaryOperator.EQUAL, createPath("2", "kryo")));
+		final ObjectCreation transformation = new ObjectCreation();
+		transformation.addMapping("k1", createPath("0", "kryo"));
+		transformation.addMapping("k2", createPath("1", "kryo"));
+		transformation.addMapping("k3", createPath("2", "kryo"));
+		final Join join = new Join().withJoinCondition(condition).withResultProjection(transformation);
+		join.setInputs(sopremoPlan.getInputOperators(0, 3));
+		sopremoPlan.getOutputOperator(0).setInputs(join);
+		for (int i = 0; i <= 2; i++)
+			sopremoPlan.getInput(i).addObject("kryo", 1, "fk", 2).addObject("kryo", 2, "fk", 3).addObject("kryo", 3,
+				"fk", 1);
+		sopremoPlan.getExpectedOutput(0).addObject("k1", 1, "k2", 2, "k3", 3).addObject("k1", 2, "k2", 3, "k3", 1).addObject(
+			"k1", 3, "k2", 1, "k3", 2);
+
+		sopremoPlan.run();
+	}
+
+	@Test
+	public void shouldFindTriangleThroughJoin() {
+		final SopremoTestPlan sopremoPlan = new SopremoTestPlan(3, 1);
+
+		final AndExpression condition =
+			new AndExpression(new ComparativeExpression(createPath("1", "fk"), BinaryOperator.EQUAL, createPath("2",
+				"fk")),
+				new ComparativeExpression(createPath("2", "kryo"), BinaryOperator.EQUAL, createPath("0", "kryo")),
+				new ComparativeExpression(createPath("0", "fk"),
+					BinaryOperator.EQUAL, createPath("1", "kryo")));
+		final ObjectCreation transformation = new ObjectCreation();
+		transformation.addMapping("k1", createPath("0", "kryo"));
+		transformation.addMapping("k2", createPath("1", "kryo"));
+		transformation.addMapping("k3", createPath("2", "fk"));
+		final Join join = new Join().withJoinCondition(condition).withResultProjection(transformation);
+		join.setInputs(sopremoPlan.getInputOperators(0, 3));
+		sopremoPlan.getOutputOperator(0).setInputs(join);
+		for (int i = 0; i <= 2; i++)
+			sopremoPlan.getInput(i).addObject("kryo", 1, "fk", 2).addObject("kryo", 2, "fk", 3).addObject("kryo", 1,
+				"fk", 3);
+		sopremoPlan.getExpectedOutput(0).addObject("k1", 1, "k2", 2, "k3", 3);
+
+		sopremoPlan.run();
 	}
 
 	@Test
@@ -48,70 +124,6 @@ public class JoinTest extends SopremoOperatorTestBase<Join> {
 		sopremoPlan.getExpectedOutput(0).addArray(
 			JsonUtil.createObjectNode("Name", "Harry", "EmpId", 3415, "DeptName", "Finance"))
 			.addArray(JsonUtil.createObjectNode("Name", "George", "EmpId", 3401, "DeptName", "Finance"));
-
-		sopremoPlan.run();
-	}
-
-	@Test
-	public void shouldPerformEquiJoin() {
-		final SopremoTestPlan sopremoPlan = new SopremoTestPlan(2, 1);
-
-		final AndExpression condition =
-			new AndExpression(new ComparativeExpression(createPath("0", "id"), BinaryOperator.EQUAL, createPath("1",
-				"userid")));
-		final Join join = new Join().withJoinCondition(condition);
-		join.setInputs(sopremoPlan.getInputOperators(0, 2));
-		sopremoPlan.getOutputOperator(0).setInputs(join);
-		sopremoPlan.getInput(0).
-			addObject("name", "Jon Doe", "password", "asdf1234", "id", 1).
-			addObject("name", "Jane Doe", "password", "qwertyui", "id", 2).
-			addObject("name", "Max Mustermann", "password", "q1w2e3r4", "id", 3);
-		sopremoPlan.getInput(1).addObject("userid", 1, "url", "code.google.com/p/jaql/").addObject("userid", 2, "url",
-			"www.cnn.com")
-			.addObject("userid", 1, "url", "java.sun.com/javase/6/docs/api/");
-		sopremoPlan
-			.getExpectedOutput(0)
-			.addArray(JsonUtil.createObjectNode("name", "Jon Doe", "password", "asdf1234", "id", 1),
-				JsonUtil.createObjectNode("userid", 1, "url", "code.google.com/p/jaql/"))
-			.addArray(JsonUtil.createObjectNode("name", "Jon Doe", "password", "asdf1234", "id", 1),
-				JsonUtil.createObjectNode("userid", 1, "url", "java.sun.com/javase/6/docs/api/"))
-			.addArray(JsonUtil.createObjectNode("name", "Jane Doe", "password", "qwertyui", "id", 2),
-				JsonUtil.createObjectNode("userid", 2, "url", "www.cnn.com"));
-
-		sopremoPlan.run();
-	}
-
-	@Test
-	public void shouldPerformEquiJoinOnThreeInputs() {
-		final SopremoTestPlan sopremoPlan = new SopremoTestPlan(3, 1);
-
-		final AndExpression condition =
-			new AndExpression(new ComparativeExpression(createPath("0", "id"), BinaryOperator.EQUAL, createPath("1",
-				"userid")),
-				new ComparativeExpression(createPath("1", "url"), BinaryOperator.EQUAL, createPath("2", "page")));
-		final ObjectCreation transformation = new ObjectCreation();
-		transformation.addMapping("name", createPath("0", "name"));
-		transformation.addMapping("url", createPath("1", "url"));
-		transformation.addMapping("company", createPath("2", "company"));
-		final Join join = new Join().withJoinCondition(condition).withResultProjection(transformation);
-		join.setInputs(sopremoPlan.getInputOperators(0, 3));
-		sopremoPlan.getOutputOperator(0).setInputs(join);
-		sopremoPlan.getInput(0).
-			addObject("name", "Jon Doe", "password", "asdf1234", "id", 1).
-			addObject("name", "Jane Doe", "password", "qwertyui", "id", 2).
-			addObject("name", "Max Mustermann", "password", "q1w2e3r4", "id", 3);
-		sopremoPlan.getInput(1).addObject("userid", 1, "url", "code.google.com/p/jaql/").addObject("userid", 2, "url",
-			"www.oracle.com")
-			.addObject("userid", 1, "url", "java.sun.com/javase/6/docs/api/").addObject("userid", 3, "url",
-				"www.oracle.com");
-		sopremoPlan.getInput(2).addObject("page", "code.google.com/p/jaql/", "company", "ibm").addObject("page",
-			"www.oracle.com", "company", "oracle")
-			.addObject("page", "java.sun.com/javase/6/docs/api/", "company", "oracle");
-		sopremoPlan.getExpectedOutput(0).addObject("name", "Jon Doe", "url", "code.google.com/p/jaql/", "company",
-			"ibm")
-			.addObject("name", "Jon Doe", "url", "java.sun.com/javase/6/docs/api/", "company", "oracle")
-			.addObject("name", "Jane Doe", "url", "www.oracle.com", "company", "oracle")
-			.addObject("name", "Max Mustermann", "url", "www.oracle.com", "company", "oracle");
 
 		sopremoPlan.run();
 	}
@@ -193,86 +205,65 @@ public class JoinTest extends SopremoOperatorTestBase<Join> {
 	}
 
 	@Test
-	public void shouldFindCircleThroughJoin() {
-		final SopremoTestPlan sopremoPlan = new SopremoTestPlan(3, 1);
+	public void shouldPerformEquiJoin() {
+		final SopremoTestPlan sopremoPlan = new SopremoTestPlan(2, 1);
 
 		final AndExpression condition =
-			new AndExpression(new ComparativeExpression(createPath("0", "fk"), BinaryOperator.EQUAL, createPath("1",
-				"kryo")),
-				new ComparativeExpression(createPath("2", "fk"), BinaryOperator.EQUAL, createPath("0", "kryo")),
-				new ComparativeExpression(createPath("1", "fk"),
-					BinaryOperator.EQUAL, createPath("2", "kryo")));
-		final ObjectCreation transformation = new ObjectCreation();
-		transformation.addMapping("k1", createPath("0", "kryo"));
-		transformation.addMapping("k2", createPath("1", "kryo"));
-		transformation.addMapping("k3", createPath("2", "kryo"));
-		final Join join = new Join().withJoinCondition(condition).withResultProjection(transformation);
-		join.setInputs(sopremoPlan.getInputOperators(0, 3));
+			new AndExpression(new ComparativeExpression(createPath("0", "id"), BinaryOperator.EQUAL, createPath("1",
+				"userid")));
+		final Join join = new Join().withJoinCondition(condition);
+		join.setInputs(sopremoPlan.getInputOperators(0, 2));
 		sopremoPlan.getOutputOperator(0).setInputs(join);
-		for (int i = 0; i <= 2; i++)
-			sopremoPlan.getInput(i).addObject("kryo", 1, "fk", 2).addObject("kryo", 2, "fk", 3).addObject("kryo", 3,
-				"fk", 1);
-		sopremoPlan.getExpectedOutput(0).addObject("k1", 1, "k2", 2, "k3", 3).addObject("k1", 2, "k2", 3, "k3", 1).addObject(
-			"k1", 3, "k2", 1, "k3", 2);
+		sopremoPlan.getInput(0).
+			addObject("name", "Jon Doe", "password", "asdf1234", "id", 1).
+			addObject("name", "Jane Doe", "password", "qwertyui", "id", 2).
+			addObject("name", "Max Mustermann", "password", "q1w2e3r4", "id", 3);
+		sopremoPlan.getInput(1).addObject("userid", 1, "url", "code.google.com/p/jaql/").addObject("userid", 2, "url",
+			"www.cnn.com")
+			.addObject("userid", 1, "url", "java.sun.com/javase/6/docs/api/");
+		sopremoPlan
+			.getExpectedOutput(0)
+			.addArray(JsonUtil.createObjectNode("name", "Jon Doe", "password", "asdf1234", "id", 1),
+				JsonUtil.createObjectNode("userid", 1, "url", "code.google.com/p/jaql/"))
+			.addArray(JsonUtil.createObjectNode("name", "Jon Doe", "password", "asdf1234", "id", 1),
+				JsonUtil.createObjectNode("userid", 1, "url", "java.sun.com/javase/6/docs/api/"))
+			.addArray(JsonUtil.createObjectNode("name", "Jane Doe", "password", "qwertyui", "id", 2),
+				JsonUtil.createObjectNode("userid", 2, "url", "www.cnn.com"));
 
 		sopremoPlan.run();
 	}
 
 	@Test
-	public void shouldFindTriangleThroughJoin() {
+	public void shouldPerformEquiJoinOnThreeInputs() {
 		final SopremoTestPlan sopremoPlan = new SopremoTestPlan(3, 1);
 
 		final AndExpression condition =
-			new AndExpression(new ComparativeExpression(createPath("1", "fk"), BinaryOperator.EQUAL, createPath("2",
-				"fk")),
-				new ComparativeExpression(createPath("2", "kryo"), BinaryOperator.EQUAL, createPath("0", "kryo")),
-				new ComparativeExpression(createPath("0", "fk"),
-					BinaryOperator.EQUAL, createPath("1", "kryo")));
+			new AndExpression(new ComparativeExpression(createPath("0", "id"), BinaryOperator.EQUAL, createPath("1",
+				"userid")),
+				new ComparativeExpression(createPath("1", "url"), BinaryOperator.EQUAL, createPath("2", "page")));
 		final ObjectCreation transformation = new ObjectCreation();
-		transformation.addMapping("k1", createPath("0", "kryo"));
-		transformation.addMapping("k2", createPath("1", "kryo"));
-		transformation.addMapping("k3", createPath("2", "fk"));
+		transformation.addMapping("name", createPath("0", "name"));
+		transformation.addMapping("url", createPath("1", "url"));
+		transformation.addMapping("company", createPath("2", "company"));
 		final Join join = new Join().withJoinCondition(condition).withResultProjection(transformation);
 		join.setInputs(sopremoPlan.getInputOperators(0, 3));
 		sopremoPlan.getOutputOperator(0).setInputs(join);
-		for (int i = 0; i <= 2; i++)
-			sopremoPlan.getInput(i).addObject("kryo", 1, "fk", 2).addObject("kryo", 2, "fk", 3).addObject("kryo", 1,
-				"fk", 3);
-		sopremoPlan.getExpectedOutput(0).addObject("k1", 1, "k2", 2, "k3", 3);
-
-		sopremoPlan.run();
-	}
-
-	@Test
-	public void shouldFindAlignedTrianglesThroughJoin() {
-		final SopremoTestPlan sopremoPlan = new SopremoTestPlan(5, 1);
-
-		final AndExpression condition =
-			new AndExpression(new ComparativeExpression(createPath("0", "t"), BinaryOperator.EQUAL,
-				createPath("1", "s")),
-				new ComparativeExpression(createPath("1", "t"), BinaryOperator.EQUAL, createPath("2", "s")),
-				new ComparativeExpression(createPath("2", "t"),
-					BinaryOperator.EQUAL, createPath("0", "s")),
-				new ComparativeExpression(createPath("0", "t"), BinaryOperator.EQUAL, createPath("3", "s")),
-				new ComparativeExpression(createPath("3", "t"),
-					BinaryOperator.EQUAL, createPath("4", "s")),
-				new ComparativeExpression(createPath("4", "t"), BinaryOperator.EQUAL, createPath("0", "s")),
-				new ComparativeExpression(createPath("2", "s"),
-					BinaryOperator.NOT_EQUAL, createPath("4", "s")));
-		final ObjectCreation transformation = new ObjectCreation();
-		transformation.addMapping("s1", createPath("0", "s"));
-		transformation.addMapping("s2", createPath("1", "s"));
-		transformation.addMapping("s3", createPath("2", "s"));
-		transformation.addMapping("s4", createPath("4", "s"));
-		final Join join = new Join().withJoinCondition(condition).withResultProjection(transformation);
-		join.setInputs(sopremoPlan.getInputOperators(0, 5));
-		sopremoPlan.getOutputOperator(0).setInputs(join);
-		for (int i = 0; i <= 4; i++)
-			sopremoPlan.getInput(i).addObject("s", 1, "t", 3).addObject("s", 3, "t", 2).addObject("s", 2, "t", 1).addObject(
-				"s", 3, "t", 4)
-				.addObject("s", 4, "t", 1);
-		sopremoPlan.getExpectedOutput(0).addObject("s1", 1, "s2", 3, "s3", 2, "s4", 4).addObject("s1", 1, "s2", 3,
-			"s3", 4, "s4", 2);
+		sopremoPlan.getInput(0).
+			addObject("name", "Jon Doe", "password", "asdf1234", "id", 1).
+			addObject("name", "Jane Doe", "password", "qwertyui", "id", 2).
+			addObject("name", "Max Mustermann", "password", "q1w2e3r4", "id", 3);
+		sopremoPlan.getInput(1).addObject("userid", 1, "url", "code.google.com/p/jaql/").addObject("userid", 2, "url",
+			"www.oracle.com")
+			.addObject("userid", 1, "url", "java.sun.com/javase/6/docs/api/").addObject("userid", 3, "url",
+				"www.oracle.com");
+		sopremoPlan.getInput(2).addObject("page", "code.google.com/p/jaql/", "company", "ibm").addObject("page",
+			"www.oracle.com", "company", "oracle")
+			.addObject("page", "java.sun.com/javase/6/docs/api/", "company", "oracle");
+		sopremoPlan.getExpectedOutput(0).addObject("name", "Jon Doe", "url", "code.google.com/p/jaql/", "company",
+			"ibm")
+			.addObject("name", "Jon Doe", "url", "java.sun.com/javase/6/docs/api/", "company", "oracle")
+			.addObject("name", "Jane Doe", "url", "www.oracle.com", "company", "oracle")
+			.addObject("name", "Max Mustermann", "url", "www.oracle.com", "company", "oracle");
 
 		sopremoPlan.run();
 	}
@@ -456,6 +447,15 @@ public class JoinTest extends SopremoOperatorTestBase<Join> {
 				JsonUtil.createObjectNode("userid", 4, "url", "www.nbc.com"));
 
 		sopremoPlan.run();
+	}
+
+	@Override
+	protected Join createDefaultInstance(final int index) {
+		final ObjectCreation transformation = new ObjectCreation();
+		transformation.addMapping("field", createPath("0", "[" + index + "]"));
+		final BooleanExpression condition =
+			new ComparativeExpression(createPath("0", "id"), BinaryOperator.EQUAL, createPath("1", "userid"));
+		return new Join().withJoinCondition(condition).withResultProjection(transformation);
 	}
 
 }

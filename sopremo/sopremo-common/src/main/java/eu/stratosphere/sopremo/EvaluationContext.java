@@ -101,37 +101,12 @@ public class EvaluationContext extends AbstractSopremoType {
 	}
 
 	/**
-	 * Returns the nameChooserProvider.
-	 * 
-	 * @return the nameChooserProvider
-	 */
-	public NameChooserProvider getNameChooserProvider() {
-		return this.nameChooserProvider;
-	}
-
-	/**
 	 * Initializes EvaluationContext.
 	 */
 	protected EvaluationContext(final EvaluationContext context) {
 		this(context.typeRegistry, context.nameChooserProvider);
 		this.contextParameters.putAll(context.contextParameters);
 		this.copyPropertiesFrom(context);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.AbstractSopremoType#getKryo()
-	 */
-	public Kryo getKryo() {
-		return this.kryo;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.AbstractSopremoType#getKryo()
-	 */
-	public Kryo getKryoForDataSerialization() {
-		return this.dataKryo;
 	}
 
 	/*
@@ -155,15 +130,6 @@ public class EvaluationContext extends AbstractSopremoType {
 		return (EvaluationContext) super.clone();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.AbstractSopremoType#shallowClone()
-	 */
-	@Override
-	public EvaluationContext shallowClone() {
-		return (EvaluationContext) super.shallowClone();
-	}
-
 	// /**
 	// * Returns the classResolver.
 	// *
@@ -184,101 +150,6 @@ public class EvaluationContext extends AbstractSopremoType {
 		final EvaluationContext context = (EvaluationContext) original;
 		this.resultProjection = context.resultProjection.clone();
 		this.operatorDescription = context.operatorDescription;
-	}
-
-	/**
-	 * Returns the typeRegistry.
-	 * 
-	 * @return the typeRegistry
-	 */
-	public ITypeRegistry getTypeRegistry() {
-		return this.typeRegistry;
-	}
-
-	public EvaluationExpression getResultProjection() {
-		return this.resultProjection;
-	}
-
-	public int getTaskId() {
-		return this.taskId;
-	}
-
-	/**
-	 * Sets the operatorDescription to the specified value.
-	 * 
-	 * @param operatorDescription
-	 *        the operatorDescription to set
-	 */
-	public void setOperatorDescription(final String operatorDescription) {
-		if (operatorDescription == null)
-			throw new NullPointerException("operatorDescription must not be null");
-
-		this.operatorDescription = operatorDescription;
-	}
-
-	/**
-	 * Returns the operatorDescription.
-	 * 
-	 * @return the operatorDescription
-	 */
-	public String getOperatorDescription() {
-		return this.operatorDescription;
-	}
-
-	public void setResultProjection(final EvaluationExpression resultProjection) {
-		if (resultProjection == null)
-			throw new NullPointerException("resultProjection must not be null");
-
-		this.resultProjection = resultProjection;
-	}
-
-	public void setTaskId(final int taskId) {
-		this.taskId = taskId;
-	}
-
-	/**
-	 * Returns the hdfsPath.
-	 * 
-	 * @return the hdfsPath
-	 */
-	public Path getWorkingPath() {
-		return new Path(this.workingPath);
-	}
-
-	/**
-	 * Sets the hdfsPath to the specified value.
-	 * 
-	 * @param hdfsPath
-	 *        the hdfsPath to set
-	 */
-	public void setWorkingPath(final Path hdfsPath) {
-		if (hdfsPath == null)
-			throw new NullPointerException("hdfsPath must not be null");
-
-		this.workingPath = hdfsPath.toString();
-	}
-
-	public void putParameter(final String key, final Object value) {
-		this.contextParameters.put(key, value);
-	}
-
-	@SuppressWarnings("unchecked")
-	public <Type> Type getParameter(final String key, final Class<Type> type) {
-		final Object value = this.contextParameters.get(key);
-		return (Type) value;
-	}
-
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + (this.contextParameters == null ? 0 : this.contextParameters.hashCode());
-		result = prime * result + (this.operatorDescription == null ? 0 : this.operatorDescription.hashCode());
-		result = prime * result + (this.resultProjection == null ? 0 : this.resultProjection.hashCode());
-		result = prime * result + this.taskId;
-		result = prime * result + (this.typeRegistry == null ? 0 : this.typeRegistry.hashCode());
-		result = prime * result + (this.workingPath == null ? 0 : this.workingPath.hashCode());
-		return result;
 	}
 
 	@Override
@@ -318,6 +189,135 @@ public class EvaluationContext extends AbstractSopremoType {
 		} else if (!this.workingPath.equals(other.workingPath))
 			return false;
 		return true;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.AbstractSopremoType#getKryo()
+	 */
+	public Kryo getKryo() {
+		return this.kryo;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.AbstractSopremoType#getKryo()
+	 */
+	public Kryo getKryoForDataSerialization() {
+		return this.dataKryo;
+	}
+
+	/**
+	 * Returns the nameChooserProvider.
+	 * 
+	 * @return the nameChooserProvider
+	 */
+	public NameChooserProvider getNameChooserProvider() {
+		return this.nameChooserProvider;
+	}
+
+	/**
+	 * Returns the operatorDescription.
+	 * 
+	 * @return the operatorDescription
+	 */
+	public String getOperatorDescription() {
+		return this.operatorDescription;
+	}
+
+	@SuppressWarnings("unchecked")
+	public <Type> Type getParameter(final String key, final Class<Type> type) {
+		final Object value = this.contextParameters.get(key);
+		return (Type) value;
+	}
+
+	public EvaluationExpression getResultProjection() {
+		return this.resultProjection;
+	}
+
+	public int getTaskId() {
+		return this.taskId;
+	}
+
+	/**
+	 * Returns the typeRegistry.
+	 * 
+	 * @return the typeRegistry
+	 */
+	public ITypeRegistry getTypeRegistry() {
+		return this.typeRegistry;
+	}
+
+	/**
+	 * Returns the hdfsPath.
+	 * 
+	 * @return the hdfsPath
+	 */
+	public Path getWorkingPath() {
+		return new Path(this.workingPath);
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + (this.contextParameters == null ? 0 : this.contextParameters.hashCode());
+		result = prime * result + (this.operatorDescription == null ? 0 : this.operatorDescription.hashCode());
+		result = prime * result + (this.resultProjection == null ? 0 : this.resultProjection.hashCode());
+		result = prime * result + this.taskId;
+		result = prime * result + (this.typeRegistry == null ? 0 : this.typeRegistry.hashCode());
+		result = prime * result + (this.workingPath == null ? 0 : this.workingPath.hashCode());
+		return result;
+	}
+
+	public void putParameter(final String key, final Object value) {
+		this.contextParameters.put(key, value);
+	}
+
+	/**
+	 * Sets the operatorDescription to the specified value.
+	 * 
+	 * @param operatorDescription
+	 *        the operatorDescription to set
+	 */
+	public void setOperatorDescription(final String operatorDescription) {
+		if (operatorDescription == null)
+			throw new NullPointerException("operatorDescription must not be null");
+
+		this.operatorDescription = operatorDescription;
+	}
+
+	public void setResultProjection(final EvaluationExpression resultProjection) {
+		if (resultProjection == null)
+			throw new NullPointerException("resultProjection must not be null");
+
+		this.resultProjection = resultProjection;
+	}
+
+	public void setTaskId(final int taskId) {
+		this.taskId = taskId;
+	}
+
+	/**
+	 * Sets the hdfsPath to the specified value.
+	 * 
+	 * @param hdfsPath
+	 *        the hdfsPath to set
+	 */
+	public void setWorkingPath(final Path hdfsPath) {
+		if (hdfsPath == null)
+			throw new NullPointerException("hdfsPath must not be null");
+
+		this.workingPath = hdfsPath.toString();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.AbstractSopremoType#shallowClone()
+	 */
+	@Override
+	public EvaluationContext shallowClone() {
+		return (EvaluationContext) super.shallowClone();
 	}
 
 }
