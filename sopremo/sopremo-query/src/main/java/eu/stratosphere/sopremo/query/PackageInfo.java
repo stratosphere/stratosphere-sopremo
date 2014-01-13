@@ -190,15 +190,16 @@ public class PackageInfo extends AbstractSopremoType implements ISopremoType, Pa
 		}
 	}
 
-	public void importFromProject() {
+	public void importFromProject(File packagePath) {
 		final Queue<File> directories = new LinkedList<File>();
-		directories.add(this.packagePath);
+		this.packagePath = packagePath;
+		directories.add(packagePath);
 		while (!directories.isEmpty())
 			for (final File file : directories.poll().listFiles())
 				if (file.isDirectory())
 					directories.add(file);
 				else if (file.getName().endsWith(".class") && !file.getName().contains("$"))
-					this.importFromFile(file, this.packagePath);
+					this.importFromFile(file, packagePath);
 	}
 
 	/*

@@ -238,9 +238,16 @@ public class MultiOutputTest extends MeteorParseTest {
 	@InputCardinality(min = 1, max = 3)
 	@OutputCardinality(min = 1, max = 3)
 	@Name(noun = "multi")
-	private static class MultiOutputOp extends CompositeOperator<MultiOutputOp> {
+	public static class MultiOutputOp extends CompositeOperator<MultiOutputOp> {
 		private EvaluationExpression projection = EvaluationExpression.VALUE;
 
+		/**
+		 * Initializes MultiOutputTest.MultiOutputOp.
+		 *
+		 */
+		public MultiOutputOp() {
+		}
+		
 		/*
 		 * (non-Javadoc)
 		 * @see eu.stratosphere.sopremo.operator.CompositeOperator#addImplementation(eu.stratosphere.sopremo.operator.
@@ -301,5 +308,13 @@ public class MultiOutputTest extends MeteorParseTest {
 			this.projection = projection;
 		}
 
+		/**
+		 * Returns the projection.
+		 * 
+		 * @return the projection
+		 */
+		public EvaluationExpression getProjection() {
+			return this.projection;
+		}
 	}
 }

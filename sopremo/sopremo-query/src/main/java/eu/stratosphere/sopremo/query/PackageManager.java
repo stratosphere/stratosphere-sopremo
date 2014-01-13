@@ -160,33 +160,32 @@ public class PackageManager implements ParsingScope {
 	public PackageInfo getPackageInfo(final String packageName) {
 		PackageInfo packageInfo = this.packages.get(packageName);
 		if (packageInfo == null) {
-			List<File> packagePath = this.findPackageInClassPath(packageName);
-			if (!packagePath.isEmpty()) {
-				packageInfo =
-					new PackageInfo(packageName, ClassLoader.getSystemClassLoader(), this.nameChooserProvider);
-				File jarFile = null;
-				for (final File file : packagePath)
-					if (file.isFile() && file.getName().endsWith(".jar")) {
-						jarFile = file;
-						break;
-					}
-				if (jarFile != null)
-					packagePath = Arrays.asList(jarFile);
-			} else {
-				final File jarLocation = this.findPackageInJarPathLocations(packageName);
-				if (jarLocation == null)
-					throw new IllegalArgumentException(String.format("no package %s found", packageName));
-				packageInfo = new PackageInfo(packageName, this.nameChooserProvider);
-				packagePath = Arrays.asList(jarLocation);
-			}
-			QueryUtil.LOG.debug("adding package " + packagePath);
 			try {
-				for (final File path : packagePath)
-					packageInfo.importFrom(path, packageName);
+				List<File> packagePath = this.findPackageInClassPath(packageName);
+				if (!packagePath.isEmpty()) {
+					packageInfo =
+						new PackageInfo(packageName, ClassLoader.getSystemClassLoader(), this.nameChooserProvider);
+					File jarFile = null;
+					for (final File file : packagePath)
+						if (file.isFile() && file.getName().endsWith(".jar")) {
+							jarFile = file;
+							break;
+						}
+					if (jarFile != null) {
+						QueryUtil.LOG.debug("adding package " + packagePath);
+						packageInfo.importFrom(jarFile, packageName);
+					} else packageInfo.importFromProject(packagePath.get(0));
+				} else {
+					final File jarLocation = this.findPackageInJarPathLocations(packageName);
+					if (jarLocation == null)
+						throw new IllegalArgumentException(String.format("no package %s found", packageName));
+					packageInfo = new PackageInfo(packageName, this.nameChooserProvider);
+					QueryUtil.LOG.debug("adding package " + packagePath);
+					packageInfo.importFrom(jarLocation, packageName);
+				}
 			} catch (final Exception e) {
 				throw new IllegalArgumentException(String.format(
-					"could not load package %s; please make sure that sopremo-%s.jar is in classpath",
-					packagePath, packageName), e);
+					"could not load package; please make sure that sopremo-%s.jar is in classpath", packageName), e);
 			}
 			this.packages.put(packageName, packageInfo);
 		}

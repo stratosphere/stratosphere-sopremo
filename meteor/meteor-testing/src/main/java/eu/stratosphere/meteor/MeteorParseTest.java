@@ -45,9 +45,8 @@ public class MeteorParseTest {
 	public MeteorParseTest() {
 		this.projectName = MavenUtil.getProjectName();
 		this.projectJar = ProjectJars.get(this.projectName);
-		// FIXME removed if clause
-		// if (this.projectJar == null)
-		ProjectJars.put(this.projectName, this.projectJar = build(this.projectName));
+		if (this.projectJar == null)
+			ProjectJars.put(this.projectName, this.projectJar = build(this.projectName));
 	}
 
 	public SopremoPlan parseScript(final File script) {

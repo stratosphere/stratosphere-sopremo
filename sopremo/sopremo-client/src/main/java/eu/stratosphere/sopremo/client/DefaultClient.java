@@ -253,11 +253,15 @@ public class DefaultClient implements Closeable {
 			progressListener.progressUpdate(ExecutionState.SETUP, "");
 			final List<Path> libraryPaths = new ArrayList<Path>();
 			for (final String library : requiredLibraries) {
-				final DataInputStream dis = new DataInputStream(new FileInputStream(library));
-				final Path libraryPath = new Path(library);
-				LibraryCacheManager.addLibrary(dummyKey, libraryPath, (int) new File(library).length(), dis);
-				dis.close();
-				libraryPaths.add(libraryPath);
+				try (final DataInputStream dis = new DataInputStream(new FileInputStream(library))) {
+					final Path libraryPath = new Path(library);
+					final File libraryFile = new File(library);
+					if (libraryFile.isDirectory())
+						throw new IllegalStateException("The package " + libraryFile.getName() +
+							" is not as present as a jar");
+					LibraryCacheManager.addLibrary(dummyKey, libraryPath, (int) libraryFile.length(), dis);
+					libraryPaths.add(libraryPath);
+				}
 			}
 
 			LibraryCacheManager.register(dummyKey, libraryPaths.toArray(new Path[libraryPaths.size()]));

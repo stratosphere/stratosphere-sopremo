@@ -13,7 +13,6 @@ import java.util.Map;
 
 import javolution.text.TypeFormat;
 
-import com.esotericsoftware.kryo.DefaultSerializer;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.serializers.FieldSerializer;
@@ -47,7 +46,7 @@ public abstract class Operator<Self extends Operator<Self>> extends Configurable
 
 	private String name;
 
-	private transient List<JsonStream> outputs = new ArrayList<JsonStream>();
+	private List<JsonStream> outputs = new ArrayList<JsonStream>();
 
 	private int minInputs, maxInputs, minOutputs, maxOutputs;
 
@@ -570,7 +569,10 @@ public abstract class Operator<Self extends Operator<Self>> extends Configurable
 		 */
 		@Override
 		public Output read(final Kryo kryo, final Input input, final Class<Output> type) {
-			return (Output) ((Operator<?>) kryo.readClassAndObject(input)).getOutput(input.readInt(true));
+			final Operator<?> operator = (Operator<?>) kryo.readClassAndObject(input);
+			final int index = input.readInt(true);
+			System.out.println(operator + " " + index);
+			return (Output) operator.getOutput(index);
 		}
 
 		/*
@@ -581,6 +583,7 @@ public abstract class Operator<Self extends Operator<Self>> extends Configurable
 		@Override
 		public void write(final Kryo kryo, final com.esotericsoftware.kryo.io.Output output, final Output object) {
 			kryo.writeClassAndObject(output, object.getOperator());
+			System.out.println(object.getOperator() + " " + object.getIndex());
 			output.writeInt(object.getIndex(), true);
 		}
 
@@ -669,7 +672,7 @@ public abstract class Operator<Self extends Operator<Self>> extends Configurable
 	 * Represents one output of this {@link Operator}. The output should be connected to another Operator to create a
 	 * directed acyclic graph of Operators.
 	 */
-	@DefaultSerializer(OperatorOutputSerializer.class)
+//	@DefaultSerializer(OperatorOutputSerializer.class)
 	public static class Output extends AbstractSopremoType implements JsonStream {
 		private final int index;
 
