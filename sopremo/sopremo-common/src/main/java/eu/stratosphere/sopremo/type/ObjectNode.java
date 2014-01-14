@@ -143,24 +143,6 @@ public class ObjectNode extends AbstractJsonNode implements IObjectNode, KryoCop
 		return IObjectNode.class;
 	}
 
-	//
-	// @Override
-	// public IJsonNode readResolve(final DataInput in) throws IOException {
-	// final int len = in.readInt();
-	//
-	// // performance optimization: reuse existing nodes
-	// Set<String> currentKeys = new HashSet<String>(this.children.keySet());
-	// for (int i = 0; i < len; i++) {
-	// final String key = in.readUTF();
-	// currentKeys.remove(key);
-	// this.children.put(key, SopremoUtil.deserializeNode(in, this.children.get(key)));
-	// }
-	// for (String currentKey : currentKeys)
-	// this.children.remove(currentKey);
-	//
-	// return this;
-	// }
-
 	@Override
 	public int hashCode() {
 		final int prime = 31;

@@ -11,8 +11,8 @@
 		<version>0.4</version>
 	</parent>
 
-	<artifactId>stratosphere-dist</artifactId>
-	<name>stratosphere-dist</name>
+	<artifactId>sopremo-meteor-dist</artifactId>
+	<name>sopremo-meteor-dist</name>
 	<packaging>pom</packaging>
 
 	<dependencies>
