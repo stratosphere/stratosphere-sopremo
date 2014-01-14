@@ -17,8 +17,6 @@ package eu.stratosphere.sopremo.server;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.amazonaws.services.simpleworkflow.model.ExecutionStatus;
-
 import eu.stratosphere.configuration.Configuration;
 import eu.stratosphere.nephele.client.JobClient;
 import eu.stratosphere.sopremo.execution.ExecutionRequest;
@@ -125,7 +123,7 @@ public class SopremoJobInfo {
 	}
 
 	/**
-	 * Sets the {@link ExecutionStatus} and provides additional details.
+	 * Sets the {@link ExecutionState} and provides additional details.
 	 */
 	public void setStatusAndDetail(final ExecutionState status, final String detail) {
 		if (status == null)

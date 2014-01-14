@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.codehaus.jackson.map.ObjectMapper;
-
 import eu.stratosphere.sopremo.expressions.ArrayAccess;
 import eu.stratosphere.sopremo.expressions.ArrayProjection;
 import eu.stratosphere.sopremo.expressions.ExpressionUtil;
@@ -18,22 +16,10 @@ import eu.stratosphere.sopremo.expressions.PathSegmentExpression;
  */
 public class JsonUtil {
 	/**
-	 * A general purpose {@link ObjectMapper}. No state of this mapper should be changed. If a specifically configured
+	 * A general purpose ObjectMapper. No state of this mapper should be changed. If a specifically configured
 	 * ObjectMapper is needed, a new instance should be created.
 	 */
 	public static final JavaToJsonMapper OBJECT_MAPPER = new JavaToJsonMapper();
-
-	// /**
-	// * A general purpose {@link JsonNodeFactory}. No state of this node factory should be changed. If a specifically
-	// * configured JsonNodeFactory is needed, a new instance should be created.
-	// */
-	// public static final JsonNodeFactory NODE_FACTORY = JsonNodeFactory.instance;
-
-	// /**
-	// * A general purpose {@link JsonFactory}. No state of this factory should be changed. If a specifically
-	// * configured JsonFactory is needed, a new instance should be created.
-	// */
-	// public static final JsonFactory FACTORY = new JsonFactory();
 
 	/**
 	 * Creates an efficient read-only wrapper for the given node array.

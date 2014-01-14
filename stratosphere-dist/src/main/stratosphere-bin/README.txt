@@ -2,10 +2,6 @@ For the latest information about Stratosphere, please visit our website at:
 
    http://www.stratosphere.eu/
 
-and our wiki, at:
-
-   http://stratosphere.eu/wiki
-
 This distribution includes cryptographic software.  The country in 
 which you currently reside may have restrictions on the import, 
 possession, use, and/or re-export to another country, of 

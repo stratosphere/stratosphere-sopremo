@@ -16,61 +16,6 @@
 	<packaging>pom</packaging>
 
 	<dependencies>
-		<!-- Core -->
-		<dependency>
-			<groupId>eu.stratosphere</groupId>
-			<artifactId>stratosphere-core</artifactId>
-			<version>${core.version}</version>
-		</dependency>
-
-		<dependency>
-			<groupId>eu.stratosphere</groupId>
-			<artifactId>stratosphere-java</artifactId>
-			<version>${core.version}</version>
-		</dependency>
-
-		<dependency>
-			<groupId>eu.stratosphere</groupId>
-			<artifactId>stratosphere-scala</artifactId>
-			<version>${core.version}</version>
-		</dependency>
-
-		<dependency>
-			<groupId>eu.stratosphere</groupId>
-			<artifactId>stratosphere-runtime</artifactId>
-			<version>${core.version}</version>
-		</dependency>
-
-		<dependency>
-			<groupId>eu.stratosphere</groupId>
-			<artifactId>stratosphere-compiler</artifactId>
-			<version>${core.version}</version>
-		</dependency>
-
-		<dependency>
-			<groupId>eu.stratosphere</groupId>
-			<artifactId>stratosphere-clients</artifactId>
-			<version>${core.version}</version>
-		</dependency>
-
-		<dependency>
-			<groupId>eu.stratosphere</groupId>
-			<artifactId>stratosphere-java-examples</artifactId>
-			<version>${core.version}</version>
-		</dependency>
-
-		<dependency>
-			<groupId>eu.stratosphere</groupId>
-			<artifactId>stratosphere-scala-examples</artifactId>
-			<version>${core.version}</version>
-		</dependency>
-
-		<dependency>
-			<groupId>eu.stratosphere</groupId>
-			<artifactId>swt-visualization</artifactId>
-			<version>${core.version}</version>
-		</dependency>
-
 		<!-- HLL -->
 		<dependency>
 			<groupId>eu.stratosphere</groupId>

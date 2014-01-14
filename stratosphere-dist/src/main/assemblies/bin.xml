@@ -18,19 +18,34 @@
 			<outputDirectory>lib</outputDirectory>
 			<unpack>false</unpack>
 			<useTransitiveDependencies>true</useTransitiveDependencies>
+			<useTransitiveFiltering>true</useTransitiveFiltering>
 			<useProjectArtifact>false</useProjectArtifact>
 			<useProjectAttachments>false</useProjectAttachments>
 
 			<excludes>
-				<exclude>**/*examples*.jar</exclude>
-				<exclude>**/*javadoc*</exclude>
-				<exclude>**/*sources*</exclude>
+				<exclude>hadoop-*</exclude>
+				<exclude>stratosphere-core*</exclude>
+				<exclude>stratosphere-runtime*</exclude>
+				<exclude>stratosphere-java*</exclude>
+				<exclude>stratosphere-compiler*</exclude>
+				<!--<exclude>stratosphere-*</exclude>
+				<exclude>ant-*</exclude>
+				<exclude>aws-*</exclude>
+				<exclude>core-*</exclude>
+				<exclude>hamcrest-*</exclude>
+				<exclude>hsql-*</exclude>
+				<exclude>http-*</exclude>
+				<exclude>jasper-*</exclude>
+				<exclude>jetty-*</exclude>
+				<exclude>servlet-*</exclude>
+				<exclude>jackson-*</exclude>
+				<exclude>hadoop-*</exclude>
+				<exclude>xmlenc-*</exclude>-->
 			</excludes>
 		</dependencySet>
 	</dependencySets>
 
 	<fileSets>
-
 		<fileSet>
 			<!-- copy start scripts -->
 			<directory>src/main/stratosphere-bin/bin</directory>
@@ -42,44 +57,6 @@
 			<!-- copy default configuration -->
 			<directory>src/main/stratosphere-bin/conf</directory>
 			<outputDirectory>conf</outputDirectory>
-			<fileMode>0644</fileMode>
-		</fileSet>
-
-		<fileSet>
-			<!-- create an empty log directory -->
-			<directory>src/main/stratosphere-bin/docs</directory>
-			<outputDirectory>log</outputDirectory>
-			<fileMode>0644</fileMode>
-			<excludes>
-				<exclude>*</exclude>
-			</excludes>
-		</fileSet>
-
-		<fileSet>
-			<!-- create an empty dropin-lib directory -->
-			<directory>src/main/stratosphere-bin/docs</directory>
-			<outputDirectory>lib/dropin</outputDirectory>
-			<fileMode>0644</fileMode>
-			<excludes>
-				<exclude>*</exclude>
-			</excludes>
-		</fileSet>
-
-		<fileSet>
-			<!-- copy README file -->
-			<directory>src/main/stratosphere-bin/docs</directory>
-			<outputDirectory>docs</outputDirectory>
-			<fileMode>0644</fileMode>
-		</fileSet>
-
-		<fileSet>
-			<!-- copy JavaDocs -->
-			<!-- <directory>../target/apidocs</directory -->
-			<directory>../target</directory>
-			<includes>
-				<include>stratosphere-*-javadoc.jar</include>
-			</includes>
-			<outputDirectory>docs/javadoc</outputDirectory>
 			<fileMode>0644</fileMode>
 		</fileSet>
 	</fileSets>
