@@ -13,7 +13,7 @@
 
 	<groupId>eu.stratosphere</groupId>
 	<artifactId>hll</artifactId>
-	<version>0.4</version>
+	<version>0.4.1</version>
 
 	<name>hll</name>
 	<packaging>pom</packaging>
@@ -52,7 +52,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<core.version>0.4</core.version>
-		<stratosphere-testing.version>0.4</stratosphere-testing.version>
+		<stratosphere-testing.version>0.4.1</stratosphere-testing.version>
 	</properties>
 
 	<dependencies>
@@ -381,6 +381,6 @@
 		<module>stratosphere-testutil</module>
 		<module>sopremo</module>
 		<module>meteor</module>
-		<module>stratosphere-dist</module>
+		<module>sopremo-meteor-dist</module>
 	</modules>
 </project>
