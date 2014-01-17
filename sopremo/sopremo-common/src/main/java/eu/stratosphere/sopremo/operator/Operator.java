@@ -29,7 +29,7 @@ import eu.stratosphere.util.reflect.ReflectUtil;
  * The operator groups input json objects accordingly to its semantics and transforms the partitioned objects to one or
  * more outputs.<br>
  * Each Sopremo operator may be converted to a {@link PactModule} with the {@link #asElementaryOperators()} and
- * {@link ElementarySopremoModule#asPactModule(eu.stratosphere.sopremo.EvaluationContext, eu.stratosphere.sopremo.serialization.SopremoRecordLayout)}
+ * {@link ElementarySopremoModule#asPactModule()}
  * method.<br>
  * Implementations of an operator should either extend {@link ElementaryOperator} or {@link CompositeOperator}.
  */

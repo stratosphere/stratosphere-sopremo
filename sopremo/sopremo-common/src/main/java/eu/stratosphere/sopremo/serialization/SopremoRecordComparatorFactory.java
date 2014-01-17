@@ -20,6 +20,7 @@ import java.util.Arrays;
 import eu.stratosphere.api.common.typeutils.TypeComparator;
 import eu.stratosphere.api.common.typeutils.TypeComparatorFactory;
 import eu.stratosphere.configuration.Configuration;
+import eu.stratosphere.sopremo.packages.ITypeRegistry;
 import eu.stratosphere.sopremo.pact.SopremoUtil;
 
 public class SopremoRecordComparatorFactory implements TypeComparatorFactory<SopremoRecord> {
@@ -31,15 +32,22 @@ public class SopremoRecordComparatorFactory implements TypeComparatorFactory<Sop
 
 	private boolean[] ascending;
 
+	private ITypeRegistry typeRegistry;
+
+	private final static String LAYOUT_KEY = "sopremo.layout";
+
+	private final static String TYPES_KEY = "sopremo.types";
+
 	/**
 	 * Initializes SopremoRecordComparatorFactory.
 	 */
 	public SopremoRecordComparatorFactory() {
 	}
 
-	public SopremoRecordComparatorFactory(final SopremoRecordLayout layout, final int[] keyExpressions,
-			final boolean[] ascending) {
+	public SopremoRecordComparatorFactory(final SopremoRecordLayout layout, final ITypeRegistry typeRegistry,
+			final int[] keyExpressions, final boolean[] ascending) {
 		this.layout = layout;
+		this.typeRegistry = typeRegistry;
 		this.keyExpressions = keyExpressions;
 		this.ascending = ascending;
 	}
@@ -50,7 +58,7 @@ public class SopremoRecordComparatorFactory implements TypeComparatorFactory<Sop
 	 */
 	@Override
 	public TypeComparator<SopremoRecord> createComparator() {
-		return new SopremoRecordComparator(this.layout, this.keyExpressions, this.ascending);
+		return new SopremoRecordComparator(this.layout, this.typeRegistry, this.keyExpressions, this.ascending);
 	}
 
 	@Override
@@ -64,7 +72,8 @@ public class SopremoRecordComparatorFactory implements TypeComparatorFactory<Sop
 		final SopremoRecordComparatorFactory other = (SopremoRecordComparatorFactory) obj;
 		return Arrays.equals(this.ascending, other.ascending) &&
 			Arrays.equals(this.keyExpressions, other.keyExpressions) &&
-			this.layout.equals(other.layout);
+			this.layout.equals(other.layout) &&
+			this.typeRegistry.equals(other.typeRegistry);
 	}
 
 	@Override
@@ -74,6 +83,7 @@ public class SopremoRecordComparatorFactory implements TypeComparatorFactory<Sop
 		result = prime * result + Arrays.hashCode(this.ascending);
 		result = prime * result + Arrays.hashCode(this.keyExpressions);
 		result = prime * result + this.layout.hashCode();
+		result = prime * result + this.typeRegistry.hashCode();
 		return result;
 	}
 
@@ -87,7 +97,8 @@ public class SopremoRecordComparatorFactory implements TypeComparatorFactory<Sop
 			throws ClassNotFoundException {
 		this.ascending = SopremoUtil.getObject(config, DIRECTION, null);
 		this.keyExpressions = SopremoUtil.getObject(config, KEYS, null);
-		this.layout = SopremoUtil.getObject(config, SopremoRecordLayout.LAYOUT_KEY, null);
+		this.layout = SopremoUtil.getObject(config, LAYOUT_KEY, null);
+		this.typeRegistry = SopremoUtil.getObject(config, TYPES_KEY, null);
 	}
 
 	/*
@@ -97,7 +108,8 @@ public class SopremoRecordComparatorFactory implements TypeComparatorFactory<Sop
 	 */
 	@Override
 	public void writeParametersToConfig(final Configuration config) {
-		SopremoUtil.setObject(config, SopremoRecordLayout.LAYOUT_KEY, this.layout);
+		SopremoUtil.setObject(config, LAYOUT_KEY, this.layout);
+		SopremoUtil.setObject(config, TYPES_KEY, this.typeRegistry);
 		SopremoUtil.setObject(config, KEYS, this.keyExpressions);
 		SopremoUtil.setObject(config, DIRECTION, this.ascending);
 	}

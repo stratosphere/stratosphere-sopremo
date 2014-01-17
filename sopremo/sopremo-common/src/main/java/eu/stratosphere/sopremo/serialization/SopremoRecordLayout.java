@@ -48,8 +48,6 @@ public class SopremoRecordLayout extends AbstractSopremoType {
 	 */
 	public static final int VALUE_INDEX = Integer.MAX_VALUE;
 
-	public final static String LAYOUT_KEY = "sopremo.layout";
-
 	public final static SopremoRecordLayout EMPTY = SopremoRecordLayout.create();
 
 	/**

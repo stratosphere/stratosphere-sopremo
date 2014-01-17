@@ -18,6 +18,7 @@ import eu.stratosphere.api.common.functions.RuntimeContext;
 import eu.stratosphere.configuration.Configuration;
 import eu.stratosphere.sopremo.operator.Operator;
 import eu.stratosphere.sopremo.pact.SopremoUtil;
+import eu.stratosphere.sopremo.serialization.SopremoRecordLayout;
 
 /**
  * Provides a unified access to less needed information about an {@link Operator} or its implementation during compile
@@ -92,25 +93,25 @@ public class SopremoEnvironment {
 		this.classLoader = classLoader;
 	}
 
+	private static final String CONTEXT = "sopremo.context";
+
 	/**
 	 * Sets the configuration to the specified value.
 	 * 
 	 * @param configuration
 	 *        the configuration to set
 	 */
-	public void setConfiguration(Configuration configuration) {
+	public void load(Configuration configuration) {
 		if (configuration == null)
 			throw new NullPointerException("configuration must not be null");
 
 		this.configuration = configuration;
-
-		this.configuration = configuration;
 		this.classLoader = configuration.getClassLoader();
-		this.evaluationContext = SopremoUtil.getEvaluationContext(configuration);
+		this.evaluationContext = SopremoUtil.getObject(configuration, CONTEXT, null);
 	}
 
 	public void setConfigurationAndContext(final Configuration parameters, final RuntimeContext runtimeContext) {
-		this.setConfiguration(parameters);
+		this.load(parameters);
 		this.setRuntimeContext(runtimeContext);
 	}
 
@@ -142,5 +143,36 @@ public class SopremoEnvironment {
 
 	public static SopremoEnvironment getInstance() {
 		return INSTANCE.get();
+	}
+
+	private SopremoRecordLayout layout = SopremoRecordLayout.create();
+
+	/**
+	 * Returns the layout.
+	 * 
+	 * @return the layout
+	 */
+	public SopremoRecordLayout getLayout() {
+		return this.layout;
+	}
+
+	/**
+	 * Sets the layout to the specified value.
+	 * 
+	 * @param layout
+	 *        the layout to set
+	 */
+	public void setLayout(SopremoRecordLayout layout) {
+		if (layout == null)
+			throw new NullPointerException("layout must not be null");
+
+		this.layout = layout;
+	}
+
+	/**
+	 * @param parameters
+	 */
+	public void save(Configuration parameters) {
+		SopremoUtil.setObject(parameters, CONTEXT, this.evaluationContext);
 	}
 }

@@ -29,12 +29,11 @@ import eu.stratosphere.api.common.operators.GenericDataSink;
 import eu.stratosphere.api.common.operators.GenericDataSource;
 import eu.stratosphere.api.common.operators.util.OperatorUtil;
 import eu.stratosphere.pact.common.plan.PactModule;
-import eu.stratosphere.sopremo.EvaluationContext;
 import eu.stratosphere.sopremo.Schema;
+import eu.stratosphere.sopremo.SopremoEnvironment;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
 import eu.stratosphere.sopremo.io.Sink;
 import eu.stratosphere.sopremo.io.Source;
-import eu.stratosphere.sopremo.serialization.SopremoRecordLayout;
 import eu.stratosphere.util.IdentityList;
 import eu.stratosphere.util.dag.GraphTraverseListener;
 import eu.stratosphere.util.dag.OneTimeTraverser;
@@ -72,27 +71,22 @@ public class ElementarySopremoModule extends SopremoModule {
 	/**
 	 * Converts the Sopremo module to a Pact module.
 	 * 
-	 * @param context
-	 *        the evaluation context of the Pact contracts
 	 * @return the converted Pact module
 	 */
-	public PactModule asPactModule(final EvaluationContext context, final SopremoRecordLayout layout) {
-		return PactModule.valueOf(this.assemblePact(context, layout));
+	public PactModule asPactModule() {
+		return PactModule.valueOf(this.assemblePact());
 	}
 
 	/**
 	 * Assembles the Pacts of the contained Sopremo operators and returns a list of all Pact sinks. These sinks may
 	 * either be directly a {@link GenericDataSource} or an unconnected {@link eu.stratosphere.api.common.operators.Operator}.
 	 * 
-	 * @param context
-	 *        the evaluation context of the Pact contracts
 	 * @return a list of Pact sinks
 	 */
-	public Collection<eu.stratosphere.api.common.operators.Operator> assemblePact(final EvaluationContext context,
-			final SopremoRecordLayout layout) {
+	public Collection<eu.stratosphere.api.common.operators.Operator> assemblePact() {
 		// if(layout == null)
 		// layout = SopremoRecordLayout.create(this.schema.getKeyExpressions());
-		return new PactAssembler(context).assemble(layout);
+		return new PactAssembler().assemble();
 	}
 
 	/*
@@ -162,14 +156,8 @@ public class ElementarySopremoModule extends SopremoModule {
 		private final Map<Operator<?>, List<List<eu.stratosphere.api.common.operators.Operator>>> operatorOutputs =
 			new IdentityHashMap<Operator<?>, List<List<eu.stratosphere.api.common.operators.Operator>>>();
 
-		private final EvaluationContext context;
-
-		public PactAssembler(final EvaluationContext context) {
-			this.context = context;
-		}
-
-		public Collection<eu.stratosphere.api.common.operators.Operator> assemble(final SopremoRecordLayout layout) {
-			this.convertDAGToModules(layout);
+		public Collection<eu.stratosphere.api.common.operators.Operator> assemble() {
+			this.convertDAGToModules();
 
 			this.connectModules();
 
@@ -227,14 +215,13 @@ public class ElementarySopremoModule extends SopremoModule {
 			}
 		}
 
-		private void convertDAGToModules(final SopremoRecordLayout layout) {
+		private void convertDAGToModules() {
 			OneTimeTraverser.INSTANCE.traverse(ElementarySopremoModule.this.getAllOutputs(),
 				OperatorNavigator.ELEMENTARY, new GraphTraverseListener<ElementaryOperator<?>>() {
 					@Override
 					public void nodeTraversed(final ElementaryOperator<?> node) {
-						final EvaluationContext context = PactAssembler.this.context;
-						context.setOperatorDescription(node.getName());
-						final PactModule module = node.asPactModule(context, layout);
+						SopremoEnvironment.getInstance().getEvaluationContext().setOperatorDescription(node.getName());
+						final PactModule module = node.asPactModule();
 
 						PactAssembler.this.modules.put(node, module);
 						final List<GenericDataSink> outputFunctions = module.getOutputs();

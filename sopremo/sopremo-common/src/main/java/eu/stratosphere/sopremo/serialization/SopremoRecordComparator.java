@@ -23,6 +23,7 @@ import eu.stratosphere.core.memory.DataOutputView;
 import eu.stratosphere.core.memory.MemorySegment;
 import eu.stratosphere.sopremo.cache.NodeCache;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
+import eu.stratosphere.sopremo.packages.ITypeRegistry;
 import eu.stratosphere.sopremo.pact.SopremoUtil;
 import eu.stratosphere.sopremo.type.IJsonNode;
 
@@ -43,12 +44,15 @@ public final class SopremoRecordComparator extends TypeComparator<SopremoRecord>
 
 	private final EvaluationExpression[] keyExpressions;
 
+	private final ITypeRegistry typeRegistry;
+
 	/**
 	 * Initializes SopremoRecordComparator.
 	 */
-	public SopremoRecordComparator(final SopremoRecordLayout layout, final int[] keyExpressionIndices,
-			final boolean[] ascending) {
+	public SopremoRecordComparator(final SopremoRecordLayout layout, ITypeRegistry typeRegistry,
+			final int[] keyExpressionIndices, final boolean[] ascending) {
 		this.layout = layout;
+		this.typeRegistry = typeRegistry;
 		this.keyExpressionIndices = keyExpressionIndices;
 		this.keyExpressions = new EvaluationExpression[keyExpressionIndices.length];
 		this.keys = new IJsonNode[this.keyExpressionIndices.length];
@@ -59,9 +63,10 @@ public final class SopremoRecordComparator extends TypeComparator<SopremoRecord>
 			this.nodeCache2[index] = new NodeCache(CachingNodeFactory.getInstance());
 			this.keyExpressions[index] = layout.getExpression(this.keyExpressionIndices[index]);
 		}
-		this.temp1 = new SopremoRecord();
-		this.temp2 = new SopremoRecord();
 		this.ascending = ascending;
+
+		this.temp1 = new SopremoRecord(layout, typeRegistry);
+		this.temp2 = new SopremoRecord(layout, typeRegistry);
 	}
 
 	/*
@@ -71,8 +76,8 @@ public final class SopremoRecordComparator extends TypeComparator<SopremoRecord>
 	 */
 	@Override
 	public int compare(final DataInputView firstSource, final DataInputView secondSource) throws IOException {
-		this.temp1.read(firstSource, this.layout);
-		this.temp2.read(secondSource, this.layout);
+		this.temp1.read(firstSource);
+		this.temp2.read(secondSource);
 
 		for (int index = 0; index < this.keyExpressionIndices.length; index++) {
 			final IJsonNode k1 = this.temp1.getKey(this.keyExpressionIndices[index], this.nodeCache1[index]);
@@ -108,7 +113,7 @@ public final class SopremoRecordComparator extends TypeComparator<SopremoRecord>
 	 */
 	@Override
 	public TypeComparator<SopremoRecord> duplicate() {
-		return new SopremoRecordComparator(this.layout, this.keyExpressionIndices, this.ascending);
+		return new SopremoRecordComparator(this.layout, this.typeRegistry, this.keyExpressionIndices, this.ascending);
 	}
 
 	/*

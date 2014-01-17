@@ -197,7 +197,7 @@ public class ObjectNode extends AbstractJsonNode implements IObjectNode, KryoCop
 		return this.children.size();
 	}
 
-	public static final class ObjectSerializer extends ReusingSerializer<ObjectNode> {
+	public static class ObjectSerializer extends ReusingSerializer<IObjectNode> {
 		private final Set<String> currentKeys = new FastSet<String>();
 
 		/*
@@ -206,7 +206,7 @@ public class ObjectNode extends AbstractJsonNode implements IObjectNode, KryoCop
 		 * com.esotericsoftware.kryo.io.Input, java.lang.Class)
 		 */
 		@Override
-		public ObjectNode read(final Kryo kryo, final Input input, final Class<ObjectNode> type) {
+		public ObjectNode read(final Kryo kryo, final Input input, final Class<IObjectNode> type) {
 			final int len = input.readInt();
 
 			final ObjectNode object = new ObjectNode();
@@ -223,14 +223,15 @@ public class ObjectNode extends AbstractJsonNode implements IObjectNode, KryoCop
 		 * com.esotericsoftware.kryo.io.Input, java.lang.Object, java.lang.Class)
 		 */
 		@Override
-		public ObjectNode read(final Kryo kryo, final Input input, final ObjectNode object, final Class<ObjectNode> type) {
+		public IObjectNode read(final Kryo kryo, final Input input, final IObjectNode object,
+				final Class<IObjectNode> type) {
 			if (object == null)
 				return this.read(kryo, input, type);
 
 			final int len = input.readInt();
 
 			// performance optimization: reuse existing nodes
-			final SortedMap<String, IJsonNode> children = object.children;
+			final SortedMap<String, IJsonNode> children = ((ObjectNode) object).children;
 			this.currentKeys.addAll(children.keySet());
 			for (int i = 0; i < len; i++) {
 				final String key = input.readString();
@@ -250,7 +251,7 @@ public class ObjectNode extends AbstractJsonNode implements IObjectNode, KryoCop
 		 * com.esotericsoftware.kryo.io.Output, java.lang.Object)
 		 */
 		@Override
-		public void write(final Kryo kryo, final Output output, final ObjectNode object) {
+		public void write(final Kryo kryo, final Output output, final IObjectNode object) {
 			output.writeInt(object.size());
 
 			for (final Entry<String, IJsonNode> entry : object) {

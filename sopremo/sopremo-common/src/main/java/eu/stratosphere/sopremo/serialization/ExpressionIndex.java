@@ -116,8 +116,15 @@ public class ExpressionIndex extends AbstractSopremoType {
 	/**
 	 * @param index
 	 */
-	public ExpressionIndex get(final int index) {
+	public ExpressionIndex subIndex(final int index) {
 		return this.arrayAccesses.get(index);
+	}
+
+	public ExpressionIndex subIndex(final int index, final int size) {
+		final ExpressionIndex subIndex = this.arrayAccesses.get(index);
+		if (subIndex != null)
+			return subIndex;
+		return this.arrayAccesses.get(index - size);
 	}
 
 	/**

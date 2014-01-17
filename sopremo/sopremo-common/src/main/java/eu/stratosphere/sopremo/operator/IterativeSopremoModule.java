@@ -29,7 +29,7 @@ import eu.stratosphere.api.common.operators.BulkIteration;
 import eu.stratosphere.api.common.operators.DeltaIteration;
 import eu.stratosphere.api.common.operators.util.OperatorUtil;
 import eu.stratosphere.pact.common.plan.PactModule;
-import eu.stratosphere.sopremo.EvaluationContext;
+import eu.stratosphere.sopremo.SopremoEnvironment;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
 import eu.stratosphere.sopremo.io.Source;
 import eu.stratosphere.sopremo.serialization.SopremoRecordLayout;
@@ -323,9 +323,9 @@ public class IterativeSopremoModule extends SopremoModule {
 		 * eu.stratosphere.sopremo.serialization.SopremoRecordLayout)
 		 */
 		@Override
-		public PactModule asPactModule(final EvaluationContext context, final SopremoRecordLayout layout) {
+		public PactModule asPactModule() {
 			final PactModule iterationModule = new PactModule(this.getNumInputs(), this.getNumOutputs());
-			final PactModule stepModule = this.stepSopremoModule.asPactModule(context, layout);
+			final PactModule stepModule = this.stepSopremoModule.asPactModule();
 
 			if (this.module.nextWorkset == null) {
 				// not tested yet!
@@ -348,6 +348,7 @@ public class IterativeSopremoModule extends SopremoModule {
 						iterationModule.getInput(moduleIndex));
 				}
 			} else {
+				SopremoRecordLayout layout = SopremoEnvironment.getInstance().getLayout();
 				final DeltaIteration deltaIteration =
 					new DeltaIteration(this.getKeyIndices(layout, this.module.solutionSetKeyExpressions));
 				deltaIteration.setDegreeOfParallelism(this.getDegreeOfParallelism());

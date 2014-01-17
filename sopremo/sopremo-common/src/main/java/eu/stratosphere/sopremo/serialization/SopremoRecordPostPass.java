@@ -34,6 +34,7 @@ import eu.stratosphere.compiler.postpass.ConflictingFieldTypeInfoException;
 import eu.stratosphere.compiler.postpass.GenericFlatTypePostPass;
 import eu.stratosphere.compiler.postpass.MissingFieldTypeInfoException;
 import eu.stratosphere.sopremo.operator.PlanWithSopremoPostPass;
+import eu.stratosphere.sopremo.packages.ITypeRegistry;
 import eu.stratosphere.sopremo.pact.SopremoCoGroupOperator;
 import eu.stratosphere.sopremo.pact.SopremoReduceOperator;
 import eu.stratosphere.sopremo.type.IJsonNode;
@@ -43,6 +44,8 @@ import eu.stratosphere.sopremo.type.IJsonNode;
 public class SopremoRecordPostPass extends GenericFlatTypePostPass<Class<? extends IJsonNode>, SopremoRecordSchema> {
 
 	private SopremoRecordLayout layout;
+
+	private ITypeRegistry typeRegistry;
 
 	{
 		this.setPropagateParentSchemaDown(false);
@@ -56,7 +59,9 @@ public class SopremoRecordPostPass extends GenericFlatTypePostPass<Class<? exten
 	 */
 	@Override
 	public void postPass(final OptimizedPlan plan) {
-		this.layout = ((PlanWithSopremoPostPass) plan.getOriginalPactPlan()).getLayout();
+		final PlanWithSopremoPostPass planWithSopremoPostPass = (PlanWithSopremoPostPass) plan.getOriginalPactPlan();
+		this.layout = planWithSopremoPostPass.getLayout();
+		this.typeRegistry = planWithSopremoPostPass.getTypeRegistry();
 
 		super.postPass(plan);
 	}
@@ -76,7 +81,7 @@ public class SopremoRecordPostPass extends GenericFlatTypePostPass<Class<? exten
 		// for (int index = 0; index < sortFields.length; index++)
 		// sortFields[index] = Arrays.binarySearch(usedKeys, sortFields[index]);
 		// return new SopremoRecordComparatorFactory(this.layout.project(usedKeys), sortFields, directions);
-		return new SopremoRecordComparatorFactory(this.layout, fields.toArray(), directions);
+		return new SopremoRecordComparatorFactory(this.layout, this.typeRegistry, fields.toArray(), directions);
 	}
 
 	/*
@@ -111,7 +116,7 @@ public class SopremoRecordPostPass extends GenericFlatTypePostPass<Class<? exten
 	@Override
 	protected TypeSerializerFactory<?> createSerializer(final SopremoRecordSchema schema)
 			throws MissingFieldTypeInfoException {
-		return new SopremoRecordSerializerFactory(this.layout);
+		return new SopremoRecordSerializerFactory(this.layout, this.typeRegistry);
 		// return new SopremoRecordSerializerFactory(this.layout.project(schema.getUsedKeys().toIntArray()));
 	}
 

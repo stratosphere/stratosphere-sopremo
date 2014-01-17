@@ -10,7 +10,7 @@ import java.util.Set;
 import eu.stratosphere.api.common.io.OutputFormat;
 import eu.stratosphere.api.common.operators.GenericDataSink;
 import eu.stratosphere.pact.common.plan.PactModule;
-import eu.stratosphere.sopremo.EvaluationContext;
+import eu.stratosphere.sopremo.SopremoEnvironment;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
 import eu.stratosphere.sopremo.expressions.OrderingExpression;
 import eu.stratosphere.sopremo.operator.ElementaryOperator;
@@ -19,7 +19,6 @@ import eu.stratosphere.sopremo.operator.InputCardinality;
 import eu.stratosphere.sopremo.operator.Name;
 import eu.stratosphere.sopremo.operator.OutputCardinality;
 import eu.stratosphere.sopremo.operator.Property;
-import eu.stratosphere.sopremo.pact.SopremoUtil;
 import eu.stratosphere.sopremo.serialization.SopremoRecord;
 import eu.stratosphere.sopremo.serialization.SopremoRecordLayout;
 import eu.stratosphere.util.Equaler;
@@ -107,15 +106,16 @@ public class Sink extends ElementaryOperator<Sink> {
 	}
 
 	@Override
-	public PactModule asPactModule(final EvaluationContext context, final SopremoRecordLayout layout) {
+	public PactModule asPactModule() {
 		final PactModule pactModule = new PactModule(1, 0);
 
 		final Class<? extends OutputFormat<SopremoRecord>> outputFormat = this.format.getOutputFormat();
 		final GenericDataSink contract = new GenericDataSink(outputFormat, this.getName());
 		this.format.configureForOutput(contract.getParameters(), this.outputPath);
-		SopremoUtil.setEvaluationContext(contract.getParameters(), context);
+		SopremoEnvironment.getInstance().save(contract.getParameters());
 		contract.setDegreeOfParallelism(this.getDegreeOfParallelism());
 
+		SopremoRecordLayout layout = SopremoEnvironment.getInstance().getLayout();
 		contract.setInput(pactModule.getInput(0));
 		if (!this.globalSortingKey.isEmpty())
 			contract.setGlobalOrder(this.createOrdering(layout, this.globalSortingKey));

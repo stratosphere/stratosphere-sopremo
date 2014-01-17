@@ -27,7 +27,6 @@ import com.esotericsoftware.kryo.io.Output;
 import com.google.common.reflect.TypeToken;
 
 import eu.stratosphere.configuration.Configuration;
-import eu.stratosphere.sopremo.EvaluationContext;
 import eu.stratosphere.sopremo.ISopremoType;
 import eu.stratosphere.sopremo.SopremoEnvironment;
 import eu.stratosphere.sopremo.cache.NodeCache;
@@ -60,8 +59,6 @@ public class SopremoUtil {
 	}
 
 	public static Log LOG = NORMAL_LOG;
-
-	private static final String CONTEXT = "sopremo.context";
 
 	private final static TypeToken<?> ITypedObjectNodeType = TypeToken.of(ITypedObjectNode.class);
 
@@ -191,10 +188,6 @@ public class SopremoUtil {
 		return serializer.read(kryo, input, registration.getType());
 	}
 
-	public static EvaluationContext getEvaluationContext(final Configuration config) {
-		return getObject(config, CONTEXT, null);
-	}
-
 	@SuppressWarnings("unchecked")
 	public static <T> T getObject(final Configuration config, final String keyName, final T defaultValue) {
 		final String stringRepresentation = config.getString(keyName, null);
@@ -230,12 +223,6 @@ public class SopremoUtil {
 		kryo.writeClassAndObject(output, object);
 		output.close();
 		return baos.toByteArray();
-	}
-
-	public static void setEvaluationContext(final Configuration config, final EvaluationContext context) {
-		if (context == null)
-			throw new NullPointerException();
-		setObject(config, CONTEXT, context);
 	}
 
 	public static void setObject(final Configuration config, final String keyName, final Object object) {

@@ -28,7 +28,7 @@ import eu.stratosphere.api.common.operators.util.OperatorUtil;
 import eu.stratosphere.configuration.Configuration;
 import eu.stratosphere.pact.common.IdentityMap;
 import eu.stratosphere.pact.common.plan.PactModule;
-import eu.stratosphere.sopremo.EvaluationContext;
+import eu.stratosphere.sopremo.SopremoEnvironment;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
 import eu.stratosphere.sopremo.expressions.InputSelection;
 import eu.stratosphere.sopremo.expressions.OrderingExpression;
@@ -74,9 +74,9 @@ import eu.stratosphere.util.IdentityList;
  * {@link Function}.
  * <li>{@link #getOperator(SopremoRecordLayout)} instantiates a contract matching the stub class resulting from the previous callback. This
  * callback is especially useful if a PACT stub is chosen that is not supported in Sopremo yet.
- * <li>{@link #configureOperator(eu.stratosphere.api.common.operators.Operator, Configuration, EvaluationContext, SopremoRecordLayout)} is a callback used to set parameters of
+ * <li>{@link #configureOperator(eu.stratosphere.api.common.operators.Operator, Configuration)} is a callback used to set parameters of
  * the {@link Configuration} of the stub.
- * <li>{@link #asPactModule(EvaluationContext, SopremoRecordLayout)} gives complete control over the creation of the {@link PactModule}.
+ * <li>{@link #asPactModule()} gives complete control over the creation of the {@link PactModule}.
  * </ul>
  */
 @OutputCardinality(min = 1, max = 1)
@@ -157,10 +157,11 @@ public abstract class ElementaryOperator<Self extends ElementaryOperator<Self>>
 		return module;
 	}
 
-	public PactModule asPactModule(final EvaluationContext context, final SopremoRecordLayout layout) {
+	public PactModule asPactModule() {
+		SopremoRecordLayout layout = SopremoEnvironment.getInstance().getLayout();
 		final eu.stratosphere.api.common.operators.Operator contract = this.getOperator(layout);
-		context.setResultProjection(this.resultProjection);
-		this.configureOperator(contract, contract.getParameters(), context, layout);
+		SopremoEnvironment.getInstance().getEvaluationContext().setResultProjection(this.resultProjection);
+		this.configureOperator(contract, contract.getParameters());
 
 		final List<List<eu.stratosphere.api.common.operators.Operator>> inputLists = OperatorUtil
 			.getInputs(contract);
@@ -497,21 +498,17 @@ public abstract class ElementaryOperator<Self extends ElementaryOperator<Self>>
 	 *        the contract to configure
 	 * @param stubConfiguration
 	 *        the configuration of the stub
-	 * @param context
-	 *        the context in which the {@link PactModule} is created and
-	 *        evaluated
 	 */
 	@SuppressWarnings("unchecked")
 	protected void configureOperator(final eu.stratosphere.api.common.operators.Operator contract,
-			final Configuration stubConfiguration,
-			final EvaluationContext context, final SopremoRecordLayout layout) {
+			final Configuration stubConfiguration) {
 
 		SopremoUtil.transferFieldsToConfiguration(this, ElementaryOperator.class, stubConfiguration,
 			(Class<? extends AbstractFunction>) contract.getUserCodeWrapper().getUserCodeClass(),
 			AbstractFunction.class);
 
 		contract.setDegreeOfParallelism(this.getDegreeOfParallelism());
-		SopremoUtil.setEvaluationContext(stubConfiguration, context);
+		SopremoEnvironment.getInstance().save(contract.getParameters());
 	}
 
 	protected Ordering createOrdering(final SopremoRecordLayout layout, final List<OrderingExpression> innerGroupOrder) {

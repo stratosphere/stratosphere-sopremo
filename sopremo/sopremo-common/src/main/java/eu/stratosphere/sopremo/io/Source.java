@@ -7,7 +7,7 @@ import java.net.URISyntaxException;
 import eu.stratosphere.api.common.io.InputFormat;
 import eu.stratosphere.api.common.operators.GenericDataSource;
 import eu.stratosphere.pact.common.plan.PactModule;
-import eu.stratosphere.sopremo.EvaluationContext;
+import eu.stratosphere.sopremo.SopremoEnvironment;
 import eu.stratosphere.sopremo.expressions.ArrayCreation;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
 import eu.stratosphere.sopremo.operator.ElementaryOperator;
@@ -15,7 +15,6 @@ import eu.stratosphere.sopremo.operator.InputCardinality;
 import eu.stratosphere.sopremo.operator.Name;
 import eu.stratosphere.sopremo.operator.Property;
 import eu.stratosphere.sopremo.pact.SopremoUtil;
-import eu.stratosphere.sopremo.serialization.SopremoRecordLayout;
 import eu.stratosphere.sopremo.type.IJsonNode;
 import eu.stratosphere.sopremo.type.NullNode;
 import eu.stratosphere.util.Equaler;
@@ -110,7 +109,7 @@ public class Source extends ElementaryOperator<Source> {
 	}
 
 	@Override
-	public PactModule asPactModule(final EvaluationContext context, final SopremoRecordLayout layout) {
+	public PactModule asPactModule() {
 		final String name = this.getName();
 		GenericDataSource<?> contract;
 		if (this.isAdhoc()) {
@@ -123,7 +122,7 @@ public class Source extends ElementaryOperator<Source> {
 			this.format.configureForInput(contract.getParameters(), contract, this.inputPath);
 		}
 		final PactModule pactModule = new PactModule(0, 1);
-		SopremoUtil.setEvaluationContext(contract.getParameters(), context);
+		SopremoEnvironment.getInstance().save(contract.getParameters());
 		contract.setDegreeOfParallelism(this.getDegreeOfParallelism());
 		pactModule.getOutput(0).setInput(contract);
 		// pactModule.setInput(0, contract);

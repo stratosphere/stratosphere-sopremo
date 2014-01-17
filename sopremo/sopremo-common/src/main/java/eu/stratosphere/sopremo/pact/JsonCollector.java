@@ -1,6 +1,7 @@
 package eu.stratosphere.sopremo.pact;
 
 import eu.stratosphere.sopremo.EvaluationContext;
+import eu.stratosphere.sopremo.SopremoEnvironment;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
 import eu.stratosphere.sopremo.serialization.SopremoRecord;
 import eu.stratosphere.sopremo.type.IJsonNode;
@@ -16,13 +17,14 @@ public class JsonCollector<T extends IJsonNode> implements Collector<T> {
 
 	private final EvaluationExpression resultProjection;
 
-	private final SopremoRecord record = new SopremoRecord();
+	private final SopremoRecord record;
 
 	/**
 	 * Initializes a JsonCollector in the given {@link EvaluationContext}.
 	 */
 	public JsonCollector(final EvaluationContext context) {
 		this.resultProjection = context.getResultProjection();
+		this.record = new SopremoRecord();
 	}
 
 	/*

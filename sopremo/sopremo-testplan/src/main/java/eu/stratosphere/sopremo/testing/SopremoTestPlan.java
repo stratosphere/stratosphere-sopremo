@@ -26,6 +26,7 @@ import eu.stratosphere.core.testing.GenericTestRecords;
 import eu.stratosphere.core.testing.TypeConfig;
 import eu.stratosphere.pact.common.plan.PactModule;
 import eu.stratosphere.sopremo.EvaluationContext;
+import eu.stratosphere.sopremo.SopremoEnvironment;
 import eu.stratosphere.sopremo.io.JsonFormat;
 import eu.stratosphere.sopremo.io.JsonFormat.JsonInputFormat;
 import eu.stratosphere.sopremo.io.JsonParser;
@@ -39,6 +40,7 @@ import eu.stratosphere.sopremo.operator.OperatorNavigator;
 import eu.stratosphere.sopremo.operator.PlanWithSopremoPostPass;
 import eu.stratosphere.sopremo.operator.SopremoModule;
 import eu.stratosphere.sopremo.operator.SopremoPlan;
+import eu.stratosphere.sopremo.packages.ITypeRegistry;
 import eu.stratosphere.sopremo.pact.SopremoUtil;
 import eu.stratosphere.sopremo.pact.UntypedRecordToJsonIterator;
 import eu.stratosphere.sopremo.serialization.SopremoRecord;
@@ -351,11 +353,12 @@ public class SopremoTestPlan {
 		final SopremoPlan sopremoPlan = this.getSopremoPlan();
 		final Collection<eu.stratosphere.api.common.operators.Operator> sinks = sopremoPlan.assemblePact();
 		final SopremoRecordLayout layout = sopremoPlan.getLayout();
-		this.testPlan = new SopremoRecordTestPlan(layout, sinks);
+		final ITypeRegistry typeRegistry = sopremoPlan.getTypeRegistry();
+		this.testPlan = new SopremoRecordTestPlan(layout, typeRegistry, sinks);
 		for (final Input input : this.inputs)
-			input.prepare(this.testPlan, layout);
+			input.prepare(this.testPlan, layout, typeRegistry);
 		for (final ExpectedOutput output : this.expectedOutputs)
-			output.prepare(this.testPlan, layout);
+			output.prepare(this.testPlan, layout, typeRegistry);
 		if (this.dop > 0)
 			this.testPlan.setDegreeOfParallelism(this.dop);
 		if (this.trace)
@@ -536,9 +539,10 @@ public class SopremoTestPlan {
 		 * .GenericTestPlan<SopremoRecord, SopremoTestRecords>)
 		 */
 		@Override
-		SopremoTestRecords getTestRecords(final SopremoRecordTestPlan testPlan, final SopremoRecordLayout layout) {
+		SopremoTestRecords getTestRecords(final SopremoRecordTestPlan testPlan, final SopremoRecordLayout layout,
+				final ITypeRegistry typeRegistry) {
 			final int sinkIndex = this.findSinkIndex(testPlan);
-			return testPlan.getExpectedOutput(sinkIndex, SopremoTestRecords.getTypeConfig(layout));
+			return testPlan.getExpectedOutput(sinkIndex, SopremoTestRecords.getTypeConfig(layout, typeRegistry));
 		}
 
 		private int findSinkIndex(final GenericTestPlan<SopremoRecord, SopremoTestRecords> testPlan) {
@@ -609,10 +613,11 @@ public class SopremoTestPlan {
 		 * eu.stratosphere.sopremo.serialization.SopremoRecordLayout)
 		 */
 		@Override
-		SopremoTestRecords getTestRecords(final SopremoRecordTestPlan testPlan, final SopremoRecordLayout layout) {
+		SopremoTestRecords getTestRecords(final SopremoRecordTestPlan testPlan, final SopremoRecordLayout layout,
+				final ITypeRegistry typeRegistry) {
 			final int sourceIndex = this.getSourceIndex(testPlan);
 			return testPlan.getInput(sourceIndex == -1 ? this.getIndex() : sourceIndex,
-				SopremoTestRecords.getTypeConfig(layout));
+				SopremoTestRecords.getTypeConfig(layout, typeRegistry));
 		}
 	}
 
@@ -643,12 +648,12 @@ public class SopremoTestPlan {
 		}
 
 		@Override
-		public PactModule asPactModule(final EvaluationContext context, final SopremoRecordLayout layout) {
+		public PactModule asPactModule() {
 			final PactModule pactModule = new PactModule(1, 0);
 			final FileDataSink contract = GenericTestPlan.createDefaultSink(this.getOutputPath(), null);
 			contract.setInput(pactModule.getInput(0));
 			pactModule.addInternalOutput(contract);
-			SopremoUtil.setEvaluationContext(contract.getParameters(), context);
+			SopremoEnvironment.getInstance().save(contract.getParameters());
 			return pactModule;
 		}
 
@@ -706,11 +711,11 @@ public class SopremoTestPlan {
 		}
 
 		@Override
-		public PactModule asPactModule(final EvaluationContext context, final SopremoRecordLayout layout) {
+		public PactModule asPactModule() {
 			final PactModule pactModule = new PactModule(0, 1);
 			final FileDataSource contract = GenericTestPlan.createDefaultSource(this.getInputPath(), null);
 			pactModule.getOutput(0).setInput(contract);
-			SopremoUtil.setEvaluationContext(contract.getParameters(), context);
+			SopremoEnvironment.getInstance().save(contract.getParameters());
 			return pactModule;
 		}
 
@@ -745,10 +750,13 @@ public class SopremoTestPlan {
 	public class SopremoRecordTestPlan extends GenericTestPlan<SopremoRecord, SopremoTestRecords> {
 		private final SopremoRecordLayout layout;
 
-		protected SopremoRecordTestPlan(final SopremoRecordLayout layout,
+		private final ITypeRegistry typeRegistry;
+
+		protected SopremoRecordTestPlan(final SopremoRecordLayout layout, final ITypeRegistry typeRegistry,
 				final Collection<? extends eu.stratosphere.api.common.operators.Operator> contracts) {
-			super(SopremoTestRecords.getTypeConfig(SopremoRecordLayout.create()), contracts);
+			super(SopremoTestRecords.getTypeConfig(layout, typeRegistry), contracts);
 			this.layout = layout;
+			this.typeRegistry = typeRegistry;
 		}
 
 		/*
@@ -766,7 +774,7 @@ public class SopremoTestPlan {
 		 */
 		@Override
 		protected Plan createPlan(final Collection<GenericDataSink> wrappedSinks) {
-			return new PlanWithSopremoPostPass(this.layout, wrappedSinks);
+			return new PlanWithSopremoPostPass(this.layout, this.typeRegistry, wrappedSinks);
 		}
 
 		/*
@@ -977,19 +985,22 @@ public class SopremoTestPlan {
 		/**
 		 * @param testPlan
 		 * @param layout
+		 * @param typeRegistry
 		 * @return
 		 */
-		abstract SopremoTestRecords getTestRecords(SopremoRecordTestPlan testPlan, SopremoRecordLayout layout);
+		abstract SopremoTestRecords getTestRecords(SopremoRecordTestPlan testPlan, SopremoRecordLayout layout,
+				final ITypeRegistry typeRegistry);
 
-		void prepare(final SopremoRecordTestPlan testPlan, final SopremoRecordLayout layout) {
-			this.testRecords = this.getTestRecords(testPlan, layout);
+		void prepare(final SopremoRecordTestPlan testPlan, final SopremoRecordLayout layout,
+				final ITypeRegistry typeRegistry) {
+			this.testRecords = this.getTestRecords(testPlan, layout, typeRegistry);
 			if (this.operator instanceof MockupSource)
 				// testRecords.setSopremoRecordLayout(layout.getPactSopremoRecordLayout());
 				if (this.isEmpty())
 					this.testRecords.setEmpty();
 				else if (this.file != null) {
 					final Configuration configuration = new Configuration();
-					SopremoUtil.setEvaluationContext(configuration, this.getContext().clone());
+					SopremoEnvironment.getInstance().save(configuration);
 					SopremoUtil.transferFieldsToConfiguration(new JsonFormat(), SopremoFormat.class, configuration,
 						JsonInputFormat.class, SopremoFileInputFormat.class);
 					this.testRecords.load(JsonFormat.JsonInputFormat.class, this.file, configuration);

@@ -18,7 +18,9 @@ import java.lang.reflect.Array;
 
 import com.esotericsoftware.kryo.DefaultSerializer;
 import com.esotericsoftware.kryo.Kryo;
+import com.esotericsoftware.kryo.io.Input;
 
+import eu.stratosphere.sopremo.pact.SopremoUtil;
 import eu.stratosphere.util.CachingList;
 
 /**
@@ -103,5 +105,31 @@ public class CachingArrayNode<T extends IJsonNode> extends ArrayNode<T> {
 	@Override
 	public void setSize(final int size) {
 		((CachingList<T>) this.getChildren()).size(size, (T) MissingNode.getInstance());
+	}
+
+	public static class ArraySerializer extends AbstractArrayNode.ArraySerializer {
+		/*
+		 * (non-Javadoc)
+		 * @see eu.stratosphere.sopremo.type.AbstractArrayNode.ArraySerializer#read(com.esotericsoftware.kryo.Kryo,
+		 * com.esotericsoftware.kryo.io.Input, eu.stratosphere.sopremo.type.ArrayNode, java.lang.Class)
+		 */
+		@Override
+		public ArrayNode<IJsonNode> read(Kryo kryo, Input input, ArrayNode<IJsonNode> oldInstance,
+				Class<ArrayNode<IJsonNode>> type) {
+			if (oldInstance == null)
+				return this.read(kryo, input, type);
+
+			final int len = input.readInt();
+
+			final int currentLen = oldInstance.size();
+			for (int i = 0; i < currentLen; i++)
+				oldInstance.set(i, SopremoUtil.deserializeInto(kryo, input, oldInstance.get(i)));
+			CachingArrayNode<IJsonNode> cachingArrayNode = (CachingArrayNode<IJsonNode>) oldInstance;
+			for (int i = currentLen; i < len; i++)
+				oldInstance.set(i, SopremoUtil.deserializeInto(kryo, input, cachingArrayNode.getUnusedNode()));
+
+			oldInstance.setSize(len);
+			return oldInstance;
+		}
 	}
 }

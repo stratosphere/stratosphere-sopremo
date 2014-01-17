@@ -276,7 +276,7 @@ public abstract class SopremoFormat extends ConfigurableSopremoType {
 
 		@Override
 		public void configure(final Configuration parameters) {
-			SopremoEnvironment.getInstance().setConfiguration(parameters);
+			SopremoEnvironment.getInstance().load(parameters);
 			SopremoUtil.configureWithTransferredState(this, SopremoFileInputFormat.class, parameters);
 		}
 
@@ -347,7 +347,7 @@ public abstract class SopremoFormat extends ConfigurableSopremoType {
 		public void configure(final Configuration parameters) {
 			super.configure(parameters);
 
-			SopremoEnvironment.getInstance().setConfiguration(parameters);
+			SopremoEnvironment.getInstance().load(parameters);
 			SopremoUtil.configureWithTransferredState(this, SopremoFileInputFormat.class, parameters);
 		}
 
@@ -480,7 +480,7 @@ public abstract class SopremoFormat extends ConfigurableSopremoType {
 		public void configure(final Configuration parameters) {
 			super.configure(parameters);
 
-			SopremoEnvironment.getInstance().setConfiguration(parameters);
+			SopremoEnvironment.getInstance().load(parameters);
 			this.context = SopremoEnvironment.getInstance().getEvaluationContext();
 			SopremoUtil.configureWithTransferredState(this, SopremoFileInputFormat.class, parameters);
 		}

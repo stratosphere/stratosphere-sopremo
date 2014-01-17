@@ -1,7 +1,6 @@
 package eu.stratosphere.sopremo.base;
 
 import eu.stratosphere.pact.common.plan.PactModule;
-import eu.stratosphere.sopremo.EvaluationContext;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
 import eu.stratosphere.sopremo.operator.ElementaryOperator;
 import eu.stratosphere.sopremo.operator.InputCardinality;
@@ -9,7 +8,6 @@ import eu.stratosphere.sopremo.operator.Name;
 import eu.stratosphere.sopremo.operator.OutputCardinality;
 import eu.stratosphere.sopremo.pact.JsonCollector;
 import eu.stratosphere.sopremo.pact.SopremoMap;
-import eu.stratosphere.sopremo.serialization.SopremoRecordLayout;
 import eu.stratosphere.sopremo.type.IJsonNode;
 
 @InputCardinality(1)
@@ -22,10 +20,10 @@ public class Projection extends ElementaryOperator<Projection> {
 	 * eu.stratosphere.sopremo.serialization.SopremoRecordLayout)
 	 */
 	@Override
-	public PactModule asPactModule(final EvaluationContext context, final SopremoRecordLayout layout) {
+	public PactModule asPactModule() {
 		if (this.getResultProjection() == EvaluationExpression.VALUE)
 			return this.createShortCircuitModule();
-		return super.asPactModule(context, layout);
+		return super.asPactModule();
 	}
 
 	public static class ProjectionFunction extends SopremoMap {

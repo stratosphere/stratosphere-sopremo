@@ -20,6 +20,7 @@ import java.io.IOException;
 import eu.stratosphere.api.common.typeutils.TypeSerializer;
 import eu.stratosphere.core.memory.DataInputView;
 import eu.stratosphere.core.memory.DataOutputView;
+import eu.stratosphere.sopremo.packages.ITypeRegistry;
 
 /**
  * Implementation of the (de)serialization and copying logic for the {@link SopremoRecord}.
@@ -27,13 +28,18 @@ import eu.stratosphere.core.memory.DataOutputView;
 public class SopremoRecordSerializer extends TypeSerializer<SopremoRecord> {
 	private final SopremoRecordLayout layout;
 
+	private final ITypeRegistry typeRegistry;
+
+	private SopremoRecord serializationRecord;
+
 	/**
 	 * Creates a new instance of the SopremoRecordSerializers. Private to prevent instantiation.
 	 */
-	SopremoRecordSerializer(final SopremoRecordLayout layout) {
+	SopremoRecordSerializer(final SopremoRecordLayout layout, final ITypeRegistry typeRegistry) {
 		if (layout == null)
 			throw new NullPointerException();
 		this.layout = layout;
+		this.typeRegistry = typeRegistry;
 	}
 
 	// --------------------------------------------------------------------------------------------
@@ -77,7 +83,7 @@ public class SopremoRecordSerializer extends TypeSerializer<SopremoRecord> {
 	 */
 	@Override
 	public SopremoRecord createInstance() {
-		return new SopremoRecord();
+		return new SopremoRecord(this.layout, this.typeRegistry);
 	}
 
 	// --------------------------------------------------------------------------------------------
@@ -89,8 +95,8 @@ public class SopremoRecordSerializer extends TypeSerializer<SopremoRecord> {
 	 */
 	@Override
 	public void deserialize(final SopremoRecord target, final DataInputView source) throws IOException {
-		target.read(source, this.layout);
-		target.getOrParseNode();
+		target.read(source);
+		target.parseNode();
 	}
 
 	/*
@@ -109,6 +115,10 @@ public class SopremoRecordSerializer extends TypeSerializer<SopremoRecord> {
 	 */
 	@Override
 	public void serialize(final SopremoRecord record, final DataOutputView target) throws IOException {
-		record.write(target, this.layout);
+		if (this.serializationRecord != record) {
+			this.serializationRecord = record;
+			this.serializationRecord.init(this.layout, this.typeRegistry);
+		}
+		record.write(target);
 	}
 }

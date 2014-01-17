@@ -65,7 +65,7 @@ public abstract class GenericSopremoJoin<Left extends IJsonNode, Right extends I
 	 */
 	@Override
 	public void open(final Configuration parameters) throws Exception {
-		SopremoEnvironment.getInstance().setConfiguration(parameters);
+		SopremoEnvironment.getInstance().load(parameters);
 		// SopremoEnvironment.getInstance().setConfigurationAndContext(parameters, getRuntimeContext());
 		this.context = SopremoEnvironment.getInstance().getEvaluationContext();
 		this.collector = new JsonCollector<>(this.context);

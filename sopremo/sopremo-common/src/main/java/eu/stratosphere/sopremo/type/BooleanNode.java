@@ -115,7 +115,7 @@ public class BooleanNode extends AbstractJsonNode implements IPrimitiveNode {
 	/**
 	 */
 	@DefaultSerializer(UnmodifiableBoolean.BooleanSerializer.class)
-	private static final class UnmodifiableBoolean extends BooleanNode {
+	public static final class UnmodifiableBoolean extends BooleanNode {
 		/**
 		 * Initializes UnmodifiableBoolean.
 		 * 

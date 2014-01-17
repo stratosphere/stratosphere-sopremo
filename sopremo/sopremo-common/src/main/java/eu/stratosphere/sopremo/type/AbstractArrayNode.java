@@ -230,27 +230,24 @@ public abstract class AbstractArrayNode<T extends IJsonNode> extends AbstractJso
 			result[i++] = node;
 	}
 
-	public static final class ArraySerializer extends ReusingSerializer<AbstractArrayNode<?>> {
+	public static class ArraySerializer extends ReusingSerializer<ArrayNode<IJsonNode>> {
 		/*
 		 * (non-Javadoc)
 		 * @see eu.stratosphere.sopremo.type.ReusingSerializer#read(com.esotericsoftware.kryo.Kryo,
 		 * com.esotericsoftware.kryo.io.Input, java.lang.Object, java.lang.Class)
 		 */
 		@Override
-		public AbstractArrayNode<?> read(final Kryo kryo, final Input input, final AbstractArrayNode<?> oldInstance,
-				final Class<AbstractArrayNode<?>> type) {
+		public ArrayNode<IJsonNode> read(final Kryo kryo, final Input input, final ArrayNode<IJsonNode> oldInstance, final Class<ArrayNode<IJsonNode>> type) {
 			if (oldInstance == null)
 				return this.read(kryo, input, type);
 
 			final int len = input.readInt();
-			@SuppressWarnings("unchecked")
-			final ArrayNode<IJsonNode> array = (ArrayNode<IJsonNode>) oldInstance;
 
 			for (int i = 0; i < len; i++)
-				array.set(i, SopremoUtil.deserializeInto(kryo, input, array.get(i)));
+				oldInstance.set(i, SopremoUtil.deserializeInto(kryo, input, oldInstance.get(i)));
 
-			array.setSize(len);
-			return array;
+			oldInstance.setSize(len);
+			return oldInstance;
 		}
 
 		/*
@@ -259,11 +256,10 @@ public abstract class AbstractArrayNode<T extends IJsonNode> extends AbstractJso
 		 * com.esotericsoftware.kryo.io.Input, java.lang.Class)
 		 */
 		@Override
-		public AbstractArrayNode<?> read(final Kryo kryo, final Input input, final Class<AbstractArrayNode<?>> type) {
+		public ArrayNode<IJsonNode> read(final Kryo kryo, final Input input, final Class<ArrayNode<IJsonNode>> type) {
 			final int len = input.readInt();
 
-			@SuppressWarnings("unchecked")
-			final AbstractArrayNode<IJsonNode> array = (AbstractArrayNode<IJsonNode>) kryo.newInstance(type);
+			final ArrayNode<IJsonNode> array = kryo.newInstance(type);
 			for (int i = 0; i < len; i++)
 				array.add((IJsonNode) kryo.readClassAndObject(input));
 			return array;
@@ -275,7 +271,7 @@ public abstract class AbstractArrayNode<T extends IJsonNode> extends AbstractJso
 		 * com.esotericsoftware.kryo.io.Output, java.lang.Object)
 		 */
 		@Override
-		public void write(final Kryo kryo, final Output output, final AbstractArrayNode<?> array) {
+		public void write(final Kryo kryo, final Output output, final ArrayNode<IJsonNode> array) {
 			output.writeInt(array.size());
 
 			for (final IJsonNode entry : array)

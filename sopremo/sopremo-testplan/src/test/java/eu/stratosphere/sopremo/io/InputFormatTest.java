@@ -25,7 +25,7 @@ import org.junit.Ignore;
 import eu.stratosphere.api.common.io.FormatUtil;
 import eu.stratosphere.api.common.io.InputFormat;
 import eu.stratosphere.configuration.Configuration;
-import eu.stratosphere.sopremo.EvaluationContext;
+import eu.stratosphere.sopremo.SopremoEnvironment;
 import eu.stratosphere.sopremo.io.SopremoFormat.SopremoFileInputFormat;
 import eu.stratosphere.sopremo.pact.SopremoUtil;
 import eu.stratosphere.sopremo.serialization.SopremoRecord;
@@ -39,8 +39,7 @@ public class InputFormatTest {
 	public static Collection<IJsonNode> readFromFile(final File file, final SopremoFormat format) throws IOException {
 
 		final Configuration config = new Configuration();
-		final EvaluationContext context = new EvaluationContext();
-		SopremoUtil.setEvaluationContext(config, context);
+		SopremoEnvironment.getInstance().save(config);
 		SopremoUtil.transferFieldsToConfiguration(format, SopremoFormat.class, config,
 			format.getInputFormat(), InputFormat.class);
 		@SuppressWarnings("unchecked")

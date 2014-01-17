@@ -19,17 +19,17 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 
-import com.esotericsoftware.kryo.Kryo;
-import com.esotericsoftware.kryo.io.Input;
-import com.esotericsoftware.kryo.io.Output;
-
+import eu.stratosphere.core.memory.DataInputViewStream;
+import eu.stratosphere.core.memory.DataOutputViewStream;
 import eu.stratosphere.sopremo.EqualCloneTest;
+import eu.stratosphere.sopremo.SopremoEnvironment;
 import eu.stratosphere.sopremo.cache.NodeCache;
 import eu.stratosphere.sopremo.expressions.ArrayAccess;
 import eu.stratosphere.sopremo.expressions.ObjectAccess;
+import eu.stratosphere.sopremo.packages.DefaultTypeRegistry;
+import eu.stratosphere.sopremo.type.IJsonNode;
 import eu.stratosphere.sopremo.type.IntNode;
 import eu.stratosphere.sopremo.type.JsonUtil;
 
@@ -37,26 +37,22 @@ import eu.stratosphere.sopremo.type.JsonUtil;
  */
 public class SopremoRecordTest extends EqualCloneTest<SopremoRecord> {
 	@Test
-	@Ignore
 	public void testArrayKey() throws IOException {
 		final SopremoRecordLayout layout = SopremoRecordLayout.create(new ArrayAccess(1));
-		final SopremoRecord sopremoRecord = new SopremoRecord();
-		sopremoRecord.setNode(JsonUtil.createArrayNode(0, 1, 2));
+		final IJsonNode node = JsonUtil.createArrayNode(0, 1, 2);
 
-		final SopremoRecord sopremoRecord2 = this.serializeAndDeserialize(sopremoRecord);
+		final SopremoRecord sopremoRecord2 = this.serializeAndDeserialize(node, layout);
 		Assert.assertEquals(new IntNode(1),
 			sopremoRecord2.getKey(layout.getKeyIndex(new ArrayAccess(1)), new NodeCache()));
 		Assert.assertSame(null, sopremoRecord2.getNode());
 	}
 
 	@Test
-	@Ignore
 	public void testObjectKey() throws IOException {
 		final SopremoRecordLayout layout = SopremoRecordLayout.create(new ObjectAccess("a"));
-		final SopremoRecord sopremoRecord = new SopremoRecord();
-		sopremoRecord.setNode(JsonUtil.createObjectNode("a", 1, "b", 2));
+		final IJsonNode node = JsonUtil.createObjectNode("a", 1, "b", 2);
 
-		final SopremoRecord sopremoRecord2 = this.serializeAndDeserialize(sopremoRecord);
+		final SopremoRecord sopremoRecord2 = this.serializeAndDeserialize(node, layout);
 		Assert.assertEquals(new IntNode(1),
 			sopremoRecord2.getKey(layout.getKeyIndex(new ObjectAccess("a")), new NodeCache()));
 		Assert.assertSame(null, sopremoRecord2.getNode());
@@ -64,24 +60,20 @@ public class SopremoRecordTest extends EqualCloneTest<SopremoRecord> {
 
 	@Test
 	public void testObjectSerialization() throws IOException {
-		final SopremoRecord sopremoRecord = new SopremoRecord();
-		sopremoRecord.setNode(JsonUtil.createObjectNode("a", 1, "b", 2));
+		final IJsonNode node = JsonUtil.createObjectNode("a", 1, "b", 2);
 
-		final SopremoRecord sopremoRecord2 = this.serializeAndDeserialize(sopremoRecord);
-		Assert.assertEquals(sopremoRecord, sopremoRecord2);
-		Assert.assertEquals(sopremoRecord.getNode(), sopremoRecord2.getNode());
-		Assert.assertNotSame(sopremoRecord.getNode(), sopremoRecord2.getNode());
+		final SopremoRecord sopremoRecord2 = this.serializeAndDeserialize(node, SopremoRecordLayout.create());
+		Assert.assertEquals(node, sopremoRecord2.getOrParseNode());
+		Assert.assertNotSame(node, sopremoRecord2.getOrParseNode());
 	}
 
 	@Test
 	public void testPrimitiveSerialization() throws IOException {
-		final SopremoRecord sopremoRecord = new SopremoRecord();
-		sopremoRecord.setNode(new IntNode(42));
+		final IJsonNode node = new IntNode(42);
 
-		final SopremoRecord sopremoRecord2 = this.serializeAndDeserialize(sopremoRecord);
-		Assert.assertEquals(sopremoRecord, sopremoRecord2);
-		Assert.assertEquals(sopremoRecord.getNode(), sopremoRecord2.getNode());
-		Assert.assertNotSame(sopremoRecord.getNode(), sopremoRecord2.getNode());
+		final SopremoRecord sopremoRecord2 = this.serializeAndDeserialize(node, SopremoRecordLayout.create());
+		Assert.assertEquals(node, sopremoRecord2.getOrParseNode());
+		Assert.assertNotSame(node, sopremoRecord2.getOrParseNode());
 	}
 
 	/*
@@ -99,19 +91,20 @@ public class SopremoRecordTest extends EqualCloneTest<SopremoRecord> {
 	 * @param sopremoRecord
 	 * @return
 	 */
-	private SopremoRecord serializeAndDeserialize(final SopremoRecord sopremoRecord) throws IOException {
-		final Kryo kryo = new Kryo();
-		kryo.setReferences(false);
+	private SopremoRecord serializeAndDeserialize(final IJsonNode node, final SopremoRecordLayout layout)
+			throws IOException {
 		final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		final Output output = new Output(baos);
-		kryo.writeObject(output, sopremoRecord);
-		output.close();
-		baos.close();
+		final DataOutputViewStream daovs = new DataOutputViewStream(baos);
+		SopremoRecord serializationRecord = new SopremoRecord(layout, new DefaultTypeRegistry());
+		serializationRecord.setNode(node);
+		serializationRecord.write(daovs);
+		daovs.close();
 
 		final ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-		final Input input = new Input(bais);
-		final SopremoRecord deserialized = kryo.readObject(input, SopremoRecord.class);
-		input.close();
+		final DataInputViewStream daivs = new DataInputViewStream(bais);
+		final SopremoRecord deserialized = new SopremoRecord(layout, new DefaultTypeRegistry());
+		deserialized.read(daivs);
+		daivs.close();
 
 		return deserialized;
 	}

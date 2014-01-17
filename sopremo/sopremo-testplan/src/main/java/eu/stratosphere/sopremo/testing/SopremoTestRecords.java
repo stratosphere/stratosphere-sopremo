@@ -23,6 +23,7 @@ import eu.stratosphere.core.testing.GenericTestRecords;
 import eu.stratosphere.core.testing.TypeConfig;
 import eu.stratosphere.core.testing.TypeStringifier;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
+import eu.stratosphere.sopremo.packages.ITypeRegistry;
 import eu.stratosphere.sopremo.serialization.SopremoRecord;
 import eu.stratosphere.sopremo.serialization.SopremoRecordComparatorFactory;
 import eu.stratosphere.sopremo.serialization.SopremoRecordLayout;
@@ -41,7 +42,8 @@ public class SopremoTestRecords extends GenericTestRecords<SopremoRecord> {
 		super(typeConfig);
 	}
 
-	public static final TypeConfig<SopremoRecord> getTypeConfig(final SopremoRecordLayout layout) {
+	public static final TypeConfig<SopremoRecord> getTypeConfig(final SopremoRecordLayout layout,
+			final ITypeRegistry typeRegistry) {
 
 		final TypeConfig<SopremoRecord> typeConfig;
 		final TypeStringifier<SopremoRecord> typeStringifier = DefaultStringifier.get();
@@ -51,11 +53,12 @@ public class SopremoTestRecords extends GenericTestRecords<SopremoRecord> {
 			keys[index] = index;
 		final boolean[] ascending = new boolean[keys.length];
 		Arrays.fill(ascending, true);
-		typeConfig = new TypeConfig<SopremoRecord>(new SopremoRecordComparatorFactory(layout, keys, ascending),
-			SopremoRecordPairComparatorFactory.get(),
-			new SopremoRecordSerializerFactory(layout), typeStringifier,
-			new SopremoKeyExtractor(layout.getKeyExpressions().toArray(new EvaluationExpression[0])),
-			equaler);
+		typeConfig =
+			new TypeConfig<SopremoRecord>(new SopremoRecordComparatorFactory(layout, typeRegistry, keys, ascending),
+				SopremoRecordPairComparatorFactory.get(),
+				new SopremoRecordSerializerFactory(layout, typeRegistry), typeStringifier,
+				new SopremoKeyExtractor(layout.getKeyExpressions().toArray(new EvaluationExpression[0])),
+				equaler);
 		return typeConfig;
 	}
 

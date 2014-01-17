@@ -5,7 +5,6 @@ import java.io.IOException;
 import eu.stratosphere.api.common.operators.Operator;
 import eu.stratosphere.configuration.Configuration;
 import eu.stratosphere.sopremo.AbstractSopremoType;
-import eu.stratosphere.sopremo.EvaluationContext;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
 import eu.stratosphere.sopremo.expressions.ObjectAccess;
 import eu.stratosphere.sopremo.expressions.PathSegmentExpression;
@@ -15,7 +14,6 @@ import eu.stratosphere.sopremo.operator.Name;
 import eu.stratosphere.sopremo.operator.Property;
 import eu.stratosphere.sopremo.pact.JsonCollector;
 import eu.stratosphere.sopremo.pact.SopremoMap;
-import eu.stratosphere.sopremo.serialization.SopremoRecordLayout;
 import eu.stratosphere.sopremo.type.IJsonNode;
 import eu.stratosphere.sopremo.type.IObjectNode;
 import eu.stratosphere.sopremo.type.IntNode;
@@ -144,11 +142,10 @@ public class GlobalEnumeration extends ElementaryOperator<GlobalEnumeration> {
 	 * eu.stratosphere.sopremo.serialization.SopremoRecordLayout)
 	 */
 	@Override
-	protected void configureOperator(final Operator contract, final Configuration stubConfiguration,
-			final EvaluationContext context, final SopremoRecordLayout layout) {
+	protected void configureOperator(final Operator contract, final Configuration stubConfiguration) {
 		if (this.enumerationExpression == AUTO_ENUMERATION)
 			this.enumerationExpression = new AutoProjection(this.idFieldName, this.valueFieldName);
-		super.configureOperator(contract, stubConfiguration, context, layout);
+		super.configureOperator(contract, stubConfiguration);
 		if (this.enumerationExpression instanceof AutoProjection)
 			this.enumerationExpression = AUTO_ENUMERATION;
 	}

@@ -12,7 +12,6 @@ import com.google.common.base.Predicates;
 
 import eu.stratosphere.api.common.operators.util.OperatorUtil;
 import eu.stratosphere.pact.common.plan.PactModule;
-import eu.stratosphere.sopremo.EvaluationContext;
 import eu.stratosphere.sopremo.base.join.AntiJoin;
 import eu.stratosphere.sopremo.base.join.EquiJoin;
 import eu.stratosphere.sopremo.base.join.EquiJoin.Mode;
@@ -29,7 +28,6 @@ import eu.stratosphere.sopremo.expressions.TransformFunction;
 import eu.stratosphere.sopremo.operator.Internal;
 import eu.stratosphere.sopremo.operator.Name;
 import eu.stratosphere.sopremo.operator.Property;
-import eu.stratosphere.sopremo.serialization.SopremoRecordLayout;
 
 @Internal
 public class TwoSourceJoin extends TwoSourceJoinBase<TwoSourceJoin> {
@@ -69,7 +67,7 @@ public class TwoSourceJoin extends TwoSourceJoinBase<TwoSourceJoin> {
 	 * eu.stratosphere.sopremo.serialization.SopremoRecordLayout)
 	 */
 	@Override
-	public PactModule asPactModule(final EvaluationContext context, final SopremoRecordLayout layout) {
+	public PactModule asPactModule() {
 		if (this.inverseInputs)
 			this.strategy.setResultProjection(this.getResultProjection().clone().replace(
 				Predicates.instanceOf(InputSelection.class), new TransformFunction() {
@@ -88,7 +86,7 @@ public class TwoSourceJoin extends TwoSourceJoinBase<TwoSourceJoin> {
 		if (this.getDegreeOfParallelism() != STANDARD_DEGREE_OF_PARALLELISM)
 			this.strategy.setDegreeOfParallelism(this.getDegreeOfParallelism());
 
-		final PactModule pactModule = this.strategy.asPactModule(context, layout);
+		final PactModule pactModule = this.strategy.asPactModule();
 		if (this.inverseInputs)
 			OperatorUtil.swapInputs(pactModule.getOutput(0).getInputs().get(0), 0, 1);
 		return pactModule;

@@ -18,6 +18,7 @@ import java.util.Collection;
 
 import eu.stratosphere.api.common.Plan;
 import eu.stratosphere.api.common.operators.GenericDataSink;
+import eu.stratosphere.sopremo.packages.ITypeRegistry;
 import eu.stratosphere.sopremo.serialization.SopremoRecordLayout;
 import eu.stratosphere.sopremo.serialization.SopremoRecordPostPass;
 
@@ -26,16 +27,20 @@ import eu.stratosphere.sopremo.serialization.SopremoRecordPostPass;
 public final class PlanWithSopremoPostPass extends Plan {
 	private final SopremoRecordLayout layout;
 
+	private final ITypeRegistry typeRegistry;
+
 	/**
 	 * Initializes PlanWithSopremoPostPass.
 	 * 
 	 * @param sinks
 	 */
-	public PlanWithSopremoPostPass(final SopremoRecordLayout layout, final Collection<GenericDataSink> sinks) {
+	public PlanWithSopremoPostPass(final SopremoRecordLayout layout, final ITypeRegistry typeRegistry,
+			final Collection<GenericDataSink> sinks) {
 		super(sinks);
 		if (layout == null)
 			throw new NullPointerException();
 		this.layout = layout;
+		this.typeRegistry = typeRegistry;
 	}
 
 	/**
@@ -45,6 +50,15 @@ public final class PlanWithSopremoPostPass extends Plan {
 	 */
 	public SopremoRecordLayout getLayout() {
 		return this.layout;
+	}
+
+	/**
+	 * Returns the typeRegistry.
+	 * 
+	 * @return the typeRegistry
+	 */
+	public ITypeRegistry getTypeRegistry() {
+		return this.typeRegistry;
 	}
 
 	/*

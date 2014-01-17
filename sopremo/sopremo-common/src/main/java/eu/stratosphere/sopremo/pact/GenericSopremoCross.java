@@ -66,7 +66,7 @@ public abstract class GenericSopremoCross<Left extends IJsonNode, Right extends 
 	 */
 	@Override
 	public void open(final Configuration parameters) throws Exception {
-		SopremoEnvironment.getInstance().setConfiguration(parameters);
+		SopremoEnvironment.getInstance().load(parameters);
 		// SopremoEnvironment.getInstance().setConfigurationAndContext(parameters, getRuntimeContext());
 		this.context = SopremoEnvironment.getInstance().getEvaluationContext();
 		this.collector = new JsonCollector<>(this.context);

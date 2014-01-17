@@ -71,7 +71,7 @@ public abstract class GenericSopremoReduce<Elem extends IJsonNode, Out extends I
 	 */
 	@Override
 	public void open(final Configuration parameters) {
-		SopremoEnvironment.getInstance().setConfiguration(parameters);
+		SopremoEnvironment.getInstance().load(parameters);
 		// SopremoEnvironment.getInstance().setConfigurationAndContext(parameters, getRuntimeContext());
 		this.context = SopremoEnvironment.getInstance().getEvaluationContext();
 		final TypedObjectNode typedInputNode =

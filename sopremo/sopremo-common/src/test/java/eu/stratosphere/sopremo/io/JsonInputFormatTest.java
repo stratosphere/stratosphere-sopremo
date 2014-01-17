@@ -10,7 +10,7 @@ import org.junit.Test;
 
 import eu.stratosphere.api.common.io.FormatUtil;
 import eu.stratosphere.configuration.Configuration;
-import eu.stratosphere.sopremo.EvaluationContext;
+import eu.stratosphere.sopremo.SopremoEnvironment;
 import eu.stratosphere.sopremo.io.JsonFormat.JsonInputFormat;
 import eu.stratosphere.sopremo.io.SopremoFormat.SopremoFileInputFormat;
 import eu.stratosphere.sopremo.pact.SopremoUtil;
@@ -36,8 +36,7 @@ public class JsonInputFormatTest {
 		jsonWriter.close();
 
 		final Configuration config = new Configuration();
-		final EvaluationContext context = new EvaluationContext();
-		SopremoUtil.setEvaluationContext(config, context);
+		SopremoEnvironment.getInstance().save(config);
 		final JsonFormat format = new JsonFormat();
 		SopremoUtil.transferFieldsToConfiguration(format, SopremoFormat.class, config,
 			JsonInputFormat.class, SopremoFileInputFormat.class);
@@ -69,8 +68,7 @@ public class JsonInputFormatTest {
 		jsonWriter.close();
 
 		final Configuration config = new Configuration();
-		final EvaluationContext context = new EvaluationContext();
-		SopremoUtil.setEvaluationContext(config, context);
+		SopremoEnvironment.getInstance().save(config);
 		SopremoUtil.transferFieldsToConfiguration(new JsonFormat(), SopremoFormat.class, config,
 			JsonInputFormat.class, SopremoFileInputFormat.class);
 		final SopremoFileInputFormat inputFormat =

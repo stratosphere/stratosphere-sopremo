@@ -5,13 +5,11 @@ import java.util.List;
 import eu.stratosphere.api.common.operators.Operator;
 import eu.stratosphere.api.common.operators.base.MapOperatorBase;
 import eu.stratosphere.pact.common.plan.PactModule;
-import eu.stratosphere.sopremo.EvaluationContext;
 import eu.stratosphere.sopremo.operator.ElementaryOperator;
 import eu.stratosphere.sopremo.operator.InputCardinality;
 import eu.stratosphere.sopremo.operator.JsonStream;
 import eu.stratosphere.sopremo.operator.Name;
 import eu.stratosphere.sopremo.pact.SopremoNop;
-import eu.stratosphere.sopremo.serialization.SopremoRecordLayout;
 
 /**
  * Unifies the input json streams in a bag semantic.
@@ -25,7 +23,7 @@ public class UnionAll extends ElementaryOperator<UnionAll> {
 	 * @see eu.stratosphere.sopremo.ElementaryOperator#asPactModule(eu.stratosphere.sopremo.EvaluationContext)
 	 */
 	@Override
-	public PactModule asPactModule(final EvaluationContext context, final SopremoRecordLayout layout) {
+	public PactModule asPactModule() {
 		final List<JsonStream> inputs = this.getInputs();
 		final PactModule module = new PactModule(inputs.size(), 1);
 		// // TODO: remove identity map, when Pact/Nephele can deal with direct source->sink connections

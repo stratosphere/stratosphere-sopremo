@@ -18,6 +18,7 @@ package eu.stratosphere.sopremo.serialization;
 import eu.stratosphere.api.common.typeutils.TypeSerializer;
 import eu.stratosphere.api.common.typeutils.TypeSerializerFactory;
 import eu.stratosphere.configuration.Configuration;
+import eu.stratosphere.sopremo.packages.ITypeRegistry;
 import eu.stratosphere.sopremo.pact.SopremoUtil;
 
 /**
@@ -26,6 +27,12 @@ import eu.stratosphere.sopremo.pact.SopremoUtil;
 public class SopremoRecordSerializerFactory implements TypeSerializerFactory<SopremoRecord> {
 
 	private SopremoRecordLayout layout;
+	
+	private ITypeRegistry typeRegistry;
+
+	private final static String LAYOUT_KEY = "sopremo.layout";
+
+	private final static String TYPES_KEY = "sopremo.types";
 
 	// --------------------------------------------------------------------------------------------
 
@@ -35,10 +42,11 @@ public class SopremoRecordSerializerFactory implements TypeSerializerFactory<Sop
 	public SopremoRecordSerializerFactory() {
 	}
 
-	public SopremoRecordSerializerFactory(final SopremoRecordLayout layout) {
+	public SopremoRecordSerializerFactory(final SopremoRecordLayout layout, final ITypeRegistry typeRegistry) {
 		if (layout == null)
 			throw new NullPointerException();
 		this.layout = layout;
+		this.typeRegistry = typeRegistry;
 	}
 
 	@Override
@@ -50,7 +58,7 @@ public class SopremoRecordSerializerFactory implements TypeSerializerFactory<Sop
 		if (this.getClass() != obj.getClass())
 			return false;
 		final SopremoRecordSerializerFactory other = (SopremoRecordSerializerFactory) obj;
-		return this.layout.equals(other.layout);
+		return this.layout.equals(other.layout) && this.typeRegistry.equals(other.typeRegistry);
 	}
 
 	/*
@@ -68,7 +76,7 @@ public class SopremoRecordSerializerFactory implements TypeSerializerFactory<Sop
 	 */
 	@Override
 	public TypeSerializer<SopremoRecord> getSerializer() {
-		return new SopremoRecordSerializer(this.layout);
+		return new SopremoRecordSerializer(this.layout, this.typeRegistry);
 	}
 
 	@Override
@@ -76,6 +84,7 @@ public class SopremoRecordSerializerFactory implements TypeSerializerFactory<Sop
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + this.layout.hashCode();
+		result = prime * result + this.typeRegistry.hashCode();
 		return result;
 	}
 
@@ -87,7 +96,8 @@ public class SopremoRecordSerializerFactory implements TypeSerializerFactory<Sop
 	@Override
 	public void readParametersFromConfig(final Configuration config, final ClassLoader cl)
 			throws ClassNotFoundException {
-		this.layout = SopremoUtil.getObject(config, SopremoRecordLayout.LAYOUT_KEY, null);
+		this.layout = SopremoUtil.getObject(config, LAYOUT_KEY, null);
+		this.typeRegistry = SopremoUtil.getObject(config, TYPES_KEY, null);
 	}
 
 	/*
@@ -97,6 +107,7 @@ public class SopremoRecordSerializerFactory implements TypeSerializerFactory<Sop
 	 */
 	@Override
 	public void writeParametersToConfig(final Configuration config) {
-		SopremoUtil.setObject(config, SopremoRecordLayout.LAYOUT_KEY, this.layout);
+		SopremoUtil.setObject(config, LAYOUT_KEY, this.layout);
+		SopremoUtil.setObject(config, TYPES_KEY, this.typeRegistry);
 	}
 }

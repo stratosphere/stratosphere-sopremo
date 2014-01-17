@@ -11,7 +11,9 @@ import eu.stratosphere.api.common.Plan;
 import eu.stratosphere.api.common.operators.GenericDataSink;
 import eu.stratosphere.sopremo.AbstractSopremoType;
 import eu.stratosphere.sopremo.EvaluationContext;
+import eu.stratosphere.sopremo.SopremoEnvironment;
 import eu.stratosphere.sopremo.io.Sink;
+import eu.stratosphere.sopremo.packages.DefaultTypeRegistry;
 import eu.stratosphere.sopremo.packages.ITypeRegistry;
 import eu.stratosphere.sopremo.serialization.SopremoRecordLayout;
 
@@ -29,6 +31,8 @@ public class SopremoPlan extends AbstractSopremoType implements Serializable {
 	private List<String> requiredPackages = new ArrayList<String>();
 
 	private SopremoRecordLayout layout;
+	
+	private ITypeRegistry typeRegistry = new DefaultTypeRegistry();
 
 	public SopremoPlan() {
 		this.module = new SopremoModule(0, 0);
@@ -54,7 +58,7 @@ public class SopremoPlan extends AbstractSopremoType implements Serializable {
 	 */
 	public Plan asPactPlan() {
 		final Collection<GenericDataSink> sinks = this.checkForSinks(this.assemblePact());
-		return new PlanWithSopremoPostPass(this.layout, sinks);
+		return new PlanWithSopremoPostPass(this.layout, this.typeRegistry, sinks);
 	}
 
 	/**
@@ -67,7 +71,8 @@ public class SopremoPlan extends AbstractSopremoType implements Serializable {
 	public Collection<eu.stratosphere.api.common.operators.Operator> assemblePact() {
 		final ElementarySopremoModule elementaryModule = this.module.asElementary();
 		this.layout = SopremoRecordLayout.create(elementaryModule.getSchema().getKeyExpressions());
-		return elementaryModule.assemblePact(this.context, this.layout);
+		SopremoEnvironment.getInstance().setLayout(this.layout);
+		return elementaryModule.assemblePact();
 	}
 
 	@Override
@@ -118,8 +123,13 @@ public class SopremoPlan extends AbstractSopremoType implements Serializable {
 		return this.module.getInternalOutputNodes();
 	}
 
+	/**
+	 * Returns the typeRegistry.
+	 * 
+	 * @return the typeRegistry
+	 */
 	public ITypeRegistry getTypeRegistry() {
-		return this.context.getTypeRegistry();
+		return this.typeRegistry;
 	}
 
 	public List<Operator<?>> getUnmatchingOperators(final SopremoPlan other) {
@@ -168,7 +178,19 @@ public class SopremoPlan extends AbstractSopremoType implements Serializable {
 	public void setSinks(final Sink... sinks) {
 		this.setSinks(Arrays.asList(sinks));
 	}
+	
+	/**
+	 * Sets the typeRegistry to the specified value.
+	 *
+	 * @param typeRegistry the typeRegistry to set
+	 */
+	public void setTypeRegistry(ITypeRegistry typeRegistry) {
+		if (typeRegistry == null)
+			throw new NullPointerException("typeRegistry must not be null");
 
+		this.typeRegistry = typeRegistry;
+	}
+	
 	/**
 	 * Checks if all contracts are {@link GenericDataSink}s.
 	 */

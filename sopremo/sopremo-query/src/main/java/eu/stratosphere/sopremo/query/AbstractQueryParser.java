@@ -250,6 +250,7 @@ public abstract class AbstractQueryParser extends Parser implements ParsingScope
 		for (final PackageInfo info : this.packageManager.getImportedPackages())
 			for (final File packages : info.getRequiredJarPaths())
 				this.currentPlan.addRequiredPackage(packages.getAbsolutePath());
+		this.currentPlan.setTypeRegistry(getTypeRegistry());
 		System.out.println(this.currentPlan.getRequiredPackages());
 
 		return this.currentPlan;
@@ -541,7 +542,7 @@ public abstract class AbstractQueryParser extends Parser implements ParsingScope
 	 * 
 	 */
 	private void init() {
-		this.currentPlan.setContext(new EvaluationContext(this.getTypeRegistry(), this.getNameChooserProvider()));
+		this.currentPlan.setContext(new EvaluationContext(this.getNameChooserProvider()));
 		this.packageManager.getFunctionRegistry().put(CoreFunctions.class);
 		this.packageManager.getFunctionRegistry().put(MathFunctions.class);
 		this.packageManager.getFunctionRegistry().put(SecondOrderFunctions.class);

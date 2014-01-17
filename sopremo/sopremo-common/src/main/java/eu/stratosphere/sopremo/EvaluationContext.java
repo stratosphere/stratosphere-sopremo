@@ -16,31 +16,15 @@ package eu.stratosphere.sopremo;
 
 import java.io.File;
 import java.io.IOException;
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 
 import com.esotericsoftware.kryo.Kryo;
 
 import eu.stratosphere.core.fs.Path;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
 import eu.stratosphere.sopremo.packages.DefaultNameChooserProvider;
-import eu.stratosphere.sopremo.packages.DefaultTypeRegistry;
-import eu.stratosphere.sopremo.packages.ITypeRegistry;
 import eu.stratosphere.sopremo.packages.NameChooserProvider;
-import eu.stratosphere.sopremo.type.BooleanNode;
-import eu.stratosphere.sopremo.type.IArrayNode;
-import eu.stratosphere.sopremo.type.IJsonNode;
-import eu.stratosphere.sopremo.type.IObjectNode;
-import eu.stratosphere.sopremo.type.MissingNode;
-import eu.stratosphere.sopremo.type.NullNode;
-import eu.stratosphere.sopremo.type.TextNode;
-import eu.stratosphere.sopremo.type.TypeCoercer;
 import eu.stratosphere.util.SopremoKryo;
 
 /**
@@ -53,8 +37,6 @@ public class EvaluationContext extends AbstractSopremoType {
 
 	private EvaluationExpression resultProjection = EvaluationExpression.VALUE;
 
-	private final ITypeRegistry typeRegistry;
-
 	private final NameChooserProvider nameChooserProvider;
 
 	// public LinkedList<Operator<?>> getOperatorStack() {
@@ -63,7 +45,7 @@ public class EvaluationContext extends AbstractSopremoType {
 
 	private int taskId;
 
-	private final transient Kryo kryo, dataKryo;
+	private final transient Kryo kryo;
 
 	private final Map<String, Object> contextParameters = new HashMap<String, Object>();
 
@@ -71,31 +53,16 @@ public class EvaluationContext extends AbstractSopremoType {
 	 * Initializes EvaluationContext.
 	 */
 	public EvaluationContext() {
-		this(new DefaultTypeRegistry(), new DefaultNameChooserProvider());
+		this(new DefaultNameChooserProvider());
 	}
 
 	/**
 	 * Initializes EvaluationContext.
 	 */
-	public EvaluationContext(final ITypeRegistry typeRegistry, final NameChooserProvider nameChooserProvider) {
-		this.typeRegistry = typeRegistry;
+	public EvaluationContext(final NameChooserProvider nameChooserProvider) {
 		this.nameChooserProvider = nameChooserProvider;
 
 		this.workingPath = new Path(new File(".").toURI().toString()).toString();
-
-		this.dataKryo = new Kryo();
-		this.dataKryo.setReferences(false);
-		for (final Class<? extends IJsonNode> type : TypeCoercer.NUMERIC_TYPES)
-			this.dataKryo.register(type);
-		final List<Class<? extends Object>> defaultTypes =
-			Arrays.asList(BooleanNode.class, TextNode.class, IObjectNode.class, IArrayNode.class, NullNode.class,
-				MissingNode.class, TreeMap.class, ArrayList.class, BigInteger.class, BigDecimal.class);
-		for (final Class<?> type : defaultTypes)
-			this.dataKryo.register(type);
-
-		final List<Class<? extends IJsonNode>> types = typeRegistry.getTypes();
-		for (final Class<? extends IJsonNode> type : types)
-			this.dataKryo.register(type);
 
 		this.kryo = new SopremoKryo();
 	}
@@ -104,7 +71,7 @@ public class EvaluationContext extends AbstractSopremoType {
 	 * Initializes EvaluationContext.
 	 */
 	protected EvaluationContext(final EvaluationContext context) {
-		this(context.typeRegistry, context.nameChooserProvider);
+		this(context.nameChooserProvider);
 		this.contextParameters.putAll(context.contextParameters);
 		this.copyPropertiesFrom(context);
 	}
@@ -130,17 +97,6 @@ public class EvaluationContext extends AbstractSopremoType {
 		return (EvaluationContext) super.clone();
 	}
 
-	// /**
-	// * Returns the classResolver.
-	// *
-	// * @return the classResolver
-	// */
-	// public ClassResolver getClassResolver() {
-	// if(this.classResolver == null)
-	// this.classResolver = new SopremoClassResolver(this.getTypeRegistry());
-	// return this.classResolver;
-	// }
-	//
 	/*
 	 * (non-Javadoc)
 	 * @see eu.stratosphere.sopremo.AbstractSopremoType#copyPropertiesFrom(eu.
@@ -178,11 +134,6 @@ public class EvaluationContext extends AbstractSopremoType {
 			return false;
 		if (this.taskId != other.taskId)
 			return false;
-		if (this.typeRegistry == null) {
-			if (other.typeRegistry != null)
-				return false;
-		} else if (!this.typeRegistry.equals(other.typeRegistry))
-			return false;
 		if (this.workingPath == null) {
 			if (other.workingPath != null)
 				return false;
@@ -197,14 +148,6 @@ public class EvaluationContext extends AbstractSopremoType {
 	 */
 	public Kryo getKryo() {
 		return this.kryo;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see eu.stratosphere.sopremo.AbstractSopremoType#getKryo()
-	 */
-	public Kryo getKryoForDataSerialization() {
-		return this.dataKryo;
 	}
 
 	/**
@@ -240,15 +183,6 @@ public class EvaluationContext extends AbstractSopremoType {
 	}
 
 	/**
-	 * Returns the typeRegistry.
-	 * 
-	 * @return the typeRegistry
-	 */
-	public ITypeRegistry getTypeRegistry() {
-		return this.typeRegistry;
-	}
-
-	/**
 	 * Returns the hdfsPath.
 	 * 
 	 * @return the hdfsPath
@@ -265,7 +199,6 @@ public class EvaluationContext extends AbstractSopremoType {
 		result = prime * result + (this.operatorDescription == null ? 0 : this.operatorDescription.hashCode());
 		result = prime * result + (this.resultProjection == null ? 0 : this.resultProjection.hashCode());
 		result = prime * result + this.taskId;
-		result = prime * result + (this.typeRegistry == null ? 0 : this.typeRegistry.hashCode());
 		result = prime * result + (this.workingPath == null ? 0 : this.workingPath.hashCode());
 		return result;
 	}
