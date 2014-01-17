@@ -191,7 +191,6 @@ public class TwoSourceJoinTest extends SopremoOperatorTestBase<TwoSourceJoin> {
 	}
 
 	@Test
-	@Ignore
 	public void shouldPerformFullOuterTwoSourceJoin2() {
 		final SopremoTestPlan sopremoPlan = new SopremoTestPlan(2, 1);
 
@@ -206,7 +205,6 @@ public class TwoSourceJoinTest extends SopremoOperatorTestBase<TwoSourceJoin> {
 				new ObjectCreation.CopyFields(new InputSelection(1)),
 				new ObjectCreation.FieldAssignment("worksFor", JsonUtil.createPath("0", "worksFor"))));
 		join.setInputs(sopremoPlan.getInputOperators(0, 2));
-		join.setResultProjection(ObjectCreation.CONCATENATION);
 		sopremoPlan.getOutputOperator(0).setInputs(join);
 		sopremoPlan.getInput(0).
 			addObject("biographyId", "A000029", "worksFor", "CompanyXYZ").
@@ -219,10 +217,9 @@ public class TwoSourceJoinTest extends SopremoOperatorTestBase<TwoSourceJoin> {
 		sopremoPlan.getExpectedOutput(0).
 			addObject("biography", "A000029", "id", "usCongress1", "income", 1, "name", "Andrew Adams", "worksFor",
 				"CompanyXYZ").
-			addObject("biography", "A000039", "id", "usCongress2", "income", 1, "name", "John Adams", "worksFor",
-				"CompanyUVW").
-			addObject("biography", "A000049", "worksFor", "CompanyABC").
-			addObject("biography", "A000059", "id", "usCongress3", "income", 1, "name", "Andrew Adams");
+			addObject("biography", "A000039", "id", "usCongress2", "income", 1, "name", "John Adams").
+			addObject("worksFor", "CompanyABC").
+			addObject("biography", "A000059", "id", "usCongress3", "income", 1, "name", "John Doe", "worksFor", "CompanyUVW");
 
 		sopremoPlan.trace();
 		sopremoPlan.run();

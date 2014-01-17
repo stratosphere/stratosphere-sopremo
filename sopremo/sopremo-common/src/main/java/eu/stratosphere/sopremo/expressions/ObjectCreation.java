@@ -221,7 +221,8 @@ public class ObjectCreation extends EvaluationExpression {
 		@Override
 		protected void evaluate(final IJsonNode node, final IObjectNode target) {
 			final IJsonNode exprNode = this.getExpression().evaluate(node);
-			target.putAll((IObjectNode) exprNode);
+			if (!(exprNode instanceof MissingNode))
+				target.putAll((IObjectNode) exprNode);
 		}
 	}
 
