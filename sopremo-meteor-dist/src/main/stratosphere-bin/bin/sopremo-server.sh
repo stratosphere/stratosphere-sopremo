@@ -20,26 +20,26 @@ bin=`dirname "$0"`
 bin=`cd "$bin"; pwd`
 
 # get nephele config
-. "$bin"/nephele-config.sh
+. "$bin"/config.sh
 
-if [ "$NEPHELE_PID_DIR" = "" ]; then
-        NEPHELE_PID_DIR=/tmp
+if [ "$STRATOSPHERE_PID_DIR" = "" ]; then
+        STRATOSPHERE_PID_DIR=/tmp
 fi
 
-if [ "$NEPHELE_IDENT_STRING" = "" ]; then
-        NEPHELE_IDENT_STRING="$USER"
+if [ "$STRATOSPHERE_IDENT_STRING" = "" ]; then
+        STRATOSPHERE_IDENT_STRING="$USER"
 fi
 
 JVM_ARGS="$JVM_ARGS -Xmx512m"
 
-log=$NEPHELE_LOG_DIR/sopremo.log
-pid=$NEPHELE_PID_DIR/sopremo-server.pid
-log_setting="-Dlog.file="$log" -Dlog4j.configuration=file://"$NEPHELE_CONF_DIR"/log4j.properties"
+log=$STRATOSPHERE_LOG_DIR/sopremo.log
+pid=$STRATOSPHERE_PID_DIR/sopremo-server.pid
+log_setting="-Dlog.file="$log" -Dlog4j.configuration=file://"$STRATOSPHERE_CONF_DIR"/log4j.properties"
 
 case $STARTSTOP in
 
         (start)
-                mkdir -p "$NEPHELE_PID_DIR"
+                mkdir -p "$STRATOSPHERE_PID_DIR"
                 if [ -f $pid ]; then
                         if kill -0 `cat $pid` > /dev/null 2>&1; then
                                 echo Sopremo server running as process `cat $pid`.  Stop it first.
@@ -47,7 +47,7 @@ case $STARTSTOP in
                         fi
                 fi
                 echo Starting Sopremo server
-		$JAVA_HOME/bin/java $JVM_ARGS $log_setting -classpath $CLASSPATH eu.stratosphere.sopremo.server.SopremoServer -configDir $NEPHELE_CONF_DIR &
+		$JAVA_HOME/bin/java $JVM_ARGS $log_setting -classpath $CLASSPATH eu.stratosphere.sopremo.server.SopremoServer -configDir $STRATOSPHERE_CONF_DIR &
 		echo $! > $pid
 	;;
 

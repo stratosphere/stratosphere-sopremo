@@ -441,7 +441,7 @@ public class JsonParser {
 				case 'u':
 					final char[] hexCode =
 					{ (char) parser.read(), (char) parser.read(), (char) parser.read(), (char) parser.read(), };
-					return (char) Integer.parseInt(String.valueOf(hexCode), ARRAY_START);
+					return (char) Integer.parseInt(String.valueOf(hexCode), 16);
 
 				default:
 					throw parser.getParseException(this.getName(),

@@ -18,17 +18,17 @@ bin=`dirname "$0"`
 bin=`cd "$bin"; pwd`
 
 # get nephele config
-. "$bin"/nephele-config.sh
+. "$bin"/config.sh
 
-if [ "$NEPHELE_IDENT_STRING" = "" ]; then
-        NEPHELE_IDENT_STRING="$USER"
+if [ "$STRATOSPHERE_IDENT_STRING" = "" ]; then
+        STRATOSPHERE_IDENT_STRING="$USER"
 fi
 
 JVM_ARGS="$JVM_ARGS -Xmx512m"
 
-log=$NEPHELE_LOG_DIR/meteor.log
-log_setting="-Dlog.file="$log" -Dlog4j.configuration=file://"$NEPHELE_CONF_DIR"/log4j.properties"
+log=$STRATOSPHERE_LOG_DIR/meteor.log
+log_setting="-Dlog.file="$log" -Dlog4j.configuration=file://"$STRATOSPHERE_CONF_DIR"/log4j.properties"
 
-export NEPHELE_CONF_DIR
+export STRATOSPHERE_CONF_DIR
 
-$JAVA_HOME/bin/java $JVM_ARGS $log_setting -classpath $CLASSPATH eu.stratosphere.meteor.client.CLClient -configDir $NEPHELE_CONF_DIR $*
+$JAVA_HOME/bin/java $JVM_ARGS $log_setting -classpath $CLASSPATH eu.stratosphere.meteor.client.CLClient -configDir $STRATOSPHERE_CONF_DIR $*

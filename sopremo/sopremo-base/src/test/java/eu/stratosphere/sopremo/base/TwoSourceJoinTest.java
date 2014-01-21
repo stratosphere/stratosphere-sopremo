@@ -2,7 +2,6 @@ package eu.stratosphere.sopremo.base;
 
 import static eu.stratosphere.sopremo.type.JsonUtil.createPath;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import eu.stratosphere.sopremo.expressions.ArrayCreation;

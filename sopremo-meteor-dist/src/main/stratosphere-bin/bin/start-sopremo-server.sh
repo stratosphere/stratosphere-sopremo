@@ -17,8 +17,8 @@
 bin=`dirname "$0"`
 bin=`cd "$bin"; pwd`
 
-. "$bin"/nephele-config.sh
+. "$bin"/config.sh
 
 # Starts the sopremo server
-$NEPHELE_BIN_DIR/sopremo-server.sh start
+$STRATOSPHERE_BIN_DIR/sopremo-server.sh start
 

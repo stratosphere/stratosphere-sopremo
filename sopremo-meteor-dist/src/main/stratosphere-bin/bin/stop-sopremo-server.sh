@@ -17,8 +17,8 @@
 bin=`dirname "$0"`
 bin=`cd "$bin"; pwd`
 
-. "$bin"/nephele-config.sh
+. "$bin"/config.sh
 
 # Stops the sopremo server
-$NEPHELE_BIN_DIR/sopremo-server.sh stop
+$STRATOSPHERE_BIN_DIR/sopremo-server.sh stop
 
