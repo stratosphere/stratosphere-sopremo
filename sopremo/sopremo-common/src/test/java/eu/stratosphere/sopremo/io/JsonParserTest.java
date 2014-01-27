@@ -48,6 +48,8 @@ public class JsonParserTest {
 	public void shouldParseArrays() throws IOException {
 		final JsonParser parser = new JsonParser(this.value);
 		IJsonNode result = null;
+		if(this.steps > 1)
+			parser.setWrappingArraySkipping(true);
 		for (int i = 0; i < this.steps; i++)
 			result = parser.readValueAsTree();
 		Assert.assertEquals(this.expectedResult, result);
@@ -72,7 +74,7 @@ public class JsonParserTest {
 			{ "\"42shadh34634\"", TextNode.valueOf("42shadh34634"), 1 },
 			{ "[42, 23]", new ArrayNode<IJsonNode>().add(IntNode.valueOf(42)).add(IntNode.valueOf(23)), 1 },
 			{
-				"42, [23, [[24, 55], 12, 17]]",
+				"[42, [23, [[24, 55], 12, 17]]]",
 				new ArrayNode<IJsonNode>().add(IntNode.valueOf(23)).add(
 					new ArrayNode<IJsonNode>().add(
 						new ArrayNode<IJsonNode>().add(IntNode.valueOf(24)).add(IntNode.valueOf(55)))
@@ -80,13 +82,13 @@ public class JsonParserTest {
 			{ "\"Test\"", TextNode.valueOf("Test"), 1 },
 			{ "\"Test\\\"Test\"", TextNode.valueOf("Test\"Test"), 1 },
 			{
-				"42, [23, [[24, \"Test\"], 12, \"17\"]]",
+				"[42, [23, [[24, \"Test\"], 12, \"17\"]]]",
 
 				new ArrayNode<IJsonNode>().add(IntNode.valueOf(23)).add(
 					new ArrayNode<IJsonNode>().add(
 						new ArrayNode<IJsonNode>().add(IntNode.valueOf(24)).add(TextNode.valueOf("Test"))).add(
 						IntNode.valueOf(12)).add(TextNode.valueOf("17"))), 2 },
-			{ "{\"key1\" : 42}, 42", IntNode.valueOf(42), 2 },
+			{ "[{\"key1\" : 42}, 42]", IntNode.valueOf(42), 2 },
 			{ "{\"key1\" : 42}", new ObjectNode().put("key1", IntNode.valueOf(42)), 1 },
 			{ "{\"key1\" : null}", new ObjectNode().put("key1", NullNode.getInstance()), 1 },
 			{
@@ -97,7 +99,7 @@ public class JsonParserTest {
 						TextNode.valueOf("Hello")))
 					.put(
 						"key2", new ObjectNode().put("key3", IntNode.valueOf(23))), 1 },
-			{ "1 ,2 ,3, 4 , null", NullNode.getInstance(), 5 }
+			{ "[1 ,2 ,3, 4 , null]", NullNode.getInstance(), 5 }
 
 		});
 	}

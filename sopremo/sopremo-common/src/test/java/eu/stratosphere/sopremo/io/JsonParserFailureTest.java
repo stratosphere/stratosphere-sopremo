@@ -14,18 +14,41 @@
  **********************************************************************************************************************/
 package eu.stratosphere.sopremo.io;
 
+import org.junit.Assert;
 import org.junit.Test;
+
+import eu.stratosphere.sopremo.type.IJsonNode;
 
 /**
  * 
  */
 public class JsonParserFailureTest {
-	@Test(expected = JsonParseException.class)
+	@Test
 	public void shouldFailOnMissingComma() throws JsonParseException {
 
-		final JsonParser parser = new JsonParser("[{id:1},{id:2}{id:3},{id:4}]");
+		final JsonParser parser = new JsonParser("[{\"id\":1},{\"id\":2}{\"id\":3},{\"id\":4}]");
 
-		for (int index = 0; index < 3; index++)
+		parser.setWrappingArraySkipping(true);
+		parser.readValueAsTree();
+		try {
+			final IJsonNode node = parser.readValueAsTree();
+			Assert.fail("Expected exception instead of " + node);
+		} catch (JsonParseException e) {
+		}
+	}
+
+	@Test
+	public void shouldFailOnMissingComma2() throws JsonParseException {
+
+		final JsonParser parser = new JsonParser("[{\"id\":1},{\"id\":2},{\"id\":3}{\"id\":4}]");
+
+		parser.setWrappingArraySkipping(true);
+		for (int index = 0; index < 2; index++)
 			parser.readValueAsTree();
+		try {
+			final IJsonNode node = parser.readValueAsTree();
+			Assert.fail("Expected exception instead of " + node);
+		} catch (JsonParseException e) {
+		}
 	}
 }

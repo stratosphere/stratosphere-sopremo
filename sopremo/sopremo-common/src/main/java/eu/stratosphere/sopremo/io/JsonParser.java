@@ -44,7 +44,7 @@ public class JsonParser {
 
 	private static char ELEMENT_SEPARATOR = ',';
 
-	private static char ARRAY_START = '[';
+	private static char ARRAY_START = '[', ARRAY_END = ']';
 
 	private static int STEP_SIZE = 1;
 
@@ -123,42 +123,42 @@ public class JsonParser {
 	 *         reason of failure consult {@link JsonParseException#getMessage()}.
 	 */
 	public IJsonNode readValueAsTree() throws JsonParseException {
-		final boolean firstCall = this.currentCounter == 0;
-		if (this.checkEnd() && !this.skipWrappingArray)
-			return MissingNode.getInstance();
+		final boolean start = this.currentCounter == 0;
 		int currentChar = this.readIgnoreWhitespace();
-		if (this.checkForEOF(currentChar))
-			return this.getRoot().createJsonNode((char) currentChar, this);
-		if (firstCall && this.skipWrappingArray && (char) currentChar == ARRAY_START)
-			currentChar = this.readIgnoreWhitespace();
+		if (currentChar == -1 && start)
+			return MissingNode.getInstance();
+		boolean skippedArray = this.skipWrappingArray;
+		if (this.skipWrappingArray && start) {
+			if (currentChar == ARRAY_START)
+				currentChar = this.readIgnoreWhitespace();
+			else
+				skippedArray = false;
+		}
 		final IJsonNode result = this.parseElement(currentChar);
-		this.finishCurrentParsingStep();
+		if (skippedArray) {
+			if (expect(this.readIgnoreWhitespace(), ELEMENT_SEPARATOR, ARRAY_END) == ARRAY_END)
+				this.reachedEnd = true;
+		} else {
+			expect(this.readIgnoreWhitespace(), -1);
+			this.reachedEnd = true;
+		}
 		return result;
+	}
+
+	private int expect(int currentChar, int... possibleChars) throws JsonParseException {
+		for (int possibleChar : possibleChars)
+			if (currentChar == possibleChar)
+				return possibleChar;
+		StringBuilder builder = new StringBuilder();
+		for (int possibleChar : possibleChars)
+			builder.append('\'').append((char) possibleChar).append("\', ");
+		builder.setLength(builder.length() - 2);
+		throw this.getParseException(this.getRoot().getName(), builder.toString(),
+			String.valueOf((char) currentChar));
 	}
 
 	public void setWrappingArraySkipping(final boolean skipWrappingArray) {
 		this.skipWrappingArray = skipWrappingArray;
-	}
-
-	private boolean checkForEOF(final int currentChar) {
-		if (currentChar == -1) {
-			this.reachedEnd = true;
-			return true;
-		}
-		return false;
-	}
-
-	private void finishCurrentParsingStep() throws JsonParseException {
-		int currentChar;
-		currentChar = this.readIgnoreWhitespace();
-		if (currentChar == -1)
-			this.reachedEnd = true;
-		else if ((char) currentChar != JsonParser.ELEMENT_SEPARATOR)
-			if (this.skipWrappingArray)
-				this.reachedEnd = true;
-			else
-				throw this.getParseException(this.getRoot().getName(), String.valueOf(ELEMENT_SEPARATOR) + " or eof",
-					String.valueOf((char) currentChar));
 	}
 
 	private JsonParseException getIOException() {

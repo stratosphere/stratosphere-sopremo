@@ -32,7 +32,7 @@ public class JsonInputFormatTest {
 		final File file = File.createTempFile("jsonInputFormatTest", null);
 		file.delete();
 		final OutputStreamWriter jsonWriter = new OutputStreamWriter(new FileOutputStream(file));
-		jsonWriter.write("{\"id\": 1}, {\"id\": 2}, {\"id\": 3}, {\"id\": 4}, {\"id\": 5}");
+		jsonWriter.write("[{\"id\": 1}, {\"id\": 2}, {\"id\": 3}, {\"id\": 4}, {\"id\": 5}]");
 		jsonWriter.close();
 
 		final Configuration config = new Configuration();
@@ -64,7 +64,7 @@ public class JsonInputFormatTest {
 		final File file = File.createTempFile("jsonInputFormatTest", null);
 		file.delete();
 		final OutputStreamWriter jsonWriter = new OutputStreamWriter(new FileOutputStream(file));
-		jsonWriter.write("{\"array\": [{\"id\": 1}, {\"id\": 2}, {\"id\": 3}, {\"id\": 4}, {\"id\": 5}]}");
+		jsonWriter.write("[{\"array\": [{\"id\": 1}, {\"id\": 2}, {\"id\": 3}, {\"id\": 4}, {\"id\": 5}]}]");
 		jsonWriter.close();
 
 		final Configuration config = new Configuration();
@@ -91,5 +91,33 @@ public class JsonInputFormatTest {
 			Assert.assertEquals("other order expected", index,
 				((IntNode) ((IObjectNode) arrayNode.get(index - 1)).get("id")).getIntValue());
 		}
+	}
+
+	/**
+	 * @throws IOException
+	 */
+	@Test
+	public void shouldProperlyParseFile() throws IOException {
+		final File source = new File(this.getResource("JsonInputFormat/test.json"));
+
+		final Configuration config = new Configuration();
+		SopremoEnvironment.getInstance().save(config);
+		SopremoUtil.transferFieldsToConfiguration(new JsonFormat(), SopremoFormat.class, config,
+			JsonInputFormat.class, SopremoFileInputFormat.class);
+		final SopremoFileInputFormat inputFormat =
+			FormatUtil.openInput(JsonInputFormat.class, source.toURI().toString(), config);
+		final SopremoRecord record = new SopremoRecord();
+
+		int count = 0;
+		while (!inputFormat.reachedEnd())
+			if (inputFormat.nextRecord(record))
+				count++;
+
+		Assert.assertEquals(22, count);
+	}
+
+	private String getResource(final String name) throws IOException {
+		return JsonInputFormatTest.class.getClassLoader().getResources(name)
+			.nextElement().getFile();
 	}
 }

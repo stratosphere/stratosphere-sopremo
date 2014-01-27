@@ -24,7 +24,6 @@ import org.junit.Test;
 import eu.stratosphere.core.memory.DataInputViewStream;
 import eu.stratosphere.core.memory.DataOutputViewStream;
 import eu.stratosphere.sopremo.EqualCloneTest;
-import eu.stratosphere.sopremo.SopremoEnvironment;
 import eu.stratosphere.sopremo.cache.NodeCache;
 import eu.stratosphere.sopremo.expressions.ArrayAccess;
 import eu.stratosphere.sopremo.expressions.ObjectAccess;

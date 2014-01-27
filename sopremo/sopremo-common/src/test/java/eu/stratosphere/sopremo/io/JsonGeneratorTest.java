@@ -22,11 +22,15 @@ public class JsonGeneratorTest {
 
 	private static ArrayNode<IJsonNode> arr;
 
+	private String getResource(final String name) throws IOException {
+		return JsonInputFormatTest.class.getClassLoader().getResources(name)
+			.nextElement().toString();
+	}
+	
 	@Test
 	public void shouldGenerateGivenFile() {
 		try {
-			final JsonParser parser = new JsonParser(
-				JsonGeneratorTest.class.getResource("test.json"));
+			final JsonParser parser = new JsonParser(this.getResource("JsonInputFormat/test.json"));
 			final File file = File.createTempFile("test", "json");
 			final JsonGenerator gen = new JsonGenerator(file);
 			gen.writeStartArray();
