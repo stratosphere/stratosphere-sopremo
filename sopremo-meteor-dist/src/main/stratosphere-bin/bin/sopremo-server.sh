@@ -32,8 +32,8 @@ fi
 
 JVM_ARGS="$JVM_ARGS -Xmx512m"
 
-log=$STRATOSPHERE_LOG_DIR/sopremo.log
-pid=$STRATOSPHERE_PID_DIR/sopremo-server.pid
+log=$STRATOSPHERE_LOG_DIR/sopremo-$STRATOSPHERE_IDENT_STRING-server.log
+pid=$STRATOSPHERE_PID_DIR/sopremo-$STRATOSPHERE_IDENT_STRING-server.pid
 log_setting="-Dlog.file="$log" -Dlog4j.configuration=file://"$STRATOSPHERE_CONF_DIR"/log4j.properties"
 
 case $STARTSTOP in
