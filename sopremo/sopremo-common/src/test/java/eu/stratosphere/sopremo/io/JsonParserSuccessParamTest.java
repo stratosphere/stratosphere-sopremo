@@ -42,6 +42,8 @@ public class JsonParserSuccessParamTest {
 	@Before
 	public void setUp() {
 		this.parser = new JsonParser(this.input);
+		if(this.expectedResults.length > 1)
+			this.parser.setWrappingArraySkipping(true);
 	}
 
 	@Test
@@ -95,20 +97,20 @@ public class JsonParserSuccessParamTest {
 			/*
 			 * Tests with multiple records
 			 */
-			/* [20] */{ "null , null", create(NullNode.getInstance(), NullNode.getInstance()), 11 },
-			/* [21] */{ "true, false, true, false",
-				create(BooleanNode.TRUE, BooleanNode.FALSE, BooleanNode.TRUE, BooleanNode.FALSE), 24 },
+			/* [20] */{ "[null , null]", create(NullNode.getInstance(), NullNode.getInstance()), 12 },
+			/* [21] */{ "[true, false, true, false]",
+				create(BooleanNode.TRUE, BooleanNode.FALSE, BooleanNode.TRUE, BooleanNode.FALSE), 25 },
 			/* [22] */{
-				"[null, null] , {\"key\" : null}",
+				"[[null, null] , {\"key\" : null}]",
 				create(new ArrayNode<NullNode>().add(NullNode.getInstance()).add(NullNode.getInstance()),
-					new ObjectNode().put("key", NullNode.getInstance())), 29 },
+					new ObjectNode().put("key", NullNode.getInstance())), 30 },
 			/* [23] */{
-				"[], {}, true, false, null, 42, \"TEST\"",
+				"[[], {}, true, false, null, 42, \"TEST\"]",
 				create(new ArrayNode<IJsonNode>(), new ObjectNode(), BooleanNode.TRUE, BooleanNode.FALSE,
 					NullNode.getInstance(),
-					IntNode.valueOf(42), TextNode.valueOf("TEST")), 37 },
-			/* [24] */{ "null, null",
-				create(NullNode.getInstance(), NullNode.getInstance(), MissingNode.getInstance()), 10 }
+					IntNode.valueOf(42), TextNode.valueOf("TEST")), 38 },
+			/* [24] */{ "[null, null]",
+				create(NullNode.getInstance(), NullNode.getInstance()), 11 }
 		});
 	}
 
