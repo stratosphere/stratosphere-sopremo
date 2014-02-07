@@ -269,6 +269,31 @@ public class GroupingTest extends SopremoOperatorTestBase<Grouping> {
 		sopremoPlan.trace();
 		sopremoPlan.run();
 	}
+	
+	@Test
+	public void firstOnEmptyArrayShouldWork() {
+		final SopremoTestPlan sopremoPlan = new SopremoTestPlan(1, 1);
+
+		final ObjectCreation transformation = new ObjectCreation();
+		transformation.addMapping("first", createFunctionCall(CoreFunctions.FIRST,
+			makePath(new InputSelection(0), new ArrayProjection(new ObjectAccess("e")))));
+
+		final Grouping aggregation = new Grouping().withResultProjection(transformation);
+		aggregation.setInputs(sopremoPlan.getInputOperator(0));
+		aggregation.setGroupingKey(0, createPath("0", "dept"));
+
+		sopremoPlan.getOutputOperator(0).setInputs(aggregation);
+		sopremoPlan.getInput(0).
+			addObject("id", 1, "dept", 1).
+			addObject("id", 2, "dept", 2).
+			addObject("id", 2, "dept", 2, "e", 0);
+		sopremoPlan.getExpectedOutput(0).
+			addObject().
+			addObject("first", 0);
+
+		sopremoPlan.trace();
+		sopremoPlan.run();
+	}
 
 	@Override
 	protected Grouping createDefaultInstance(final int index) {
