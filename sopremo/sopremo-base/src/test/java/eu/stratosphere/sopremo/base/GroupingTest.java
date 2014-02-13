@@ -4,6 +4,7 @@ import static eu.stratosphere.sopremo.expressions.ExpressionUtil.makePath;
 import static eu.stratosphere.sopremo.function.FunctionUtil.createFunctionCall;
 import static eu.stratosphere.sopremo.type.JsonUtil.createPath;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import eu.stratosphere.sopremo.CoreFunctions;
@@ -270,7 +271,7 @@ public class GroupingTest extends SopremoOperatorTestBase<Grouping> {
 		sopremoPlan.run();
 	}
 	
-	@Test
+	@Test @Ignore
 	public void firstOnEmptyArrayShouldWork() {
 		final SopremoTestPlan sopremoPlan = new SopremoTestPlan(1, 1);
 
