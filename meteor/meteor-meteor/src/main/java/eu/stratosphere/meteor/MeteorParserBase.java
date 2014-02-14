@@ -32,11 +32,7 @@ import eu.stratosphere.sopremo.packages.NameChooserProvider;
 import eu.stratosphere.sopremo.query.QueryWithVariablesParser;
 import eu.stratosphere.sopremo.query.RecognitionExceptionWithUsageHint;
 import eu.stratosphere.sopremo.query.StackedConstantRegistry;
-import eu.stratosphere.sopremo.type.BooleanNode;
-import eu.stratosphere.sopremo.type.DecimalNode;
-import eu.stratosphere.sopremo.type.DoubleNode;
-import eu.stratosphere.sopremo.type.IntNode;
-import eu.stratosphere.sopremo.type.TextNode;
+import eu.stratosphere.sopremo.type.*;
 
 /**
  */
@@ -72,6 +68,10 @@ public abstract class MeteorParserBase extends QueryWithVariablesParser<JsonStre
 
 	protected void addConstantScope() {
 		this.constantRegistry.push(new DefaultConstantRegistry());
+	}
+
+	protected void addConstant(String name, EvaluationExpression expression) {
+		this.constantRegistry.put(name, expression);
 	}
 
 	protected String getAssignmentName(final EvaluationExpression expression) {

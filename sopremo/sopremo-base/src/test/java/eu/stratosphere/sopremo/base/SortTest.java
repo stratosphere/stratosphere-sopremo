@@ -106,8 +106,8 @@ public class SortTest extends SopremoOperatorTestBase<Sort> {
 	 * @return
 	 */
 	private Operator<?> ensureUnordered(final Sort sort) {
-		// final Projection arrayWrap =
-		// new Projection().withInputs(sort).withResultProjection(
+		// final TestProjection arrayWrap =
+		// new TestProjection().withInputs(sort).withResultProjection(
 		// new ArrayCreation(ConstantExpression.MISSING, EvaluationExpression.VALUE));
 		// final GlobalEnumeration ge =
 		// new GlobalEnumeration().withEnumerationExpression(new ArrayAccess(0)).withInputs(arrayWrap);

@@ -105,9 +105,13 @@ public class SopremoEnvironment {
 		if (configuration == null)
 			throw new NullPointerException("configuration must not be null");
 
-		this.configuration = configuration;
-		this.classLoader = configuration.getClassLoader();
-		this.evaluationContext = SopremoUtil.getObject(configuration, CONTEXT, null);
+		final EvaluationContext context = SopremoUtil.getObject(configuration, CONTEXT, null);
+		// context may be null if the format is used within another second order function, i.e. not the expected Data Source
+		if (context != null) {
+			this.configuration = configuration;
+			this.classLoader = configuration.getClassLoader();
+			this.evaluationContext = context;
+		}
 	}
 
 	public void setConfigurationAndContext(final Configuration parameters, final RuntimeContext runtimeContext) {

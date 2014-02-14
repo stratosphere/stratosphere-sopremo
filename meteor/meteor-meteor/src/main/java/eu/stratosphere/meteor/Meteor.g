@@ -61,7 +61,7 @@ script
 	:	 (statement ';')+ ->;
 
 statement
-	:	(operator | packageImport | functionDefinition | javaudf | adhocSource
+	:	(operator | packageImport | adhocSource | definition
 // configuration function call 
 	| m=functionCall { $m.tree.evaluate(MissingNode.getInstance()); }) ->;
 	
@@ -69,8 +69,16 @@ packageImport
   :  'using' packageName=ID { getPackageManager().importPackage($packageName.text); } 
      (',' additionalPackage=ID { getPackageManager().importPackage($additionalPackage.text); })* ->;
 
+definition
+  : (ID '=' FN)=> functionDefinition 
+  | (ID '=' JAVAUDF)=> javaudf
+  | (ID '=' expression)=> constantDefinition;
+
 functionDefinition
   : name=ID '=' func=inlineFunction { addFunction($name.text, $func.func); } -> ;
+  
+constantDefinition
+  : name=ID '=' exp=expression { addConstant($name.text, $exp.tree); } -> ;
   
 inlineFunction returns [ExpressionFunction func]
 @init { List<Token> params = new ArrayList(); }

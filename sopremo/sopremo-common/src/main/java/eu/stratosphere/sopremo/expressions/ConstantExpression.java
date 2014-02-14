@@ -81,7 +81,6 @@ public class ConstantExpression extends EvaluationExpression {
 
 	@Override
 	public IJsonNode evaluate(final IJsonNode node) {
-		// we can ignore 'target' because no new Object is created
 		return this.constant;
 	}
 

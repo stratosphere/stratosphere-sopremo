@@ -330,6 +330,14 @@ public class CoreFunctions implements BuiltinProvider {
 		}
 	};
 
+	@Name(noun = "contains")
+	public static final SopremoFunction CONTAINS = new SopremoFunction2<IArrayNode<IJsonNode>, IJsonNode>() {
+		@Override
+		protected IJsonNode call(IArrayNode<IJsonNode> array, IJsonNode potentialElement) {
+			return BooleanNode.valueOf(array.contains(potentialElement));
+		}		
+	};
+	
 	@Name(noun = "like")
 	public static final SopremoFunction LIKE = new SopremoFunction2<TextNode, TextNode>() {
 		private static final transient String PLACEHOLDER = "%%";
