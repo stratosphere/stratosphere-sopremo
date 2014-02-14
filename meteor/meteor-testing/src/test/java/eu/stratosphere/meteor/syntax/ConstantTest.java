@@ -14,15 +14,14 @@
  **********************************************************************************************************************/
 package eu.stratosphere.meteor.syntax;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import eu.stratosphere.meteor.MeteorParseTest;
 import eu.stratosphere.sopremo.base.Selection;
 import eu.stratosphere.sopremo.expressions.ComparativeExpression;
+import eu.stratosphere.sopremo.expressions.ComparativeExpression.BinaryOperator;
 import eu.stratosphere.sopremo.expressions.ConstantExpression;
 import eu.stratosphere.sopremo.expressions.ObjectAccess;
-import eu.stratosphere.sopremo.expressions.ComparativeExpression.BinaryOperator;
 import eu.stratosphere.sopremo.io.Sink;
 import eu.stratosphere.sopremo.io.Source;
 import eu.stratosphere.sopremo.operator.SopremoPlan;
@@ -35,7 +34,6 @@ public class ConstantTest extends MeteorParseTest {
 	 * 
 	 */
 	@Test
-	@Ignore
 	public void test() {
 		final SopremoPlan actualPlan =
 			this.parseScript("path = 'file://long/path/';" + 

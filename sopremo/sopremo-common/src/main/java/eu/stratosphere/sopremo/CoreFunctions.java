@@ -89,8 +89,8 @@ public class CoreFunctions implements BuiltinProvider {
 		@Override
 		protected INumericNode aggregate(final INumericNode aggregator,
 				final IJsonNode element) {
-			return ArithmeticExpression.ArithmeticOperator.ADDITION.evaluate(
-				aggregator, (INumericNode) element, this.nodeCache);
+			return (INumericNode) ArithmeticExpression.ArithmeticOperator.ADDITION.evaluate(
+				aggregator, element, this.nodeCache);
 		}
 	};
 

@@ -31,6 +31,7 @@ import eu.stratosphere.sopremo.type.IJsonNode;
 import eu.stratosphere.sopremo.type.INumericNode;
 import eu.stratosphere.sopremo.type.IntNode;
 import eu.stratosphere.sopremo.type.LongNode;
+import eu.stratosphere.sopremo.type.TextNode;
 
 /**
  * Represents all basic arithmetic expressions covering the addition, subtraction, division, and multiplication for
@@ -92,8 +93,8 @@ public class ArithmeticExpression extends EvaluationExpression {
 
 	@Override
 	public IJsonNode evaluate(final IJsonNode node) {
-		return this.operator.evaluate((INumericNode) this.firstOperand.evaluate(node),
-			(INumericNode) this.secondOperand.evaluate(node), this.cache);
+		return this.operator.evaluate(this.firstOperand.evaluate(node),
+			this.secondOperand.evaluate(node), this.cache);
 	}
 
 	/**
@@ -189,7 +190,19 @@ public class ArithmeticExpression extends EvaluationExpression {
 			protected BigDecimal evaluate(final BigDecimal left, final BigDecimal right) {
 				return left.add(right);
 			}
-		}),
+		}) {
+			@Override
+			public IJsonNode evaluate(final IJsonNode left, final IJsonNode right, final NodeCache cache) {
+				if(left instanceof TextNode || right instanceof TextNode) {
+					TextNode result = cache.getNode(TextNode.class);
+					result.clear();
+					result.append(left);
+					result.append(right);
+					return result;
+				}
+				return super.evaluate(left, right, cache);
+			}
+		},
 		/**
 		 * Subtraction
 		 */
@@ -285,13 +298,15 @@ public class ArithmeticExpression extends EvaluationExpression {
 		 *        the right operand
 		 * @return the result of the operation
 		 */
-		public INumericNode evaluate(final INumericNode left, final INumericNode right, final NodeCache cache) {
+		public IJsonNode evaluate(final IJsonNode left, final IJsonNode right, final NodeCache cache) {
+			final INumericNode leftNumeric = (INumericNode) left, rightNumeric = (INumericNode) right;
+
 			final Class<? extends INumericNode> widerType =
-				(left.getGeneralilty() > right.getGeneralilty() ? left : right).getClass();
+				(leftNumeric.getGeneralilty() > rightNumeric.getGeneralilty() ? leftNumeric : rightNumeric).getClass();
 			final NumberEvaluator<INumericNode> evaluator = this.typeEvaluators.get(widerType);
 			final Class<? extends INumericNode> implementationType = evaluator.getReturnType();
 			final INumericNode numericTarget = cache.getNode(implementationType);
-			evaluator.evaluate(left, right, numericTarget);
+			evaluator.evaluate(leftNumeric, rightNumeric, numericTarget);
 			return numericTarget;
 		}
 
