@@ -16,8 +16,45 @@ tokens {
 
 @lexer::header { 
 package eu.stratosphere.meteor; 
+
+import java.io.File;
 }
 
+@lexer::members {
+    class SaveStruct {
+      SaveStruct(CharStream input){
+        this.input = input;
+        this.marker = input.mark();
+      }
+      public CharStream input;
+      public int marker;
+     }
+ 
+     Stack<SaveStruct> includes = new Stack<SaveStruct>();
+ 
+    // We should override this method for handling EOF of included file
+     public Token nextToken(){
+       Token token = super.nextToken();
+ 
+       if(token.getType() == Token.EOF && !includes.empty()){
+        // We've got EOF and have non empty stack.
+         SaveStruct ss = includes.pop();
+         setCharStream(ss.input);
+         input.rewind(ss.marker);
+         //this should be used instead of super [like below] to handle exits from nested includes
+         //it matters, when the 'include' token is the last in previous stream (using super, lexer 'crashes' returning EOF token)
+         token = this.nextToken();
+       }
+ 
+      // Skip first token after switching on another input.
+      // You need to use this rather than super as there may be nested include files
+       if(((CommonToken)token).getStartIndex() < 0)
+         token = this.nextToken();
+ 
+       return token;
+     }
+ }
+ 
 @parser::header { 
 package eu.stratosphere.meteor; 
 
@@ -61,7 +98,7 @@ script
 	:	 (statement ';')+ ->;
 
 statement
-	:	(operator | packageImport | adhocSource | definition
+	:	(operator | packageImport | adhocSource | definition |
 // configuration function call 
 	| m=functionCall { $m.tree.evaluate(MissingNode.getInstance()); }) ->;
 	
@@ -128,20 +165,20 @@ andExpression
   -> { AndExpression.valueOf((List) $exprs) };
   
 elementExpression
-	:	elem=comparisonExpression (not=NOT? IN set=comparisonExpression)? 
+	:	elem=comparisonExpression (not=NOT? IN set=elementExpression)? 
 	-> { set == null }? $elem
 	-> ^(EXPRESSION["ElementInSetExpression"] $elem 
 	{ $not == null ? ElementInSetExpression.Quantor.EXISTS_IN : ElementInSetExpression.Quantor.EXISTS_NOT_IN} $set);
 	
 comparisonExpression
-	:	e1=arithmeticExpression ((s='<=' | s='>=' | s='<' | s='>' | s='==' | s='!=') e2=arithmeticExpression)?
+	:	e1=arithmeticExpression ((s='<=' | s='>=' | s='<' | s='>' | s='==' | s='!=') e2=comparisonExpression)?
 	-> 	{ $s == null }? $e1
   ->  { $s.getText().equals("!=") }? ^(EXPRESSION["ComparativeExpression"] $e1 {ComparativeExpression.BinaryOperator.NOT_EQUAL} $e2)
   ->  { $s.getText().equals("==") }? ^(EXPRESSION["ComparativeExpression"] $e1 {ComparativeExpression.BinaryOperator.EQUAL} $e2)
 	-> 	^(EXPRESSION["ComparativeExpression"] $e1 {ComparativeExpression.BinaryOperator.valueOfSymbol($s.text)} $e2);
 	
 arithmeticExpression
-	:	e1=multiplicationExpression ((s='+' | s='-') e2=multiplicationExpression)?
+	:	e1=multiplicationExpression ((s='+' | s='-') e2=arithmeticExpression)?
 	-> 	{ s != null }? ^(EXPRESSION["ArithmeticExpression"] $e1 
 		{ s.getText().equals("+") ? ArithmeticExpression.ArithmeticOperator.ADDITION : ArithmeticExpression.ArithmeticOperator.SUBTRACTION} $e2)
 	-> 	$e1;
@@ -483,4 +520,24 @@ DECIMAL
 
 fragment
 EXPONENT : ('e'|'E') ('+'|'-')? ('0'..'9')+ ;
+ 
+// and lexer rule
+ INCLUDE
+     : 'include' (WS)? f=STRING {
+      String name = f.getText();
+      name = name.substring(1, name.length() - 1);
+      File file = new File(name);
+      if(!file.exists() && !file.isAbsolute() && this.input instanceof ANTLRFileStream)
+        file = new File(new File(this.input.getSourceName()).getParent(), name);
+      try {
+        // save current lexer's state
+        SaveStruct ss = new SaveStruct(input);
+        includes.push(ss);
 
+        // switch on new input stream
+        setCharStream(new ANTLRFileStream(file.getAbsolutePath()));
+        reset();
+
+      } catch(Exception e) { throw new RuntimeException("Cannot open file " + name, e); }
+    };
+    

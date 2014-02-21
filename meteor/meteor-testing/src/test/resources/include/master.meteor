@@ -1,0 +1,4 @@
+$input2 = read json from 'file://input2.json';
+include 'worker.meteor';
+$result = join $input, $input2;
+write json $result to 'file://output.json';
