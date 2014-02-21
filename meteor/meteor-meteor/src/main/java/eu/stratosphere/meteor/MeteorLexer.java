@@ -1,6 +1,8 @@
-// $ANTLR 3.5 /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g 2014-02-14 11:11:56
+// $ANTLR 3.5 /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g 2014-02-21 17:35:07
  
 package eu.stratosphere.meteor; 
+
+import java.io.File;
 
 
 import org.antlr.runtime.*;
@@ -11,7 +13,6 @@ import java.util.ArrayList;
 @SuppressWarnings("all")
 public class MeteorLexer extends Lexer {
 	public static final int EOF=-1;
-	public static final int T__35=35;
 	public static final int T__36=36;
 	public static final int T__37=37;
 	public static final int T__38=38;
@@ -45,6 +46,7 @@ public class MeteorLexer extends Lexer {
 	public static final int T__66=66;
 	public static final int T__67=67;
 	public static final int T__68=68;
+	public static final int T__69=69;
 	public static final int AND=4;
 	public static final int APOSTROPHE=5;
 	public static final int COMMENT=6;
@@ -59,23 +61,58 @@ public class MeteorLexer extends Lexer {
 	public static final int ID=15;
 	public static final int IF=16;
 	public static final int IN=17;
-	public static final int INTEGER=18;
-	public static final int JAVAUDF=19;
-	public static final int LOWER_LETTER=20;
-	public static final int NOT=21;
-	public static final int OCTAL_ESC=22;
-	public static final int OPERATOR=23;
-	public static final int OR=24;
-	public static final int QUOTATION=25;
-	public static final int SIGN=26;
-	public static final int SLASH=27;
-	public static final int STAR=28;
-	public static final int STRING=29;
-	public static final int UINT=30;
-	public static final int UNICODE_ESC=31;
-	public static final int UPPER_LETTER=32;
-	public static final int VAR=33;
-	public static final int WS=34;
+	public static final int INCLUDE=18;
+	public static final int INTEGER=19;
+	public static final int JAVAUDF=20;
+	public static final int LOWER_LETTER=21;
+	public static final int NOT=22;
+	public static final int OCTAL_ESC=23;
+	public static final int OPERATOR=24;
+	public static final int OR=25;
+	public static final int QUOTATION=26;
+	public static final int SIGN=27;
+	public static final int SLASH=28;
+	public static final int STAR=29;
+	public static final int STRING=30;
+	public static final int UINT=31;
+	public static final int UNICODE_ESC=32;
+	public static final int UPPER_LETTER=33;
+	public static final int VAR=34;
+	public static final int WS=35;
+
+	    class SaveStruct {
+	      SaveStruct(CharStream input){
+	        this.input = input;
+	        this.marker = input.mark();
+	      }
+	      public CharStream input;
+	      public int marker;
+	     }
+	 
+	     Stack<SaveStruct> includes = new Stack<SaveStruct>();
+	 
+	    // We should override this method for handling EOF of included file
+	     public Token nextToken(){
+	       Token token = super.nextToken();
+	 
+	       if(token.getType() == Token.EOF && !includes.empty()){
+	        // We've got EOF and have non empty stack.
+	         SaveStruct ss = includes.pop();
+	         setCharStream(ss.input);
+	         input.rewind(ss.marker);
+	         //this should be used instead of super [like below] to handle exits from nested includes
+	         //it matters, when the 'include' token is the last in previous stream (using super, lexer 'crashes' returning EOF token)
+	         token = this.nextToken();
+	       }
+	 
+	      // Skip first token after switching on another input.
+	      // You need to use this rather than super as there may be nested include files
+	       if(((CommonToken)token).getStartIndex() < 0)
+	         token = this.nextToken();
+	 
+	       return token;
+	     }
+	 
 
 	// delegates
 	// delegators
@@ -92,36 +129,15 @@ public class MeteorLexer extends Lexer {
 	}
 	@Override public String getGrammarFileName() { return "/home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g"; }
 
-	// $ANTLR start "T__35"
-	public final void mT__35() throws RecognitionException {
-		try {
-			int _type = T__35;
-			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:11:7: ( '!' )
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:11:9: '!'
-			{
-			match('!'); 
-			}
-
-			state.type = _type;
-			state.channel = _channel;
-		}
-		finally {
-			// do for sure before leaving
-		}
-	}
-	// $ANTLR end "T__35"
-
 	// $ANTLR start "T__36"
 	public final void mT__36() throws RecognitionException {
 		try {
 			int _type = T__36;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:12:7: ( '!=' )
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:12:9: '!='
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:47:7: ( '!' )
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:47:9: '!'
 			{
-			match("!="); 
-
+			match('!'); 
 			}
 
 			state.type = _type;
@@ -138,10 +154,10 @@ public class MeteorLexer extends Lexer {
 		try {
 			int _type = T__37;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:13:7: ( '&&' )
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:13:9: '&&'
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:48:7: ( '!=' )
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:48:9: '!='
 			{
-			match("&&"); 
+			match("!="); 
 
 			}
 
@@ -159,10 +175,11 @@ public class MeteorLexer extends Lexer {
 		try {
 			int _type = T__38;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:14:7: ( '&' )
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:14:9: '&'
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:49:7: ( '&&' )
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:49:9: '&&'
 			{
-			match('&'); 
+			match("&&"); 
+
 			}
 
 			state.type = _type;
@@ -179,10 +196,10 @@ public class MeteorLexer extends Lexer {
 		try {
 			int _type = T__39;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:15:7: ( '(' )
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:15:9: '('
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:50:7: ( '&' )
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:50:9: '&'
 			{
-			match('('); 
+			match('&'); 
 			}
 
 			state.type = _type;
@@ -199,10 +216,10 @@ public class MeteorLexer extends Lexer {
 		try {
 			int _type = T__40;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:16:7: ( ')' )
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:16:9: ')'
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:51:7: ( '(' )
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:51:9: '('
 			{
-			match(')'); 
+			match('('); 
 			}
 
 			state.type = _type;
@@ -219,10 +236,10 @@ public class MeteorLexer extends Lexer {
 		try {
 			int _type = T__41;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:17:7: ( '+' )
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:17:9: '+'
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:52:7: ( ')' )
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:52:9: ')'
 			{
-			match('+'); 
+			match(')'); 
 			}
 
 			state.type = _type;
@@ -239,11 +256,10 @@ public class MeteorLexer extends Lexer {
 		try {
 			int _type = T__42;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:18:7: ( '++' )
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:18:9: '++'
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:53:7: ( '+' )
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:53:9: '+'
 			{
-			match("++"); 
-
+			match('+'); 
 			}
 
 			state.type = _type;
@@ -260,10 +276,11 @@ public class MeteorLexer extends Lexer {
 		try {
 			int _type = T__43;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:19:7: ( ',' )
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:19:9: ','
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:54:7: ( '++' )
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:54:9: '++'
 			{
-			match(','); 
+			match("++"); 
+
 			}
 
 			state.type = _type;
@@ -280,10 +297,10 @@ public class MeteorLexer extends Lexer {
 		try {
 			int _type = T__44;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:20:7: ( '-' )
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:20:9: '-'
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:55:7: ( ',' )
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:55:9: ','
 			{
-			match('-'); 
+			match(','); 
 			}
 
 			state.type = _type;
@@ -300,11 +317,10 @@ public class MeteorLexer extends Lexer {
 		try {
 			int _type = T__45;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:21:7: ( '--' )
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:21:9: '--'
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:56:7: ( '-' )
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:56:9: '-'
 			{
-			match("--"); 
-
+			match('-'); 
 			}
 
 			state.type = _type;
@@ -321,10 +337,11 @@ public class MeteorLexer extends Lexer {
 		try {
 			int _type = T__46;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:22:7: ( '.' )
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:22:9: '.'
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:57:7: ( '--' )
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:57:9: '--'
 			{
-			match('.'); 
+			match("--"); 
+
 			}
 
 			state.type = _type;
@@ -341,10 +358,10 @@ public class MeteorLexer extends Lexer {
 		try {
 			int _type = T__47;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:23:7: ( ':' )
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:23:9: ':'
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:58:7: ( '.' )
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:58:9: '.'
 			{
-			match(':'); 
+			match('.'); 
 			}
 
 			state.type = _type;
@@ -361,10 +378,10 @@ public class MeteorLexer extends Lexer {
 		try {
 			int _type = T__48;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:24:7: ( ';' )
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:24:9: ';'
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:59:7: ( ':' )
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:59:9: ':'
 			{
-			match(';'); 
+			match(':'); 
 			}
 
 			state.type = _type;
@@ -381,10 +398,10 @@ public class MeteorLexer extends Lexer {
 		try {
 			int _type = T__49;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:25:7: ( '<' )
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:25:9: '<'
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:60:7: ( ';' )
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:60:9: ';'
 			{
-			match('<'); 
+			match(';'); 
 			}
 
 			state.type = _type;
@@ -401,11 +418,10 @@ public class MeteorLexer extends Lexer {
 		try {
 			int _type = T__50;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:26:7: ( '<=' )
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:26:9: '<='
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:61:7: ( '<' )
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:61:9: '<'
 			{
-			match("<="); 
-
+			match('<'); 
 			}
 
 			state.type = _type;
@@ -422,10 +438,11 @@ public class MeteorLexer extends Lexer {
 		try {
 			int _type = T__51;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:27:7: ( '=' )
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:27:9: '='
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:62:7: ( '<=' )
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:62:9: '<='
 			{
-			match('='); 
+			match("<="); 
+
 			}
 
 			state.type = _type;
@@ -442,11 +459,10 @@ public class MeteorLexer extends Lexer {
 		try {
 			int _type = T__52;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:28:7: ( '==' )
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:28:9: '=='
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:63:7: ( '=' )
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:63:9: '='
 			{
-			match("=="); 
-
+			match('='); 
 			}
 
 			state.type = _type;
@@ -463,10 +479,11 @@ public class MeteorLexer extends Lexer {
 		try {
 			int _type = T__53;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:29:7: ( '>' )
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:29:9: '>'
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:64:7: ( '==' )
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:64:9: '=='
 			{
-			match('>'); 
+			match("=="); 
+
 			}
 
 			state.type = _type;
@@ -483,11 +500,10 @@ public class MeteorLexer extends Lexer {
 		try {
 			int _type = T__54;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:30:7: ( '>=' )
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:30:9: '>='
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:65:7: ( '>' )
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:65:9: '>'
 			{
-			match(">="); 
-
+			match('>'); 
 			}
 
 			state.type = _type;
@@ -504,10 +520,11 @@ public class MeteorLexer extends Lexer {
 		try {
 			int _type = T__55;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:31:7: ( '?' )
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:31:9: '?'
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:66:7: ( '>=' )
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:66:9: '>='
 			{
-			match('?'); 
+			match(">="); 
+
 			}
 
 			state.type = _type;
@@ -524,11 +541,10 @@ public class MeteorLexer extends Lexer {
 		try {
 			int _type = T__56;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:32:7: ( '?.' )
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:32:9: '?.'
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:67:7: ( '?' )
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:67:9: '?'
 			{
-			match("?."); 
-
+			match('?'); 
 			}
 
 			state.type = _type;
@@ -545,10 +561,11 @@ public class MeteorLexer extends Lexer {
 		try {
 			int _type = T__57;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:33:7: ( '[' )
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:33:9: '['
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:68:7: ( '?.' )
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:68:9: '?.'
 			{
-			match('['); 
+			match("?."); 
+
 			}
 
 			state.type = _type;
@@ -565,10 +582,10 @@ public class MeteorLexer extends Lexer {
 		try {
 			int _type = T__58;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:34:7: ( ']' )
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:34:9: ']'
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:69:7: ( '[' )
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:69:9: '['
 			{
-			match(']'); 
+			match('['); 
 			}
 
 			state.type = _type;
@@ -585,11 +602,10 @@ public class MeteorLexer extends Lexer {
 		try {
 			int _type = T__59;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:35:7: ( 'false' )
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:35:9: 'false'
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:70:7: ( ']' )
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:70:9: ']'
 			{
-			match("false"); 
-
+			match(']'); 
 			}
 
 			state.type = _type;
@@ -606,10 +622,10 @@ public class MeteorLexer extends Lexer {
 		try {
 			int _type = T__60;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:36:7: ( 'null' )
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:36:9: 'null'
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:71:7: ( 'false' )
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:71:9: 'false'
 			{
-			match("null"); 
+			match("false"); 
 
 			}
 
@@ -627,10 +643,10 @@ public class MeteorLexer extends Lexer {
 		try {
 			int _type = T__61;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:37:7: ( 'read' )
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:37:9: 'read'
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:72:7: ( 'null' )
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:72:9: 'null'
 			{
-			match("read"); 
+			match("null"); 
 
 			}
 
@@ -648,10 +664,10 @@ public class MeteorLexer extends Lexer {
 		try {
 			int _type = T__62;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:38:7: ( 'true' )
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:38:9: 'true'
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:73:7: ( 'read' )
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:73:9: 'read'
 			{
-			match("true"); 
+			match("read"); 
 
 			}
 
@@ -669,10 +685,10 @@ public class MeteorLexer extends Lexer {
 		try {
 			int _type = T__63;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:39:7: ( 'using' )
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:39:9: 'using'
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:74:7: ( 'true' )
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:74:9: 'true'
 			{
-			match("using"); 
+			match("true"); 
 
 			}
 
@@ -690,10 +706,10 @@ public class MeteorLexer extends Lexer {
 		try {
 			int _type = T__64;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:40:7: ( 'write' )
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:40:9: 'write'
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:75:7: ( 'using' )
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:75:9: 'using'
 			{
-			match("write"); 
+			match("using"); 
 
 			}
 
@@ -711,10 +727,11 @@ public class MeteorLexer extends Lexer {
 		try {
 			int _type = T__65;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:41:7: ( '{' )
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:41:9: '{'
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:76:7: ( 'write' )
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:76:9: 'write'
 			{
-			match('{'); 
+			match("write"); 
+
 			}
 
 			state.type = _type;
@@ -731,11 +748,10 @@ public class MeteorLexer extends Lexer {
 		try {
 			int _type = T__66;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:42:7: ( '||' )
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:42:9: '||'
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:77:7: ( '{' )
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:77:9: '{'
 			{
-			match("||"); 
-
+			match('{'); 
 			}
 
 			state.type = _type;
@@ -752,10 +768,11 @@ public class MeteorLexer extends Lexer {
 		try {
 			int _type = T__67;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:43:7: ( '}' )
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:43:9: '}'
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:78:7: ( '||' )
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:78:9: '||'
 			{
-			match('}'); 
+			match("||"); 
+
 			}
 
 			state.type = _type;
@@ -772,10 +789,10 @@ public class MeteorLexer extends Lexer {
 		try {
 			int _type = T__68;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:44:7: ( '~' )
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:44:9: '~'
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:79:7: ( '}' )
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:79:9: '}'
 			{
-			match('~'); 
+			match('}'); 
 			}
 
 			state.type = _type;
@@ -787,10 +804,30 @@ public class MeteorLexer extends Lexer {
 	}
 	// $ANTLR end "T__68"
 
+	// $ANTLR start "T__69"
+	public final void mT__69() throws RecognitionException {
+		try {
+			int _type = T__69;
+			int _channel = DEFAULT_TOKEN_CHANNEL;
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:80:7: ( '~' )
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:80:9: '~'
+			{
+			match('~'); 
+			}
+
+			state.type = _type;
+			state.channel = _channel;
+		}
+		finally {
+			// do for sure before leaving
+		}
+	}
+	// $ANTLR end "T__69"
+
 	// $ANTLR start "LOWER_LETTER"
 	public final void mLOWER_LETTER() throws RecognitionException {
 		try {
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:408:2: ( 'a' .. 'z' )
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:445:2: ( 'a' .. 'z' )
 			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:
 			{
 			if ( (input.LA(1) >= 'a' && input.LA(1) <= 'z') ) {
@@ -813,7 +850,7 @@ public class MeteorLexer extends Lexer {
 	// $ANTLR start "UPPER_LETTER"
 	public final void mUPPER_LETTER() throws RecognitionException {
 		try {
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:408:2: ( 'A' .. 'Z' )
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:445:2: ( 'A' .. 'Z' )
 			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:
 			{
 			if ( (input.LA(1) >= 'A' && input.LA(1) <= 'Z') ) {
@@ -836,7 +873,7 @@ public class MeteorLexer extends Lexer {
 	// $ANTLR start "DIGIT"
 	public final void mDIGIT() throws RecognitionException {
 		try {
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:411:2: ( '0' .. '9' )
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:448:2: ( '0' .. '9' )
 			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:
 			{
 			if ( (input.LA(1) >= '0' && input.LA(1) <= '9') ) {
@@ -859,7 +896,7 @@ public class MeteorLexer extends Lexer {
 	// $ANTLR start "SIGN"
 	public final void mSIGN() throws RecognitionException {
 		try {
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:413:14: ( ( '+' | '-' ) )
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:450:14: ( ( '+' | '-' ) )
 			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:
 			{
 			if ( input.LA(1)=='+'||input.LA(1)=='-' ) {
@@ -884,8 +921,8 @@ public class MeteorLexer extends Lexer {
 		try {
 			int _type = JAVAUDF;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:417:9: ( 'javaudf' )
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:417:11: 'javaudf'
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:454:9: ( 'javaudf' )
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:454:11: 'javaudf'
 			{
 			match("javaudf"); 
 
@@ -905,8 +942,8 @@ public class MeteorLexer extends Lexer {
 		try {
 			int _type = OR;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:419:5: ( 'or' )
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:419:7: 'or'
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:456:5: ( 'or' )
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:456:7: 'or'
 			{
 			match("or"); 
 
@@ -926,8 +963,8 @@ public class MeteorLexer extends Lexer {
 		try {
 			int _type = AND;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:421:6: ( 'and' )
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:421:8: 'and'
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:458:6: ( 'and' )
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:458:8: 'and'
 			{
 			match("and"); 
 
@@ -947,8 +984,8 @@ public class MeteorLexer extends Lexer {
 		try {
 			int _type = IF;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:423:5: ( 'if' )
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:423:7: 'if'
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:460:5: ( 'if' )
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:460:7: 'if'
 			{
 			match("if"); 
 
@@ -968,8 +1005,8 @@ public class MeteorLexer extends Lexer {
 		try {
 			int _type = ELSE;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:425:7: ( 'else' )
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:425:9: 'else'
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:462:7: ( 'else' )
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:462:9: 'else'
 			{
 			match("else"); 
 
@@ -989,8 +1026,8 @@ public class MeteorLexer extends Lexer {
 		try {
 			int _type = NOT;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:427:5: ( 'not' )
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:427:7: 'not'
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:464:5: ( 'not' )
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:464:7: 'not'
 			{
 			match("not"); 
 
@@ -1010,8 +1047,8 @@ public class MeteorLexer extends Lexer {
 		try {
 			int _type = IN;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:429:5: ( 'in' )
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:429:7: 'in'
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:466:5: ( 'in' )
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:466:7: 'in'
 			{
 			match("in"); 
 
@@ -1031,8 +1068,8 @@ public class MeteorLexer extends Lexer {
 		try {
 			int _type = FN;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:431:5: ( 'fn' )
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:431:7: 'fn'
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:468:5: ( 'fn' )
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:468:7: 'fn'
 			{
 			match("fn"); 
 
@@ -1052,8 +1089,8 @@ public class MeteorLexer extends Lexer {
 		try {
 			int _type = ID;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:433:4: ( ( LOWER_LETTER | UPPER_LETTER | '_' ) ( LOWER_LETTER | UPPER_LETTER | DIGIT | '_' )* )
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:433:6: ( LOWER_LETTER | UPPER_LETTER | '_' ) ( LOWER_LETTER | UPPER_LETTER | DIGIT | '_' )*
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:470:4: ( ( LOWER_LETTER | UPPER_LETTER | '_' ) ( LOWER_LETTER | UPPER_LETTER | DIGIT | '_' )* )
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:470:6: ( LOWER_LETTER | UPPER_LETTER | '_' ) ( LOWER_LETTER | UPPER_LETTER | DIGIT | '_' )*
 			{
 			if ( (input.LA(1) >= 'A' && input.LA(1) <= 'Z')||input.LA(1)=='_'||(input.LA(1) >= 'a' && input.LA(1) <= 'z') ) {
 				input.consume();
@@ -1063,7 +1100,7 @@ public class MeteorLexer extends Lexer {
 				recover(mse);
 				throw mse;
 			}
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:433:42: ( LOWER_LETTER | UPPER_LETTER | DIGIT | '_' )*
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:470:42: ( LOWER_LETTER | UPPER_LETTER | DIGIT | '_' )*
 			loop1:
 			while (true) {
 				int alt1=2;
@@ -1108,8 +1145,8 @@ public class MeteorLexer extends Lexer {
 		try {
 			int _type = VAR;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:435:5: ( '$' ID )
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:435:7: '$' ID
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:472:5: ( '$' ID )
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:472:7: '$' ID
 			{
 			match('$'); 
 			mID(); 
@@ -1130,8 +1167,8 @@ public class MeteorLexer extends Lexer {
 		try {
 			int _type = STAR;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:437:6: ( '*' )
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:437:8: '*'
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:474:6: ( '*' )
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:474:8: '*'
 			{
 			match('*'); 
 			}
@@ -1150,7 +1187,7 @@ public class MeteorLexer extends Lexer {
 		try {
 			int _type = COMMENT;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:440:5: ( '//' (~ ( '\\n' | '\\r' ) )* ( '\\r' )? '\\n' | '/*' ( options {greedy=false; } : . )* '*/' )
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:477:5: ( '//' (~ ( '\\n' | '\\r' ) )* ( '\\r' )? '\\n' | '/*' ( options {greedy=false; } : . )* '*/' )
 			int alt5=2;
 			int LA5_0 = input.LA(1);
 			if ( (LA5_0=='/') ) {
@@ -1184,11 +1221,11 @@ public class MeteorLexer extends Lexer {
 
 			switch (alt5) {
 				case 1 :
-					// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:440:9: '//' (~ ( '\\n' | '\\r' ) )* ( '\\r' )? '\\n'
+					// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:477:9: '//' (~ ( '\\n' | '\\r' ) )* ( '\\r' )? '\\n'
 					{
 					match("//"); 
 
-					// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:440:14: (~ ( '\\n' | '\\r' ) )*
+					// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:477:14: (~ ( '\\n' | '\\r' ) )*
 					loop2:
 					while (true) {
 						int alt2=2;
@@ -1217,7 +1254,7 @@ public class MeteorLexer extends Lexer {
 						}
 					}
 
-					// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:440:28: ( '\\r' )?
+					// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:477:28: ( '\\r' )?
 					int alt3=2;
 					int LA3_0 = input.LA(1);
 					if ( (LA3_0=='\r') ) {
@@ -1225,7 +1262,7 @@ public class MeteorLexer extends Lexer {
 					}
 					switch (alt3) {
 						case 1 :
-							// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:440:28: '\\r'
+							// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:477:28: '\\r'
 							{
 							match('\r'); 
 							}
@@ -1238,11 +1275,11 @@ public class MeteorLexer extends Lexer {
 					}
 					break;
 				case 2 :
-					// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:441:9: '/*' ( options {greedy=false; } : . )* '*/'
+					// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:478:9: '/*' ( options {greedy=false; } : . )* '*/'
 					{
 					match("/*"); 
 
-					// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:441:14: ( options {greedy=false; } : . )*
+					// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:478:14: ( options {greedy=false; } : . )*
 					loop4:
 					while (true) {
 						int alt4=2;
@@ -1263,7 +1300,7 @@ public class MeteorLexer extends Lexer {
 
 						switch (alt4) {
 						case 1 :
-							// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:441:42: .
+							// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:478:42: .
 							{
 							matchAny(); 
 							}
@@ -1295,8 +1332,8 @@ public class MeteorLexer extends Lexer {
 		try {
 			int _type = SLASH;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:445:5: ( '/' )
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:445:9: '/'
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:482:5: ( '/' )
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:482:9: '/'
 			{
 			match('/'); 
 			}
@@ -1313,8 +1350,8 @@ public class MeteorLexer extends Lexer {
 	// $ANTLR start "APOSTROPHE"
 	public final void mAPOSTROPHE() throws RecognitionException {
 		try {
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:449:3: ( '\\'' )
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:449:5: '\\''
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:486:3: ( '\\'' )
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:486:5: '\\''
 			{
 			match('\''); 
 			}
@@ -1329,8 +1366,8 @@ public class MeteorLexer extends Lexer {
 	// $ANTLR start "QUOTATION"
 	public final void mQUOTATION() throws RecognitionException {
 		try {
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:452:3: ( '\\\"' )
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:452:5: '\\\"'
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:489:3: ( '\\\"' )
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:489:5: '\\\"'
 			{
 			match('\"'); 
 			}
@@ -1347,10 +1384,10 @@ public class MeteorLexer extends Lexer {
 		try {
 			int _type = WS;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:454:5: ( ( ' ' | '\\t' | '\\n' | '\\r' | ' ' )+ )
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:454:7: ( ' ' | '\\t' | '\\n' | '\\r' | ' ' )+
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:491:5: ( ( ' ' | '\\t' | '\\n' | '\\r' | ' ' )+ )
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:491:7: ( ' ' | '\\t' | '\\n' | '\\r' | ' ' )+
 			{
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:454:7: ( ' ' | '\\t' | '\\n' | '\\r' | ' ' )+
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:491:7: ( ' ' | '\\t' | '\\n' | '\\r' | ' ' )+
 			int cnt6=0;
 			loop6:
 			while (true) {
@@ -1400,10 +1437,10 @@ public class MeteorLexer extends Lexer {
 		try {
 			int _type = STRING;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:457:2: ( ( QUOTATION ( options {greedy=false; } : . )* QUOTATION | APOSTROPHE ( options {greedy=false; } : . )* APOSTROPHE ) )
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:457:4: ( QUOTATION ( options {greedy=false; } : . )* QUOTATION | APOSTROPHE ( options {greedy=false; } : . )* APOSTROPHE )
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:494:2: ( ( QUOTATION ( options {greedy=false; } : . )* QUOTATION | APOSTROPHE ( options {greedy=false; } : . )* APOSTROPHE ) )
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:494:4: ( QUOTATION ( options {greedy=false; } : . )* QUOTATION | APOSTROPHE ( options {greedy=false; } : . )* APOSTROPHE )
 			{
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:457:4: ( QUOTATION ( options {greedy=false; } : . )* QUOTATION | APOSTROPHE ( options {greedy=false; } : . )* APOSTROPHE )
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:494:4: ( QUOTATION ( options {greedy=false; } : . )* QUOTATION | APOSTROPHE ( options {greedy=false; } : . )* APOSTROPHE )
 			int alt9=2;
 			int LA9_0 = input.LA(1);
 			if ( (LA9_0=='\"') ) {
@@ -1421,11 +1458,11 @@ public class MeteorLexer extends Lexer {
 
 			switch (alt9) {
 				case 1 :
-					// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:457:5: QUOTATION ( options {greedy=false; } : . )* QUOTATION
+					// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:494:5: QUOTATION ( options {greedy=false; } : . )* QUOTATION
 					{
 					mQUOTATION(); 
 
-					// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:457:15: ( options {greedy=false; } : . )*
+					// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:494:15: ( options {greedy=false; } : . )*
 					loop7:
 					while (true) {
 						int alt7=2;
@@ -1439,7 +1476,7 @@ public class MeteorLexer extends Lexer {
 
 						switch (alt7) {
 						case 1 :
-							// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:457:42: .
+							// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:494:42: .
 							{
 							matchAny(); 
 							}
@@ -1455,11 +1492,11 @@ public class MeteorLexer extends Lexer {
 					}
 					break;
 				case 2 :
-					// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:457:58: APOSTROPHE ( options {greedy=false; } : . )* APOSTROPHE
+					// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:494:58: APOSTROPHE ( options {greedy=false; } : . )* APOSTROPHE
 					{
 					mAPOSTROPHE(); 
 
-					// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:457:69: ( options {greedy=false; } : . )*
+					// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:494:69: ( options {greedy=false; } : . )*
 					loop8:
 					while (true) {
 						int alt8=2;
@@ -1473,7 +1510,7 @@ public class MeteorLexer extends Lexer {
 
 						switch (alt8) {
 						case 1 :
-							// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:457:96: .
+							// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:494:96: .
 							{
 							matchAny(); 
 							}
@@ -1506,7 +1543,7 @@ public class MeteorLexer extends Lexer {
 	// $ANTLR start "ESC_SEQ"
 	public final void mESC_SEQ() throws RecognitionException {
 		try {
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:463:5: ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | '\\\"' | '\\'' | '\\\\' ) | UNICODE_ESC | OCTAL_ESC )
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:500:5: ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | '\\\"' | '\\'' | '\\\\' ) | UNICODE_ESC | OCTAL_ESC )
 			int alt10=3;
 			int LA10_0 = input.LA(1);
 			if ( (LA10_0=='\\') ) {
@@ -1561,7 +1598,7 @@ public class MeteorLexer extends Lexer {
 
 			switch (alt10) {
 				case 1 :
-					// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:463:9: '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | '\\\"' | '\\'' | '\\\\' )
+					// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:500:9: '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | '\\\"' | '\\'' | '\\\\' )
 					{
 					match('\\'); 
 					if ( input.LA(1)=='\"'||input.LA(1)=='\''||input.LA(1)=='\\'||input.LA(1)=='b'||input.LA(1)=='f'||input.LA(1)=='n'||input.LA(1)=='r'||input.LA(1)=='t' ) {
@@ -1575,14 +1612,14 @@ public class MeteorLexer extends Lexer {
 					}
 					break;
 				case 2 :
-					// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:464:9: UNICODE_ESC
+					// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:501:9: UNICODE_ESC
 					{
 					mUNICODE_ESC(); 
 
 					}
 					break;
 				case 3 :
-					// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:465:9: OCTAL_ESC
+					// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:502:9: OCTAL_ESC
 					{
 					mOCTAL_ESC(); 
 
@@ -1600,7 +1637,7 @@ public class MeteorLexer extends Lexer {
 	// $ANTLR start "OCTAL_ESC"
 	public final void mOCTAL_ESC() throws RecognitionException {
 		try {
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:470:5: ( '\\\\' ( '0' .. '3' ) ( '0' .. '7' ) ( '0' .. '7' ) | '\\\\' ( '0' .. '7' ) ( '0' .. '7' ) | '\\\\' ( '0' .. '7' ) )
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:507:5: ( '\\\\' ( '0' .. '3' ) ( '0' .. '7' ) ( '0' .. '7' ) | '\\\\' ( '0' .. '7' ) ( '0' .. '7' ) | '\\\\' ( '0' .. '7' ) )
 			int alt11=3;
 			int LA11_0 = input.LA(1);
 			if ( (LA11_0=='\\') ) {
@@ -1658,7 +1695,7 @@ public class MeteorLexer extends Lexer {
 
 			switch (alt11) {
 				case 1 :
-					// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:470:9: '\\\\' ( '0' .. '3' ) ( '0' .. '7' ) ( '0' .. '7' )
+					// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:507:9: '\\\\' ( '0' .. '3' ) ( '0' .. '7' ) ( '0' .. '7' )
 					{
 					match('\\'); 
 					if ( (input.LA(1) >= '0' && input.LA(1) <= '3') ) {
@@ -1688,7 +1725,7 @@ public class MeteorLexer extends Lexer {
 					}
 					break;
 				case 2 :
-					// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:471:9: '\\\\' ( '0' .. '7' ) ( '0' .. '7' )
+					// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:508:9: '\\\\' ( '0' .. '7' ) ( '0' .. '7' )
 					{
 					match('\\'); 
 					if ( (input.LA(1) >= '0' && input.LA(1) <= '7') ) {
@@ -1710,7 +1747,7 @@ public class MeteorLexer extends Lexer {
 					}
 					break;
 				case 3 :
-					// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:472:9: '\\\\' ( '0' .. '7' )
+					// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:509:9: '\\\\' ( '0' .. '7' )
 					{
 					match('\\'); 
 					if ( (input.LA(1) >= '0' && input.LA(1) <= '7') ) {
@@ -1735,8 +1772,8 @@ public class MeteorLexer extends Lexer {
 	// $ANTLR start "UNICODE_ESC"
 	public final void mUNICODE_ESC() throws RecognitionException {
 		try {
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:476:13: ( '\\\\' 'u' HEX_DIGIT HEX_DIGIT HEX_DIGIT HEX_DIGIT )
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:476:17: '\\\\' 'u' HEX_DIGIT HEX_DIGIT HEX_DIGIT HEX_DIGIT
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:513:13: ( '\\\\' 'u' HEX_DIGIT HEX_DIGIT HEX_DIGIT HEX_DIGIT )
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:513:17: '\\\\' 'u' HEX_DIGIT HEX_DIGIT HEX_DIGIT HEX_DIGIT
 			{
 			match('\\'); 
 			match('u'); 
@@ -1760,7 +1797,7 @@ public class MeteorLexer extends Lexer {
 	// $ANTLR start "HEX_DIGIT"
 	public final void mHEX_DIGIT() throws RecognitionException {
 		try {
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:479:11: ( ( '0' .. '9' | 'a' .. 'f' | 'A' .. 'F' ) )
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:516:11: ( ( '0' .. '9' | 'a' .. 'f' | 'A' .. 'F' ) )
 			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:
 			{
 			if ( (input.LA(1) >= '0' && input.LA(1) <= '9')||(input.LA(1) >= 'A' && input.LA(1) <= 'F')||(input.LA(1) >= 'a' && input.LA(1) <= 'f') ) {
@@ -1785,10 +1822,10 @@ public class MeteorLexer extends Lexer {
 		try {
 			int _type = UINT;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:481:6: ( ( '0' .. '9' )+ )
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:481:8: ( '0' .. '9' )+
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:518:6: ( ( '0' .. '9' )+ )
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:518:8: ( '0' .. '9' )+
 			{
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:481:8: ( '0' .. '9' )+
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:518:8: ( '0' .. '9' )+
 			int cnt12=0;
 			loop12:
 			while (true) {
@@ -1837,10 +1874,10 @@ public class MeteorLexer extends Lexer {
 		try {
 			int _type = INTEGER;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:483:9: ( ( '+' | '-' )? UINT )
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:483:11: ( '+' | '-' )? UINT
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:520:9: ( ( '+' | '-' )? UINT )
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:520:11: ( '+' | '-' )? UINT
 			{
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:483:11: ( '+' | '-' )?
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:520:11: ( '+' | '-' )?
 			int alt13=2;
 			int LA13_0 = input.LA(1);
 			if ( (LA13_0=='+'||LA13_0=='-') ) {
@@ -1881,14 +1918,14 @@ public class MeteorLexer extends Lexer {
 		try {
 			int _type = DECIMAL;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:486:5: ( ( '0' .. '9' )+ '.' ( '0' .. '9' )* ( EXPONENT )? | '.' ( '0' .. '9' )+ ( EXPONENT )? | ( '0' .. '9' )+ EXPONENT )
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:523:5: ( ( '0' .. '9' )+ '.' ( '0' .. '9' )* ( EXPONENT )? | '.' ( '0' .. '9' )+ ( EXPONENT )? | ( '0' .. '9' )+ EXPONENT )
 			int alt20=3;
 			alt20 = dfa20.predict(input);
 			switch (alt20) {
 				case 1 :
-					// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:486:9: ( '0' .. '9' )+ '.' ( '0' .. '9' )* ( EXPONENT )?
+					// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:523:9: ( '0' .. '9' )+ '.' ( '0' .. '9' )* ( EXPONENT )?
 					{
-					// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:486:9: ( '0' .. '9' )+
+					// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:523:9: ( '0' .. '9' )+
 					int cnt14=0;
 					loop14:
 					while (true) {
@@ -1922,7 +1959,7 @@ public class MeteorLexer extends Lexer {
 					}
 
 					match('.'); 
-					// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:486:25: ( '0' .. '9' )*
+					// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:523:25: ( '0' .. '9' )*
 					loop15:
 					while (true) {
 						int alt15=2;
@@ -1951,7 +1988,7 @@ public class MeteorLexer extends Lexer {
 						}
 					}
 
-					// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:486:37: ( EXPONENT )?
+					// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:523:37: ( EXPONENT )?
 					int alt16=2;
 					int LA16_0 = input.LA(1);
 					if ( (LA16_0=='E'||LA16_0=='e') ) {
@@ -1959,7 +1996,7 @@ public class MeteorLexer extends Lexer {
 					}
 					switch (alt16) {
 						case 1 :
-							// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:486:37: EXPONENT
+							// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:523:37: EXPONENT
 							{
 							mEXPONENT(); 
 
@@ -1971,10 +2008,10 @@ public class MeteorLexer extends Lexer {
 					}
 					break;
 				case 2 :
-					// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:487:9: '.' ( '0' .. '9' )+ ( EXPONENT )?
+					// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:524:9: '.' ( '0' .. '9' )+ ( EXPONENT )?
 					{
 					match('.'); 
-					// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:487:13: ( '0' .. '9' )+
+					// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:524:13: ( '0' .. '9' )+
 					int cnt17=0;
 					loop17:
 					while (true) {
@@ -2007,7 +2044,7 @@ public class MeteorLexer extends Lexer {
 						cnt17++;
 					}
 
-					// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:487:25: ( EXPONENT )?
+					// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:524:25: ( EXPONENT )?
 					int alt18=2;
 					int LA18_0 = input.LA(1);
 					if ( (LA18_0=='E'||LA18_0=='e') ) {
@@ -2015,7 +2052,7 @@ public class MeteorLexer extends Lexer {
 					}
 					switch (alt18) {
 						case 1 :
-							// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:487:25: EXPONENT
+							// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:524:25: EXPONENT
 							{
 							mEXPONENT(); 
 
@@ -2027,9 +2064,9 @@ public class MeteorLexer extends Lexer {
 					}
 					break;
 				case 3 :
-					// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:488:9: ( '0' .. '9' )+ EXPONENT
+					// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:525:9: ( '0' .. '9' )+ EXPONENT
 					{
-					// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:488:9: ( '0' .. '9' )+
+					// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:525:9: ( '0' .. '9' )+
 					int cnt19=0;
 					loop19:
 					while (true) {
@@ -2080,8 +2117,8 @@ public class MeteorLexer extends Lexer {
 	// $ANTLR start "EXPONENT"
 	public final void mEXPONENT() throws RecognitionException {
 		try {
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:492:10: ( ( 'e' | 'E' ) ( '+' | '-' )? ( '0' .. '9' )+ )
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:492:12: ( 'e' | 'E' ) ( '+' | '-' )? ( '0' .. '9' )+
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:529:10: ( ( 'e' | 'E' ) ( '+' | '-' )? ( '0' .. '9' )+ )
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:529:12: ( 'e' | 'E' ) ( '+' | '-' )? ( '0' .. '9' )+
 			{
 			if ( input.LA(1)=='E'||input.LA(1)=='e' ) {
 				input.consume();
@@ -2091,7 +2128,7 @@ public class MeteorLexer extends Lexer {
 				recover(mse);
 				throw mse;
 			}
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:492:22: ( '+' | '-' )?
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:529:22: ( '+' | '-' )?
 			int alt21=2;
 			int LA21_0 = input.LA(1);
 			if ( (LA21_0=='+'||LA21_0=='-') ) {
@@ -2114,7 +2151,7 @@ public class MeteorLexer extends Lexer {
 
 			}
 
-			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:492:33: ( '0' .. '9' )+
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:529:33: ( '0' .. '9' )+
 			int cnt22=0;
 			loop22:
 			while (true) {
@@ -2156,247 +2193,312 @@ public class MeteorLexer extends Lexer {
 	}
 	// $ANTLR end "EXPONENT"
 
+	// $ANTLR start "INCLUDE"
+	public final void mINCLUDE() throws RecognitionException {
+		try {
+			int _type = INCLUDE;
+			int _channel = DEFAULT_TOKEN_CHANNEL;
+			CommonToken f=null;
+
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:532:6: ( 'include' ( WS )? f= STRING )
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:532:8: 'include' ( WS )? f= STRING
+			{
+			match("include"); 
+
+			// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:532:18: ( WS )?
+			int alt23=2;
+			int LA23_0 = input.LA(1);
+			if ( ((LA23_0 >= '\t' && LA23_0 <= '\n')||LA23_0=='\r'||LA23_0==' '||LA23_0=='\u00A0') ) {
+				alt23=1;
+			}
+			switch (alt23) {
+				case 1 :
+					// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:532:19: WS
+					{
+					mWS(); 
+
+					}
+					break;
+
+			}
+
+			int fStart958 = getCharIndex();
+			int fStartLine958 = getLine();
+			int fStartCharPos958 = getCharPositionInLine();
+			mSTRING(); 
+			f = new CommonToken(input, Token.INVALID_TOKEN_TYPE, Token.DEFAULT_CHANNEL, fStart958, getCharIndex()-1);
+			f.setLine(fStartLine958);
+			f.setCharPositionInLine(fStartCharPos958);
+
+
+			      String name = f.getText();
+			      name = name.substring(1, name.length() - 1);
+			      File file = new File(name);
+			      if(!file.exists() && !file.isAbsolute() && this.input instanceof ANTLRFileStream)
+			        file = new File(new File(this.input.getSourceName()).getParent(), name);
+			      try {
+			        // save current lexer's state
+			        SaveStruct ss = new SaveStruct(input);
+			        includes.push(ss);
+
+			        // switch on new input stream
+			        setCharStream(new ANTLRFileStream(file.getAbsolutePath()));
+			        reset();
+
+			      } catch(Exception e) { throw new RuntimeException("Cannot open file " + name, e); }
+			    
+			}
+
+			state.type = _type;
+			state.channel = _channel;
+		}
+		finally {
+			// do for sure before leaving
+		}
+	}
+	// $ANTLR end "INCLUDE"
+
 	@Override
 	public void mTokens() throws RecognitionException {
-		// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:1:8: ( T__35 | T__36 | T__37 | T__38 | T__39 | T__40 | T__41 | T__42 | T__43 | T__44 | T__45 | T__46 | T__47 | T__48 | T__49 | T__50 | T__51 | T__52 | T__53 | T__54 | T__55 | T__56 | T__57 | T__58 | T__59 | T__60 | T__61 | T__62 | T__63 | T__64 | T__65 | T__66 | T__67 | T__68 | JAVAUDF | OR | AND | IF | ELSE | NOT | IN | FN | ID | VAR | STAR | COMMENT | SLASH | WS | STRING | UINT | INTEGER | DECIMAL )
-		int alt23=52;
-		alt23 = dfa23.predict(input);
-		switch (alt23) {
+		// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:1:8: ( T__36 | T__37 | T__38 | T__39 | T__40 | T__41 | T__42 | T__43 | T__44 | T__45 | T__46 | T__47 | T__48 | T__49 | T__50 | T__51 | T__52 | T__53 | T__54 | T__55 | T__56 | T__57 | T__58 | T__59 | T__60 | T__61 | T__62 | T__63 | T__64 | T__65 | T__66 | T__67 | T__68 | T__69 | JAVAUDF | OR | AND | IF | ELSE | NOT | IN | FN | ID | VAR | STAR | COMMENT | SLASH | WS | STRING | UINT | INTEGER | DECIMAL | INCLUDE )
+		int alt24=53;
+		alt24 = dfa24.predict(input);
+		switch (alt24) {
 			case 1 :
-				// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:1:10: T__35
-				{
-				mT__35(); 
-
-				}
-				break;
-			case 2 :
-				// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:1:16: T__36
+				// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:1:10: T__36
 				{
 				mT__36(); 
 
 				}
 				break;
-			case 3 :
-				// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:1:22: T__37
+			case 2 :
+				// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:1:16: T__37
 				{
 				mT__37(); 
 
 				}
 				break;
-			case 4 :
-				// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:1:28: T__38
+			case 3 :
+				// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:1:22: T__38
 				{
 				mT__38(); 
 
 				}
 				break;
-			case 5 :
-				// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:1:34: T__39
+			case 4 :
+				// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:1:28: T__39
 				{
 				mT__39(); 
 
 				}
 				break;
-			case 6 :
-				// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:1:40: T__40
+			case 5 :
+				// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:1:34: T__40
 				{
 				mT__40(); 
 
 				}
 				break;
-			case 7 :
-				// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:1:46: T__41
+			case 6 :
+				// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:1:40: T__41
 				{
 				mT__41(); 
 
 				}
 				break;
-			case 8 :
-				// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:1:52: T__42
+			case 7 :
+				// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:1:46: T__42
 				{
 				mT__42(); 
 
 				}
 				break;
-			case 9 :
-				// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:1:58: T__43
+			case 8 :
+				// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:1:52: T__43
 				{
 				mT__43(); 
 
 				}
 				break;
-			case 10 :
-				// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:1:64: T__44
+			case 9 :
+				// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:1:58: T__44
 				{
 				mT__44(); 
 
 				}
 				break;
-			case 11 :
-				// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:1:70: T__45
+			case 10 :
+				// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:1:64: T__45
 				{
 				mT__45(); 
 
 				}
 				break;
-			case 12 :
-				// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:1:76: T__46
+			case 11 :
+				// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:1:70: T__46
 				{
 				mT__46(); 
 
 				}
 				break;
-			case 13 :
-				// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:1:82: T__47
+			case 12 :
+				// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:1:76: T__47
 				{
 				mT__47(); 
 
 				}
 				break;
-			case 14 :
-				// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:1:88: T__48
+			case 13 :
+				// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:1:82: T__48
 				{
 				mT__48(); 
 
 				}
 				break;
-			case 15 :
-				// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:1:94: T__49
+			case 14 :
+				// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:1:88: T__49
 				{
 				mT__49(); 
 
 				}
 				break;
-			case 16 :
-				// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:1:100: T__50
+			case 15 :
+				// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:1:94: T__50
 				{
 				mT__50(); 
 
 				}
 				break;
-			case 17 :
-				// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:1:106: T__51
+			case 16 :
+				// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:1:100: T__51
 				{
 				mT__51(); 
 
 				}
 				break;
-			case 18 :
-				// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:1:112: T__52
+			case 17 :
+				// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:1:106: T__52
 				{
 				mT__52(); 
 
 				}
 				break;
-			case 19 :
-				// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:1:118: T__53
+			case 18 :
+				// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:1:112: T__53
 				{
 				mT__53(); 
 
 				}
 				break;
-			case 20 :
-				// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:1:124: T__54
+			case 19 :
+				// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:1:118: T__54
 				{
 				mT__54(); 
 
 				}
 				break;
-			case 21 :
-				// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:1:130: T__55
+			case 20 :
+				// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:1:124: T__55
 				{
 				mT__55(); 
 
 				}
 				break;
-			case 22 :
-				// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:1:136: T__56
+			case 21 :
+				// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:1:130: T__56
 				{
 				mT__56(); 
 
 				}
 				break;
-			case 23 :
-				// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:1:142: T__57
+			case 22 :
+				// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:1:136: T__57
 				{
 				mT__57(); 
 
 				}
 				break;
-			case 24 :
-				// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:1:148: T__58
+			case 23 :
+				// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:1:142: T__58
 				{
 				mT__58(); 
 
 				}
 				break;
-			case 25 :
-				// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:1:154: T__59
+			case 24 :
+				// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:1:148: T__59
 				{
 				mT__59(); 
 
 				}
 				break;
-			case 26 :
-				// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:1:160: T__60
+			case 25 :
+				// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:1:154: T__60
 				{
 				mT__60(); 
 
 				}
 				break;
-			case 27 :
-				// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:1:166: T__61
+			case 26 :
+				// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:1:160: T__61
 				{
 				mT__61(); 
 
 				}
 				break;
-			case 28 :
-				// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:1:172: T__62
+			case 27 :
+				// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:1:166: T__62
 				{
 				mT__62(); 
 
 				}
 				break;
-			case 29 :
-				// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:1:178: T__63
+			case 28 :
+				// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:1:172: T__63
 				{
 				mT__63(); 
 
 				}
 				break;
-			case 30 :
-				// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:1:184: T__64
+			case 29 :
+				// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:1:178: T__64
 				{
 				mT__64(); 
 
 				}
 				break;
-			case 31 :
-				// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:1:190: T__65
+			case 30 :
+				// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:1:184: T__65
 				{
 				mT__65(); 
 
 				}
 				break;
-			case 32 :
-				// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:1:196: T__66
+			case 31 :
+				// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:1:190: T__66
 				{
 				mT__66(); 
 
 				}
 				break;
-			case 33 :
-				// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:1:202: T__67
+			case 32 :
+				// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:1:196: T__67
 				{
 				mT__67(); 
 
 				}
 				break;
-			case 34 :
-				// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:1:208: T__68
+			case 33 :
+				// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:1:202: T__68
 				{
 				mT__68(); 
+
+				}
+				break;
+			case 34 :
+				// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:1:208: T__69
+				{
+				mT__69(); 
 
 				}
 				break;
@@ -2526,13 +2628,20 @@ public class MeteorLexer extends Lexer {
 
 				}
 				break;
+			case 53 :
+				// /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g:1:304: INCLUDE
+				{
+				mINCLUDE(); 
+
+				}
+				break;
 
 		}
 	}
 
 
 	protected DFA20 dfa20 = new DFA20(this);
-	protected DFA23 dfa23 = new DFA23(this);
+	protected DFA24 dfa24 = new DFA24(this);
 	static final String DFA20_eotS =
 		"\5\uffff";
 	static final String DFA20_eofS =
@@ -2584,44 +2693,45 @@ public class MeteorLexer extends Lexer {
 		}
 		@Override
 		public String getDescription() {
-			return "485:1: DECIMAL : ( ( '0' .. '9' )+ '.' ( '0' .. '9' )* ( EXPONENT )? | '.' ( '0' .. '9' )+ ( EXPONENT )? | ( '0' .. '9' )+ EXPONENT );";
+			return "522:1: DECIMAL : ( ( '0' .. '9' )+ '.' ( '0' .. '9' )* ( EXPONENT )? | '.' ( '0' .. '9' )+ ( EXPONENT )? | ( '0' .. '9' )+ EXPONENT );";
 		}
 	}
 
-	static final String DFA23_eotS =
+	static final String DFA24_eotS =
 		"\1\uffff\1\50\1\52\2\uffff\1\54\1\uffff\1\57\1\60\2\uffff\1\63\1\65\1"+
 		"\67\1\71\2\uffff\6\40\4\uffff\5\40\3\uffff\1\111\2\uffff\1\112\23\uffff"+
-		"\1\40\1\114\7\40\1\124\1\40\1\126\1\127\1\40\3\uffff\1\40\1\uffff\1\40"+
-		"\1\133\5\40\1\uffff\1\141\2\uffff\2\40\1\144\1\uffff\1\145\1\146\3\40"+
-		"\1\uffff\1\152\1\153\3\uffff\1\154\1\155\1\40\4\uffff\1\40\1\160\1\uffff";
-	static final String DFA23_eofS =
-		"\161\uffff";
-	static final String DFA23_minS =
+		"\1\40\1\114\7\40\1\124\1\40\1\126\1\130\1\40\3\uffff\1\40\1\uffff\1\40"+
+		"\1\134\5\40\1\uffff\1\142\1\uffff\1\40\1\uffff\2\40\1\146\1\uffff\1\147"+
+		"\1\150\3\40\1\uffff\1\40\1\155\1\156\3\uffff\1\157\1\160\2\40\4\uffff"+
+		"\2\40\1\165\1\40\2\uffff";
+	static final String DFA24_eofS =
+		"\167\uffff";
+	static final String DFA24_minS =
 		"\1\11\1\75\1\46\2\uffff\1\53\1\uffff\1\55\1\60\2\uffff\3\75\1\56\2\uffff"+
 		"\1\141\1\157\1\145\1\162\1\163\1\162\4\uffff\1\141\1\162\1\156\1\146\1"+
 		"\154\3\uffff\1\52\2\uffff\1\56\23\uffff\1\154\1\60\1\154\1\164\1\141\1"+
 		"\165\2\151\1\166\1\60\1\144\2\60\1\163\3\uffff\1\163\1\uffff\1\154\1\60"+
-		"\1\144\1\145\1\156\1\164\1\141\1\uffff\1\60\2\uffff\2\145\1\60\1\uffff"+
-		"\2\60\1\147\1\145\1\165\1\uffff\2\60\3\uffff\2\60\1\144\4\uffff\1\146"+
-		"\1\60\1\uffff";
-	static final String DFA23_maxS =
+		"\1\144\1\145\1\156\1\164\1\141\1\uffff\1\60\1\uffff\1\154\1\uffff\2\145"+
+		"\1\60\1\uffff\2\60\1\147\1\145\1\165\1\uffff\1\165\2\60\3\uffff\2\60\2"+
+		"\144\4\uffff\1\146\1\145\1\60\1\11\2\uffff";
+	static final String DFA24_maxS =
 		"\1\u00a0\1\75\1\46\2\uffff\1\71\1\uffff\2\71\2\uffff\3\75\1\56\2\uffff"+
 		"\1\156\1\165\1\145\1\162\1\163\1\162\4\uffff\1\141\1\162\2\156\1\154\3"+
 		"\uffff\1\57\2\uffff\1\145\23\uffff\1\154\1\172\1\154\1\164\1\141\1\165"+
 		"\2\151\1\166\1\172\1\144\2\172\1\163\3\uffff\1\163\1\uffff\1\154\1\172"+
-		"\1\144\1\145\1\156\1\164\1\141\1\uffff\1\172\2\uffff\2\145\1\172\1\uffff"+
-		"\2\172\1\147\1\145\1\165\1\uffff\2\172\3\uffff\2\172\1\144\4\uffff\1\146"+
-		"\1\172\1\uffff";
-	static final String DFA23_acceptS =
+		"\1\144\1\145\1\156\1\164\1\141\1\uffff\1\172\1\uffff\1\154\1\uffff\2\145"+
+		"\1\172\1\uffff\2\172\1\147\1\145\1\165\1\uffff\1\165\2\172\3\uffff\2\172"+
+		"\2\144\4\uffff\1\146\1\145\1\172\1\u00a0\2\uffff";
+	static final String DFA24_acceptS =
 		"\3\uffff\1\5\1\6\1\uffff\1\11\2\uffff\1\15\1\16\4\uffff\1\27\1\30\6\uffff"+
 		"\1\37\1\40\1\41\1\42\5\uffff\1\53\1\54\1\55\1\uffff\1\60\1\61\1\uffff"+
 		"\1\2\1\1\1\3\1\4\1\10\1\7\1\63\1\13\1\12\1\14\1\64\1\20\1\17\1\22\1\21"+
 		"\1\24\1\23\1\26\1\25\16\uffff\1\56\1\57\1\62\1\uffff\1\52\7\uffff\1\44"+
-		"\1\uffff\1\46\1\51\3\uffff\1\50\5\uffff\1\45\2\uffff\1\32\1\33\1\34\3"+
-		"\uffff\1\47\1\31\1\35\1\36\2\uffff\1\43";
-	static final String DFA23_specialS =
-		"\161\uffff}>";
-	static final String[] DFA23_transitionS = {
+		"\1\uffff\1\46\1\uffff\1\51\3\uffff\1\50\5\uffff\1\45\3\uffff\1\32\1\33"+
+		"\1\34\4\uffff\1\47\1\31\1\35\1\36\4\uffff\1\43\1\65";
+	static final String DFA24_specialS =
+		"\167\uffff}>";
+	static final String[] DFA24_transitionS = {
 			"\2\44\2\uffff\1\44\22\uffff\1\44\1\1\1\45\1\uffff\1\41\1\uffff\1\2\1"+
 			"\45\1\3\1\4\1\42\1\5\1\6\1\7\1\10\1\43\12\46\1\11\1\12\1\13\1\14\1\15"+
 			"\1\16\1\uffff\32\40\1\17\1\uffff\1\20\1\uffff\1\40\1\uffff\1\35\3\40"+
@@ -2696,34 +2806,36 @@ public class MeteorLexer extends Lexer {
 			"\12\40\7\uffff\32\40\4\uffff\1\40\1\uffff\32\40",
 			"\1\125",
 			"\12\40\7\uffff\32\40\4\uffff\1\40\1\uffff\32\40",
-			"\12\40\7\uffff\32\40\4\uffff\1\40\1\uffff\32\40",
-			"\1\130",
-			"",
-			"",
-			"",
+			"\12\40\7\uffff\32\40\4\uffff\1\40\1\uffff\2\40\1\127\27\40",
 			"\1\131",
 			"",
+			"",
+			"",
 			"\1\132",
+			"",
+			"\1\133",
 			"\12\40\7\uffff\32\40\4\uffff\1\40\1\uffff\32\40",
-			"\1\134",
 			"\1\135",
 			"\1\136",
 			"\1\137",
 			"\1\140",
+			"\1\141",
 			"",
 			"\12\40\7\uffff\32\40\4\uffff\1\40\1\uffff\32\40",
 			"",
-			"",
-			"\1\142",
 			"\1\143",
+			"",
+			"\1\144",
+			"\1\145",
 			"\12\40\7\uffff\32\40\4\uffff\1\40\1\uffff\32\40",
 			"",
 			"\12\40\7\uffff\32\40\4\uffff\1\40\1\uffff\32\40",
 			"\12\40\7\uffff\32\40\4\uffff\1\40\1\uffff\32\40",
-			"\1\147",
-			"\1\150",
 			"\1\151",
+			"\1\152",
+			"\1\153",
 			"",
+			"\1\154",
 			"\12\40\7\uffff\32\40\4\uffff\1\40\1\uffff\32\40",
 			"\12\40\7\uffff\32\40\4\uffff\1\40\1\uffff\32\40",
 			"",
@@ -2731,48 +2843,53 @@ public class MeteorLexer extends Lexer {
 			"",
 			"\12\40\7\uffff\32\40\4\uffff\1\40\1\uffff\32\40",
 			"\12\40\7\uffff\32\40\4\uffff\1\40\1\uffff\32\40",
-			"\1\156",
+			"\1\161",
+			"\1\162",
 			"",
 			"",
 			"",
 			"",
-			"\1\157",
+			"\1\163",
+			"\1\164",
 			"\12\40\7\uffff\32\40\4\uffff\1\40\1\uffff\32\40",
+			"\2\166\2\uffff\1\166\22\uffff\1\166\1\uffff\1\166\4\uffff\1\166\170"+
+			"\uffff\1\166",
+			"",
 			""
 	};
 
-	static final short[] DFA23_eot = DFA.unpackEncodedString(DFA23_eotS);
-	static final short[] DFA23_eof = DFA.unpackEncodedString(DFA23_eofS);
-	static final char[] DFA23_min = DFA.unpackEncodedStringToUnsignedChars(DFA23_minS);
-	static final char[] DFA23_max = DFA.unpackEncodedStringToUnsignedChars(DFA23_maxS);
-	static final short[] DFA23_accept = DFA.unpackEncodedString(DFA23_acceptS);
-	static final short[] DFA23_special = DFA.unpackEncodedString(DFA23_specialS);
-	static final short[][] DFA23_transition;
+	static final short[] DFA24_eot = DFA.unpackEncodedString(DFA24_eotS);
+	static final short[] DFA24_eof = DFA.unpackEncodedString(DFA24_eofS);
+	static final char[] DFA24_min = DFA.unpackEncodedStringToUnsignedChars(DFA24_minS);
+	static final char[] DFA24_max = DFA.unpackEncodedStringToUnsignedChars(DFA24_maxS);
+	static final short[] DFA24_accept = DFA.unpackEncodedString(DFA24_acceptS);
+	static final short[] DFA24_special = DFA.unpackEncodedString(DFA24_specialS);
+	static final short[][] DFA24_transition;
 
 	static {
-		int numStates = DFA23_transitionS.length;
-		DFA23_transition = new short[numStates][];
+		int numStates = DFA24_transitionS.length;
+		DFA24_transition = new short[numStates][];
 		for (int i=0; i<numStates; i++) {
-			DFA23_transition[i] = DFA.unpackEncodedString(DFA23_transitionS[i]);
+			DFA24_transition[i] = DFA.unpackEncodedString(DFA24_transitionS[i]);
 		}
 	}
 
-	protected class DFA23 extends DFA {
+	protected class DFA24 extends DFA {
 
-		public DFA23(BaseRecognizer recognizer) {
+		public DFA24(BaseRecognizer recognizer) {
 			this.recognizer = recognizer;
-			this.decisionNumber = 23;
-			this.eot = DFA23_eot;
-			this.eof = DFA23_eof;
-			this.min = DFA23_min;
-			this.max = DFA23_max;
-			this.accept = DFA23_accept;
-			this.special = DFA23_special;
-			this.transition = DFA23_transition;
+			this.decisionNumber = 24;
+			this.eot = DFA24_eot;
+			this.eof = DFA24_eof;
+			this.min = DFA24_min;
+			this.max = DFA24_max;
+			this.accept = DFA24_accept;
+			this.special = DFA24_special;
+			this.transition = DFA24_transition;
 		}
 		@Override
 		public String getDescription() {
-			return "1:1: Tokens : ( T__35 | T__36 | T__37 | T__38 | T__39 | T__40 | T__41 | T__42 | T__43 | T__44 | T__45 | T__46 | T__47 | T__48 | T__49 | T__50 | T__51 | T__52 | T__53 | T__54 | T__55 | T__56 | T__57 | T__58 | T__59 | T__60 | T__61 | T__62 | T__63 | T__64 | T__65 | T__66 | T__67 | T__68 | JAVAUDF | OR | AND | IF | ELSE | NOT | IN | FN | ID | VAR | STAR | COMMENT | SLASH | WS | STRING | UINT | INTEGER | DECIMAL );";
+			return "1:1: Tokens : ( T__36 | T__37 | T__38 | T__39 | T__40 | T__41 | T__42 | T__43 | T__44 | T__45 | T__46 | T__47 | T__48 | T__49 | T__50 | T__51 | T__52 | T__53 | T__54 | T__55 | T__56 | T__57 | T__58 | T__59 | T__60 | T__61 | T__62 | T__63 | T__64 | T__65 | T__66 | T__67 | T__68 | T__69 | JAVAUDF | OR | AND | IF | ELSE | NOT | IN | FN | ID | VAR | STAR | COMMENT | SLASH | WS | STRING | UINT | INTEGER | DECIMAL | INCLUDE );";
 		}
 	}
 

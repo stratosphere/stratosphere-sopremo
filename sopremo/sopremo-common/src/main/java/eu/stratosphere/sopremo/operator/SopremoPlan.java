@@ -31,11 +31,17 @@ public class SopremoPlan extends AbstractSopremoType implements Serializable {
 	private List<String> requiredPackages = new ArrayList<String>();
 
 	private SopremoRecordLayout layout;
-	
+
 	private ITypeRegistry typeRegistry = new DefaultTypeRegistry();
 
 	public SopremoPlan() {
 		this.module = new SopremoModule(0, 0);
+	}
+
+	public SopremoPlan(Sink... sinks) {
+		this();
+		for (final Sink sink : sinks)
+			this.module.addInternalOutput(sink);
 	}
 
 	public void addRequiredPackage(final String packageName) {
@@ -178,11 +184,12 @@ public class SopremoPlan extends AbstractSopremoType implements Serializable {
 	public void setSinks(final Sink... sinks) {
 		this.setSinks(Arrays.asList(sinks));
 	}
-	
+
 	/**
 	 * Sets the typeRegistry to the specified value.
-	 *
-	 * @param typeRegistry the typeRegistry to set
+	 * 
+	 * @param typeRegistry
+	 *        the typeRegistry to set
 	 */
 	public void setTypeRegistry(ITypeRegistry typeRegistry) {
 		if (typeRegistry == null)
@@ -190,7 +197,7 @@ public class SopremoPlan extends AbstractSopremoType implements Serializable {
 
 		this.typeRegistry = typeRegistry;
 	}
-	
+
 	/**
 	 * Checks if all contracts are {@link GenericDataSink}s.
 	 */

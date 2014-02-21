@@ -9,10 +9,7 @@ import java.io.InputStream;
 import java.util.IdentityHashMap;
 import java.util.Map;
 
-import org.antlr.runtime.ANTLRInputStream;
-import org.antlr.runtime.ANTLRStringStream;
-import org.antlr.runtime.CharStream;
-import org.antlr.runtime.CommonTokenStream;
+import org.antlr.runtime.*;
 
 import eu.stratosphere.core.fs.Path;
 import eu.stratosphere.sopremo.SopremoEnvironment;
@@ -96,6 +93,10 @@ public class QueryParser {
 
 	public SopremoPlan tryParse(final CharStream charStream) {
 		return this.getParser(charStream).parse();
+	}
+
+	public SopremoPlan tryParse(final File file) throws QueryParserException, IOException {
+		return this.getParser(new ANTLRFileStream(file.getAbsolutePath())).parse();
 	}
 
 	public SopremoPlan tryParse(final InputStream stream) throws IOException, QueryParserException {

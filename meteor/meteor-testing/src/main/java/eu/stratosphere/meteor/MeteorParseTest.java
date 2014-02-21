@@ -14,9 +14,7 @@
  **********************************************************************************************************************/
 package eu.stratosphere.meteor;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -48,45 +46,24 @@ public class MeteorParseTest {
 		if (this.projectJar == null)
 			ProjectJars.put(this.projectName, this.projectJar = build(this.projectName));
 	}
-
-	public SopremoPlan parseScript(final File script) {
-		// printBeamerSlide(script);
-		SopremoPlan plan = null;
+	
+	public File getResource(final String name) {
 		try {
-			final QueryParser queryParser = new QueryParser().withInputDirectory(script.getParentFile());
-			this.initParser(queryParser);
-			plan = queryParser.tryParse(this.loadScriptFromFile(script));
-		} catch (final QueryParserException e) {
-			final AssertionError error =
-				new AssertionError(String.format("could not parse script: %s", e.getMessage()));
-			error.initCause(e);
-			throw error;
+			return new File(MeteorParseTest.class.getClassLoader().getResources(name)
+				.nextElement().getFile());
+		} catch (IOException e) {
+			throw new AssertionError("Could not locate resource " + name, e);
 		}
-
-		Assert.assertNotNull("could not parse script", plan);
-
-		// System.out.println(plan);
-		return plan;
 	}
 
 	public SopremoPlan parseScript(final String script) {
-		// printBeamerSlide(script);
-		SopremoPlan plan = null;
 		try {
 			final QueryParser queryParser = new QueryParser().withInputDirectory(new File("."));
 			this.initParser(queryParser);
-			plan = queryParser.tryParse(script);
+			return queryParser.tryParse(script);
 		} catch (final QueryParserException e) {
-			final AssertionError error =
-				new AssertionError(String.format("could not parse script: %s", e.getMessage()));
-			error.initCause(e);
-			throw error;
+			throw new AssertionError("could not parse script", e);
 		}
-
-		Assert.assertNotNull("could not parse script", plan);
-
-		// System.out.println(plan);
-		return plan;
 	}
 
 	protected void initParser(final QueryParser queryParser) {
@@ -94,19 +71,14 @@ public class MeteorParseTest {
 			this.projectJar);
 	}
 
-	private String loadScriptFromFile(final File scriptFile) {
+	public SopremoPlan parseScript(final File script) {
 		try {
-			final BufferedReader reader = new BufferedReader(new FileReader(scriptFile));
-			final StringBuilder builder = new StringBuilder();
-			int ch;
-			while ((ch = reader.read()) != -1)
-				builder.append((char) ch);
-			reader.close();
-			return builder.toString();
-		} catch (final IOException e) {
-			throw new RuntimeException(e);
+			final QueryParser queryParser = new QueryParser().withInputDirectory(new File("."));
+			this.initParser(queryParser);
+			return queryParser.tryParse(script);
+		} catch (final Exception e) {
+			throw new AssertionError("could not parse script", e);
 		}
-
 	}
 
 	public static void assertPlanEquals(final SopremoPlan expectedPlan, final SopremoPlan actualPlan) {

@@ -7,22 +7,10 @@ import java.io.File;
 import java.math.BigInteger;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
+import org.antlr.runtime.*;
 import org.antlr.runtime.BitSet;
-import org.antlr.runtime.IntStream;
-import org.antlr.runtime.MismatchedTokenException;
-import org.antlr.runtime.MissingTokenException;
-import org.antlr.runtime.Parser;
-import org.antlr.runtime.RecognitionException;
-import org.antlr.runtime.RecognizerSharedState;
-import org.antlr.runtime.Token;
-import org.antlr.runtime.TokenStream;
-import org.antlr.runtime.UnwantedTokenException;
 
 import com.google.common.base.CharMatcher;
 
@@ -112,7 +100,7 @@ public abstract class AbstractQueryParser extends Parser implements ParsingScope
 			throw new IllegalArgumentException("Unknown class " + className);
 		}
 	}
-
+	
 	public void addTypeAlias(final String alias, final Class<? extends IJsonNode> type) {
 		this.typeNameToType.put(alias, type);
 	}
