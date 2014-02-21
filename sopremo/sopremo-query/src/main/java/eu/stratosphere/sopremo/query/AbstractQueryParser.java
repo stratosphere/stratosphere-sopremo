@@ -54,6 +54,7 @@ import eu.stratosphere.sopremo.pact.SopremoUtil;
 import eu.stratosphere.sopremo.query.ConfObjectInfo.ConfObjectIndexedPropertyInfo;
 import eu.stratosphere.sopremo.query.ConfObjectInfo.ConfObjectPropertyInfo;
 import eu.stratosphere.sopremo.type.IJsonNode;
+import eu.stratosphere.sopremo.type.MissingNode;
 
 public abstract class AbstractQueryParser extends Parser implements ParsingScope {
 	/**
@@ -428,60 +429,18 @@ public abstract class AbstractQueryParser extends Parser implements ParsingScope
 		return (SopremoFunction) callable;
 	}
 
-	protected String makeFilePath(final Token protocol, final String filePath) {
+	protected String makeFilePath(final EvaluationExpression pathExpression) {
+		String pathConstant = pathExpression.evaluate(MissingNode.getInstance()).toString();
 
-		// no explicit protocol
-		if (protocol == null)
-			// try if file is self-contained
-			try {
-				final URI uri = new URI(filePath);
-				if (uri.getScheme() == null)
-					return new Path(SopremoEnvironment.getInstance().getEvaluationContext().getWorkingPath(), filePath).toString();
-				return new Path(uri).toString();
-			} catch (final URISyntaxException e) {
-				throw new IllegalArgumentException("Invalid path " + filePath, e);
-			}
-
-		if (protocol.getText().equals("hdfs")) {
-			if (filePath.startsWith("hdfs://"))
-				// still self-contained
-				return new Path(filePath).toString();
-
-			final Path workingPath = SopremoEnvironment.getInstance().getEvaluationContext().getWorkingPath();
-			if (workingPath.toUri().getScheme().equals("hdfs"))
-				try {
-					return new Path(workingPath, filePath).toString();
-				} catch (final Exception e) {
-					throw new IllegalArgumentException("Cannot use current workingPath to form a valid file path for " +
-						filePath, e);
-				}
-
-			try {
-				// if only hdfs is missing, add it
-				return new Path(new URI("hdfs://" + filePath)).toString();
-			} catch (final Exception e) {
-				throw new IllegalArgumentException("The path is not a valid URI " + filePath, e);
-			}
+		// try if file is self-contained
+		try {
+			final URI uri = new URI(pathConstant);
+			if (uri.getScheme() == null)
+				return new Path(SopremoEnvironment.getInstance().getEvaluationContext().getWorkingPath(), pathConstant).toString();
+			return new Path(uri).toString();
+		} catch (final URISyntaxException e) {
+			throw new IllegalArgumentException("Invalid path " + pathConstant, e);
 		}
-
-		if (protocol.getText().equals("file")) {
-			if (filePath.startsWith("file://"))
-				// still self-contained
-				return new Path(filePath).toString();
-
-			if (new File(filePath).isAbsolute())
-				return new Path("file://" + filePath).toString();
-
-			final Path workingPath = SopremoEnvironment.getInstance().getEvaluationContext().getWorkingPath();
-			// else prepend working directory if it specifies an hdfs path
-			if (workingPath.toUri().getScheme().equals("file"))
-				throw new IllegalArgumentException(
-					"To use shortened local path, a valid local path must be set as the working path");
-
-			return new Path(SopremoEnvironment.getInstance().getEvaluationContext().getWorkingPath(), filePath).toString();
-		}
-
-		throw new IllegalArgumentException("Unknown protocol");
 	}
 
 	protected Number parseInt(final String text) {

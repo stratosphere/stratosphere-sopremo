@@ -16,22 +16,39 @@ package eu.stratosphere.sopremo.expressions;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.List;
 
 import javolution.text.TypeFormat;
+import eu.stratosphere.api.common.io.InputFormat;
+import eu.stratosphere.api.common.operators.GenericDataSource;
+import eu.stratosphere.configuration.Configuration;
+import eu.stratosphere.core.fs.FileInputSplit;
+import eu.stratosphere.core.fs.FileStatus;
+import eu.stratosphere.core.fs.FileSystem;
+import eu.stratosphere.core.fs.Path;
+import eu.stratosphere.sopremo.io.SopremoFormat;
+import eu.stratosphere.sopremo.io.SopremoFormat.SopremoFileInputFormat;
+import eu.stratosphere.sopremo.io.Source;
 import eu.stratosphere.sopremo.operator.JsonStream;
 import eu.stratosphere.sopremo.operator.Operator;
 import eu.stratosphere.sopremo.operator.Operator.Output;
+import eu.stratosphere.sopremo.type.ArrayNode;
+import eu.stratosphere.sopremo.type.IArrayNode;
+import eu.stratosphere.sopremo.type.IJsonNode;
+import eu.stratosphere.util.reflect.ReflectUtil;
 
 /**
  * Tag expression for nested operators.
  */
-public class JsonStreamExpression extends UnevaluableExpression {
+public class JsonStreamExpression extends EvaluationExpression {
 	private final JsonStream stream;
 
 	private final int inputIndex;
 
 	private transient WeakReference<JsonStreamExpression> equalStream;
+
+	private IJsonNode values;
 
 	/**
 	 * Initializes a JsonStreamExpression with the given index.
@@ -62,7 +79,6 @@ public class JsonStreamExpression extends UnevaluableExpression {
 	 *        the index
 	 */
 	public JsonStreamExpression(final JsonStream stream, final int inputIndex) {
-		super("JsonStream placeholder");
 		this.stream = stream;
 		this.inputIndex = inputIndex;
 	}
@@ -71,7 +87,6 @@ public class JsonStreamExpression extends UnevaluableExpression {
 	 * Initializes JsonStreamExpression.
 	 */
 	JsonStreamExpression() {
-		super("JsonStream placeholder");
 		this.stream = null;
 		this.inputIndex = 0;
 	}
@@ -173,4 +188,65 @@ public class JsonStreamExpression extends UnevaluableExpression {
 		return inputSelection;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see eu.stratosphere.sopremo.expressions.EvaluationExpression#evaluate(eu.stratosphere.sopremo.type.IJsonNode)
+	 */
+	@Override
+	public IJsonNode evaluate(final IJsonNode node) {
+		if (this.values == null) {
+			if (!(this.stream instanceof Source))
+				throw new IllegalStateException("Sopremo currently only supports Sources to be used as side channels");
+			Source source = (Source) this.stream;
+			if (source.isAdhoc())
+				this.values = source.getAdhocValues();
+			else {
+				final SopremoFormat format = source.getFormat();
+				final Configuration configuration = new Configuration();
+				final GenericDataSource<?> dataSource =
+					new GenericDataSource<InputFormat<?, ?>>(format.getInputFormat());
+				format.configureForInput(configuration, dataSource, source.getInputPath());
+				try {
+					this.values = readValues(format, configuration, getInputs(source));
+				} catch (final Throwable e) {
+					throw new IllegalStateException("Cannot read values from side channel", e);
+				}
+			}
+		}
+		return this.values;
+	}
+
+	private IArrayNode<IJsonNode> readValues(final SopremoFormat format, final Configuration configuration, final List<Path> inputs)
+			throws IOException {
+		final IArrayNode<IJsonNode> array = new ArrayNode<>();
+		final SopremoFileInputFormat input = (SopremoFileInputFormat) ReflectUtil.newInstance(format.getInputFormat());
+		for (final Path path : inputs) {
+			input.setFilePath(path);
+			input.configure(configuration);
+			for (final FileInputSplit fileInputSplit : input.createInputSplits(1)) {
+				input.open(fileInputSplit);
+				while (!input.reachedEnd()) {
+					final IJsonNode value = input.nextValue();
+					if (value != null)
+						array.add(value.clone());
+				}
+			}
+		}
+		return array;
+	}
+
+	private List<Path> getInputs(Source source) throws IOException {
+		final List<Path> inputs = new ArrayList<>();
+
+		Path nephelePath = new Path(source.getInputPath());
+		FileSystem fs = nephelePath.getFileSystem();
+		FileStatus fileStatus = fs.getFileStatus(nephelePath);
+		if (!fileStatus.isDir())
+			inputs.add(fileStatus.getPath());
+		else {
+			for (FileStatus status : fs.listStatus(nephelePath))
+				inputs.add(status.getPath());
+		}
+		return inputs;
+	}
 }
