@@ -325,4 +325,14 @@ public class TextNode extends AbstractJsonNode implements IPrimitiveNode,
 		}
 	}
 
+	public void append(IJsonNode node) {
+		if (node instanceof TextNode)
+			append((TextNode) node);
+		else
+			try {
+				node.appendAsString(this);
+			} catch (IOException e) {
+			}
+	}
+
 }

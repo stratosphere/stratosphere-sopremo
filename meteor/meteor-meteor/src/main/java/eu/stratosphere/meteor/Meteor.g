@@ -109,13 +109,13 @@ packageImport
 definition
   : (ID '=' FN)=> functionDefinition 
   | (ID '=' JAVAUDF)=> javaudf
-  | (ID '=' expression)=> constantDefinition;
+  | constantDefinition;
 
 functionDefinition
   : name=ID '=' func=inlineFunction { addFunction($name.text, $func.func); } -> ;
   
 constantDefinition
-  : name=ID '=' exp=expression { addConstant($name.text, $exp.tree); } -> ;
+  : name=ID '=' exp=ternaryExpression { addConstant($name.text, $exp.tree); } -> ;
   
 inlineFunction returns [ExpressionFunction func]
 @init { List<Token> params = new ArrayList(); }
@@ -344,9 +344,9 @@ readOperator returns [Source source]
 }
 	:	(output=VAR '=')? 
 	  'read' ((packageName=ID ':')?format=ID)?
-	  {input.LT(1).getText().equals("from")}? ID (protocol=ID? filePath=STRING | protocol=ID '(' filePath=STRING ')') 
+	  {input.LT(1).getText().equals("from")}? ID pathExp=ternaryExpression
 { 
-  path = makeFilePath($protocol, $filePath.text);
+  path = makeFilePath($pathExp.tree);
   formatInfo = findFormat($packageName.text, format, path);
   fileFormat = formatInfo.newInstance(); 
   $source = new Source(fileFormat, path); 
@@ -361,20 +361,14 @@ writeOperator returns [Sink sink]
   ConfObjectInfo<? extends SopremoFormat> formatInfo = null;
   SopremoFormat fileFormat = null;
   String path = null;
-  if(state.backtracking == 0) 
-    addScope();
-}
-@after {
-  removeScope();
-}	:	'write' 
+} :	'write' 
     ((packageName=ID ':')?format=ID)? from=VAR 
-	  {input.LT(1).getText().equals("to")}? ID 
-	  (protocol=ID? filePath=STRING | protocol=ID '(' filePath=STRING ')')
+	  {input.LT(1).getText().equals("to")}? ID pathExp=ternaryExpression
 { 
-  path = makeFilePath($protocol, $filePath.text);
+  path = makeFilePath($pathExp.tree);
   formatInfo = findFormat($packageName.text, format, path);
   fileFormat = formatInfo.newInstance();
-	$sink = new Sink(fileFormat, makeFilePath($protocol, path));
+	$sink = new Sink(fileFormat, path);
   $sink.setInputs(getVariableSafely(from).getStream());
   this.sinks.add($sink);
 } confOption[getOperatorInfo($sink), $sink]* ->;

@@ -1,0 +1,1 @@
+$input = read json from 'file://input.json';
