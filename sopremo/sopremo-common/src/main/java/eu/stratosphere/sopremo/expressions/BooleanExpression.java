@@ -25,6 +25,8 @@ import eu.stratosphere.sopremo.type.IJsonNode;
  * Represents all expressions with a boolean semantic.
  */
 public abstract class BooleanExpression extends EvaluationExpression implements ISopremoType {
+	public static final BooleanExpression TRUE = BooleanExpression.ensureBooleanExpression(new ConstantExpression(true)),
+			FALSE = BooleanExpression.ensureBooleanExpression(new ConstantExpression(false));
 
 	/*
 	 * (non-Javadoc)
