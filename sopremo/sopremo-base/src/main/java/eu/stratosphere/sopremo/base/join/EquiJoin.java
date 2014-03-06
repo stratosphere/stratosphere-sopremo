@@ -5,7 +5,7 @@ import eu.stratosphere.sopremo.operator.Internal;
 
 @Internal
 public class EquiJoin extends TwoSourceJoinBase<EquiJoin> {
-	private Mode mode = Mode.BOTH;
+	private Mode mode = Mode.NONE;
 
 	public Mode getMode() {
 		return this.mode;
