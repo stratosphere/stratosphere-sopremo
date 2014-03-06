@@ -5,7 +5,7 @@
 	<parent>
 		<artifactId>meteor</artifactId>
 		<groupId>eu.stratosphere</groupId>
-		<version>0.4.1</version>
+		<version>0.4.2-SNAPSHOT</version>
 	</parent>
 	<artifactId>meteor-meteor</artifactId>
 	<name>meteor-meteor</name>
