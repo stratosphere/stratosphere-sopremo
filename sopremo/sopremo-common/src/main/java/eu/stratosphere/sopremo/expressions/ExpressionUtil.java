@@ -163,6 +163,17 @@ public class ExpressionUtil {
 			}).simplify();
 	}
 
+	public static EvaluationExpression replaceInputSelectionsWithArrayAccess(
+			final EvaluationExpression evaluationExpression) {
+		return evaluationExpression.clone().replace(Predicates.instanceOf(InputSelection.class),
+			new TransformFunction() {
+				@Override
+				public EvaluationExpression apply(final EvaluationExpression argument) {
+					return ((InputSelection) argument).asArrayAccess();
+				}
+			}).simplify();
+	}
+
 	/**
 	 * Replaces fragments in the form of path expression (InputSelection, ArrayAccess).
 	 */
