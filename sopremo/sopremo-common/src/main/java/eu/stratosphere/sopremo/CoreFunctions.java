@@ -208,12 +208,13 @@ public class CoreFunctions implements BuiltinProvider {
 
 	@Name(noun = "camelCase")
 	public static final SopremoFunction CAMEL_CASE = new SopremoFunction1<TextNode>() {
-		private final transient StringBuilder builder = new StringBuilder();
+		private transient StringBuilder builder = new StringBuilder();
 
 		private final transient TextNode result = new TextNode();
 
 		@Override
 		protected IJsonNode call(final TextNode input) {
+			builder = new StringBuilder();
 			this.builder.append(input);
 
 			boolean capitalize = true;
