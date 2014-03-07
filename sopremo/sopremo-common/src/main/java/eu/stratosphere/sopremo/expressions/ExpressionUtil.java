@@ -17,10 +17,7 @@ package eu.stratosphere.sopremo.expressions;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 
-import java.util.Arrays;
-import java.util.IdentityHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import com.google.common.base.Predicates;
 
@@ -67,6 +64,18 @@ public class ExpressionUtil {
 			last = expression;
 		}
 		return result;
+	}
+	
+	public static void sortExpressionsForInputs(List<? extends EvaluationExpression> expressions) {
+		Collections.sort(expressions, new Comparator<EvaluationExpression>() {
+			/* (non-Javadoc)
+			 * @see java.util.Comparator#compare(java.lang.Object, java.lang.Object)
+			 */
+			@Override
+			public int compare(EvaluationExpression o1, EvaluationExpression o2) {
+				return o1.findFirst(InputSelection.class).getIndex() - o2.findFirst(InputSelection.class).getIndex();
+			}
+		});
 	}
 
 	/**
@@ -215,5 +224,10 @@ public class ExpressionUtil {
 
 		for (final EvaluationExpression child : expression)
 			findAggregatingFunctionCalls(child, aggregatingFunctionCalls, aggregatingExpressions, expression);
+	}
+	
+	public static void removeInputSelections(List<EvaluationExpression> expressions) {
+		for (int index = 0; index < expressions.size(); index++) 
+			expressions.set(index, expressions.get(index).remove(InputSelection.class));
 	}
 }

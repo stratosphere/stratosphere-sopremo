@@ -28,7 +28,7 @@ import eu.stratosphere.sopremo.type.TypeCoercer;
  */
 @OptimizerHints(scope = Scope.ANY)
 public class UnaryExpression extends BooleanExpression {
-	private EvaluationExpression expr;
+	private EvaluationExpression expression;
 
 	private final boolean negate;
 
@@ -55,7 +55,7 @@ public class UnaryExpression extends BooleanExpression {
 	 *        indicates either the result of the evaluation should be negated or not
 	 */
 	public UnaryExpression(final EvaluationExpression booleanExpr, final boolean negate) {
-		this.expr = booleanExpr;
+		this.expression = booleanExpr;
 		this.negate = negate;
 	}
 
@@ -63,7 +63,7 @@ public class UnaryExpression extends BooleanExpression {
 	 * Initializes UnaryExpression.
 	 */
 	UnaryExpression() {
-		this.expr = null;
+		this.expression = null;
 		this.negate = false;
 	}
 
@@ -71,7 +71,7 @@ public class UnaryExpression extends BooleanExpression {
 	public void appendAsString(final Appendable appendable) throws IOException {
 		if (this.negate)
 			appendable.append("!");
-		this.expr.appendAsString(appendable);
+		this.expression.appendAsString(appendable);
 	}
 
 	@Override
@@ -79,14 +79,23 @@ public class UnaryExpression extends BooleanExpression {
 		if (!super.equals(obj))
 			return false;
 		final UnaryExpression other = (UnaryExpression) obj;
-		return this.expr.equals(other.expr) && this.negate == other.negate;
+		return this.expression.equals(other.expression) && this.negate == other.negate;
+	}
+	
+	/**
+	 * Returns the expression.
+	 * 
+	 * @return the expression
+	 */
+	public EvaluationExpression getExpression() {
+		return this.expression;
 	}
 
 	@Override
 	public BooleanNode evaluate(final IJsonNode node) {
 		// no need to reuse target of coercion - no new boolean node is created anew
 		final BooleanNode result =
-			TypeCoercer.INSTANCE.coerce(this.expr.evaluate(node), this.nodeCache, BooleanNode.class);
+			TypeCoercer.INSTANCE.coerce(this.expression.evaluate(node), this.nodeCache, BooleanNode.class);
 
 		// we can ignore 'target' because no new Object is created
 		if (this.negate)
@@ -98,7 +107,7 @@ public class UnaryExpression extends BooleanExpression {
 	public int hashCode() {
 		final int prime = 31;
 		int result = super.hashCode();
-		result = prime * result + this.expr.hashCode();
+		result = prime * result + this.expression.hashCode();
 		result = prime * result + (this.negate ? 1231 : 1237);
 		return result;
 	}
@@ -109,16 +118,16 @@ public class UnaryExpression extends BooleanExpression {
 	 */
 	@Override
 	public ChildIterator iterator() {
-		return new NamedChildIterator("expr") {
+		return new NamedChildIterator("expression") {
 
 			@Override
 			protected EvaluationExpression get(final int index) {
-				return UnaryExpression.this.expr;
+				return UnaryExpression.this.expression;
 			}
 
 			@Override
 			protected void set(final int index, final EvaluationExpression e) {
-				UnaryExpression.this.expr = e;
+				UnaryExpression.this.expression = e;
 			}
 		};
 	}
