@@ -57,7 +57,7 @@ public class SourceTest extends MeteorParseTest {
 	@Test
 	public void shouldSupportHdfs() {
 		final SopremoPlan actualPlan = this.parseScript(
-			"$input = read from hdfs('localhost:8020/input.json');\n" +
+			"$input = read from 'hdfs://localhost:8020/input.json';\n" +
 				"write $input to 'file://output.json';");
 
 		final SopremoPlan expectedPlan = new SopremoPlan();
@@ -72,7 +72,7 @@ public class SourceTest extends MeteorParseTest {
 	public void shouldUseWorkingDirectory() {
 		final SopremoPlan actualPlan = this.parseScript(
 			"setWorkingDirectory('hdfs://cluster:1234/mydir');" +
-				"$input = read from hdfs('input.json');\n" +
+				"$input = read from 'input.json';\n" +
 				"write $input to 'output.json';");
 
 		final SopremoPlan expectedPlan = new SopremoPlan();
