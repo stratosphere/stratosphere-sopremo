@@ -171,9 +171,9 @@ public class BatchAggregationExpression extends PathSegmentExpression {
 		for (final IJsonNode input : stream)
 			for (final Partial partial : this.partials) {
 				final IJsonNode preprocessedValue = partial.getInputExpression().evaluate(input);
-				if (preprocessedValue == MissingNode.getInstance())
-					throw new EvaluationException(String.format("Cannot access %s for aggregation %s on %s",
-						partial.getInputExpression(), partial, input));
+//				if (preprocessedValue == MissingNode.getInstance())
+//					throw new EvaluationException(String.format("Cannot access %s for aggregation %s on %s",
+//						partial.getInputExpression(), partial, input));
 				partial.getAggregation().aggregate(preprocessedValue);
 			}
 
