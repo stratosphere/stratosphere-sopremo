@@ -21,8 +21,7 @@ import eu.stratosphere.sopremo.expressions.EvaluationExpression;
 import eu.stratosphere.sopremo.pact.SopremoUtil;
 import eu.stratosphere.sopremo.type.IJsonNode;
 
-public class SopremoRecordPairComparator extends TypePairComparator<SopremoRecord, SopremoRecord>
-{
+public class SopremoRecordPairComparator extends TypePairComparator<SopremoRecord, SopremoRecord> {
 	private final int[] keyFields1, keyFields2;
 
 	private final EvaluationExpression[] keyExpressions1, keyExpressions2;
@@ -33,7 +32,7 @@ public class SopremoRecordPairComparator extends TypePairComparator<SopremoRecor
 
 	private final int numKeys;
 
-	private final static boolean DEBUG = true & SopremoUtil.DEBUG;
+	private final static boolean DEBUG = false & SopremoUtil.DEBUG;
 
 	public SopremoRecordPairComparator(final int[] keyFieldsReference, final EvaluationExpression[] keyExpressions1,
 			final int[] keyFieldsCandidate,
@@ -100,12 +99,18 @@ public class SopremoRecordPairComparator extends TypePairComparator<SopremoRecor
 		if (node == null)
 			for (int index = 0; index < this.numKeys; index++) {
 				final IJsonNode k = candidate.getKey(this.keyFields2[index], this.nodeCache2[index]);
+				if (DEBUG)
+					SopremoUtil.LOG.debug(String.format("pair#equalToReference1: %s <=> %s = %s", k,
+						this.keyHolders1[index], k.equals(this.keyHolders1[index])));
 				if (!k.equals(this.keyHolders1[index]))
 					return false;
 			}
 		else
 			for (int index = 0; index < this.numKeys; index++) {
 				final IJsonNode k = this.keyExpressions2[index].evaluate(node);
+				if (DEBUG)
+					SopremoUtil.LOG.debug(String.format("pair#equalToReference2: %s <=> %s = %s", k,
+						this.keyHolders1[index], k.equals(this.keyHolders1[index])));
 				if (!k.equals(this.keyHolders1[index]))
 					return false;
 			}

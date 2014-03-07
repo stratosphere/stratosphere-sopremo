@@ -14,8 +14,11 @@
  **********************************************************************************************************************/
 package eu.stratosphere.sopremo.serialization;
 
+import it.unimi.dsi.fastutil.ints.IntArrayList;
+import it.unimi.dsi.fastutil.ints.IntList;
 import eu.stratosphere.api.common.operators.DualInputOperator;
 import eu.stratosphere.api.common.operators.GenericDataSink;
+import eu.stratosphere.api.common.operators.Order;
 import eu.stratosphere.api.common.operators.Ordering;
 import eu.stratosphere.api.common.operators.SingleInputOperator;
 import eu.stratosphere.api.common.operators.util.FieldList;
@@ -223,9 +226,22 @@ public class SopremoRecordPostPass extends GenericFlatTypePostPass<Class<? exten
 
 	private void setOrdering(final Channel input, final Ordering localOrder) {
 		if (localOrder != null) {
-			input.getLocalProperties().setOrdering(localOrder);
-			input.setLocalStrategy(input.getLocalStrategy(), new FieldList(localOrder.getFieldPositions()),
-				localOrder.getFieldSortDirections());
+			Ordering mergedOrder;
+			if (input.getLocalProperties().getOrdering() != null) {
+				mergedOrder = input.getLocalProperties().getOrdering().clone();
+
+				final int[] fieldPositions = localOrder.getFieldPositions();
+				final Order[] fieldOrders = localOrder.getFieldOrders();
+				final IntList coveredFields = new IntArrayList(mergedOrder.getFieldPositions());
+
+				for (int index = 0; index < fieldOrders.length; index++)
+					if (!coveredFields.contains(fieldPositions[index]))
+						mergedOrder.appendOrdering(fieldPositions[index], null, fieldOrders[index]);
+			} else
+				mergedOrder = localOrder;
+			input.getLocalProperties().setOrdering(mergedOrder);
+			input.setLocalStrategy(input.getLocalStrategy(), new FieldList(mergedOrder.getFieldPositions()),
+				mergedOrder.getFieldSortDirections());
 		}
 	}
 

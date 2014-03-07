@@ -46,7 +46,7 @@ public final class SopremoRecordComparator extends TypeComparator<SopremoRecord>
 
 	private final ITypeRegistry typeRegistry;
 
-	private final static boolean DEBUG = true & SopremoUtil.DEBUG;
+	private final static boolean DEBUG = false & SopremoUtil.DEBUG;
 
 	/**
 	 * Initializes SopremoRecordComparator.
@@ -134,7 +134,7 @@ public final class SopremoRecordComparator extends TypeComparator<SopremoRecord>
 			for (int index = 0; index < this.keyExpressionIndices.length; index++) {
 				if (DEBUG)
 					SopremoUtil.LOG.debug(String.format(
-						"equalToReference1: %s == %s = %d",
+						"equalToReference1: %s == %s = %s",
 						candidate.getKey(this.keyExpressionIndices[index], this.nodeCache2[index]),
 						this.keys[index],
 						candidate.getKey(this.keyExpressionIndices[index], this.nodeCache2[index]).equals(
@@ -146,7 +146,7 @@ public final class SopremoRecordComparator extends TypeComparator<SopremoRecord>
 		else
 			for (int index = 0; index < this.keyExpressionIndices.length; index++) {
 				if (DEBUG)
-					SopremoUtil.LOG.debug(String.format("equalToReference2: %s == %s = %d",
+					SopremoUtil.LOG.debug(String.format("equalToReference2: %s == %s = %s",
 						this.keyExpressions[index].evaluate(node), this.keys[index],
 						this.keyExpressions[index].evaluate(node).equals(this.keys[index])));
 				if (!this.keyExpressions[index].evaluate(node).equals(this.keys[index]))
