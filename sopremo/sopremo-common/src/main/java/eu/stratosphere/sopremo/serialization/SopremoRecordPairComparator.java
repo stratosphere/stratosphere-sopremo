@@ -33,6 +33,8 @@ public class SopremoRecordPairComparator extends TypePairComparator<SopremoRecor
 
 	private final int numKeys;
 
+	private final static boolean DEBUG = true & SopremoUtil.DEBUG;
+
 	public SopremoRecordPairComparator(final int[] keyFieldsReference, final EvaluationExpression[] keyExpressions1,
 			final int[] keyFieldsCandidate,
 			final EvaluationExpression[] keyExpressions2) {
@@ -69,6 +71,9 @@ public class SopremoRecordPairComparator extends TypePairComparator<SopremoRecor
 			for (int index = 0; index < this.numKeys; index++) {
 				final IJsonNode k = candidate.getKey(this.keyFields2[index], this.nodeCache2[index]);
 				final int comparison = k.compareTo(this.keyHolders1[index]);
+				if (DEBUG)
+					SopremoUtil.LOG.debug(String.format("pair#compareToReference1: %s <=> %s = %d", k,
+						this.keyHolders1[index], comparison));
 				if (comparison != 0)
 					return comparison;
 			}
@@ -76,6 +81,9 @@ public class SopremoRecordPairComparator extends TypePairComparator<SopremoRecor
 			for (int index = 0; index < this.numKeys; index++) {
 				final IJsonNode k = this.keyExpressions2[index].evaluate(node);
 				final int comparison = k.compareTo(this.keyHolders1[index]);
+				if (DEBUG)
+					SopremoUtil.LOG.debug(String.format("pair#compareToReference1: %s <=> %s = %d", k,
+						this.keyHolders1[index], comparison));
 				if (comparison != 0)
 					return comparison;
 			}

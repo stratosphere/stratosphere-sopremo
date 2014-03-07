@@ -46,6 +46,8 @@ public final class SopremoRecordComparator extends TypeComparator<SopremoRecord>
 
 	private final ITypeRegistry typeRegistry;
 
+	private final static boolean DEBUG = true & SopremoUtil.DEBUG;
+
 	/**
 	 * Initializes SopremoRecordComparator.
 	 */
@@ -84,6 +86,8 @@ public final class SopremoRecordComparator extends TypeComparator<SopremoRecord>
 			final IJsonNode k2 = this.temp2.getKey(this.keyExpressionIndices[index], this.nodeCache2[index]);
 
 			final int comparison = k1.compareTo(k2);
+			if (DEBUG)
+				SopremoUtil.LOG.debug(String.format("compare: %s <=> %s = %d", k1, k2, comparison));
 			if (comparison != 0)
 				return this.ascending[index] ? comparison : -comparison;
 		}
@@ -101,6 +105,9 @@ public final class SopremoRecordComparator extends TypeComparator<SopremoRecord>
 		final SopremoRecordComparator other = (SopremoRecordComparator) referencedComparator;
 		for (int index = 0; index < this.nodeCache1.length; index++) {
 			final int comparison = this.keys[index].compareTo(other.keys[index]);
+			if (DEBUG)
+				SopremoUtil.LOG.debug(String.format("compareToReference: %s <=> %s = %d", this.keys[index],
+					other.keys[index], comparison));
 			if (comparison != 0)
 				return comparison;
 		}
@@ -124,14 +131,27 @@ public final class SopremoRecordComparator extends TypeComparator<SopremoRecord>
 	public boolean equalToReference(final SopremoRecord candidate) {
 		final IJsonNode node = candidate.getNode();
 		if (node == null) {
-			for (int index = 0; index < this.keyExpressionIndices.length; index++)
+			for (int index = 0; index < this.keyExpressionIndices.length; index++) {
+				if (DEBUG)
+					SopremoUtil.LOG.debug(String.format(
+						"equalToReference1: %s == %s = %d",
+						candidate.getKey(this.keyExpressionIndices[index], this.nodeCache2[index]),
+						this.keys[index],
+						candidate.getKey(this.keyExpressionIndices[index], this.nodeCache2[index]).equals(
+							this.keys[index])));
 				if (!candidate.getKey(this.keyExpressionIndices[index], this.nodeCache2[index]).equals(this.keys[index]))
 					return false;
+			}
 		}
 		else
-			for (int index = 0; index < this.keyExpressionIndices.length; index++)
+			for (int index = 0; index < this.keyExpressionIndices.length; index++) {
+				if (DEBUG)
+					SopremoUtil.LOG.debug(String.format("equalToReference2: %s == %s = %d",
+						this.keyExpressions[index].evaluate(node), this.keys[index],
+						this.keyExpressions[index].evaluate(node).equals(this.keys[index])));
 				if (!this.keyExpressions[index].evaluate(node).equals(this.keys[index]))
 					return false;
+			}
 		return true;
 	}
 
@@ -181,12 +201,22 @@ public final class SopremoRecordComparator extends TypeComparator<SopremoRecord>
 		int hash = prime;
 		final IJsonNode node = record.getNode();
 		if (node == null)
-			for (int index = 0; index < this.keyExpressionIndices.length; index++)
+			for (int index = 0; index < this.keyExpressionIndices.length; index++) {
+				if (DEBUG)
+					SopremoUtil.LOG.debug(String.format("hash1: %s = %d",
+						record.getKey(this.keyExpressionIndices[index], this.nodeCache2[index]),
+						record.getKey(this.keyExpressionIndices[index], this.nodeCache2[index]).hashCode()));
 				hash =
 					prime * hash + record.getKey(this.keyExpressionIndices[index], this.nodeCache2[index]).hashCode();
+			}
 		else
-			for (int index = 0; index < this.keyExpressionIndices.length; index++)
+			for (int index = 0; index < this.keyExpressionIndices.length; index++) {
+				if (DEBUG)
+					SopremoUtil.LOG.debug(String.format("hash2: %s = %d",
+						this.keyExpressions[index].evaluate(node),
+						this.keyExpressions[index].evaluate(node).hashCode()));
 				hash = prime * hash + this.keyExpressions[index].evaluate(node).hashCode();
+			}
 		return hash;
 	}
 
