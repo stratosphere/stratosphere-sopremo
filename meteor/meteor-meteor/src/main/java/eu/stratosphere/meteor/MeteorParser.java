@@ -1,4 +1,4 @@
-// $ANTLR 3.5 /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g 2014-03-07 18:16:46
+// $ANTLR 3.5 /home/arv/workspace/stratosphere-sopremo/meteor/meteor-meteor/src/main/java/eu/stratosphere/meteor/Meteor.g 2014-03-10 14:28:23
  
 package eu.stratosphere.meteor; 
 
@@ -2451,7 +2451,7 @@ public class MeteorParser extends MeteorParserBase {
 			}
 
 			// AST REWRITE
-			// elements: e1, e1, e2, e1, e2, e1, e2
+			// elements: e1, e2, e1, e2, e2, e1, e1
 			// token labels: 
 			// rule labels: retval, e1, e2
 			// token list labels: 
@@ -2629,7 +2629,7 @@ public class MeteorParser extends MeteorParserBase {
 			}
 
 			// AST REWRITE
-			// elements: e1, e1, e2
+			// elements: e1, e2, e1
 			// token labels: 
 			// rule labels: retval, e1, e2
 			// token list labels: 
@@ -5704,7 +5704,7 @@ public class MeteorParser extends MeteorParserBase {
 			adaptor.setTokenBoundaries(retval.tree, retval.start, retval.stop);
 			}
 		}
-		catch (MismatchedTokenException | NoViableAltException re) {
+		catch (RecognitionException re) {
 			 explainUsage("inside of a json object {...} only <field: expression>, <$var.path>, <$var = operator> or <$var: expression> are allowed", re); 
 		}
 
@@ -7927,11 +7927,11 @@ public class MeteorParser extends MeteorParserBase {
 		state.failed=false;
 		return success;
 	}
-	public final boolean synpred8_Meteor() {
+	public final boolean synpred13_Meteor() {
 		state.backtracking++;
 		int start = input.mark();
 		try {
-			synpred8_Meteor_fragment(); // can never throw exception
+			synpred13_Meteor_fragment(); // can never throw exception
 		} catch (RecognitionException re) {
 			System.err.println("impossible: "+re);
 		}
@@ -7941,11 +7941,11 @@ public class MeteorParser extends MeteorParserBase {
 		state.failed=false;
 		return success;
 	}
-	public final boolean synpred13_Meteor() {
+	public final boolean synpred8_Meteor() {
 		state.backtracking++;
 		int start = input.mark();
 		try {
-			synpred13_Meteor_fragment(); // can never throw exception
+			synpred8_Meteor_fragment(); // can never throw exception
 		} catch (RecognitionException re) {
 			System.err.println("impossible: "+re);
 		}

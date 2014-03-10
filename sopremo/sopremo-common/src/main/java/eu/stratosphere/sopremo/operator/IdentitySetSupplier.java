@@ -29,7 +29,7 @@ public class IdentitySetSupplier<T> implements Supplier<Set<T>> {
 
 	@Override
 	public Set<T> get() {
-		return new IdentitySet<>();
+		return new IdentitySet<T>();
 	}
 
 	@SuppressWarnings("unchecked")

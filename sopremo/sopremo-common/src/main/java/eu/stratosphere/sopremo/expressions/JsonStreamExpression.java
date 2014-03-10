@@ -218,7 +218,7 @@ public class JsonStreamExpression extends EvaluationExpression {
 
 	private IArrayNode<IJsonNode> readValues(final SopremoFormat format, final Configuration configuration, final List<Path> inputs)
 			throws IOException {
-		final IArrayNode<IJsonNode> array = new ArrayNode<>();
+		final IArrayNode<IJsonNode> array = new ArrayNode<IJsonNode>();
 		final SopremoFileInputFormat input = (SopremoFileInputFormat) ReflectUtil.newInstance(format.getInputFormat());
 		for (final Path path : inputs) {
 			input.setFilePath(path);
@@ -236,7 +236,7 @@ public class JsonStreamExpression extends EvaluationExpression {
 	}
 
 	private List<Path> getInputs(Source source) throws IOException {
-		final List<Path> inputs = new ArrayList<>();
+		final List<Path> inputs = new ArrayList<Path>();
 
 		Path nephelePath = new Path(source.getInputPath());
 		FileSystem fs = nephelePath.getFileSystem();

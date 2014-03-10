@@ -27,7 +27,10 @@ import com.esotericsoftware.kryo.KryoSerializable;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 
+import eu.stratosphere.configuration.Configuration;
 import eu.stratosphere.core.io.IOReadableWritable;
+import eu.stratosphere.core.memory.DataInputViewStream;
+import eu.stratosphere.core.memory.DataOutputViewStream;
 import eu.stratosphere.nephele.execution.librarycache.LibraryCacheManager;
 import eu.stratosphere.nephele.jobgraph.JobID;
 import eu.stratosphere.sopremo.SopremoEnvironment;
@@ -39,6 +42,8 @@ import eu.stratosphere.sopremo.pact.SopremoUtil;
  */
 public class ExecutionRequest implements KryoSerializable, KryoCopyable<ExecutionRequest>, IOReadableWritable {
 	private SopremoPlan query;
+
+	private Configuration configuration = new Configuration();
 
 	private ExecutionMode mode = ExecutionMode.RUN;
 
@@ -66,6 +71,7 @@ public class ExecutionRequest implements KryoSerializable, KryoCopyable<Executio
 	public ExecutionRequest copy(final Kryo kryo) {
 		final ExecutionRequest er = new ExecutionRequest(this.query);
 		er.setMode(this.mode);
+		er.setConfiguration(configuration);
 		return er;
 	}
 
@@ -82,6 +88,28 @@ public class ExecutionRequest implements KryoSerializable, KryoCopyable<Executio
 		return this.query;
 	}
 
+	/**
+	 * Sets the configuration to the specified value.
+	 * 
+	 * @param configuration
+	 *        the configuration to set
+	 */
+	public void setConfiguration(Configuration configuration) {
+		if (configuration == null)
+			throw new NullPointerException("configuration must not be null");
+
+		this.configuration = configuration;
+	}
+
+	/**
+	 * Returns the configuration.
+	 * 
+	 * @return the configuration
+	 */
+	public Configuration getConfiguration() {
+		return this.configuration;
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * @see eu.stratosphere.core.io.IOReadableWritable#read(java.io.DataInput)
@@ -89,6 +117,7 @@ public class ExecutionRequest implements KryoSerializable, KryoCopyable<Executio
 	@Override
 	public void read(final DataInput in) throws IOException {
 		this.mode = ExecutionMode.values()[in.readInt()];
+		this.configuration.read(in);
 
 		final ArrayList<String> requiredPackages = new ArrayList<String>();
 		for (int count = in.readInt(); count > 0; count--)
@@ -123,6 +152,13 @@ public class ExecutionRequest implements KryoSerializable, KryoCopyable<Executio
 	@Override
 	public void read(final Kryo kryo, final Input input) {
 		this.mode = kryo.readObject(input, ExecutionMode.class);
+		final DataInputViewStream divs = new DataInputViewStream(input);
+		try {
+			this.configuration.read(divs);
+		} catch (IOException e) {
+			throw new IllegalStateException(e);
+		}
+
 		final ArrayList<String> requiredPackages = kryo.readObject(input, ArrayList.class);
 
 		final JobID dummId = JobID.generate();
@@ -143,6 +179,11 @@ public class ExecutionRequest implements KryoSerializable, KryoCopyable<Executio
 				SopremoUtil.LOG.error(e.getMessage());
 			}
 		}
+		try {
+			divs.close();
+		} catch (IOException e) {
+			throw new IllegalStateException(e);
+		}
 	}
 
 	public void setMode(final ExecutionMode mode) {
@@ -159,6 +200,7 @@ public class ExecutionRequest implements KryoSerializable, KryoCopyable<Executio
 	@Override
 	public void write(final DataOutput out) throws IOException {
 		out.writeInt(this.mode.ordinal());
+		this.configuration.write(out);
 
 		final List<String> requiredPackages = this.query.getRequiredPackages();
 		out.writeInt(requiredPackages.size());
@@ -178,8 +220,20 @@ public class ExecutionRequest implements KryoSerializable, KryoCopyable<Executio
 	@Override
 	public void write(final Kryo kryo, final Output output) {
 		kryo.writeObject(output, this.mode);
+		final DataOutputViewStream dovs = new DataOutputViewStream(output);
+		try {
+			this.configuration.write(dovs);
+			dovs.flush();
+		} catch (IOException e) {
+			throw new IllegalStateException(e);
+		} 
 		kryo.writeObject(output, new ArrayList<String>(this.query.getRequiredPackages()));
 		kryo.writeObject(output, this.query);
+		try {
+			dovs.close();
+		} catch (IOException e) {
+			throw new IllegalStateException(e);
+		}
 	}
 
 	public enum ExecutionMode {

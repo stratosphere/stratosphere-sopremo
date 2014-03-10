@@ -69,7 +69,7 @@ public abstract class GenericSopremoCross<Left extends IJsonNode, Right extends 
 		SopremoEnvironment.getInstance().load(parameters);
 		// SopremoEnvironment.getInstance().setConfigurationAndContext(parameters, getRuntimeContext());
 		this.context = SopremoEnvironment.getInstance().getEvaluationContext();
-		this.collector = new JsonCollector<>(this.context);
+		this.collector = new JsonCollector<Out>(this.context);
 		final TypedObjectNode[] typedNodes =
 			SopremoUtil.getTypedNodes(TypeToken.of(this.getClass()).getSupertype(GenericSopremoCross.class));
 		this.typedInputNode1 = typedNodes[0];

@@ -52,8 +52,14 @@ public class MeteorParseTest {
 			return new File(MeteorParseTest.class.getClassLoader().getResources(name)
 				.nextElement().getFile());
 		} catch (IOException e) {
-			throw new AssertionError("Could not locate resource " + name, e);
+			throw newAssertionError("Could not locate resource " + name, e);
 		}
+	}
+
+	private AssertionError newAssertionError(String message, Throwable cause) {
+		final AssertionError assertionError = new AssertionError(message);
+		assertionError.initCause(cause);
+		return assertionError;
 	}
 
 	public SopremoPlan parseScript(final String script) {
@@ -62,7 +68,7 @@ public class MeteorParseTest {
 			this.initParser(queryParser);
 			return queryParser.tryParse(script);
 		} catch (final QueryParserException e) {
-			throw new AssertionError("could not parse script", e);
+			throw newAssertionError("could not parse script", e);
 		}
 	}
 
@@ -77,7 +83,7 @@ public class MeteorParseTest {
 			this.initParser(queryParser);
 			return queryParser.tryParse(script);
 		} catch (final Exception e) {
-			throw new AssertionError("could not parse script", e);
+			throw newAssertionError("could not parse script", e);
 		}
 	}
 

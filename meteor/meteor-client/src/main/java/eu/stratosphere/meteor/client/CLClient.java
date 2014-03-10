@@ -20,22 +20,18 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.List;
 
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.HelpFormatter;
-import org.apache.commons.cli.OptionBuilder;
-import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
-import org.apache.commons.cli.PosixParser;
+import org.apache.commons.cli.*;
 
-import eu.stratosphere.meteor.QueryParser;
+import eu.stratosphere.configuration.ConfigConstants;
 import eu.stratosphere.configuration.GlobalConfiguration;
+import eu.stratosphere.meteor.QueryParser;
 import eu.stratosphere.sopremo.client.DefaultClient;
 import eu.stratosphere.sopremo.client.StateListener;
 import eu.stratosphere.sopremo.execution.ExecutionRequest.ExecutionMode;
 import eu.stratosphere.sopremo.execution.ExecutionResponse.ExecutionState;
 import eu.stratosphere.sopremo.execution.SopremoConstants;
 import eu.stratosphere.sopremo.operator.SopremoPlan;
+import eu.stratosphere.sopremo.server.SopremoJobInfo;
 
 /**
  */
@@ -63,11 +59,20 @@ public class CLClient {
 			withArgName("port").hasArg(true).
 			withDescription("Uses the specified port").withLongOpt("port").create());
 		this.options.addOption(OptionBuilder.
+			withArgName("dop").hasArg(true).
+			withDescription("Overall degree of parallelism").withLongOpt("dop").create('d'));
+		this.options.addOption(OptionBuilder.
+			withArgName("dop").hasArg(true).
+			withDescription("Intranode degree of parallelism").withLongOpt("intra").create('i'));
+		this.options.addOption(OptionBuilder.
+			withArgName("numMachines").hasArg(true).
+			withDescription("Maximum number of machines").withLongOpt("numMachines").create('m'));
+		this.options.addOption(OptionBuilder.
 			withArgName("updateTime").hasArg(true).
 			withDescription("Checks with the given update time in ms for the current status").withLongOpt("updateTime").create());
 		this.options.addOption(OptionBuilder.
 			hasArg(false).
-			withDescription("Waits until the script terminates on the server").withLongOpt("wait").create());
+			withDescription("Waits until the script terminates on the server").withLongOpt("wait").create('w'));
 	}
 
 	public static void main(final String[] args) {
@@ -136,7 +141,6 @@ public class CLClient {
 		if (cmd.hasOption("updateTime"))
 			updateTime = Integer.parseInt(cmd.getOptionValue("updateTime"));
 		this.sopremoClient.setUpdateTime(updateTime);
-
 		final String address = cmd.getOptionValue("server"), port = cmd.getOptionValue("port");
 		if (address != null || port != null)
 			this.sopremoClient.setServerAddress(new InetSocketAddress(
@@ -144,6 +148,25 @@ public class CLClient {
 				port == null ? SopremoConstants.DEFAULT_SOPREMO_SERVER_IPC_PORT : Integer.parseInt(port)));
 
 		this.sopremoClient.setExecutionMode(ExecutionMode.RUN_WITH_STATISTICS);
+
+		if (cmd.hasOption('d')) 
+			this.sopremoClient.getJobConfig().setInteger(ConfigConstants.DEFAULT_PARALLELIZATION_DEGREE_KEY,
+				parseInt(cmd, 'd'));
+		if (cmd.hasOption('i')) 
+			this.sopremoClient.getJobConfig().setInteger(ConfigConstants.PARALLELIZATION_MAX_INTRA_NODE_DEGREE_KEY,
+				parseInt(cmd, 'i'));
+		if (cmd.hasOption('m')) 
+			this.sopremoClient.getJobConfig().setInteger(SopremoJobInfo.MAX_MACHINES,
+				parseInt(cmd, 'm'));
+	}
+
+	private int parseInt(CommandLine cmd, char c) {
+		try {
+			return Integer.parseInt(cmd.getOptionValue(c));
+		} catch (NumberFormatException e) {
+			dealWithError(e, "Cannot parse int of option " + c);
+			return 0;
+		}
 	}
 
 	protected void sleepSafely(final int updateTime) {

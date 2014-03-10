@@ -69,13 +69,11 @@ public class SopremoExecuctionThreadTest {
 		this.jobInfo = new SopremoJobInfo(SopremoID.generate(),
 			new ExecutionRequest(createPlan()), new Configuration());
 		this.thread = new SopremoExecutionThread(this.jobInfo, new InetSocketAddress(0)) {
-			/*
-			 * (non-Javadoc)
-			 * @see
-			 * eu.stratosphere.sopremo.server.SopremoExecutionThread#getJobGraph(eu.stratosphere.api.plan.Plan)
+			/* (non-Javadoc)
+			 * @see eu.stratosphere.sopremo.server.SopremoExecutionThread#getJobGraph(eu.stratosphere.api.common.Plan, eu.stratosphere.configuration.Configuration)
 			 */
 			@Override
-			JobGraph getJobGraph(final Plan pactPlan) {
+			JobGraph getJobGraph(Plan pactPlan, Configuration jobConfig) {
 				return new JobGraph();
 			}
 		};

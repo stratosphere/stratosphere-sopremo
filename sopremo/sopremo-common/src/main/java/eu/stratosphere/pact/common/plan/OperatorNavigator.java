@@ -24,7 +24,7 @@ public class OperatorNavigator implements ConnectionNavigator<Operator> {
 	@Override
 	public List<Operator> getConnectedNodes(final Operator node) {
 		if (node instanceof IterationOperator) {
-			final List<Operator> inputs = new ArrayList<>(OperatorUtil.getFlatInputs(node));
+			final List<Operator> inputs = new ArrayList<Operator>(OperatorUtil.getFlatInputs(node));
 
 			if (node instanceof BulkIteration) {
 				inputs.add(((BulkIteration) node).getPartialSolution());

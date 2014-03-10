@@ -27,6 +27,7 @@ import eu.stratosphere.compiler.costs.DefaultCostEstimator;
 import eu.stratosphere.compiler.plan.OptimizedPlan;
 import eu.stratosphere.compiler.plantranslate.NepheleJobGraphGenerator;
 import eu.stratosphere.configuration.ConfigConstants;
+import eu.stratosphere.configuration.Configuration;
 import eu.stratosphere.core.fs.FileSystem;
 import eu.stratosphere.core.fs.Path;
 import eu.stratosphere.nephele.client.JobClient;
@@ -65,21 +66,31 @@ public class SopremoExecutionThread implements Runnable {
 		this.processPlan();
 	}
 
-	JobGraph getJobGraph(final Plan pactPlan) {
+	JobGraph getJobGraph(final Plan pactPlan, Configuration jobConfig) {
 		final PactCompiler compiler =
 			new PactCompiler(new DataStatistics(), new DefaultCostEstimator(), this.jobManagerAddress);
+
+		final int dop = jobConfig.getInteger(ConfigConstants.DEFAULT_PARALLELIZATION_DEGREE_KEY, -1);
+		if (dop != -1)
+			compiler.setDefaultDegreeOfParallelism(dop);
+		final int intra = jobConfig.getInteger(ConfigConstants.PARALLELIZATION_MAX_INTRA_NODE_DEGREE_KEY, -1);
+		if (intra != -1)
+			compiler.setMaxIntraNodeParallelism(intra);
+		final int machines = jobConfig.getInteger(SopremoJobInfo.MAX_MACHINES, -1);
+		if (machines != -1)
+			compiler.setMaxMachines(machines);
 
 		final OptimizedPlan optPlan = compiler.compile(pactPlan);
 		final NepheleJobGraphGenerator gen = new NepheleJobGraphGenerator();
 		return gen.compileJobGraph(optPlan);
 	}
 
-	private JobExecutionResult executePlan(final SopremoPlan plan) {
+	private JobExecutionResult executePlan(final SopremoPlan plan, Configuration jobConfig) {
 		final Plan pactPlan = plan.asPactPlan();
 
 		JobGraph jobGraph;
 		try {
-			jobGraph = this.getJobGraph(pactPlan);
+			jobGraph = this.getJobGraph(pactPlan, jobConfig);
 		} catch (final Exception e) {
 			LOG.error("Could not generate job graph " + this.jobInfo.getJobId(), e);
 			this.jobInfo.setStatusAndDetail(ExecutionState.ERROR, "Could not generate job graph: "
@@ -111,11 +122,11 @@ public class SopremoExecutionThread implements Runnable {
 		try {
 			// client = new JobClient(jobGraph, this.jobInfo.getConfiguration(), this.jobManagerAddress);
 			// TODO: workaround for core#349
-			this.jobInfo.getConfiguration().setString(ConfigConstants.JOB_MANAGER_IPC_ADDRESS_KEY,
-				this.jobManagerAddress.getHostString());
-			this.jobInfo.getConfiguration().setInteger(ConfigConstants.JOB_MANAGER_IPC_PORT_KEY,
-				this.jobManagerAddress.getPort());
-			client = new JobClient(jobGraph, this.jobInfo.getConfiguration());
+			final Configuration configuration = new Configuration();
+			configuration.addAll(this.jobInfo.getConfiguration());
+			configuration.setString(ConfigConstants.JOB_MANAGER_IPC_ADDRESS_KEY, this.jobManagerAddress.getHostName());
+			configuration.setInteger(ConfigConstants.JOB_MANAGER_IPC_PORT_KEY, this.jobManagerAddress.getPort());
+			client = new JobClient(jobGraph, configuration);
 		} catch (final Exception e) {
 			LOG.error("Could not open job manager " + this.jobInfo.getJobId(), e);
 			this.jobInfo.setStatusAndDetail(ExecutionState.ERROR, "Could not open job manager: "
@@ -158,7 +169,8 @@ public class SopremoExecutionThread implements Runnable {
 		try {
 			LOG.info("Starting job " + this.jobInfo.getJobId());
 			final SopremoPlan plan = this.jobInfo.getInitialRequest().getQuery();
-			final JobExecutionResult runtime = this.executePlan(plan);
+			final JobExecutionResult runtime =
+				this.executePlan(plan, this.jobInfo.getInitialRequest().getConfiguration());
 			if (runtime != null) {
 				switch (this.jobInfo.getInitialRequest().getMode()) {
 				case RUN:

@@ -89,7 +89,7 @@ public class SopremoRecord extends AbstractSopremoType implements ISopremoType {
 
 	private transient int offsets[];
 
-	private transient final FastList<ExpressionIndex> currentExpressionIndex = new FastList<>();
+	private transient final FastList<ExpressionIndex> currentExpressionIndex = new FastList<ExpressionIndex>();
 
 	private transient SopremoRecordLayout layout;
 

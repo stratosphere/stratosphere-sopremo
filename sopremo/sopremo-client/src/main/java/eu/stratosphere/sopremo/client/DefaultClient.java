@@ -45,7 +45,7 @@ import eu.stratosphere.util.StringUtils;
 /**
  */
 public class DefaultClient implements Closeable {
-	private Configuration configuration;
+	private Configuration configuration, jobConfig = new Configuration();
 
 	private RPCService rpcService;
 
@@ -69,6 +69,28 @@ public class DefaultClient implements Closeable {
 	 */
 	public DefaultClient(final Configuration configuration) {
 		this.configuration = configuration;
+	}
+
+	/**
+	 * Returns the jobConfig.
+	 * 
+	 * @return the jobConfig
+	 */
+	public Configuration getJobConfig() {
+		return this.jobConfig;
+	}
+
+	/**
+	 * Sets the jobConfig to the specified value.
+	 * 
+	 * @param jobConfig
+	 *        the jobConfig to set
+	 */
+	public void setJobConfig(Configuration jobConfig) {
+		if (jobConfig == null)
+			throw new NullPointerException("jobConfig must not be null");
+
+		this.jobConfig = jobConfig;
 	}
 
 	/*
@@ -239,6 +261,7 @@ public class DefaultClient implements Closeable {
 		try {
 			final ExecutionRequest request = new ExecutionRequest(query);
 			request.setMode(this.executionMode);
+			request.getConfiguration().addAll(this.jobConfig);			
 			return this.executor.execute(request);
 		} catch (final Exception e) {
 			this.dealWithError(progressListener, e, "Error while sending the query to the server");
@@ -253,7 +276,8 @@ public class DefaultClient implements Closeable {
 			progressListener.progressUpdate(ExecutionState.SETUP, "");
 			final List<Path> libraryPaths = new ArrayList<Path>();
 			for (final String library : requiredLibraries) {
-				try (final DataInputStream dis = new DataInputStream(new FileInputStream(library))) {
+				final DataInputStream dis = new DataInputStream(new FileInputStream(library));
+				try {
 					final Path libraryPath = new Path(library);
 					final File libraryFile = new File(library);
 					if (libraryFile.isDirectory())
@@ -261,6 +285,8 @@ public class DefaultClient implements Closeable {
 							" is not as present as a jar");
 					LibraryCacheManager.addLibrary(dummyKey, libraryPath, (int) libraryFile.length(), dis);
 					libraryPaths.add(libraryPath);
+				} finally {
+					dis.close();
 				}
 			}
 

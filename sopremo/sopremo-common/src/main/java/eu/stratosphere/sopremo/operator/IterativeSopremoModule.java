@@ -79,7 +79,7 @@ public class IterativeSopremoModule extends SopremoModule {
 		final Set<Operator<?>> stepOutputs = this.getStepOutputs();
 
 		final Set<Operator<?>> step = this.getStepOperators(stepOutputs);
-		final List<JsonStream> moduleInputs = new IdentityList<>(this.getIncomingEdges(step));
+		final List<JsonStream> moduleInputs = new IdentityList<JsonStream>(this.getIncomingEdges(step));
 		final CoreIteration core = CoreIteration.valueOf(this, moduleInputs);
 
 		core.setInputs(moduleInputs);
@@ -231,7 +231,7 @@ public class IterativeSopremoModule extends SopremoModule {
 	}
 
 	private Set<Operator<?>> getStepOperators(final Set<Operator<?>> stepOutputs) {
-		final Set<Operator<?>> step = new IdentitySet<>();
+		final Set<Operator<?>> step = new IdentitySet<Operator<?>>();
 		final Multimap<Operator<?>, Operator<?>> successors = this.getSuccessorRelations(stepOutputs);
 		step.addAll(successors.get(this.getWorkingSet().getSource().getOperator()));
 		step.addAll(successors.get(this.getSolutionSet().getSource().getOperator()));
@@ -241,7 +241,7 @@ public class IterativeSopremoModule extends SopremoModule {
 	}
 
 	private Set<Operator<?>> getStepOutputs() {
-		final Set<Operator<?>> stepOutputs = new IdentitySet<>();
+		final Set<Operator<?>> stepOutputs = new IdentitySet<Operator<?>>();
 		stepOutputs.add(this.solutionSetDelta.getSource().getOperator());
 		if (this.nextWorkset != null)
 			stepOutputs.add(this.nextWorkset.getSource().getOperator());
@@ -384,7 +384,7 @@ public class IterativeSopremoModule extends SopremoModule {
 		 */
 		@Override
 		public Set<EvaluationExpression> getAllKeyExpressions() {
-			final Set<EvaluationExpression> keyExpressions = new HashSet<>(this.module.solutionSetKeyExpressions);
+			final Set<EvaluationExpression> keyExpressions = new HashSet<EvaluationExpression>(this.module.solutionSetKeyExpressions);
 			keyExpressions.addAll(this.stepSopremoModule.getSchema().getKeyExpressions());
 			return keyExpressions;
 		}
@@ -398,7 +398,7 @@ public class IterativeSopremoModule extends SopremoModule {
 
 		public static CoreIteration valueOf(final IterativeSopremoModule module,
 				final List<JsonStream> moduleInputs) {
-			final List<JsonStream> stepInputs = new IdentityList<>(moduleInputs);
+			final List<JsonStream> stepInputs = new IdentityList<JsonStream>(moduleInputs);
 			stepInputs.remove(module.solutionSet.getInput(0));
 			stepInputs.remove(module.workingSet.getInput(0));
 

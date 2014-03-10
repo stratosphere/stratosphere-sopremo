@@ -39,7 +39,9 @@ public class SopremoJobInfo {
 	public static final String PREOPTMIZEDPACTPLANJSON = "pre.optmized.pact.plan.json";
 
 	public static final String OPTMIZEDPACTPLANJSON = "optmized.pact.plan.json";
-
+	
+	public static final String MAX_MACHINES = "parallelization.max-machines.default";
+	
 	private ExecutionState status = ExecutionState.ENQUEUED;
 
 	private String detail = "";

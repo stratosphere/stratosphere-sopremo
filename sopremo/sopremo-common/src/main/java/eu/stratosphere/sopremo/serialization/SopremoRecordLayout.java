@@ -201,7 +201,7 @@ public class SopremoRecordLayout extends AbstractSopremoType {
 
 	public SopremoRecordLayout project(final BitSet keyIndices) {
 		final List<EvaluationExpression> keyExpressions = this.getKeyExpressions();
-		final List<EvaluationExpression> projectedExpressions = new ArrayList<>();
+		final List<EvaluationExpression> projectedExpressions = new ArrayList<EvaluationExpression>();
 		for (int index = keyIndices.nextSetBit(0); index != -1; index = keyIndices.nextSetBit(index + 1))
 			projectedExpressions.add(keyExpressions.get(index));
 		return create(projectedExpressions);
@@ -209,7 +209,7 @@ public class SopremoRecordLayout extends AbstractSopremoType {
 
 	public SopremoRecordLayout project(final int... keyIndices) {
 		final List<EvaluationExpression> keyExpressions = this.getKeyExpressions();
-		final List<EvaluationExpression> projectedExpressions = new ArrayList<>();
+		final List<EvaluationExpression> projectedExpressions = new ArrayList<EvaluationExpression>();
 		for (int index = 0; index < keyIndices.length; index++)
 			projectedExpressions.add(keyExpressions.get(keyIndices[index]));
 		return create(projectedExpressions);

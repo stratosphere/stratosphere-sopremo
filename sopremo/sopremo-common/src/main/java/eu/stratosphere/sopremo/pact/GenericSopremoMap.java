@@ -59,7 +59,7 @@ public abstract class GenericSopremoMap<In extends IJsonNode, Out extends IJsonN
 	public void open(final Configuration parameters) {
 		SopremoEnvironment.getInstance().load(parameters);
 		this.context = SopremoEnvironment.getInstance().getEvaluationContext();
-		this.collector = new JsonCollector<>(this.context);
+		this.collector = new JsonCollector<Out>(this.context);
 		this.typedInputNode =
 			SopremoUtil.getTypedNodes(TypeToken.of(this.getClass()).getSupertype(GenericSopremoMap.class))[0];
 		SopremoUtil.configureWithTransferredState(this, GenericSopremoMap.class, parameters);

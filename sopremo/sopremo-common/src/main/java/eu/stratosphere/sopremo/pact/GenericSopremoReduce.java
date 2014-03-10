@@ -78,7 +78,7 @@ public abstract class GenericSopremoReduce<Elem extends IJsonNode, Out extends I
 			SopremoUtil.getTypedNodes(TypeToken.of(this.getClass()).getSupertype(GenericSopremoReduce.class))[0];
 		this.iterator = typedInputNode == null ?
 			new UntypedRecordToJsonIterator<Elem>() : new TypedRecordToJsonIterator<Elem>(typedInputNode);
-		this.collector = new JsonCollector<>(this.context);
+		this.collector = new JsonCollector<Out>(this.context);
 		SopremoUtil.configureWithTransferredState(this, GenericSopremoReduce.class, parameters);
 		this.array.setNodeIterator(this.iterator);
 	}

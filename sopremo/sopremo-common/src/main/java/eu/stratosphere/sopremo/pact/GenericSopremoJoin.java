@@ -68,7 +68,7 @@ public abstract class GenericSopremoJoin<Left extends IJsonNode, Right extends I
 		SopremoEnvironment.getInstance().load(parameters);
 		// SopremoEnvironment.getInstance().setConfigurationAndContext(parameters, getRuntimeContext());
 		this.context = SopremoEnvironment.getInstance().getEvaluationContext();
-		this.collector = new JsonCollector<>(this.context);
+		this.collector = new JsonCollector<Out>(this.context);
 		final TypedObjectNode[] typedNodes =
 			SopremoUtil.getTypedNodes(TypeToken.of(this.getClass()).getSupertype(GenericSopremoJoin.class));
 		this.typedInputNode1 = typedNodes[0];

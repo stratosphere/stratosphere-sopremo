@@ -111,7 +111,7 @@ public abstract class GenericSopremoCoGroup<LeftElem extends IJsonNode, RightEle
 	public void open(final Configuration parameters) throws Exception {
 		SopremoEnvironment.getInstance().load(parameters);
 		this.context = SopremoEnvironment.getInstance().getEvaluationContext();
-		this.collector = new JsonCollector<>(this.context);
+		this.collector = new JsonCollector<Out>(this.context);
 		SopremoUtil.configureWithTransferredState(this, GenericSopremoCoGroup.class, parameters);
 		final TypedObjectNode[] typedInputNodes =
 			SopremoUtil.getTypedNodes(TypeToken.of(this.getClass()).getSupertype(GenericSopremoCoGroup.class));
