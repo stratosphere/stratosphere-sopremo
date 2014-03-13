@@ -600,7 +600,7 @@ public abstract class ElementaryOperator<Self extends ElementaryOperator<Self>>
 				if (!this.getInnerGroupOrder(0).isEmpty())
 					contract.setFirstInnerGroupOrdering(this.createOrdering(layout, this.getInnerGroupOrder(0)));
 				if (!this.getInnerGroupOrder(1).isEmpty())
-					contract.setFirstInnerGroupOrdering(this.createOrdering(layout, this.getInnerGroupOrder(1)));
+					contract.setSecondInnerGroupOrdering(this.createOrdering(layout, this.getInnerGroupOrder(1)));
 				return contract;
 			} else if (contractClass == JoinOperatorBase.class) {
 				final int[] keyIndices1 = this.getKeyIndices(layout, this.getKeyExpressions(0));
