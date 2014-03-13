@@ -31,6 +31,7 @@ public class Unique extends ElementaryOperator<Unique> {
 	 */
 	public Unique() {
 		this.setKeyExpressions(0, EvaluationExpression.VALUE);
+		this.setCombinable(true);
 	}
 
 	public static class Implementation extends SopremoReduce {
