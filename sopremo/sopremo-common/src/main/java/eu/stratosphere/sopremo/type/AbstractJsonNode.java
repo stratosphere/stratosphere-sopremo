@@ -69,6 +69,6 @@ public abstract class AbstractJsonNode extends AbstractSopremoType implements IJ
 	}
 
 	protected int compareToOtherType(final IJsonNode other) {
-		return this.getType().getName().compareTo(other.getType().getName());
+		return this.getType().getSimpleName().compareTo(other.getType().getSimpleName());
 	}
 }
