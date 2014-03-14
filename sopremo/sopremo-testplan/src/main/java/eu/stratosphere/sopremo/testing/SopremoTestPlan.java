@@ -134,10 +134,15 @@ public class SopremoTestPlan {
 			.getReachableNodes(sinks, OperatorNavigator.INSTANCE))
 			if (operator instanceof Source)
 				unconnectedInputs.add(operator);
-			else
-				for (final JsonStream input : operator.getInputs())
-					if (input == null)
+			else {
+				int maxInputs = operator.getMaxInputs();
+				// cannot initialize arbitrary size
+				if (maxInputs == Integer.MAX_VALUE)
+					maxInputs = operator.getMinInputs();
+				for (int inputIndex = 0; inputIndex < maxInputs; inputIndex++)
+					if (operator.getInput(inputIndex) == null)
 						unconnectedInputs.add(operator);
+			}
 
 		this.inputs = new Input[unconnectedInputs.size()];
 		for (int index = 0; index < this.inputs.length; index++) {
@@ -146,13 +151,19 @@ public class SopremoTestPlan {
 			if (unconnectedNode instanceof Source)
 				this.setInputOperator(index, (Source) unconnectedNode);
 			else {
-				final List<JsonStream> missingInputs = new ArrayList<JsonStream>(unconnectedNode.getInputs());
-				for (int missingIndex = 0; missingIndex < missingInputs.size(); missingIndex++)
-					if (missingInputs.get(missingIndex) == null) {
-						missingInputs.set(missingIndex, this.inputs[index].getOperator().getOutput(0));
+				int maxInputs = unconnectedNode.getMaxInputs();
+				// cannot initialize arbitrary size
+				if (maxInputs == Integer.MAX_VALUE)
+					maxInputs = unconnectedNode.getMinInputs();
+				final List<JsonStream> inputs = new ArrayList<JsonStream>();
+				for (int inputIndex = 0; inputIndex < maxInputs; inputIndex++) {
+					if (unconnectedNode.getInput(inputIndex) == null) {
+						inputs.add(this.inputs[index].getOperator().getOutput(0));
 						break;
 					}
-				unconnectedNode.setInputs(missingInputs);
+					inputs.add(unconnectedNode.getInput(inputIndex));
+				}
+				unconnectedNode.setInputs(inputs);
 			}
 		}
 		this.actualOutputs = new ActualOutput[unconnectedOutputs.size()];

@@ -29,8 +29,7 @@ import eu.stratosphere.util.reflect.ReflectUtil;
  * The operator groups input json objects accordingly to its semantics and transforms the partitioned objects to one or
  * more outputs.<br>
  * Each Sopremo operator may be converted to a {@link PactModule} with the {@link #asElementaryOperators()} and
- * {@link ElementarySopremoModule#asPactModule()}
- * method.<br>
+ * {@link ElementarySopremoModule#asPactModule()} method.<br>
  * Implementations of an operator should either extend {@link ElementaryOperator} or {@link CompositeOperator}.
  */
 // @DefaultSerializer(Operator.OperatorSerializer.class)
@@ -152,7 +151,11 @@ public abstract class Operator<Self extends Operator<Self>> extends Configurable
 	 * @return the output that produces the input of this operator at the given position
 	 */
 	public JsonStream getInput(final int index) {
-		return this.inputs.get(index);
+		if (index < this.inputs.size())
+			return this.inputs.get(index);
+		if (index >= this.maxInputs)
+			throw new IndexOutOfBoundsException(String.format("index %s >= max %s", index, this.maxInputs));
+		return null;
 	}
 
 	/**
@@ -672,7 +675,7 @@ public abstract class Operator<Self extends Operator<Self>> extends Configurable
 	 * Represents one output of this {@link Operator}. The output should be connected to another Operator to create a
 	 * directed acyclic graph of Operators.
 	 */
-//	@DefaultSerializer(OperatorOutputSerializer.class)
+	// @DefaultSerializer(OperatorOutputSerializer.class)
 	public static class Output extends AbstractSopremoType implements JsonStream {
 		private final int index;
 
