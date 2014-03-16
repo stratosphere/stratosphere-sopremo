@@ -287,7 +287,7 @@ fieldAssignment
   | (VAR)=> { input.LA(2) != '.' }?=> p=generalPathExpression { $objectCreation::mappings.add(new ObjectCreation.FieldAssignment(getAssignmentName($p.tree), $p.tree)); } ->
   | v=valueExpression ':' e2=expression { $objectCreation::mappings.add(new ObjectCreation.TagMapping($v.tree, $e2.tree)); } ->
   ;
-  catch [MismatchedTokenException | NoViableAltException re] { explainUsage("inside of a json object {...} only <field: expression>, <\$var.path>, <\$var = operator> or <\$var: expression> are allowed", re); }
+  catch [RecognitionException re] { explainUsage("inside of a json object {...} only <field: expression>, <\$var.path>, <\$var = operator> or <\$var: expression> are allowed", re); }
 
 objectCreation
 scope {  List<ObjectCreation.Mapping> mappings; }
