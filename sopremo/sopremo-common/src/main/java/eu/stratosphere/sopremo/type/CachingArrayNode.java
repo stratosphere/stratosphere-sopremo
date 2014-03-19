@@ -132,4 +132,15 @@ public class CachingArrayNode<T extends IJsonNode> extends ArrayNode<T> {
 			return oldInstance;
 		}
 	}
+
+	@SuppressWarnings("unchecked")
+	public void setSize(int size, T defaultNode) {
+		CachingList<T> cachingList = (CachingList<T>) this.getChildren();
+		int oldSize = cachingList.size();
+		if (size < oldSize)
+			cachingList.size(size);
+		else
+			for (int i = oldSize; i < size; i++)
+				addClone(defaultNode);
+	}
 }
