@@ -51,11 +51,11 @@ public class SPJGTest {
 				addMapping("urls", bae.add(CoreFunctions.ALL, new ObjectAccess("url")))).
 			withInputs(join);
 		final SopremoTestPlan sopremoPlan = new SopremoTestPlan(new UnionAll().withInputs(group, group2));
-		sopremoPlan.getInput(0).
+		sopremoPlan.getInputForStream(join.getInput(0)).
 			addObject("name", "Jon Doe", "password", "asdf1234", "id", 1).
 			addObject("name", "Jane Doe", "password", "qwertyui", "id", 2).
 			addObject("name", "Max Mustermann", "password", "q1w2e3r4", "id", 3);
-		sopremoPlan.getInput(1).
+		sopremoPlan.getInputForStream(join.getInput(1)).
 			addObject("userid", 1, "url", "code.google.com/p/jaql/").
 			addObject("userid", 2, "url",
 				"www.cnn.com").
