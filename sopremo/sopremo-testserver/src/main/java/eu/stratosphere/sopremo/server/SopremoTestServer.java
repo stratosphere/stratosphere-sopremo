@@ -123,6 +123,30 @@ public class SopremoTestServer implements Closeable, SopremoExecutionProtocol {
 			parser.close();
 		}
 	}
+	
+	public void checkOrderedContentsOf(final String fileName, final IJsonNode... expected) throws IOException {
+		final String outputFile = this.tempDir + fileName;
+		this.filesToCleanup.add(outputFile);
+		final File file = new File(outputFile);
+		Assert.assertTrue("output " + fileName + " not written", file.exists());
+		final JsonParser parser = new JsonParser(new FileReader(file));
+		try {
+			parser.setWrappingArraySkipping(true);
+			int index = 0;
+
+			for (; index < expected.length && !parser.checkEnd(); index++) {
+				final IJsonNode actual = parser.readValueAsTree();
+				Assert.assertTrue(String.format("Unexpected value %s; expected %s", actual, expected[index]),
+					expected[index].equals(actual));
+			}
+			if (index < expected.length)
+				Assert.fail("More elements expected " + Arrays.asList(expected).subList(index, expected.length));
+			if (!parser.checkEnd())
+				Assert.fail("Less elements expected " + parser.readValueAsTree());
+		} finally {
+			parser.close();
+		}
+	}
 
 	/*
 	 * (non-Javadoc)

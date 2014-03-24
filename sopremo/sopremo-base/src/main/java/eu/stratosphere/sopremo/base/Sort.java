@@ -17,6 +17,7 @@ package eu.stratosphere.sopremo.base;
 import eu.stratosphere.api.common.operators.Order;
 import eu.stratosphere.sopremo.expressions.ConstantExpression;
 import eu.stratosphere.sopremo.expressions.EvaluationExpression;
+import eu.stratosphere.sopremo.expressions.InputSelection;
 import eu.stratosphere.sopremo.expressions.OrderingExpression;
 import eu.stratosphere.sopremo.operator.DegreeOfParallelism;
 import eu.stratosphere.sopremo.operator.ElementaryOperator;
@@ -82,7 +83,7 @@ public class Sort extends ElementaryOperator<Sort> {
 	@Property
 	@Name(preposition = "on")
 	public void setSortingExpression(final EvaluationExpression sortingExpression) {
-		this.getOrderingExpression().setPath(sortingExpression);
+		this.getOrderingExpression().setPath(sortingExpression.remove(InputSelection.class));
 	}
 
 	public Sort withDirection(final Order order) {

@@ -71,7 +71,7 @@ public class ExecutionRequest implements KryoSerializable, KryoCopyable<Executio
 	public ExecutionRequest copy(final Kryo kryo) {
 		final ExecutionRequest er = new ExecutionRequest(this.query);
 		er.setMode(this.mode);
-		er.setConfiguration(configuration);
+		er.setConfiguration(this.configuration);
 		return er;
 	}
 
