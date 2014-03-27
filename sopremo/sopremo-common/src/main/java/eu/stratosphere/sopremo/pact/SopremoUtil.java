@@ -51,7 +51,7 @@ public class SopremoUtil {
 	public static final boolean DEBUG = true;
 
 	public static final Log NORMAL_LOG = LogFactory.getLog(SopremoUtil.class), TRACE_LOG = new SimpleLog(
-		SopremoUtil.class.getName()), USER_LOG = LogFactory.getLog(SopremoUtil.class);
+		SopremoUtil.class.getName()), USER_LOG = new SimpleLog("Sopremo");
 
 	static {
 		((SimpleLog) TRACE_LOG).setLevel(SimpleLog.LOG_LEVEL_TRACE);
