@@ -240,7 +240,6 @@ public abstract class AbstractQueryParser extends Parser implements ParsingScope
 			for (final File packages : info.getRequiredJarPaths())
 				this.currentPlan.addRequiredPackage(packages.getAbsolutePath());
 		this.currentPlan.setTypeRegistry(getTypeRegistry());
-		System.out.println(this.currentPlan.getRequiredPackages());
 
 		return this.currentPlan;
 	}

@@ -3,7 +3,6 @@ package eu.stratosphere.sopremo.pact;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInput;
 import java.io.IOException;
-import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
@@ -52,10 +51,11 @@ public class SopremoUtil {
 	public static final boolean DEBUG = true;
 
 	public static final Log NORMAL_LOG = LogFactory.getLog(SopremoUtil.class), TRACE_LOG = new SimpleLog(
-		SopremoUtil.class.getName());
+		SopremoUtil.class.getName()), USER_LOG = LogFactory.getLog(SopremoUtil.class);
 
 	static {
 		((SimpleLog) TRACE_LOG).setLevel(SimpleLog.LOG_LEVEL_TRACE);
+		((SimpleLog) USER_LOG).setLevel(SimpleLog.LOG_LEVEL_ERROR);
 	}
 
 	public static Log LOG = NORMAL_LOG;
