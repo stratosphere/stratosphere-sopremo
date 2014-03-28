@@ -14,17 +14,12 @@ import eu.stratosphere.sopremo.operator.Name;
 import eu.stratosphere.sopremo.operator.Property;
 import eu.stratosphere.sopremo.pact.JsonCollector;
 import eu.stratosphere.sopremo.pact.SopremoMap;
-import eu.stratosphere.sopremo.type.IJsonNode;
-import eu.stratosphere.sopremo.type.IObjectNode;
-import eu.stratosphere.sopremo.type.IntNode;
-import eu.stratosphere.sopremo.type.LongNode;
-import eu.stratosphere.sopremo.type.ObjectNode;
-import eu.stratosphere.sopremo.type.TextNode;
+import eu.stratosphere.sopremo.type.*;
 
 @Name(verb = "enumerate")
 @InputCardinality(1)
 public class GlobalEnumeration extends ElementaryOperator<GlobalEnumeration> {
-	public static final EvaluationExpression AUTO_ENUMERATION = null;
+	public static final EvaluationExpression AUTO_ENUMERATION = null, PREPEND_ID = new PrependId();
 
 	private EvaluationExpression enumerationExpression = AUTO_ENUMERATION;
 
@@ -374,4 +369,61 @@ public class GlobalEnumeration extends ElementaryOperator<GlobalEnumeration> {
 		}
 	}
 
+	/**
+	 * Adds the id field if object; wraps the value into an object otherwise.
+	 */
+	static final class PrependId extends PathSegmentExpression {
+
+		/**
+		 * Initializes GlobalEnumeration.AutoProjection.
+		 */
+		PrependId() {
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see
+		 * eu.stratosphere.sopremo.expressions.PathSegmentExpression#equalsSameClass(eu.stratosphere.sopremo.expressions
+		 * .PathSegmentExpression)
+		 */
+		@Override
+		protected boolean equalsSameClass(final PathSegmentExpression other) {
+			return true;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see
+		 * eu.stratosphere.sopremo.expressions.PathSegmentExpression#evaluateSegment(eu.stratosphere.sopremo.type.IJsonNode
+		 * )
+		 */
+		@Override
+		protected IJsonNode evaluateSegment(final IJsonNode node) {
+			return node;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see eu.stratosphere.sopremo.expressions.PathSegmentExpression#segmentHashCode()
+		 */
+		@Override
+		protected int segmentHashCode() {
+			return 0;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see
+		 * eu.stratosphere.sopremo.expressions.PathSegmentExpression#setSegment(eu.stratosphere.sopremo.type.IJsonNode,
+		 * eu.stratosphere.sopremo.type.IJsonNode)
+		 */
+		@SuppressWarnings("unchecked")
+		@Override
+		protected IJsonNode setSegment(final IJsonNode node, final IJsonNode value) {
+			if (!(node instanceof IArrayNode<?>))
+				throw new IllegalArgumentException("Can only prepend to arrays, but was " + node);
+			((IArrayNode<IJsonNode>) node).add(0, value);
+			return node;
+		}
+	}
 }

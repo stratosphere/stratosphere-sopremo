@@ -57,7 +57,7 @@ public class ObjectCreation extends EvaluationExpression {
 	 * @param mappings
 	 *        the assignments that should be used
 	 */
-	public ObjectCreation(final FieldAssignment... mappings) {
+	public ObjectCreation(final Mapping<?>... mappings) {
 		this.mappings = new ArrayList<Mapping<?>>(Arrays.asList(mappings));
 	}
 
@@ -539,8 +539,10 @@ public class ObjectCreation extends EvaluationExpression {
 		@Override
 		public EvaluationExpression next() {
 			this.index++;
-			if (this.lastReturnedWasKey)
+			if (this.lastReturnedWasKey) {
+				this.lastReturnedWasKey = false;
 				return this.lastMapping.expression;
+			}
 			this.lastMapping = this.iterator.next();
 			if (this.lastReturnedWasKey = this.lastMapping.target instanceof EvaluationExpression)
 				return (EvaluationExpression) this.lastMapping.target;
