@@ -2,6 +2,8 @@ package eu.stratosphere.sopremo.base;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import com.google.common.base.Function;
@@ -9,14 +11,7 @@ import com.google.common.base.Predicates;
 
 import eu.stratosphere.sopremo.CoreFunctions;
 import eu.stratosphere.sopremo.aggregation.AssociativeAggregation;
-import eu.stratosphere.sopremo.expressions.AggregationExpression;
-import eu.stratosphere.sopremo.expressions.ArrayAccess;
-import eu.stratosphere.sopremo.expressions.ArrayCreation;
-import eu.stratosphere.sopremo.expressions.BatchAggregationExpression;
-import eu.stratosphere.sopremo.expressions.ConstantExpression;
-import eu.stratosphere.sopremo.expressions.EvaluationExpression;
-import eu.stratosphere.sopremo.expressions.ExpressionUtil;
-import eu.stratosphere.sopremo.expressions.InputSelection;
+import eu.stratosphere.sopremo.expressions.*;
 import eu.stratosphere.sopremo.operator.CompositeOperator;
 import eu.stratosphere.sopremo.operator.ElementaryOperator;
 import eu.stratosphere.sopremo.operator.InputCardinality;
@@ -41,11 +36,19 @@ import eu.stratosphere.util.CollectionUtil;
 public class Grouping extends CompositeOperator<Grouping> {
 	private final static EvaluationExpression GROUP_ALL = new ConstantExpression(NullNode.getInstance());
 
-	private EvaluationExpression resultProjection = EvaluationExpression.VALUE;
+	private EvaluationExpression defaultGroupingKey = GROUP_ALL;
+
+	private final List<List<OrderingExpression>> innerGroupOrders =
+		new ArrayList<List<OrderingExpression>>();
 
 	private final List<EvaluationExpression> keyExpressions = new ArrayList<EvaluationExpression>(1);
 
-	private EvaluationExpression defaultGroupingKey = GROUP_ALL;
+	private EvaluationExpression resultProjection = EvaluationExpression.VALUE;
+
+	{
+		for (int index = 0; index < this.getMinInputs(); index++)
+			this.innerGroupOrders.add(new ArrayList<OrderingExpression>());
+	}
 
 	@Override
 	public void addImplementation(final SopremoModule module) {
@@ -60,6 +63,8 @@ public class Grouping extends CompositeOperator<Grouping> {
 			output = new CoGroupProjection().withResultProjection(this.resultProjection).
 				withKeyExpression(0, this.getGroupingKey(0).clone().remove(new InputSelection(0))).
 				withKeyExpression(1, this.getGroupingKey(1).clone().remove(new InputSelection(1))).
+				withInnerGroupOrdering(0, this.innerGroupOrders.get(0)).
+				withInnerGroupOrdering(1, this.innerGroupOrders.get(1)).
 				withInputs(module.getInputs());
 			break;
 		default:
@@ -125,6 +130,23 @@ public class Grouping extends CompositeOperator<Grouping> {
 		return this.getGroupingKey(this.getSafeInputIndex(input));
 	}
 
+	/**
+	 * Returns the innerGroupOrder expressions of the given input.
+	 * 
+	 * @param inputIndex
+	 *        the index of the input
+	 * @return the secondarySortKey expressions of the given input
+	 */
+	@SuppressWarnings("unchecked")
+	public List<OrderingExpression> getInnerGroupOrder(final int inputIndex) {
+		if (inputIndex >= this.innerGroupOrders.size())
+			return Collections.EMPTY_LIST;
+		final List<OrderingExpression> innerGroupOrder = this.innerGroupOrders.get(inputIndex);
+		if (innerGroupOrder == null)
+			return Collections.EMPTY_LIST;
+		return innerGroupOrder;
+	}
+
 	public EvaluationExpression getResultProjection() {
 		return this.resultProjection;
 	}
@@ -159,6 +181,37 @@ public class Grouping extends CompositeOperator<Grouping> {
 		this.setGroupingKey(this.getSafeInputIndex(input), keyExpression);
 	}
 
+	/**
+	 * Sets the innerGroupOrder to the specified value.
+	 * 
+	 * @param innerGroupOrder
+	 *        the innerGroupOrder to set
+	 * @param inputIndex
+	 *        the index of the input
+	 */
+	// @Property(hidden = true)
+	public void setInnerGroupOrder(final int inputIndex, final List<OrderingExpression> innerGroupOrder) {
+		if (innerGroupOrder == null)
+			throw new NullPointerException("innerGroupOrders must not be null");
+		CollectionUtil.ensureSize(this.innerGroupOrders, inputIndex + 1);
+		this.innerGroupOrders.set(inputIndex, new ArrayList<OrderingExpression>(innerGroupOrder));
+	}
+
+	/**
+	 * Sets the innerGroupOrder to the specified value.
+	 * 
+	 * @param innerGroupOrder
+	 *        the innerGroupOrder to set
+	 * @param inputIndex
+	 *        the index of the input
+	 */
+	// @Property(hidden = true)
+	public void setInnerGroupOrder(final int inputIndex, final OrderingExpression... innerGroupOrder) {
+		if (innerGroupOrder == null)
+			throw new NullPointerException("innerGroupOrders must not be null");
+		this.setInnerGroupOrder(inputIndex, Arrays.asList(innerGroupOrder));
+	}
+
 	@Property(preferred = true)
 	@Name(preposition = "into")
 	public void setResultProjection(final EvaluationExpression resultProjection) {
@@ -178,6 +231,33 @@ public class Grouping extends CompositeOperator<Grouping> {
 	public Grouping withGroupingKey(final int inputIndex, final EvaluationExpression groupingKey) {
 		this.setGroupingKey(inputIndex, groupingKey);
 		return this;
+	}
+
+	/**
+	 * Sets the innerGroupOrder of the given input to the specified value.
+	 * 
+	 * @param innerGroupOrder
+	 *        the innerGroupOrder to set
+	 * @param index
+	 *        the index of the input
+	 * @return this
+	 */
+	public Grouping withInnerGroupOrdering(final int index, final List<OrderingExpression> innerGroupOrder) {
+		this.setInnerGroupOrder(index, innerGroupOrder);
+		return this.self();
+	}
+
+	/**
+	 * Sets the innerGroupOrder to the specified value.
+	 * 
+	 * @param innerGroupOrder
+	 *        the innerGroupOrder to set
+	 * @param index
+	 *        the index of the input
+	 */
+	public Grouping withInnerGroupOrdering(final int index, final OrderingExpression... innerGroupOrder) {
+		this.setInnerGroupOrder(index, innerGroupOrder);
+		return this.self();
 	}
 
 	public Grouping withResultProjection(final EvaluationExpression resultProjection) {
@@ -214,6 +294,7 @@ public class Grouping extends CompositeOperator<Grouping> {
 			withCombinable(true).
 			withResultProjection(combinableAggregation).
 			withKeyExpression(0, new ArrayAccess(0)).
+			withInnerGroupOrdering(0, this.innerGroupOrders.get(0)).
 			withInputs(initialValues);
 
 		// and finally, we need to perform the actual project from the array to the desired output
@@ -249,21 +330,6 @@ public class Grouping extends CompositeOperator<Grouping> {
 
 	@InputCardinality(1)
 	public static class GroupProjection extends ElementaryOperator<GroupProjection> {
-		// /* (non-Javadoc)
-		// * @see
-		// eu.stratosphere.sopremo.operator.ElementaryOperator#getOperator(eu.stratosphere.sopremo.serialization.SopremoRecordLayout)
-		// */
-		// @Override
-		// protected Operator getOperator(SopremoRecordLayout layout) {
-		// ReduceOperator.Builder builder =
-		// ReduceOperator.builder(this.isCombinable() ? CombinableImplementation.class : Implementation.class);
-		// if (!this.getKeyExpressions(0).contains(GROUP_ALL)) {
-		// int[] keyIndices = this.getKeyIndices(globalSchema, this.getKeyExpressions(0));
-		// PactBuilderUtil.addKeys(builder, this.getKeyClasses(globalSchema, keyIndices), keyIndices);
-		// }
-		// builder.name(this.toString());
-		// return builder.build();
-		// }
 		/*
 		 * (non-Javadoc)
 		 * @see eu.stratosphere.sopremo.operator.ElementaryOperator#getFunctionClass()
