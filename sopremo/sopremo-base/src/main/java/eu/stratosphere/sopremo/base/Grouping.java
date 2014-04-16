@@ -8,6 +8,7 @@ import java.util.List;
 
 import com.google.common.base.Function;
 import com.google.common.base.Predicates;
+import com.google.common.collect.Lists;
 
 import eu.stratosphere.sopremo.CoreFunctions;
 import eu.stratosphere.sopremo.aggregation.AssociativeAggregation;
@@ -60,12 +61,14 @@ public class Grouping extends CompositeOperator<Grouping> {
 			output = this.createGrouping(module);
 			break;
 		case 2:
-			output = new CoGroupProjection().withResultProjection(this.resultProjection).
-				withKeyExpression(0, this.getGroupingKey(0).clone().remove(new InputSelection(0))).
-				withKeyExpression(1, this.getGroupingKey(1).clone().remove(new InputSelection(1))).
-				withInnerGroupOrdering(0, this.innerGroupOrders.get(0)).
-				withInnerGroupOrdering(1, this.innerGroupOrders.get(1)).
-				withInputs(module.getInputs());
+			output =
+				new CoGroupProjection().withResultProjection(this.resultProjection).
+					withKeyExpression(0, this.getGroupingKey(0).clone().remove(new InputSelection(0))).
+					withKeyExpression(1, this.getGroupingKey(1).clone().remove(new InputSelection(1))).
+					withInnerGroupOrdering(0, this.innerGroupOrders.get(0)).
+					withInnerGroupOrdering(1, this.innerGroupOrders.size() > 1 ? this.innerGroupOrders.get(1)
+						: Collections.<OrderingExpression> emptyList()).
+					withInputs(module.getInputs());
 			break;
 		default:
 			throw new IllegalStateException("More than two sources are not supported");
